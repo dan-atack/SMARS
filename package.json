@@ -1,0 +1,25 @@
+{
+  "name": "project-smars",
+  "version": "0.0.1",
+  "description": "The Attempt to Build A Better Web-Based Video Game",
+  "main": "server.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dan-atack/SMARS.git"
+  },
+  "keywords": [
+    "typescript",
+    "expressjs",
+    "mongodb",
+    "simulator"
+  ],
+  "author": "Dan Atack",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dan-atack/SMARS/issues"
+  },
+  "homepage": "https://github.com/dan-atack/SMARS#readme"
+}
