@@ -40,8 +40,16 @@ Well, the first phase of this chapter was a bit of a freebie, now to start the a
 
    npm i express dotenv cors helmet
 
-### 3. Now that we have some nice node modules installed, add a .gitignore file with node_modules as its first entry. Do another git add/commit/push to test it out.
+3. Now that we have some nice node modules installed, add a .gitignore file with node_modules as its first entry. Do another git add/commit/push to test it out.
 
-### 4. Install Typescript, using the '-D' flag to install it as a 'Dev Dependency,' meaning it will NOT be installed in the production environment:
+4. Install Typescript, using the '-D' flag to install it as a 'Dev Dependency,' meaning it will NOT be installed in the production environment:
 
-    npm i -D typescript
+   npm i -D typescript
+
+5. Next, install the type definitions for the packages installed earlier:
+
+   npm i -D @types/node @types/express @types/dotenv @types/cors @types/helmet
+
+6. Create a Typescript configuration file (tsconfig.json) with basic default values for a simple Typescript project:
+
+   npx tsc --init
