@@ -18,6 +18,10 @@ const PORT: number = parseInt(process.env.PORT as string, 10);
 
 const app = express();
 
+app.get('/', (req, res) => {
+    res.send('Hello World!!!')
+})
+
 // App Configuration
 
 // Enables and sets defaults for a myriad of small middleware packages that set HTTP response headers. It's VERY important:
