@@ -53,3 +53,29 @@ Well, the first phase of this chapter was a bit of a freebie, now to start the a
 6. Create a Typescript configuration file (tsconfig.json) with basic default values for a simple Typescript project:
 
    npx tsc --init
+
+### October 27, 2021
+
+7. Create an environment variables file through the command line with the 'touch' command:
+
+   touch .env
+
+8. Add a port number to the environment variables file. For this project we'll use port 7000, as it is a magical number.
+
+9. Add the .env file to the project's gitignore file, to ensure that any secret information that winds up in there later on is not shared on GitHub.
+
+10. Create an SRC directory to host the Node.js application files:
+
+mkdir src
+
+11. Create an index file (in Typescript!) within the source directory:
+
+cd src
+
+touch index.ts
+
+12. Add some commented-out 'sections' to the index.ts file, which will serve as a template for the components of an Express server: Required external modules, App variables, App configuration and Server activation.
+
+13. In the External Modules section, start by importing your various modules that were added with the package installer. The formatting of this import process, by the way, differs somewhat from how we did it in BlockLand, but the essential structure and function of what's being done is the same.
+
+14. Next, call the dotenv's config method to import environment variables. The server index is the ultimate 'top level' module in this project, so it "serves" as the entry-point for everything that needs to be globally accessible within the project.

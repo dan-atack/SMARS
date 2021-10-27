@@ -2,7 +2,7 @@
   "name": "project-smars",
   "version": "0.0.1",
   "description": "The Attempt to Build A Better Web-Based Video Game",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
     "test": "test"
   },
