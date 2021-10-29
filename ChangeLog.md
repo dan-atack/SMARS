@@ -110,4 +110,48 @@ src/index.ts <-- This of course refers to the app's entry file, e.g. the server 
 
 23. Setup a 'Hello World' get response in the server and find it in the browser! Then close out the chapter :D
 
-## Chapter Three
+## Chapter Three: MongoDB (Difficulty Estimate 5, For Real This Time!)
+
+### October 28, 2021
+
+The creation of a MongoDB service, and initial connections between it and the server. Starting with a Mongo cheat sheet!
+
+1. Bootstrap a MongoDB service. It turns out you can run the service and enter the terminal from anywhere in terms of the directory you're in when you run these commands to stop and then start the mongoDB service:
+
+   (PS) > net stop mongoDB
+
+   (PS) > net start mongoDB
+
+2. You can then enter the mongo shell terminal program with the following command (again, given from anywhere, and not to be confused with the similar command, 'mongod' which gives a bunch of info about the status of the Mongo daemon [process]):
+
+   mongo
+
+3. Check which databases already exist:
+
+   show dbs
+
+4. Create/enter a new database ('use' command will create a new db if the database name does not already exist):
+
+   use <database_name>
+
+5. Create a new collection within the database:
+
+   db.createCollection('<collection_name>') <-- Note the quotes
+
+6. Add a new document by hand, via the terminal:
+
+   db.collection_name.insertOne({name: 'Doc' occupation: 'Inventor'})
+
+7. Retrieve your document by hand (in the Windows terminal):
+
+   db.find()
+
+8. Add Mongo to the project's dependencies list.
+
+9. Write a simple function to find your test document from MongoDB. Import it to the server and setup a simple endpoint, then visit the relevant link in the browser to call the database import. This function can be removed later on as it is a proof-of-concept... Addendum: Total success! The function was made to work with Typescript, and also demonstrated that it is not necessary to have the mongo application running in Powershell (so long as the process is open the Mongo server will respond... as long suspected but not verified until now!)
+
+## Chapter Four: Unit Tests (Difficulty Estimate: 6, since this is truly uncharted territory now)
+
+### October 29, 2021
+
+This is penultimate chapter in the game's pre-development phase, which is to say, the phase before anything particular to the actual game itself gets developed. What we want now is a simple unit test that can be run from the package manager's test script, and which will try calling the Database test API and reporting a success if the response body has a success (200) status - and reporting a fail for any other value.

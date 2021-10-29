@@ -7,6 +7,10 @@ import helmet from "helmet";
 
 dotenv.config()
 
+// Required Database Modules
+
+const getTestData = require('./database_functions/test_find');
+
 // App Variables
 
 if (!process.env.PORT) {
@@ -30,6 +34,9 @@ app.use(helmet());
 app.use(cors());
 // Stands in for the body-parser used in BlockLand; parses incoming requests into JSON format and enables you to access the request BODY:
 app.use(express.json());
+
+// Server Endpoints
+app.get('/api/:dbName/:collection', getTestData)
 
 // Server Activation
 
