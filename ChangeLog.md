@@ -154,4 +154,12 @@ The creation of a MongoDB service, and initial connections between it and the se
 
 ### October 29, 2021
 
-This is penultimate chapter in the game's pre-development phase, which is to say, the phase before anything particular to the actual game itself gets developed. What we want now is a simple unit test that can be run from the package manager's test script, and which will try calling the Database test API and reporting a success if the response body has a success (200) status - and reporting a fail for any other value.
+This is penultimate chapter in the game's pre-development phase, which is to say, the phase before anything particular to the actual game itself gets developed. What we want now is to install the unit test library Jest, and then create a simple function and a unit test to go with it. Like the database connection in the previous chapter, this is a proof-of-concept job, so the exit criteria will just be to run that test from the command line to check that the test function behaves, and that we can do more unit tests in the future.
+
+1. Add Jest, Jest for Typescript, and Jest Types and to the project's DEVELOPMENT dependencies list:
+
+   npm i -D jest ts-jest @types/jest
+
+2. Add jest to package.json's test script, and add a new test script to test for coverage as well.
+
+### 3.
