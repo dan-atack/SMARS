@@ -25,7 +25,11 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Runs a single command using the runners shell
-    - name: Send greeting
-      run: echo "Hello ${{ github.event.inputs.name }}"
-      run: npm run test
+      # Runs a single command using the runners shell
+      - name: Send greeting
+        run: echo "Hello ${{ github.event.inputs.name }}"
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Do unit tests
+        run: npm run test
