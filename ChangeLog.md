@@ -162,4 +162,37 @@ This is penultimate chapter in the game's pre-development phase, which is to say
 
 2. Add jest to package.json's test script, and add a new test script to test for coverage as well.
 
-### 3.
+3. Make a dummy function that adds two numbers together and export it.
+
+4. Make a new directory, test, at the root of the project.
+
+5. Create a unit test file that imports the adding function and compares its output for 2 + 2 to 4. THERE... ARE... FOUR... LIGHTS!!!
+
+6. Create a jest.config.js file at the root of the project, to tell the Jest API what environment to use for running tests (node) and to use the TS-Jest package, since our program and its unit tests will all be written in TS.
+
+7. GENERAL NOTE: Unit tests need to start with an empty export object in order to avoid block-scope errors for re-declaring the same function/class as the file they're testing. This is apparently a side-effect of unit testing with Jest for Typescript, but luckily it seems to be fairly well known, and therefore hopefully not evidence of malpractice on my part.
+
+## Chapter Five: DevOps It Up A Little Bit (Difficulty Estimate: 7)
+
+### November 2, 2021
+
+In the final chapter of the abstract, pre-game development phase of the project, the mission is to setup GitHub actions on the remote repo, and create a basic workflow configuration file for the project. As the first implementation of a Continuous Integration strategy, we want to be able to do the following whenever a push is made to the remote repo:
+
+- Checkout the current branch
+- Run all unit tests for the code on that branch
+- Report on the outcome of said tests and only allow merges to master if all tests are passing
+- (Down the line) create and optimize Docker images of the project's code
+
+1. Add simple manual workflow template to 'Actions' section on Github. This creates a new directory, /github/workflows within the project repo, and populates that with a file, 'manual.yml' which contains a simple 'greeting' job, and is executed via the Github UI or API... (see next task).
+
+2. Install the Github CLI and configure it to work on this machine, with VS Code as the default editor.
+
+3. Trigger your manual workflow from the terminal within VS Code:
+
+   gh workflow run manual.yml
+
+4. You can then see a history of the runs of this workflow by using the list command:
+
+   gh run list --workflow=manual.yml
+
+### 5. Re-configure the manual.yml file to run your npm test script instead of saying hello world.
