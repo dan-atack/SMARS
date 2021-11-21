@@ -28,8 +28,13 @@ jobs:
       # Runs a single command using the runners shell
       - name: Send greeting
         run: echo "Hello ${{ github.event.inputs.name }}"
+  # Setup job installs all of the project's dependencies in order to run the tests
   test:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 13
       - name: Do unit tests
         run: npm run test

@@ -196,3 +196,5 @@ In the final chapter of the abstract, pre-game development phase of the project,
    gh run list --workflow=manual.yml
 
 ### 5. Re-configure the manual.yml file to run your npm test script instead of saying hello world.
+
+## Chapter Six: Add P5JS for the Front-End, and Port Over the Code from the Code-Jam - and Convert to TS (Difficulty Estimate: 8)
