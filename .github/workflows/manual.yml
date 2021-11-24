@@ -8,7 +8,7 @@ on: [push]
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   Setup:
-  # Setup job installs all of the project's dependencies in order to run the tests
+    # Setup job installs all of the project's dependencies in order to run the tests
     runs-on: ubuntu-latest
     steps:
       - name: Do NPM Install
@@ -16,7 +16,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 13
-        run: echo "starting npm ci"
-        run: npm ci
-        run: echo "starting tests"
-        run: npm run test
+      - run: echo "starting npm ci"
+      - run: npm ci
+      - run: echo "starting tests"
+      - run: npm run test
