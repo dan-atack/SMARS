@@ -32,9 +32,12 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - name: Do NPM Install
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
           node-version: 13
-      - name: Do unit tests
+        run: echo "starting npm ci"
+        run: npm ci
+        run: echo "starting tests"
         run: npm run test
