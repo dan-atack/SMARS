@@ -1,14 +1,9 @@
-# This is a basic workflow that is manually triggered
+name: Basic CI
 
-name: Manual workflow
-
-# Controls when the action will run. Workflow runs when manually triggered using the UI
-# or API.
 on: push
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  setup:
-    # Setup job installs all of the project's dependencies in order to run the tests
+  Run-Unit-Tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
