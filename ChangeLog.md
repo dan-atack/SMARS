@@ -195,6 +195,18 @@ In the final chapter of the abstract, pre-game development phase of the project,
 
    gh run list --workflow=manual.yml
 
-### 5. Re-configure the manual.yml file to run your npm test script instead of saying hello world.
+5. Re-configure the manual.yml file to run your npm test script instead of saying hello world.
 
-## Chapter Six: Add P5JS for the Front-End, and Port Over the Code from the Code-Jam - and Convert to TS (Difficulty Estimate: 8)
+## Chapter Six: Add P5JS for the Front-End and serve up the front end (Difficulty Estimate: 7)
+
+### November 23, 2021
+
+Now to set up the front end, using P5JS for that sweet, smooth rendering!
+
+1. Create a minimal 'frontend' directory with the basic P5JS configuration: libraries, minimal index.html, minimal sketch.js.
+
+### 2. Get the Express server to show the minimal P5JS interface.
+
+### 3. Convert the sketch.js file to sketch.TS, and get that working with the server.
+
+## Chapter Seven: Create the Pre-game Menu Interface In Typescript (Difficulty Estimate: 8)
