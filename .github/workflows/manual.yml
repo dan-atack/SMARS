@@ -4,18 +4,17 @@ name: Manual workflow
 
 # Controls when the action will run. Workflow runs when manually triggered using the UI
 # or API.
-on: [push]
+on: push
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  Setup:
+  setup:
     # Setup job installs all of the project's dependencies in order to run the tests
     runs-on: ubuntu-latest
     steps:
-      - name: Do NPM Install
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
-          node-version: 13
+          node-version: '14'
       - run: echo "starting npm ci"
       - run: npm ci
       - run: echo "starting tests"
