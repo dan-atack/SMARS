@@ -197,16 +197,14 @@ In the final chapter of the abstract, pre-game development phase of the project,
 
 5. Re-configure the manual.yml file to run your npm test script instead of saying hello world.
 
-## Chapter Six: Add P5JS for the Front-End and serve up the front end (Difficulty Estimate: 7)
+## Chapter Six: Create the Pre-game Menu Interface In Typescript (Difficulty Estimate: 8)
 
-### November 23, 2021
+### December 3, 2021
 
-Now to set up the front end, using P5JS for that sweet, smooth rendering!
+Following the disappointing outcome of the P5JS experiment, the dev team must move on and create the game's frontend from scratch. The goal of this chapter will be to setup the game's frontend, starting with a simple hello world page, and progressing to a basic app frame. Key sub-goals of this chapter include:
 
-1. Create a minimal 'frontend' directory with the basic P5JS configuration: libraries, minimal index.html, minimal sketch.js.
-
-### 2. Get the Express server to show the minimal P5JS interface.
-
-### 3. Convert the sketch.js file to sketch.TS, and get that working with the server.
-
-## Chapter Seven: Create the Pre-game Menu Interface In Typescript (Difficulty Estimate: 8)
+- Creating public directory and making it the static endpoint for the Express server
+- Establishing frontend build script to transpile TS files to JS for the public directory
+- Linking FE build script to dev script so that frontend files are updated whenever dev script is run (this is still somewhat clunky however, as it necessitates running the dev script each time there are changes to the FE, as opposed to having everything update automatically upon changes...)
+- Adding SCSS and CSS directories and implementing transpilation for these as well (and then including that in dev script)
+- Exit criteria: When the server is run in dev mode, the main page should display a static 'main menu' with dummy buttons for the initial player options (bonus if it is at all mobile-friendly!)
