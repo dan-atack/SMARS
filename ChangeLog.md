@@ -208,3 +208,21 @@ Following the disappointing outcome of the P5JS experiment, the dev team must mo
 - Linking FE build script to dev script so that frontend files are updated whenever dev script is run (this is still somewhat clunky however, as it necessitates running the dev script each time there are changes to the FE, as opposed to having everything update automatically upon changes...)
 - Adding SCSS and CSS directories and implementing transpilation for these as well (and then including that in dev script)
 - Exit criteria: When the server is run in dev mode, the main page should display a static 'main menu' with dummy buttons for the initial player options (bonus if it is at all mobile-friendly!)
+
+### 1. Create public directory for frontend OUTPUT files.
+
+### 2. Create index.html and place it in the public directory. Give the page a title so we can test if it's displayed when it's hooked up to the server.
+
+### 3. Add public directory to server as its static directory.
+
+### 4. Make the build:frontend script that transpiles all TS files in the frontend directory into the public directory.
+
+### 5. Test this script by making a simple TS file (with no HTML elements for starters, just a simple console log) and transpiling it into the public directory. Add a reference to the transpiled (JS) script in the index.html and then run the page to see if it's brought in properly.
+
+### 6. Add the build script to the dev script, so calling dev implements the FE build. Test this.
+
+### 7. Add a reference to the body tag to your TS script, so that it creates a div in the body called 'app.' Give it a class name and then add a simple CSS styles file to the public directory (making sure to add it to the index.html) so that the div has some visibility when it's created. Then run the dev script and see if it shows up. If so, we are off to the races!
+
+### 8. Add an SCSS folder/file to the frontend directory.
+
+### 9. Add a 'build:CSS' script to the package.json's scripts and call that in the build:frontend script, so that when we build the frontend we also transpile the project's SCSS code into CSS for the frontend to use. Validate this by adding additional properties to the 'app' class in the SCSS file, and look for them to appear in the converted CSS file (and thus also on the screen when the dev script is called).
