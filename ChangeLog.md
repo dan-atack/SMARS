@@ -209,11 +209,11 @@ Following the disappointing outcome of the P5JS experiment, the dev team must mo
 - Adding SCSS and CSS directories and implementing transpilation for these as well (and then including that in dev script)
 - Exit criteria: When the server is run in dev mode, the main page should display a static 'main menu' with dummy buttons for the initial player options (bonus if it is at all mobile-friendly!)
 
-### 1. Create public directory for frontend OUTPUT files.
+1. Create public directory for frontend OUTPUT files.
 
-### 2. Create index.html and place it in the public directory. Give the page a title so we can test if it's displayed when it's hooked up to the server.
+2. Create index.html and place it in the public directory. Give the page a title so we can test if it's displayed when it's hooked up to the server.
 
-### 3. Add public directory to server as its static directory.
+3. Add public directory to server as its static directory.
 
 ### 4. Make the build:frontend script that transpiles all TS files in the frontend directory into the public directory.
 
