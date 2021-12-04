@@ -12,6 +12,7 @@ jobs:
           node-version: '14'
       - run: echo "starting npm ci"
       - run: pwd
+      - run: ls
       - run: npm ci
       - run: echo "starting tests"
       - run: npm run test
