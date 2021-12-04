@@ -3,16 +3,16 @@ name: Basic CI
 on: push
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  Setup-Backend:
+  Run-Unit-Tests:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: './backend'
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
           node-version: '14'
-      - run: cd backend
-  Run-Tests:
-    steps:
       - run: echo "starting npm ci"
       - run: npm ci
       - run: echo "starting tests"
