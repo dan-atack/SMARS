@@ -10,9 +10,8 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '14'
+      - run: cd backend
       - run: echo "starting npm ci"
-      - run: pwd
-      - run: ls
       - run: npm ci
       - run: echo "starting tests"
       - run: npm run test
