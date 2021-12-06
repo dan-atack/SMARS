@@ -1,0 +1,26 @@
+{
+  "name": "smars-frontend",
+  "version": "1.0.0",
+  "description": "The Full Frontal",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dan-atack/SMARS.git"
+  },
+  "keywords": [
+    "\"typescript\"",
+    "\"game\""
+  ],
+  "author": "Daniel Atack",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dan-atack/SMARS/issues"
+  },
+  "homepage": "https://github.com/dan-atack/SMARS#readme",
+  "devDependencies": {
+    "typescript": "^4.5.2"
+  }
+}
