@@ -1,0 +1,14 @@
+# Project dependencies
+frontend/node_modules
+backend/node_modules
+# Secrets
+.env
+# Don't let them read my diary
+ChangeLog.md
+# Text editor settings
+.vscode
+# Test outputs
+backend/coverage
+# Temporary Local Files, including build files and cache:
+frontend/.cache
+frontend/dist

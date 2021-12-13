@@ -215,14 +215,26 @@ Following the disappointing outcome of the P5JS experiment, the dev team must mo
 
 3. Add public directory to server as its static directory.
 
-### 4. Make the build:frontend script that transpiles all TS files in the frontend directory into the public directory.
+4. Change the filestructure of the project to fully separate the frontend and backend. New directory structure will look like this:
 
-### 5. Test this script by making a simple TS file (with no HTML elements for starters, just a simple console log) and transpiling it into the public directory. Add a reference to the transpiled (JS) script in the index.html and then run the page to see if it's brought in properly.
+SMARS
+..|- backend
+....|- src
+....|- test
+....|- package.json
+....|- tsconfig.json
+..|- frontend
+....|- src
+......|- app.ts
+......|- other_files.ts
+......|- styles.scss
+....|- dist (transpiled TS and CSS files)
+....|- index.html
+....|- package.json
+....|- tsconfig.json
 
-### 6. Add the build script to the dev script, so calling dev implements the FE build. Test this.
+5. Do an npm init for the new frontend sub-directory, to create a new package.json to manage the frontend's scripts and dependencies. Since the frontend is detached from the backend, this means that certain libraries which were recently pronounced incompatible might now be given a second chance... LOOKS LIKE P5JS IS BACK ON THE MENU, BOYS!
 
-### 7. Add a reference to the body tag to your TS script, so that it creates a div in the body called 'app.' Give it a class name and then add a simple CSS styles file to the public directory (making sure to add it to the index.html) so that the div has some visibility when it's created. Then run the dev script and see if it shows up. If so, we are off to the races!
+### 6. Make a button in the frontend using P5JS click-response techniques, and have it dispatch a signal to the backend when it's clicked.
 
-### 8. Add an SCSS folder/file to the frontend directory.
-
-### 9. Add a 'build:CSS' script to the package.json's scripts and call that in the build:frontend script, so that when we build the frontend we also transpile the project's SCSS code into CSS for the frontend to use. Validate this by adding additional properties to the 'app' class in the SCSS file, and look for them to appear in the converted CSS file (and thus also on the screen when the dev script is called).
+### 7. Setup a new endpoint in the backend server, and test that it is able to recieve the signal from the frontend (testing the proxy line in its package.json file).
