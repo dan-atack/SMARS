@@ -10,6 +10,7 @@ dotenv.config()
 // Required Database Modules
 
 const getTestData = require('./database_functions/test_find');
+const getFrontend = require('./database_functions/test_frontend');
 
 // App Variables
 
@@ -34,7 +35,9 @@ app.use(express.json());
 app.use(express.static("public"));
 
 // Server Endpoints
-app.get('/api/:dbName/:collection', getTestData)
+app.get('/api/:dbName/:collection', getTestData);
+// Test endpoint for communication with the frontend:
+app.get('/api/test', getFrontend);
 
 // Server Activation
 

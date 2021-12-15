@@ -235,6 +235,8 @@ SMARS
 
 5. Do an npm init for the new frontend sub-directory, to create a new package.json to manage the frontend's scripts and dependencies. Since the frontend is detached from the backend, this means that certain libraries which were recently pronounced incompatible might now be given a second chance... LOOKS LIKE P5JS IS BACK ON THE MENU, BOYS!
 
-### 6. Make a button in the frontend using P5JS click-response techniques, and have it dispatch a signal to the backend when it's clicked.
+6. Make a button in the frontend using P5JS click-response techniques, and have it dispatch a signal to the backend when it's clicked.
 
-### 7. Setup a new endpoint in the backend server, and test that it is able to recieve the signal from the frontend (testing the proxy line in its package.json file).
+7. Setup a new endpoint in the backend server to send a simple response signal.
+
+8. Get a signal to the backend and receive a response from the front, as our first 'end-to-end' proof of concept!

@@ -1,6 +1,5 @@
 {
   "name": "smars-frontend",
-  "proxy": "http://localhost:7000",
   "version": "1.0.0",
   "description": "The Full Frontal",
   "main": "index.html",
