@@ -197,25 +197,16 @@ In the final chapter of the abstract, pre-game development phase of the project,
 
 5. Re-configure the manual.yml file to run your npm test script instead of saying hello world.
 
-## Chapter Six: Create the Pre-game Menu Interface In Typescript (Difficulty Estimate: 8)
+## Chapter Six: Add P5 and separate the frontend from the backend (Difficulty Estimate: 8)
 
 ### December 3, 2021
 
-Following the disappointing outcome of the P5JS experiment, the dev team must move on and create the game's frontend from scratch. The goal of this chapter will be to setup the game's frontend, starting with a simple hello world page, and progressing to a basic app frame. Key sub-goals of this chapter include:
+Never willing to take 'no' for an answer, and remembering that the directory structure of Blockland might not be the most ideal model, the goal of this chapter will be to setup the game's frontend in its own directory and with a separate package file and set of scripts, and making sure that it can 'talk' to the backend. Key sub-goals of this chapter include:
 
-- Creating public directory and making it the static endpoint for the Express server
-- Establishing frontend build script to transpile TS files to JS for the public directory
-- Linking FE build script to dev script so that frontend files are updated whenever dev script is run (this is still somewhat clunky however, as it necessitates running the dev script each time there are changes to the FE, as opposed to having everything update automatically upon changes...)
-- Adding SCSS and CSS directories and implementing transpilation for these as well (and then including that in dev script)
-- Exit criteria: When the server is run in dev mode, the main page should display a static 'main menu' with dummy buttons for the initial player options (bonus if it is at all mobile-friendly!)
+- Creating frontend directory using P5 and Parcel; Parcel builds the typescript (with P5) and runs a dev server that can send messages to the backend.
+- Exit criteria: When the frontend and backend are running (using 2 terminals to run each individually), the frontend can send a signal to the backend and get back a reply.
 
-1. Create public directory for frontend OUTPUT files.
-
-2. Create index.html and place it in the public directory. Give the page a title so we can test if it's displayed when it's hooked up to the server.
-
-3. Add public directory to server as its static directory.
-
-4. Change the filestructure of the project to fully separate the frontend and backend. New directory structure will look like this:
+1. Change the filestructure of the project to fully separate the frontend and backend. New directory structure will look like this:
 
 SMARS
 ..|- backend
@@ -233,10 +224,40 @@ SMARS
 ....|- package.json
 ....|- tsconfig.json
 
-5. Do an npm init for the new frontend sub-directory, to create a new package.json to manage the frontend's scripts and dependencies. Since the frontend is detached from the backend, this means that certain libraries which were recently pronounced incompatible might now be given a second chance... LOOKS LIKE P5JS IS BACK ON THE MENU, BOYS!
+2. Do an npm init for the new frontend sub-directory, to create a new package.json to manage the frontend's scripts and dependencies. Since the frontend is detached from the backend, this means that certain libraries which were recently pronounced incompatible might now be given a second chance... LOOKS LIKE P5JS IS BACK ON THE MENU, BOYS!
 
-6. Make a button in the frontend using P5JS click-response techniques, and have it dispatch a signal to the backend when it's clicked.
+3. Install Parcel to the frontend, to compile the Typescript (and P5) and run a dev server locally.
 
-7. Setup a new endpoint in the backend server to send a simple response signal.
+4. Make a button in the frontend using P5JS click-response techniques, and have it dispatch a signal to the backend when it's clicked.
 
-8. Get a signal to the backend and receive a response from the front, as our first 'end-to-end' proof of concept!
+5. Setup a new endpoint in the backend server to send a simple response signal.
+
+6. Get a signal to the backend and receive a response from the front, as our first 'end-to-end' proof of concept!
+
+## Chapter Seven: Create basic app framework, and make it mobile-friendly (Difficulty Estimate: 6)
+
+### December 14, 2021
+
+Since we've finally gotten the stack we are looking for, it's time to create the framework for the game's frontend, starting with a login page and pre-game menu (not rushing ahead with the gameplay this time!). Without going too deeply into the world of media queries, try to make it with mobile devices in mind, or at least with different screen sizes in mind so there's no awkward scrolling on smaller devices. Goals for this chapter include:
+
+- Decide canvas size and test for different screen sizes
+- Create simple SCSS styling rules for centering the app within its container (and rounding its edges!)
+- Create Screen class, which will be the ancestor of all other menus and pages
+- Create Button class, to be used throughout the app; use types to enforce customizability options
+- See the extent to which SCSS rules affect text elements made by P5
+
+1. Select a canvas size and test it with different screen sizes. Probably this won't be a very mobile game since it is a simulator but it would be good to have it be at least possible to play on a smaller screen.
+
+2. Create Constants.ts file to contain immutable values to be used throughout the frontend, starting with the base_url to use for transactions with the backend.
+
+3. Create Screen class, which will have a minimal set of properties that can be inherited by its descendents. Height and width will be the height and width of the canvas itself (whose dimensions should also be in that constants file, in order to be universal), and there will also be a boolean property, currentScreen, to denote whether it is the 'active' screen in the game's interface. Basically the idea with this is that if a Screen (or its descendent) is the active screen, it gets shown and any click-response behaviour associated with it is enabled; otherwise it is not shown and does not have its click-response handlers activated.
+
+4. Create one instance of the Screen class in the main App (after importing it), and use it to render the background within the canvas. The app file itself will never do any rendering directly; that will occur through the Screen component, and any other components that are, in turn, called by it.
+
+5. Create a new class, Menu, which inherits from Screen and adds a list of buttons and a color as its defining characteristics.
+
+6. Create a Button class next, which will take arguments for position as well as a function that it will perform when clicked.
+
+7. Create an instance of the Menu class in the main app, replacing the Screen instance. Give it one button, which when pressed calls the backend signal function. Initially, that function will be imported by the Menu class (later functions will be imported by more specific classes, such as MainMenu or InGameMenu, so that the functions associated with those menu types are inherent to them, not the more general parent class).
+
+### 8. Next, create the Login class, descended from the Screen class, to handle the player's initial sign-in process. Since, unlike the Menu class, this component will not have further descendents, it can be made specifically to show everything that's needed for logging in and signing up; namely, a few buttons and some input fields.

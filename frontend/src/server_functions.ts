@@ -1,6 +1,9 @@
 // Proof-of-concept server interaction:
+import { constants } from "./constants";
+
 export const signalServer = () => {
-    fetch("http://localhost:7000/api/test", {
+    const url = `${constants.URL_PREFIX}/test`;
+    fetch(url, {
         method: "GET",
         headers: {
             Accept: "application/json",

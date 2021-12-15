@@ -12,3 +12,5 @@ backend/coverage
 # Temporary Local Files, including build files and cache:
 frontend/.cache
 frontend/dist
+# Concept art, blueprints:
+mockups

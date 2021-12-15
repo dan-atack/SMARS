@@ -1,25 +1,35 @@
 import P5 from "p5";
 
+// Server Functions:
 import { signalServer } from "./server_functions";
+// Game constants:
+import { constants } from "./constants";
+// Components:
+// import Screen from "./screen";
+import Menu from "./menu";
+import Button from "./button";
 
 import "./styles.scss";
 
 const sketch = (p5:P5) => {
+    // const screen = new Screen(p5);
+    const button = new Button(p5, 16, 16, signalServer)
+    const buttons = [button];
+    const mainMenu = new Menu(p5, buttons, "black");
 
     p5.setup = () => {
-        const canvas = p5.createCanvas(512, 1024);
+        const canvas = p5.createCanvas(constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT);
         canvas.parent("app");
-        p5.background("black");
     }
 
     p5.mouseClicked = () => {
-        // On any click, send signal to backend:
-        signalServer();
+        mainMenu.handleClicks(p5.mouseX, p5.mouseY);
     }
 
     p5.draw = () => {
-        p5.background("black");
-        p5.fill('white');
+        // screen.render();
+        mainMenu.render();
+        p5.fill("black");
         p5.circle(p5.mouseX, p5.mouseY, 30);   
     }
 }
