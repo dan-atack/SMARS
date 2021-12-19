@@ -260,4 +260,16 @@ Since we've finally gotten the stack we are looking for, it's time to create the
 
 7. Create an instance of the Menu class in the main app, replacing the Screen instance. Give it one button, which when pressed calls the backend signal function. Initially, that function will be imported by the Menu class (later functions will be imported by more specific classes, such as MainMenu or InGameMenu, so that the functions associated with those menu types are inherent to them, not the more general parent class).
 
-### 8. Next, create the Login class, descended from the Screen class, to handle the player's initial sign-in process. Since, unlike the Menu class, this component will not have further descendents, it can be made specifically to show everything that's needed for logging in and signing up; namely, a few buttons and some input fields.
+8. Next, create the Login class, descended from the Screen class, to handle the player's initial sign-in process. Since, unlike the Menu class, this component will not have further descendents, it can be made specifically to show everything that's needed for logging in and signing up; namely, a few buttons and some input fields. This class will have a special 'context' value that will be a string either saying 'login' or 'signup' depending on whether the user exists in the game's DB already or not.
+
+9. Login class will initially have 2 buttons: Login and Sign-up, as well as 2 input fields: username and password. Make all of those elements as the Login class's setup method: this will render them a single time and then wait, unlike the draw method (Which acts upon the canvas instead of creating elements, like your dinosaurs game did).
+
+10. Add some text labels for the username and password fields. Also, above the 'sign-up' button, add text that says 'First time on SMARS?'
+
+11. When login is clicked, we'll want to dispatch the contents (values) of the input fields as a POST to the game's server. Test that this will work by creating a method for the Login class that checks that both the username and password fields are not empty, and logs them to the console.
+
+12. Write a new server function that will POST an object containing a username and a password to the server.
+
+13. Clicking Sign-up will instead change the Login class's loginMode to false, meaning we'll be in sign-up mode instead. To implement this we'll need a function to wipe and reset the canvas, and reprint everything with sign-up texts instead of the login labels. Then we'll need to add a third input for the password confirmation, and switch the two buttons' positions (so that now the default is sign-up instead of login). Now filling in the fields for username and password (and pw confirmation) and hitting 'signup' again will send those values to the backend to create a new user account (all backend activity will be setup in the next chapter).
+
+14. Begin establishing more colour constants and using them throughout the app. It will look better in the long run if we do it this way now.

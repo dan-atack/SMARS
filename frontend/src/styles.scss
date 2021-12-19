@@ -1,4 +1,4 @@
-$bg-color: #283747;
+$bg-color: black;
 $txt-color: white;
 
 body {
@@ -16,4 +16,28 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+.login-name {
+  border-radius: 8px;
+  position: absolute;
+  font-size: 20px;
+  height: 32px;
+  top: 256px;
+}
+
+.login-password {
+  border-radius: 8px;
+  position: absolute;
+  font-size: 20px;
+  height: 32px;
+  top: 360px;
+}
+
+.login-password-confirm {
+  border-radius: 8px;
+  position: absolute;
+  font-size: 20px;
+  height: 32px;
+  top: 464px;
 }
