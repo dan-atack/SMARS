@@ -1,8 +1,9 @@
 import P5 from "p5";
+import p5 from "p5";
 import Screen from "./screen";
 import Button from "./button";
 import { constants } from "./constants";
-import p5 from "p5";
+import { sendLoginRequest, sendSignupRequest } from "./server_functions";
 
 export default class Login extends Screen {
     // Login screen types: keep track of buttons to enable click response handlers. Center value is for centering text.
@@ -62,7 +63,7 @@ export default class Login extends Screen {
         // Initial buttons: handle login (sends signal to BE) and setup signup (re-arranges login page to sign-up mode):
         const signIn = new Button(p5, "Login", 200, 512, this.handleLogin);
         this._buttons.push(signIn);
-        const signUp = new Button(p5, "Sign Up", 504, 512, this.setupSignup);
+        const signUp = new Button(p5, "New User", 504, 512, this.setupSignup);
         this._buttons.push(signUp);
         this._buttons.forEach((button) => {
             button.render();
@@ -97,6 +98,11 @@ export default class Login extends Screen {
         p5.textSize(42);
         p5.fill(constants.GREEN_TERMINAL);
         p5.text("Sign up as new user", this._center, 112);
+        // Reset input fields:
+        this.loginInput.remove();
+        this.passwordInput.remove();
+        this.loginInput = p5.createInput("");
+        this.passwordInput = p5.createInput("", "password");
         // Add third input for password confirmation:
         this.passwordConfirm = p5.createInput("", "password");
         this.passwordConfirm.parent("app");
@@ -122,9 +128,9 @@ export default class Login extends Screen {
         const username = this.loginInput.value() as string;
         const password = this.passwordInput.value() as string;
         if (username.length > 0 && password.length > 0) {
-            // TODO: Import server login function and fire it here; if it comes back a success, run the login page cleanup function
-            console.log(username);
-            console.log(password);
+            console.log("Sending login request...")
+            const req = { username: username, password: password }
+            sendLoginRequest(req);
         } else {
             // If either input field is empty, show a generic error message:
             this._loginGenericError = true;
@@ -138,7 +144,9 @@ export default class Login extends Screen {
         const passwordsMatch = password === confirm;
         // Allow signup if username field is not empty and passwords match and are 6 or more characters long:
         if (username.length > 0 && password.length >=6 && passwordsMatch) {
-            console.log("Registering new user");
+            console.log("Attempting to register new user...");
+            const req = { username: username, password: password }
+            sendSignupRequest(req);
         } else {
             // TODO: Make sign-up errors more specific
             console.log("Error while signing up new user")

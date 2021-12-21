@@ -1,7 +1,5 @@
 import P5 from "p5";
 
-// Server Functions:
-import { signalServer } from "./server_functions";
 // Game constants:
 import { constants } from "./constants";
 // Components:

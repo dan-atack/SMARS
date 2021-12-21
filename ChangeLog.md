@@ -273,3 +273,31 @@ Since we've finally gotten the stack we are looking for, it's time to create the
 13. Clicking Sign-up will instead change the Login class's loginMode to false, meaning we'll be in sign-up mode instead. To implement this we'll need a function to wipe and reset the canvas, and reprint everything with sign-up texts instead of the login labels. Then we'll need to add a third input for the password confirmation, and switch the two buttons' positions (so that now the default is sign-up instead of login). Now filling in the fields for username and password (and pw confirmation) and hitting 'signup' again will send those values to the backend to create a new user account (all backend activity will be setup in the next chapter).
 
 14. Begin establishing more colour constants and using them throughout the app. It will look better in the long run if we do it this way now.
+
+## Chapter Eight: Backend login functionality (Difficulty Estimate: 5)
+
+### December 19, 2021
+
+Now that the Login page's frontend is more or less complete (save some useful error messages for when the user messes up), it's time to add the server endpoints for the login/signup process, and then write the frontend server-calling functions to interact with them. There are 5 possible outcomes for the logging in/signing up, which will require two endpoints (one for login and one for signup):
+
+- Login success
+- Login fail due to username not found
+- Login fail due to wrong password
+- Signup success
+- Signup fail due to username not available
+
+Exit Criteria: User can create a new account which will be saved in the SMARS database, and login with it. Logging in successfully will trigger a console log saying that the login was successful, and displaying the user's name.
+
+1. Create a new server endpoint for handling login requests, and have it console log an incoming login request's information.
+
+2. Create a new server endpoint for handling signup requests, and have it console log an incoming signup request's information.
+
+#3. Create frontend server function for sending a user's login information to the backend, and then console logging the server's response. Think about, but do not yet implement, exception handling for the server's return.
+
+4. Create function for sending a new user's sign-up information to the backend, and again, console log the reply.
+
+### 5. Create a server database function that will write a new user to the database. Be sure to include the following fields when creating a new user: username, password (note: find a way to 'salt' or otherwise protect this password for experience in security-hardening), dateJoined (date), lastSession (date-time), savedGames, and admin (false by default). Current state: Need to wipe the database from powershell then add one new entry, then test ways to prevent writing if an entry already exists with the same username.
+
+### 6. Create another server database function that will take a user's login attempt and check it against the database, and then grant the user permission to login if the username and password from the frontend match the ones found in the database.
+
+### 7. Add a minimum password length to the login function's pre-send checks, to avoid sending any passwords that are illegitimately short.
