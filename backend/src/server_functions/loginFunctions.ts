@@ -24,20 +24,25 @@ const handleLogin = async (req: Request, res: Response) => {
     const client = new MongoClient("mongodb://localhost:27017", {});
     try {
         await client.connect();
-        console.log("Connected to Mongo service");
+        console.log("Connected to database...");
         const db = client.db(dbName);  // Use SMARS database
         await db
-          .collection(collectionName)  // Users collection
-          // Look for the user with the username that is in the request body:
-          .findOne(dbQuery, (err, result) => {
-              console.log(result);
-              // TODO: Only allow login if password is correct!
-              result
-                ? res.status(200).json({ status: 200, data: 'Login successful' })
-                : res.status(404).json({ status: 404, data: 'Data not found' });
-          })
+            .collection(collectionName)  // Users collection
+            // Look for the user with the username that is in the request body:
+            .findOne(dbQuery, (err, result) => {
+                if (result) {
+                    // Check if password matches DB entry:
+                    if (result.password === password) {
+                        res.status(200).json({ status: 200, data: 'Login successful' })
+                    } else {
+                        res.status(403).json({ status: 403, data: 'Password does not match username'})
+                    }
+                } else {
+                    res.status(404).json({ status: 404, data: `Username ${username} not found.` })
+                }
+            })
     } catch (err) {
-        console.log("Error!!!")
+        console.log(err)
     }
 }
 
@@ -65,7 +70,7 @@ const handleSignup = async (req: Request, res: Response) => {
             .findOne(dbQuery, async (err, result) => {
                 if (result) {
                     console.log(`Username ${username} already exists in database.`);
-                    res.status(200).json({ status: 200, data: "Username already exists"})
+                    res.status(409).json({ status: 409, data: "Username already exists"})
                     usernameAvailable = false;  // Only allow operation if username is not already taken.
                 } else {
                     // Initiate DB write operation only if the username does not exist already:

@@ -296,8 +296,20 @@ Exit Criteria: User can create a new account which will be saved in the SMARS da
 
 4. Create function for sending a new user's sign-up information to the backend, and again, console log the reply.
 
-### 5. Create a server database function that will write a new user to the database. Be sure to include the following fields when creating a new user: username, password (note: find a way to 'salt' or otherwise protect this password for experience in security-hardening), dateJoined (date), lastSession (date-time), savedGames, and admin (false by default). Current state: Need to wipe the database from powershell then add one new entry, then test ways to prevent writing if an entry already exists with the same username.
+5. Create a server database function that will write a new user to the database. Be sure to include the following fields when creating a new user: username, password (note: find a way to 'salt' or otherwise protect this password for experience in security-hardening), dateJoined (date), lastSession (date-time), savedGames, and admin (false by default). This function needs to perform two interactions with the database, one to check if the username exists already, and one to write the new entry (if the username is not found).
 
-### 6. Create another server database function that will take a user's login attempt and check it against the database, and then grant the user permission to login if the username and password from the frontend match the ones found in the database.
+6. Create another server database function that will take a user's login attempt and check it against the database, and then grant the user permission to login if the username and password from the frontend match the ones found in the database.
 
 ### 7. Add a minimum password length to the login function's pre-send checks, to avoid sending any passwords that are illegitimately short.
+
+### 8. Add error messages to the Login class for the following situations (use response code to set them by passing the Login page's httpResponseCode attribute as a second argument to the server functions themselves... that might be the ugliest code I've ever run...)
+
+- Incorrect password (please try again) (Requires backend response)
+- Username not found (please sign up) (Requires backend response)
+- Username not available (please select another name) (Requires backend response)
+- Passwords do not match (Frontend only)
+- Password too short (6 chars minimum) (Frontend only)
+
+### 9. Rendering error messages: if there is already an error message and another error message is triggered (by clicking either of the buttons) then we must delete everything except the input fields in order to print the new message. Therefore it is necessary to extract everything EXCEPT the input fields' creation from the two setup methods and put everything else into render.
+
+### 10. Make sure you close the connection to the database when server functions are done using it.
