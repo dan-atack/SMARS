@@ -234,7 +234,7 @@ SMARS
 
 6. Get a signal to the backend and receive a response from the front, as our first 'end-to-end' proof of concept!
 
-## Chapter Seven: Create basic app framework, and make it mobile-friendly (Difficulty Estimate: 6)
+## Chapter Seven: Create basic app framework and login page (Difficulty Estimate: 6)
 
 ### December 14, 2021
 
@@ -300,16 +300,19 @@ Exit Criteria: User can create a new account which will be saved in the SMARS da
 
 6. Create another server database function that will take a user's login attempt and check it against the database, and then grant the user permission to login if the username and password from the frontend match the ones found in the database.
 
-### 7. Add a minimum password length to the login function's pre-send checks, to avoid sending any passwords that are illegitimately short.
+7. Add error messages to the Login class for the following situations (use response code to set them by passing the Login page's httpResponseCode attribute as a second argument to the server functions themselves... that might be the ugliest code I've ever run...)
 
-### 8. Add error messages to the Login class for the following situations (use response code to set them by passing the Login page's httpResponseCode attribute as a second argument to the server functions themselves... that might be the ugliest code I've ever run...)
+- DONE - Incorrect password (please try again) (Requires backend response)
+- DONE - Username not found (please sign up) (Requires backend response)
+- DONE - Username not available (please select another name) (Requires backend response)
+- DONE - Passwords do not match (Frontend only)
+- DONE - Password too short (6 chars minimum) (Frontend only)
+- DONE - New username too short (4 chars minimum) (Frontend only)
 
-- Incorrect password (please try again) (Requires backend response)
-- Username not found (please sign up) (Requires backend response)
-- Username not available (please select another name) (Requires backend response)
-- Passwords do not match (Frontend only)
-- Password too short (6 chars minimum) (Frontend only)
+8. Rendering error messages: if there is already an error message and another error message is triggered (by clicking either of the buttons) then we must delete everything except the input fields in order to print the new message. Therefore it is necessary to extract everything EXCEPT the input fields' creation from the two setup methods and put everything else into render.
 
-### 9. Rendering error messages: if there is already an error message and another error message is triggered (by clicking either of the buttons) then we must delete everything except the input fields in order to print the new message. Therefore it is necessary to extract everything EXCEPT the input fields' creation from the two setup methods and put everything else into render.
+9. Make sure you close the connection to the database when server functions are finished. Just don't close it before they're done using it!
 
-### 10. Make sure you close the connection to the database when server functions are done using it.
+## Chapter Nine: The Main Menu - Frontend edition (Difficulty Estimate: 6, since we will be adding unit tests to the frontend)
+
+### December 23, 2021

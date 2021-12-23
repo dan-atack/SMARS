@@ -33,13 +33,18 @@ const handleLogin = async (req: Request, res: Response) => {
                 if (result) {
                     // Check if password matches DB entry:
                     if (result.password === password) {
+                        console.log('Login successful.');
                         res.status(200).json({ status: 200, data: 'Login successful' })
                     } else {
+                        console.log('Incorrect password');
                         res.status(403).json({ status: 403, data: 'Password does not match username'})
                     }
                 } else {
+                    console.log('Username not found');
                     res.status(404).json({ status: 404, data: `Username ${username} not found.` })
                 }
+                console.log('Closing DB connection.');
+                client.close();
             })
     } catch (err) {
         console.log(err)
@@ -78,7 +83,10 @@ const handleSignup = async (req: Request, res: Response) => {
                     assert.equal(true, insert.acknowledged);
                     console.log(`New user entry created for ${username}`);
                     res.status(201).json({ status: 201, data: `User ${username} registered successfully!`})
+                    console.log('Closing DB connection.');
                 }
+                console.log('Closing DB connection.');
+                client.close();
             });
     } catch (err) {
         console.log(err);

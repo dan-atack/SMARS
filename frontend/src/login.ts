@@ -35,6 +35,7 @@ export default class Login extends Screen {
     // Runs initially when the game boots up, assumes user is a returning player logging in with existing credentials:
     setup = () => {
         // Ensure we're working from a clean slate:
+        this.httpResponseCode = 0;
         this.handleCleanup();
         this._loginMode = true;
         this._buttons = []; // Initial buttons: handle login (sends signal to BE) and setup signup (re-arranges login page to sign-up mode)
@@ -53,8 +54,11 @@ export default class Login extends Screen {
     setupSignup = () => {
         this._loginMode = false;
         const p5 = this._p5;
+        // Cleanup old error messages and reset buttons list to switch them around and change their captions
+        this.httpResponseCode = 0;
+        this.setErrorMessage("", 0);
         this.handleCleanup();
-        this._buttons = []; // Reset buttons list to switch them around and change their captions
+        this._buttons = [];
         const signUp = new Button(p5, "Sign Me Up!", 200, 512, this.handleSignup);
         this._buttons.push(signUp);
         const login = new Button(p5, "Back to Login", 504, 512, this.setup)
@@ -93,7 +97,8 @@ export default class Login extends Screen {
             const req = { username: username, password: password }
             sendLoginRequest(req, this.setHttpStatus);
         } else {
-            // If either input field is empty, show a generic error message:
+            // If either input field is empty, show a generic error message (and reset HTTP code):
+            this.httpResponseCode = 0;
             this.setErrorMessage("Please enter valid username and password", 400);
         }
     }
@@ -104,12 +109,18 @@ export default class Login extends Screen {
         const confirm = this.passwordConfirm?.value() as string;
         const passwordsMatch = password === confirm;
         // Allow signup if username field is not empty and passwords match and are 6 or more characters long:
-        if (username.length > 0 && password.length >=6 && passwordsMatch) {
+        if (username.length > 3 && password.length >=6 && passwordsMatch) {
             const req = { username: username, password: password }
             sendSignupRequest(req, this.setHttpStatus);
-        } else {
-            // TODO: Make sign-up errors more specific
-            console.log("Error while signing up new user")
+        } else if (password.length < 6) {
+            this.httpResponseCode = 0;
+            this.setErrorMessage("Error: Password length must be at least 6 characters", 384);
+        } else if (!passwordsMatch) {
+            this.httpResponseCode = 0;
+            this.setErrorMessage("Error: Passwords do not match", 384);
+        } else if (username.length <= 3) {
+            this.httpResponseCode = 0;
+            this.setErrorMessage("Please choose a username with at least 4 characters", 280);
         }
     }
 
@@ -129,10 +140,16 @@ export default class Login extends Screen {
             case 201:
                 this.setErrorMessage("", 0);
                 break;
+            // Login errors:
             case 403:
-                this.setErrorMessage("Incorrect password for username", 400);
+                this.setErrorMessage("Incorrect password. Please try again.", 400);
                 break;
-            
+            case 404:
+                this.setErrorMessage("Username not found. Please check spelling or sign up as a new user.", 400);
+                break;
+            // Sign-up errors:
+            case 409:
+                this.setErrorMessage("Sorry, that username is already taken. Please try something else.", 280);
         }
     }
 
@@ -156,6 +173,7 @@ export default class Login extends Screen {
         p5.textStyle(p5.NORMAL);
         p5.text("Username", this._center, 192);
         p5.text("Password", this._center, 296);
+        if (!this._loginMode) p5.text("Confirm Password", this._center, 400);
         if (this._loginMode) p5.text("First time on SMARS?", this._center + 32, 432, 256, 128);
         p5.textSize(12);
         p5.text("Copyright 2021 Dan Atack Comics Online", this._center, 704);
