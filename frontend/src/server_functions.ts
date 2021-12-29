@@ -8,7 +8,8 @@ type LoginObject = {
     password: string
 }
 
-export const sendLoginRequest = (loginRequest: LoginObject, setter: (status: number) => void) => {
+// Send login request with req body consisting of a username and password to the game's server
+export const sendLoginRequest = (loginRequest: LoginObject, setter: (status: number, username?: string) => void) => {
     const url = `${constants.URL_PREFIX}/login`;
     fetch(url, {
         method: "POST",
@@ -22,12 +23,16 @@ export const sendLoginRequest = (loginRequest: LoginObject, setter: (status: num
         return res.json();
     })
     .then((response) => {
-        console.log(response.status);
-        setter(response.status);
+        if (response.username) {
+            setter(response.status, response.username)  // Send the status and the username if the login is successful
+        } else {
+            setter(response.status);    // Otherwise just send status code
+        }
     })
 }
 
-export const sendSignupRequest = (signupRequest: LoginObject, setter: (status: number) => void) => {
+// Send sign-up request with req body consisting of a username and password to the game's server
+export const sendSignupRequest = (signupRequest: LoginObject, setter: (status: number, username?: string) => void) => {
     const url = `${constants.URL_PREFIX}/signup`;
     fetch(url, {
         method: "POST",
@@ -41,7 +46,15 @@ export const sendSignupRequest = (signupRequest: LoginObject, setter: (status: n
         return res.json();
     })
     .then((response) => {
-        console.log(response);
-        setter(response.status);
+        if (response.username) {
+            setter(response.status, response.username)  // Send the status and the username if the login is successful
+        } else {
+            setter(response.status);    // Otherwise just send status code
+        }
     })
+}
+
+// Send a GET request with the current user's username as a req parameter, to fetch all saved game files associated with that user
+export const getSavedGames = (username: string) => {
+    console.log(`Getting saved game data for ${username}`);
 }

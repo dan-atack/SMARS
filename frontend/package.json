@@ -4,7 +4,8 @@
   "description": "The Full Frontal",
   "main": "index.html",
   "scripts": {
-    "test": "test",
+    "test": "jest",
+    "test-coverage": "jest --coverage",
     "build": "parcel build index.html",
     "start": "parcel index.html open"
   },
@@ -23,8 +24,11 @@
   },
   "homepage": "https://github.com/dan-atack/SMARS#readme",
   "devDependencies": {
+    "@types/jest": "^27.0.3",
+    "jest": "^27.4.5",
     "parcel-bundler": "^1.12.5",
     "sass": "^1.45.0",
+    "ts-jest": "^27.1.2",
     "tsc": "^2.0.3",
     "typescript": "^4.5.2"
   },

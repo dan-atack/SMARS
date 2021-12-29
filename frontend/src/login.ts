@@ -16,8 +16,11 @@ export default class Login extends Screen {
     passwordConfirm: p5.Element | null // Only show password confirm input field if user is signing up for first time
     loginErrorMessage: string | null;
     loginErrorMessagePosition: number;
+    username: string;
+    loggedIn: boolean;
+    switchScreen: (switchTo: string) => void;
 
-    constructor(p5: P5) {
+    constructor(p5: P5, switchScreen: (switchTo: string) => void) {
         super(p5);
         this._loginMode = true; // Default setting for the login page is login mode; if false this means we're in sign-up mode instead.
         this._buttons = [];
@@ -30,10 +33,14 @@ export default class Login extends Screen {
         // Rather than a bunch of specific flags, we'll set a message based on the HTTP response status from the server.
         this.loginErrorMessage = null;
         this.loginErrorMessagePosition = 0;
+        this.username = ""  // Keep track of the username once sign-in/sign-up is successful
+        this.loggedIn = false;  // Set to true once login is successful
+        this.switchScreen = switchScreen;
     }
 
     // Runs initially when the game boots up, assumes user is a returning player logging in with existing credentials:
     setup = () => {
+        this.currentScreen = true;  // Flag to tell the app to show this screen and respond to its click handlers
         // Ensure we're working from a clean slate:
         this.httpResponseCode = 0;
         this.handleCleanup();
@@ -80,7 +87,6 @@ export default class Login extends Screen {
         this._buttons.forEach((button) => {
             button.render();
         });
-
     }
 
     handleClicks = (mouseX: number, mouseY: number) => {
@@ -128,9 +134,22 @@ export default class Login extends Screen {
         this.httpResponseCode = 0;  // Certain values for this will cause error text to appear
     }
 
-    // Can we pass this function to the server functions?? YES WE CAN!!!
-    setHttpStatus = (status: number) => {
+    // This method gets passed to the server functions to update the login/signup request's status code
+    setHttpStatus = (status: number, username?: string) => {
         this.httpResponseCode = status;
+        // If login or signup is successful, call the post-login cleanup method:
+        if (username) {
+            this.handleClosePage(username);
+        }
+    }
+
+    // Once the user has logged in, cleanup the login screen and tell the App what is the next screen to go to:
+    handleClosePage = (username: string) => {
+        this.username = username;
+        this.loggedIn = true;
+        this.handleCleanup();
+        this.currentScreen = false; // Tell the App to no longer show the login page once login is completed
+        this.switchScreen("menu");  // This crucial little function belongs to the App, and tells it which screen to show next
     }
 
     // If there is an HTTP status indicating an error, assign a message and position it:
@@ -180,7 +199,11 @@ export default class Login extends Screen {
         // Green text begins
         p5.textSize(42);
         p5.fill(constants.GREEN_TERMINAL);
-        p5.text("User sign-in page", this._center, 112);
+        if (this._loginMode) {
+            p5.text("User sign-in page", this._center, 112);
+        } else {
+            p5.text("Sign up new user", this._center, 112);
+        }
         this._buttons.forEach((button) => {
             button.render();
         });
