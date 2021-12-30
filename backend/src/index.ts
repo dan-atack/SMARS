@@ -35,6 +35,7 @@ app.use(express.json());
 
 // Server Endpoints
 app.use(require('./endpoints/loginEndpoints'));
+app.use(require('./endpoints/mapEndpoints'));
 app.get('/api/:dbName/:collection', getTestData);
 // Test endpoint for communication with the frontend:
 app.get('/api/test', getFrontend);

@@ -32,7 +32,7 @@ Can't do anything without a repository!
 
 ### October 25, 2021
 
-Well, the first phase of this chapter was a bit of a freebie, now to start the actual work!
+Well, the first phase of this project was a bit of a freebie, now to start the actual work!
 
 1. Bootstrap an NPM project:
 
@@ -316,3 +316,93 @@ Exit Criteria: User can create a new account which will be saved in the SMARS da
 ## Chapter Nine: The Main Menu - Frontend edition (Difficulty Estimate: 6, since we will be adding unit tests to the frontend)
 
 ### December 23, 2021
+
+Now that the first interface that the user encounters has been completed, it is time to move on to next one: the Main Menu (we'll start actual game development some time around mid-2022 at this rate). The Main Menu will have just a few buttons:
+
+- New Game
+- Load Game
+- Logout
+
+Each of these will make a call to the backend (all BE functionality to be added in next chapter). Creating the Menu interface should be a relatively simple task on its own, but this chapter will also take the opportunity to add the Jest unit testing library to the Frontend repo, and add some tests of the functionality of both the Menu and the Login page. Additionally, in this chapter we'll need to establish how the App handles transitions between different screens, so that once the login process is complete, the user arrives at the Menu, and if they log out they go back to the Login page.
+
+Exit criteria: Menu screen has three buttons with dummy handler functions. Jest is configured for the frontend, and we have at least one meaningful unit test of front-end functionality (perhaps we can test the App class's screen transition function once it's ready). Backend handlers for the Menu buttons and updates to the project's CI will be added in the next chapter.
+
+1. Once the Login class receives the OK signal from the backend (consisting of a 200 or 201 status and the username that has logged in, which will be added to the response body as username: <username>), we need to take that as a cue to switch from the Login screen to the Main Menu screen. Let's start by adding a new method to the Login class, handleLoginSuccess, which will be called by the http status setter method and clear away the Login page and set the 'currentScreen' property to false if the server's response contains a that username field.
+
+2. Add two new fields to the Login class: username (initially an empty string) and loginSuccess (initially false).
+
+3. On the App level, create a variable for the username which also starts as an empty string.
+
+4. Also at the App level, add a function that checks the login instance's login status (using the new field added in step 2 of this chapter) IF the username in the App class is empty.
+
+5. Create another function for the App, called switchScreen, which will have a switch case that gets fed the string name of the current screen. For the instance whose name matches that string, this function will set its currentScreen property to true. Then in the App's draw function we can add a new if statement to render that particular screen if it has the currentScreen property (draw will essentially check each screen to see which one has that propery set to true, and call its render function if so).
+
+6. Tell the App's checkForLogin function to call the switchScreen function and set the screen to the 'menu' screen once the username has been established.
+
+7. Now to start rendering the menu. First, let's add a new parameter to the Menu class, (but not to its constructor, mind you) to display the current username.
+
+8. Next, rather than creating the Menu's buttons in the App itself and then passing them in, pass the switchScreen function to the Menu (this function will in fact be passed to every Screen, including the Login page) to allow it to dictate which screen to show next as part of its cleanup routine. So when the user clicks the New Game button in the menu for instance, it will close up the Menu and then call the switchScreen function (which belongs to the top-level App script) with the code name for the next screen to be displayed. The App then calls THAT screen's setup method (via the SwitchScreen function) and voila! (See step 12 below for more details on the need for doing things this way).
+
+9. Don't forget to add a new click handler to the App for handling the Menu buttons' click responders when it becomes the active screen.
+
+10. Add some rules to the Menu class for rendering its buttons in an attractive manner on the screen (even spacing, centered, etc.).
+
+11. Add a text element to the Menu class to display the username near the top of the screen (and a greeting!?).
+
+12. Rewire the Menu class (and App functions) so that Menu buttons are created by the Menu's setup method rather than being passed in by the App. This is much, much cleaner at the expense of making the Menu class less re-usable since it's now the dedicated pre-game menu (it cannot be repurposed to also serve as the template for the in-game menu). This is a highly acceptable trade however, given the simplicity that it gives to the code overall. When the time comes, it will simply be necessary to make a new class for the in-game menu, also descended from the Screen class.
+
+13. Create a Logout button, to allow the user to return to the Login page (and also get rid of the username at the App level). In the Menu this means resetting the username to "", and for the App's switchScreen's "login" case, this means setting the App level username to "" as well, and telling the login page to set the user's loggedIn status back to false (so that the App will resume checking for a new username).
+
+14. Before we close out this chapter, it'll be time to add the Jest unit testing library to the Frontend's package, including adding the jest.config.js file and adding "test" and "test-coverage" scripts to the frontend's package.json file.
+
+15. Make a test directory for the frontend, in anticipation of future tests. At the end of this chapter, contemplate what might be a good candidate for a unit test, but don't worry about it for now if we don't add one right away!
+
+## Chapter Ten: Backend Functions for the New Game Screen (Difficulty Estimate: 5)
+
+### December 29, 2021
+
+Since the frontend has now progressed to the point where there are 2 working screens (login and main menu), it is time to pay some more attention to the backend, and set up the functionality that will support the next three screens (new game, load game and... well, preferences won't really to much for now but it will want to speak to the backend eventually). First priority will actually be to get some content loaded into the DB from the Blockland Map Editor. To do this, we'll need to establish a 'staging' file paste new map data into, as a prelude to sending it to the SMARS database, then write a function to retrieve a map based on its type.
+
+Exit criteria:
+
+- It is possible to create a new map using the Blockland editor, transfer it to the 'staging' file, and then upload it (using a shell command) to the SMARS database.
+- It is possible to retrieve a map given its type - set up the endpoint for the server using req params then visit it
+
+1. Create types for the Map and Save database entries, including all of the fields from the brainstorming session. Bear in mind that we'll let Mongo create the \_id's and that they will be in use.
+
+2. Create the addNewMap function. This and the Map type above will be in the server's map functions.
+
+3. Create a new file, mapImporter.ts, and put it at the root of the backend directory. Set it up to contain an export of an object that can have the contents of the Blockland map editor pasted into it.
+
+4. Add this file to the project's gitignore.
+
+5. Import this file to the addNewMap function's file and then run the add new map function from the command line by adding a script to the backend's package.json that runs it with the ts-node-dev command to add a new map to the database. Verify in powershell.
+
+6. Create the getMap function, which will take a type argument from the req parameters and find all the maps that correspond to that type. So when there are three maps, and two have the type 'test' and one has the type 'polar,' when we search by type = 'test' we should only get the first two.
+
+7. Create two maps with different types ('test' and 'polar') and save them to the database.
+
+8. Set up the mapEndpoints file for handling server requests for a new map. Connect this to the getMap function and see if you can retreive your maps by visiting that endpoint with the appropriate URL parameters.
+
+9. Lastly, for the sake of elegance, write a function that loops backwards through map files and eliminates all of the zeros that are tacked onto the end of a map file by the BlockLand editor (in other words, remove all of the 'empty sky' zeros before adding map data to the database). Test this by creating a new map in the BL Editor, copying it over to the mapImporter file, and running the add-map script again to check the output...
+
+10. As usual, nothing is as easy as it seems; to avoid polluting the database we need to isolate the map upload function from the backend since the dev server launches our add-map script every time any backend file is saved (this is what watch mode does, and it's usually very handy). To fix this, create a new directory within the SMARS project, called 'map_editor' and install the following packages there:
+
+- Typescript
+- tsc
+- ts-node-dev
+- mongodb
+- assert
+
+11. Then remove the 'add-map' script from the backend and add it to the map editor's package.json. Try making a few maps and saving a few times to ensure it works correctly.
+
+12. Update the project's gitignore to ignore everything in the map_editor directory.
+
+## Chapter X (Guessing it will be... fourteen)
+
+### Exit Criteria for backend save game chapter:
+
+- It is possible to create a new saved game file for a given user.
+- It is possible to update a saved game file for a given user.
+- It is possible to retrieve a list of saved games for a given user.
+- It is possible to retrieve all of the game data for a specific saved game file.

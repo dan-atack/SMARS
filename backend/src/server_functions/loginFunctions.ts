@@ -34,14 +34,14 @@ const handleLogin = async (req: Request, res: Response) => {
                     // Check if password matches DB entry:
                     if (result.password === password) {
                         console.log('Login successful.');
-                        res.status(200).json({ status: 200, data: 'Login successful' })
+                        res.status(200).json({ status: 200, message: `Login successful. Logged in as ${username}`, username: username })
                     } else {
                         console.log('Incorrect password');
-                        res.status(403).json({ status: 403, data: 'Password does not match username'})
+                        res.status(403).json({ status: 403, message: `Incorrect password for username ${username}`})
                     }
                 } else {
                     console.log('Username not found');
-                    res.status(404).json({ status: 404, data: `Username ${username} not found.` })
+                    res.status(404).json({ status: 404, message: `Username ${username} not found.` })
                 }
                 console.log('Closing DB connection.');
                 client.close();
@@ -75,14 +75,14 @@ const handleSignup = async (req: Request, res: Response) => {
             .findOne(dbQuery, async (err, result) => {
                 if (result) {
                     console.log(`Username ${username} already exists in database.`);
-                    res.status(409).json({ status: 409, data: "Username already exists"})
+                    res.status(409).json({ status: 409, message: `Username ${username} already exists`})
                     usernameAvailable = false;  // Only allow operation if username is not already taken.
                 } else {
                     // Initiate DB write operation only if the username does not exist already:
                     const insert = await db.collection(collectionName).insertOne(doc);
                     assert.equal(true, insert.acknowledged);
                     console.log(`New user entry created for ${username}`);
-                    res.status(201).json({ status: 201, data: `User ${username} registered successfully!`})
+                    res.status(201).json({ status: 201, message: `User ${username} registered successfully!`, username: username})
                     console.log('Closing DB connection.');
                 }
                 console.log('Closing DB connection.');
