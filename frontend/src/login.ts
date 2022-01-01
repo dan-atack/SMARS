@@ -47,9 +47,9 @@ export default class Login extends Screen {
         this._loginMode = true;
         this._buttons = []; // Initial buttons: handle login (sends signal to BE) and setup signup (re-arranges login page to sign-up mode)
         const p5 = this._p5;
-        const signIn = new Button(p5, "Login", 200, 512, this.handleLogin);
+        const signIn = new Button(p5, "Login", 200, 512, this.handleLogin, 256, 128, constants.GREEN_TERMINAL, constants.GREEN_DARK);
         this._buttons.push(signIn);
-        const signUp = new Button(p5, "New User", 504, 512, this.setupSignup);
+        const signUp = new Button(p5, "New User", 504, 512, this.setupSignup, 256, 128, constants.GREEN_TERMINAL, constants.GREEN_DARK);
         this._buttons.push(signUp);
         this.loginInput.parent("app");
         this.loginInput.addClass("login-name");
@@ -66,9 +66,9 @@ export default class Login extends Screen {
         this.setErrorMessage("", 0);
         this.handleCleanup();
         this._buttons = [];
-        const signUp = new Button(p5, "Sign Me Up!", 200, 512, this.handleSignup);
+        const signUp = new Button(p5, "Sign Me Up!", 200, 512, this.handleSignup, 256, 128, constants.GREEN_TERMINAL, constants.GREEN_DARK);
         this._buttons.push(signUp);
-        const login = new Button(p5, "Back to Login", 504, 512, this.setup)
+        const login = new Button(p5, "Back to Login", 504, 512, this.setup, 256, 128, constants.GREEN_TERMINAL, constants.GREEN_DARK)
         this._buttons.push(login);
         p5.text("Sign up as new user", this._center, 112);
         // Reset input fields:

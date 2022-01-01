@@ -54,6 +54,24 @@ export const sendSignupRequest = (signupRequest: LoginObject, setter: (status: n
     })
 }
 
+// Send a map type as part of the request parameters to get back a map of that type
+export const getMap = (mapType: string, setter: (terrain: number[][]) => void) => {
+    const url = `${constants.URL_PREFIX}/maps/${mapType}`;
+    fetch(url, {
+        method: "GET",
+        headers: {
+            Accept: "application/json",
+            'Content-Type': "application/json",
+        }
+    })
+    .then((res) => {
+        return res.json();
+    })
+    .then((response) => {
+        setter(response.mapInfo.terrain);
+    })
+}
+
 // Send a GET request with the current user's username as a req parameter, to fetch all saved game files associated with that user
 export const getSavedGames = (username: string) => {
     console.log(`Getting saved game data for ${username}`);

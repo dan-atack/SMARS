@@ -398,6 +398,50 @@ Exit criteria:
 
 12. Update the project's gitignore to ignore everything in the map_editor directory.
 
+## Chapter Eleven: Frontend Pre-game setup screen (Difficulty Estimate: 5)
+
+### December 31, 2021
+
+On the closing day of the year, let us begin work on the final pre-game interface: the New Game Setup screen. There's quite a lot of info to show on this screen, and it all needs to get passed to the Game Screen (to be developed in the next Chapter) so the work done here needs to anticipate the hand-off between pre-game setup and the actual game itself. Let's start by establishing what we want from a Pre-game setup screen.
+
+Exit Criteria:
+
+- Setup Screen allows user to choose difficulty level
+- User can select one of three map TYPES, and get a small preview image of what the terrain will look like
+- User can choose whether or not to enable random events
+- One button starts the game
+- Another button returns to the Main (pre-game) menu
+
+1. Create the NewGameSetup screen, descended from the Screen class. It will have the following fields: difficulty, map type, randomEvents and minimap.
+
+2. The NewGameSetup's setup method will create the following buttons, with console logs announcing they've been pressed to begin with: Easy, Medium, Hard (difficulty settings); Highlands, Polar, Riverbed (map type options); Yes or No for random events; Start Game and Back to Main Menu (these will call the switchScreen function, one to the game screen[!] and the other back to the previous screen).
+
+3. Make the handlers for the start-game and back-to-menu buttons, and also copy over the button-handler methodry from the Menu class, and repurpose it for this screen. Add the "game" switch case to the App, and test that pressing the 'start game' button will go the the game screen, and that the 'return to menu' button does indeed go back to the main menu.
+
+4. Setup the screen's textual elements next: "Set up new game" prominently up at the top, in the same white font as the main title, then maybe a slightly GREENER green as the colour for the non-button text that appears, for instance, within the description fields for the various options... the colour can easily change, of course, as it will use a constant value.
+
+5. As for buttons, they should probably have a field for being \_selected, as well as a method for setting that property. Since pre-game setup options are selected all at once we need a way to easily see which value has been chosen for each category (difficulty, map type, etc.).
+
+6. Add an instance of the NewGame class to the App file, then add it to the switchScreen case handler, the button responder (copy that functionality from the Menu class I guess?) and the master draw function. Then test it out!
+
+7. Pretty-up the page before adding the minimap.
+
+8. Create handler functions for the difficulty setting buttons; clicking one will set it to being selected, and de-select the others.
+
+9. Create handler functions for the map type buttons. For now, ignore the fetch requests to the backend (we'll deal with them in a minute).
+
+10. Create handler functions for the randomizer buttons.
+
+11. Design a server function to pass a type name to the server's getMap endpoint. Feed that into the handler for the various map type buttons. Console log the map that gets returned.
+
+12. Create two maps for each map type with the Editor/importer process.
+
+### 13. Create the description text elements for each difficulty mode and terrain type and display them as appropriate (via a switch case in the render method??).
+
+14. When the Start Game button is pressed, make it console log all of the information that will be passed to the Game module on startup: difficulty level, map type, terrain, random event boolean. These will become the contents of the StartGame type that will be one of the arguments to the Game class's constructor file (about which more in the next chapter).
+
+### 15. Lastly, the Minimap: create a brand-new component class to render a simple map preview by creating a series of rectangles from a list of lists (using each sub-list's length as the sole criteria to determine the length of each rectangle, to save on processing power, or something!). Use this to render the map preview for each map that is loaded.
+
 ## Chapter X (Guessing it will be... fourteen)
 
 ### Exit Criteria for backend save game chapter:

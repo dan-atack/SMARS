@@ -128,8 +128,7 @@ export default class Menu extends Screen {
 
     // When we close the menu, we'll tell it which screen to go to next
     handleCloseMenu = () => {
-        const p5 = this._p5;
-        p5.clear();
+        this._p5.clear();
         this.currentScreen = false;
     }
 

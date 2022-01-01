@@ -9,6 +9,8 @@ export const constants = {
     EGGSHELL: "#F6F7E9",
     BLACK: "#010101",
     RED_ERROR: "#D10000",
+    RED_CONTRAST: "#FF4230",
+    RED_BG: "#450701",
     GREEN_TERMINAL: "#0FFF13",
     GREEN_DARK: "#023803"
 }
