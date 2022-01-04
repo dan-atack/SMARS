@@ -501,7 +501,7 @@ Exit criteria:
 
 4. Add the Engine class to the Game's constructor, and create the Game's setup method which calls the Engine's render method (or setup method) to show that component (And to declare it to be the currentView at the GAME level - add a switch case to the Game class to be able to handle different in-game views just as the App has for its screens, using the term 'view' in lieu of screen to avoid confusing the two).
 
-### 5. Get the new game data to the Game class by adding some logic to the switchScreen's game case, such that it checks if the game already has that data and then gets the info from the pre-game setup screen ONLY IF it's not there already (we need this since it will be possible to enter the game screen from a 'load game' context in which case that data will not come from the pre-game setup screen). The Game class will need a setGameData method to be called by the App's switch case.
+5. Get the new game data to the Game class by adding some logic to the switchScreen's game case, such that it checks if the game already has that data and then gets the info from the pre-game setup screen ONLY IF it's not there already (we need this since it will be possible to enter the game screen from a 'load game' context in which case that data will not come from the pre-game setup screen). The Game class will need a setGameData method to be called by the App's switch case.
 
 6. Create the Sidebar class and pass it to the Engine. Sidebar should occupy one quarter of the game's real estate on the right-hand side of the screen, and it will need a hello world setup and a handleClick method borrowed from the Menu class.
 

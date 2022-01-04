@@ -12,6 +12,14 @@ import Logbook from "./logbook";
 // Game constants:
 import { constants } from "./constants";
 
+// Define object shape for pre-game data from game setup screen:
+type GameData = {
+    difficulty: string,
+    mapType: string,
+    randomEvents: boolean,
+    mapTerrain: number[][];
+}
+
 export default class Game extends Screen {
     // Types for the Game class: The sub-screens it alternates between
     _engine: Engine;
@@ -21,14 +29,10 @@ export default class Game extends Screen {
     _industry: Industry;
     // _logbook: Logbook;       // This was a place-filler that there might not be space for now...
     _views: View[];
-    _gameData: {
-        loaded: false,      // Use this value to represent whether the game is just starting for the first time or not
-        difficulty: string,
-        mapType: string,
-        randomEvents: boolean,
-        mapTerrain: number[][],
-        username: string,
-    }
+    _gameData: GameData;
+    _gameLoaded: boolean;       // Flag for whether to import info from the game setup screen.
+    _username: string;
+
     switchScreen: (switchTo: string) => void;
 
     constructor(p5: P5, switchScreen: (switchTo: string) => void) {
@@ -43,17 +47,18 @@ export default class Game extends Screen {
         // this._logbook = new Logbook(p5, this.changeView);        // On hold pending investigation into why we need it.
         this._views = [this._engine, this._population, this._techTree, this._earth, this._industry];
         this._gameData = {
-            loaded: false,
             difficulty: "",
             mapType: "",
             randomEvents: true,
             mapTerrain: [],
-            username: ""
         }
+        this._gameLoaded = false;
+        this._username = "";
     }
 
     setup = () => {
-        // TODO: Get new game data from pre-game screen if applicable (might require this method to take an argument...)
+        console.log(this._gameData);
+        console.log(this._username);
         const p5 = this._p5;
         this.currentScreen = true;
         p5.background(constants.APP_BACKGROUND);
@@ -90,6 +95,14 @@ export default class Game extends Screen {
                 this._techTree.setup();
                 break;
         }
+    }
+
+    // Pass data from the pre-game setup screen and username from the App itself, to the game with this method:
+    setGameData = (data: GameData, username: string) => {
+        console.log("setting new game data");
+        this._gameData = data;
+        this._username = username;
+        this._gameLoaded = true;
     }
 
     // Determine which 'view' is active and call its click handler:

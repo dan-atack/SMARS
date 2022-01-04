@@ -27,6 +27,12 @@ export default class NewGameSetup extends Screen {
     _randomHeight: number;
     _mapTerrain: number[][];
     minimap: Minimap;
+    gameData: {
+        difficulty: string,
+        mapType: string,
+        randomEvents: boolean,
+        mapTerrain: number[][];
+    }
 
     constructor(p5: P5, switchScreen: (switchTo: string) => void) {
         super(p5);
@@ -50,6 +56,12 @@ export default class NewGameSetup extends Screen {
         this._randomHeight = 64;
         this._mapTerrain = [];       // Fills in with return from a fetch in the setup method
         this.minimap = new Minimap(p5, 688, 420, this._mapTerrain);
+        this.gameData = {   // To export to the Game once data has been selected
+            difficulty: "",
+            mapType: "",
+            randomEvents: true,
+            mapTerrain: []
+        }
     }
 
     setup = () => {
@@ -245,15 +257,14 @@ export default class NewGameSetup extends Screen {
     }
 
     handleStartGame = () => {
-        this.cleanup();
-        this.switchScreen("game");
-        const newGameData = {   // Prepare to dispatch the following info to the new game's constructor
+        this.gameData = {   // Prepare to dispatch the following info to the new game's set
             difficulty: this._difficulty,
             mapType: this._mapType,
             randomEvents: this._randomEvents,
             mapTerrain: this._mapTerrain
         }
-        console.log(newGameData);
+        this.switchScreen("game");
+        this.cleanup();
     }
 
     handleReturnToMenu = () => {
