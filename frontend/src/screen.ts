@@ -27,5 +27,4 @@ export default class Screen {
         console.log('Screen clicked.')
     }
 
-
 }

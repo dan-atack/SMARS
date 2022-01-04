@@ -436,11 +436,82 @@ Exit Criteria:
 
 12. Create two maps for each map type with the Editor/importer process.
 
-### 13. Create the description text elements for each difficulty mode and terrain type and display them as appropriate (via a switch case in the render method??).
+13. Create the description text elements for each difficulty mode and terrain type and display them as appropriate (via a switch case in the render method??).
 
 14. When the Start Game button is pressed, make it console log all of the information that will be passed to the Game module on startup: difficulty level, map type, terrain, random event boolean. These will become the contents of the StartGame type that will be one of the arguments to the Game class's constructor file (about which more in the next chapter).
 
-### 15. Lastly, the Minimap: create a brand-new component class to render a simple map preview by creating a series of rectangles from a list of lists (using each sub-list's length as the sole criteria to determine the length of each rectangle, to save on processing power, or something!). Use this to render the map preview for each map that is loaded.
+15. Lastly, the Minimap: create a brand-new component class to render a simple map preview by creating a series of rectangles from a list of lists (using each sub-list's length as the sole criteria to determine the length of each rectangle, to save on processing power, or something!). Use this to render the map preview for each map that is loaded.
+
+## Chapter Twelve: The Game Screen! (Difficulty Estimate: 8 due to large complexity and need for finalizing designs before implementation)
+
+### January 1, 2022
+
+To kickstart the new year with some fresh momentum, let's get started with the Game Screen at last! The game screen will be the interface the player uses to play the actual game, and it will need to be able to show many other components: the map, the sidebar, information popups, and additional in-game interfaces such as the tech tree or the population screen. This means that the top-level game component will essentially be a little app of its own, controlling which in-game screens are shown and updating the game's world via the Engine component.
+
+Start criteria: (And answers as sub-bullets)
+
+- Establish the full list of in-game screens:
+  - map and sidebar [default view]
+  - tech tree
+  - population overview
+  - report from Earth
+- Establish top-level sidebar layout:
+  - Martian clock
+  - Username and avatar
+  - Main Menu button
+  - In-game info view buttons (population, tech, etc.)
+  - Build options
+  - Resources options
+  - Overlay options
+  - Query tool
+  - Details panel
+- Establish if updating everything should be delegated to an Engine component or if the Game class can handle it itself:
+  - The Game class will have the responsibility of managing the in-game SCREENS; all game mechanics will be the province of the Engine (it will call the update/render methods for all of the various classes for Modules, Logistics, Population, etc.)
+  - Mouse context will be the province of the Engine as well; since the Engine belongs to the Game, the Game will always be 'aware' of what mouse context the Engine is in.
+  - Sidebar will also belong to the Engine, as it will interact with the mouse context info. So the control tree for within the game looks like this:
+
+<img src="mockups/Basic_Component_Heirarchy.png" style="width: 60%;"/>
+
+- Establish how click handler context will be managed:
+  - Engine component has different 'mouse contexts':
+    - query tool (default; lets you click on stuff to see info about it in the sidebar)
+    - module placement
+    - logistics placement start
+    - logistics placement end
+    - resource extraction target (to tell a worker/rover where to dig)
+    - modal popup
+- Engine will also handle the sidebar, including its extended/retracted status
+
+With all that established, let's set the exit criteria for this chapter. Given the massively ambitious scope of the project, let's try to keep things down to a fairly small, achievable increment. Let's just start with the basic page layout scheme for The in-game interfaces, so make the Game component itself, then the Engine, Population, Technology, Earth, Industry and Logbook classes. Each one can begin as a simple page, and the exit criteria is that once the game starts you arrive on the Engine view and from there you can go to any of the other views within the game. This of course means that the Sidebar class will also need to be created for the Engine to control, and we might as well make the Map class too, although it can remain empty for now (we'll make it just to see how it shares the space with the sidebar).
+
+Exit criteria:
+
+- After clicking the Start Game button, the player arrives at the Engine view of the Game screen
+- The Engine view has two sub-components, World and Sidebar, and within the Sidebar are the buttons to switch to the other in-game views
+- Clicking any in-game view on the sidebar opens it as the main screen within the game
+- In-game views contain their name and a close button which redirects back to the Engine interface
+- Sidebar also contains a function to open the Main Menu, which calls the App's switchScreen function and goes to a new Screen
+- The Game can tell if it's a new game, and prints the setup information from the pre-game screen when it's first entered (but not when it's returned to from the in-game menu).
+
+1. Create the Game Class (inherit from Screen) and in its constructor get it ready to create an instance of each of the in-game views mentioned in this chapter's description. Give it a simple render method that just shows a hello world message on the screen.
+
+2. Instantiate the Game class within the App, and add it to the switchScreen function, the mouse handler function and the draw function. Verify that you can get there from the new game screen.
+
+3. Create the first of the in-game screen classes (Engine, since it's the default) again descended from the Screen class, again with a very simple initial render method that prints a 'hello SMARS' text to the screen.
+
+4. Add the Engine class to the Game's constructor, and create the Game's setup method which calls the Engine's render method (or setup method) to show that component (And to declare it to be the currentView at the GAME level - add a switch case to the Game class to be able to handle different in-game views just as the App has for its screens, using the term 'view' in lieu of screen to avoid confusing the two).
+
+### 5. Get the new game data to the Game class by adding some logic to the switchScreen's game case, such that it checks if the game already has that data and then gets the info from the pre-game setup screen ONLY IF it's not there already (we need this since it will be possible to enter the game screen from a 'load game' context in which case that data will not come from the pre-game setup screen). The Game class will need a setGameData method to be called by the App's switch case.
+
+6. Create the Sidebar class and pass it to the Engine. Sidebar should occupy one quarter of the game's real estate on the right-hand side of the screen, and it will need a hello world setup and a handleClick method borrowed from the Menu class.
+
+7. The Engine will also need a click handler to check if the mouse is over the sidebar when it's clicked, and call the sidebar's handleClick method if so.
+
+8. Create the classes for the other in-game views, again with a very basic layout: setup function prints a little hello message, and at the bottom there's a button that has the game's changeView method to return to the main page... To save on trouble in the long-run, make all of these classes descend from a basic View ancestor class, which takes an additional argument for the changeView function to be passed to it.
+
+9. Add instances of the new in-game view classes to the Game class's constructor.
+
+10. Add buttons for switching to the in-game views to the Sidebar; test if they can be entered and exited.
 
 ## Chapter X (Guessing it will be... fourteen)
 
