@@ -6,6 +6,7 @@ import { constants } from "./constants";
 import Menu from "./menu";
 import Login from "./login";
 import NewGameSetup from "./newGameSetup";
+import InGameMenu from "./inGameMenu";
 import Game from "./game";
 
 import "./styles.scss";
@@ -16,7 +17,7 @@ const sketch = (p5:P5) => {
     // Functions first! But we're still really object-oriented, I swear!
     // Check the login class instance for a successful login:
     const checkForLogin = () => {
-        // Once the login is completed, set the username and move to the main menu screen, and let the menu know what the user's name is:
+        // Once the login is completed, set the username and move to the main menu screen, and let both menus know what the user's name is:
         if (login.loggedIn) {
             username = login.username;
             menu.setUsername(username);
@@ -29,6 +30,9 @@ const sketch = (p5:P5) => {
             case "game":
                 // TODO: If this is a new game, pass the pre-game setup data from the newGameSetup screen to the game module
                 game.setup();
+                break;
+            case "inGameMenu":
+                inGameMenu.setup();
                 break;
             case "loadGame":
                 p5.background(constants.RED_ERROR);
@@ -46,7 +50,10 @@ const sketch = (p5:P5) => {
                 break;
             case "preferences":
                 p5.background(constants.GREEN_TERMINAL);
-                break;            
+                break;
+            case "save":
+                p5.background(constants.RED_BG);
+                break;
         }
     }
 
@@ -55,6 +62,7 @@ const sketch = (p5:P5) => {
     const menu = new Menu(p5, constants.APP_BACKGROUND, switchScreen);
     const newGame = new NewGameSetup(p5, switchScreen);
     const game = new Game(p5, switchScreen);
+    const inGameMenu = new InGameMenu(p5, switchScreen);
 
     p5.setup = () => {
         const canvas = p5.createCanvas(constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT);
@@ -67,6 +75,7 @@ const sketch = (p5:P5) => {
         if (menu.currentScreen) menu.handleClicks(p5.mouseX, p5.mouseY);
         if (newGame.currentScreen) newGame.handleClicks(p5.mouseX, p5.mouseY);
         if (game.currentScreen) game.handleClicks(p5.mouseX, p5.mouseY);
+        if (inGameMenu.currentScreen) inGameMenu.handleClicks(p5.mouseX, p5.mouseY); 
     }
 
     p5.draw = () => {
@@ -77,6 +86,7 @@ const sketch = (p5:P5) => {
         if (menu.currentScreen) menu.render();
         if (newGame.currentScreen) newGame.render();
         if (game.currentScreen) game.render();
+        if (inGameMenu.currentScreen) inGameMenu.render();
     }
 }
 

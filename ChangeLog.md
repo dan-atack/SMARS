@@ -490,7 +490,7 @@ Exit criteria:
 - The Engine view has two sub-components, World and Sidebar, and within the Sidebar are the buttons to switch to the other in-game views
 - Clicking any in-game view on the sidebar opens it as the main screen within the game
 - In-game views contain their name and a close button which redirects back to the Engine interface
-- Sidebar also contains a function to open the Main Menu, which calls the App's switchScreen function and goes to a new Screen
+- Sidebar also contains a function to open the Main Menu, which calls the App's switchScreen function and goes to a new screen: InGameMenu
 - The Game can tell if it's a new game, and prints the setup information from the pre-game screen when it's first entered (but not when it's returned to from the in-game menu).
 
 1. Create the Game Class (inherit from Screen) and in its constructor get it ready to create an instance of each of the in-game views mentioned in this chapter's description. Give it a simple render method that just shows a hello world message on the screen.
@@ -512,6 +512,8 @@ Exit criteria:
 9. Add instances of the new in-game view classes to the Game class's constructor.
 
 10. Add buttons for switching to the in-game views to the Sidebar; test if they can be entered and exited.
+
+### 11. Add the 'Main Menu'
 
 ## Chapter X (Guessing it will be... fourteen)
 

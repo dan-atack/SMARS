@@ -12,6 +12,7 @@ export default class Sidebar {
     _viewButtonHeight: number;
     _position: number;
     _buttons: Button[];
+    _menuOpen: boolean;
     switchScreen: (switchTo: string) => void;   // App-level SCREEN switcher (passed down via drill from the app)
     changeView: (newView: string) => void;      // Game-level VIEW switcher (passed down from the game module)
 
@@ -23,6 +24,7 @@ export default class Sidebar {
         this._viewButtonWidth = this._width / 2;
         this._viewButtonHeight = this._width / 4;
         this._buttons = [];
+        this._menuOpen = false;     // Use this flag to alert the Engine if the menu has just been opened
         this.switchScreen = switchScreen;
         this.changeView = changeView;
     }
@@ -33,7 +35,8 @@ export default class Sidebar {
         const industry = new Button(this._p5, "Industry", this._position + this._viewButtonWidth, 150, this.handleIndustry, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 24);
         const tech = new Button(this._p5, "Technology", this._position, 150 + this._viewButtonHeight, this.handleTech, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 20);
         const population = new Button(this._p5, "Population", this._position + this._viewButtonWidth, 150 + this._viewButtonHeight, this.handlePopulation, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 22);
-        this._buttons = [earth, industry, tech, population];
+        const menu = new Button(this._p5, "Menu", this._position + 12, 12, this.handleMenuButton, 64, 64, constants.GREEN_TERMINAL, constants.GREEN_DARK, 24);
+        this._buttons = [earth, industry, tech, population, menu];
     }
 
     // General-purpose click dispatcher
@@ -58,6 +61,16 @@ export default class Sidebar {
 
     handlePopulation = () => {
         this.changeView("population");
+    }
+
+    handleMenuButton = () => {
+        this.setMenuOpen(true);
+        this.switchScreen("inGameMenu");
+    }
+
+    // Setter for flag that the menu has just opened:
+    setMenuOpen = (status: boolean) => {
+        this._menuOpen = status;
     }
 
     render = () => {
