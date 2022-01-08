@@ -12,31 +12,44 @@ export default class Sidebar {
     _viewButtonHeight: number;
     _position: number;
     _buttons: Button[];
+    _viewButtonY: number;
+    _mapButtonsY: number;
     _menuOpen: boolean;
+    _martianDate: number[];     // Martian date = year, month, date. Screw Date objects!
     switchScreen: (switchTo: string) => void;   // App-level SCREEN switcher (passed down via drill from the app)
     changeView: (newView: string) => void;      // Game-level VIEW switcher (passed down from the game module)
 
     constructor(p5:P5, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void) {
         this._p5 = p5;
-        this._width = constants.SCREEN_WIDTH / 4 // One quarter of the screen is given to the sidebar
+        this._width = constants.SIDEBAR_WIDTH // Just overne quarter of the screen is given to the sidebar
         this._height = constants.SCREEN_HEIGHT
         this._position = constants.SCREEN_WIDTH - this._width;
         this._viewButtonWidth = this._width / 2;
         this._viewButtonHeight = this._width / 4;
+        this._viewButtonY = 128;
+        this._mapButtonsY = 300;
         this._buttons = [];
         this._menuOpen = false;     // Use this flag to alert the Engine if the menu has just been opened
+        this._martianDate = [1, 1, 2030];       // Game begins January 1st, 2030!
         this.switchScreen = switchScreen;
         this.changeView = changeView;
     }
 
     setup = () => {
+        // Top of dashboard: username, menu button and Martian clock and calendar:
+        const menu = new Button(this._p5, "Menu", constants.SCREEN_WIDTH - 88, 24, this.handleMenuButton, 76, 64, constants.GREEN_TERMINAL, constants.GREEN_DARK, 24);
         // Create view-changing buttons:
-        const earth = new Button(this._p5, "Earth", this._position, 150, this.handleEarth, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 24);
-        const industry = new Button(this._p5, "Industry", this._position + this._viewButtonWidth, 150, this.handleIndustry, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 24);
-        const tech = new Button(this._p5, "Technology", this._position, 150 + this._viewButtonHeight, this.handleTech, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 20);
-        const population = new Button(this._p5, "Population", this._position + this._viewButtonWidth, 150 + this._viewButtonHeight, this.handlePopulation, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 22);
-        const menu = new Button(this._p5, "Menu", this._position + 12, 12, this.handleMenuButton, 64, 64, constants.GREEN_TERMINAL, constants.GREEN_DARK, 24);
-        this._buttons = [earth, industry, tech, population, menu];
+        const earth = new Button(this._p5, "Earth", this._position, this._viewButtonY, this.handleEarth, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 24);
+        const industry = new Button(this._p5, "Industry", this._position + this._viewButtonWidth, this._viewButtonY, this.handleIndustry, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 24);
+        const tech = new Button(this._p5, "Technology", this._position, this._viewButtonY + this._viewButtonHeight, this.handleTech, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 20);
+        const population = new Button(this._p5, "Population", this._position + this._viewButtonWidth, this._viewButtonY + this._viewButtonHeight, this.handlePopulation, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 22);
+        // Construction, resources and map options buttons:
+        const build = new Button(this._p5, "BUILD", this._position, this._mapButtonsY, this.handleBuild, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 24);
+        const resource = new Button(this._p5, "RESOURCE", this._position + this._viewButtonWidth, this._mapButtonsY, this.handleResource, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 24);
+        const details = new Button(this._p5, "DETAILS", this._position, this._mapButtonsY + this._viewButtonHeight, this.handleDetails, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 24);
+        const overlays = new Button(this._p5, "OVERLAYS", this._position + this._viewButtonWidth, this._mapButtonsY + this._viewButtonHeight, this.handleOverlays, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 24);
+
+        this._buttons = [menu, earth, industry, tech, population, build, resource, details, overlays];
     }
 
     // General-purpose click dispatcher
@@ -63,6 +76,22 @@ export default class Sidebar {
         this.changeView("population");
     }
 
+    handleBuild = () => {
+        console.log("Let's build!");
+    }
+    
+    handleResource = () => {
+        console.log("Let's get some resources!");
+    }
+
+    handleDetails = () => {
+        console.log("Let me take a look at that");
+    }
+
+    handleOverlays = () => {
+        console.log("Let's see some overlays!");
+    }
+
     handleMenuButton = () => {
         this.setMenuOpen(true);
         this.switchScreen("inGameMenu");
@@ -77,8 +106,14 @@ export default class Sidebar {
         const p5 = this._p5;
         p5.fill(constants.SIDEBAR_BG);
         p5.rect(this._position, 0, this._width, this._height);
-        p5.fill(constants.GREEN_TERMINAL);
-        p5.text("sidebar", this._position + this._width / 2, 80);
+        // Martian Clock and date display
+        p5.fill(constants.BLUE_BG);
+        p5.circle(this._position + 64, 48, 64);
+        p5.fill(constants.EGGSHELL);
+        const dateString = `Date: ${this._martianDate[0]}.${this._martianDate[1]}.${this._martianDate[2]}`;
+        p5.strokeWeight(2);
+        p5.textSize(14);
+        p5.text(dateString, this._position + 64, this._viewButtonY - 32);
         this._buttons.forEach((button) => {
             button.render();
         })

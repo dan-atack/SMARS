@@ -513,9 +513,25 @@ Exit criteria:
 
 10. Add buttons for switching to the in-game views to the Sidebar; test if they can be entered and exited.
 
-### 11. Add the 'Main Menu'
+## Chapter Thirteen: Filling out the Sidebar (Difficulty Estimate: 3 - aren't we getting optimistic again!)
 
-## Chapter X (Guessing it will be... fourteen)
+### January 5, 2022
+
+Before diving into the game's world directly, let's take a few moments to complete the layout and initial styling of the Sidebar panel, since it will be a vital part of the game's architecture and will help to solidify expectations about the game play experience itself. Like many other components, the Sidebar is deceptively complex too, as it will contain many buttons that will re-arrange parts of its own layout when pressed. Let's figure all of that out before getting into the game's world itself.
+
+Exit criteria:
+
+- All top-level buttons and components are visible and have minimal functionality, including the clock and Martian calendar.
+- Engine setMouseContext method is created and passed to the Sidebar; activated when e.g. building new modules.
+- Clicking the Build and Overlays buttons alters SB layout to show more options; selecting a module or logistical component to build displays information about it in the Details Panel area.
+- Sidebar has little triangular buttons on its left-hand side that can minimize it to show more of the map.
+- Minimap is visible when no build/layout options/details are selected??
+
+### 1. Choose a new colour for the non-screen buttons (Build, Extract, Details and Overlays), then make each of those buttons, plus their handler functions (can be simple console logs for now).
+
+### 2. Make a rectangle for the details section of the sidebar, with maybe a darkish cyan kind of colour? It will form the background to the bottom half of the sidebar
+
+## Chapter X: Loading Games (Guessing it will be... fourteen)
 
 ### Exit Criteria for backend save game chapter:
 

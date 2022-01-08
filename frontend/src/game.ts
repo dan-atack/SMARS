@@ -57,8 +57,6 @@ export default class Game extends Screen {
     }
 
     setup = () => {
-        console.log(this._gameData);
-        console.log(this._username);
         const p5 = this._p5;
         this.currentScreen = true;
         p5.background(constants.APP_BACKGROUND);
