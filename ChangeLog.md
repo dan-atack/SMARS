@@ -525,11 +525,23 @@ Exit criteria:
 - Engine setMouseContext method is created and passed to the Sidebar; activated when e.g. building new modules.
 - Clicking the Build and Overlays buttons alters SB layout to show more options; selecting a module or logistical component to build displays information about it in the Details Panel area.
 - Sidebar has little triangular buttons on its left-hand side that can minimize it to show more of the map.
-- Minimap is visible when no build/layout options/details are selected??
+- Minimap is visible in Details Area when no build/details options are not selected (in other words, when 'details' mouse context is active but no target has been selected, or map overlays/resource extraction mode are activated).
 
-### 1. Choose a new colour for the non-screen buttons (Build, Extract, Details and Overlays), then make each of those buttons, plus their handler functions (can be simple console logs for now).
+1. Choose a new colour for the non-screen buttons (Build, Extract, Details and Overlays), then make each of those buttons, plus their handler functions (can be simple console logs for now).
 
-### 2. Make a rectangle for the details section of the sidebar, with maybe a darkish cyan kind of colour? It will form the background to the bottom half of the sidebar
+2. Make a rectangle for the details section of the sidebar, with maybe a darkish cyan kind of colour? It will form the background to the bottom half of the sidebar.
+
+3. Add two circles near the top of the sidebar; the first one will dark blue, and will be the clock for the time of day display, and the second one will be dark red and will be used, eventually, to display the current Martian weather. Some day.
+
+4. Create a new component class for the DetailsArea, and allow it to be in either an 'extended' or 'normal' mode depending on whether the sidebar's Buildings button is activated. If it is, tell the Sidebar to not show its normal list of buttons, and instead give most of the real estate to the DetailsArea (in extended mode) which will then render the building options categories, then individual building options, and finally the details for a seleted new building project. Building categories and options can be regular buttons, but we'll need at least a rudimentary new component for the new building details card.
+
+5. Integrate the DetailsArea component into the sidebar. Give the Sidebar a setBuildOptions method and pass that to the DetailsArea so it can close itself/notify the Sidebar when it has been closed.
+
+### 6. When in expanded mode, have the DetailsArea component render text element saying 'Build Options' as well as five buttons: Habitation modules, Industrial modules, Logistics, Vehicles, and BACK.
+
+### 7. Create console log handlers for all but the last of these buttons; give the BACK button the setter function for the sidebar itself, so hitting it not only shrinks the details area again but also tells the Sidebar to resume showing and handling its own buttons.
+
+8. When the building options are not selected, have the Details Area show the game's minimap!
 
 ## Chapter X: Loading Games (Guessing it will be... fourteen)
 

@@ -78,7 +78,7 @@ export default class Game extends Screen {
                 this._earth.setup();
                 break;
             case "engine":  // Show the game's main world first (represented by the engine, which manages it [i.e. the game's world])
-                this._engine.setup();
+                this._engine.setup();   // TODO: Engine's setup routine needs to take game data as argument IF it doesn't already have it
                 break;
             case "industry":
                 this._industry.setup();

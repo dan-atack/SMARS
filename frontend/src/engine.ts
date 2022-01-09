@@ -9,6 +9,7 @@ export default class Engine extends View {
     _sidebar: Sidebar;
     _sidebarExtended: boolean;
     switchScreen: (switchTo: string) => void;   // App-level SCREEN switcher (passed down via drill from the app)
+    // Game data!!!
 
     constructor(p5: P5, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void) {
         super(p5, changeView);
@@ -21,6 +22,7 @@ export default class Engine extends View {
         this.currentView = true;
         const p5 = this._p5;
         this._sidebar.setup();
+        // Sidebar will need map data for minimap display - does it only need it during 'setup' or does it also need occasional updates?
     }
 
     // When there is a click, establish whether it's in the 'world' or the sidebar:
