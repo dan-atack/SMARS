@@ -523,7 +523,7 @@ Exit criteria:
 
 - All top-level buttons and components are visible and have minimal functionality, including the clock and Martian calendar.
 - Engine setMouseContext method is created and passed to the Sidebar; activated when e.g. building new modules.
-- Clicking the Build and Overlays buttons alters SB layout to show more options; selecting a module or logistical component to build displays information about it in the Details Panel area.
+- Clicking the Build button alters SB layout to show more options; selecting a module or logistical component to build displays information about it in the Details Panel area.
 - Sidebar has little triangular buttons on its left-hand side that can minimize it to show more of the map.
 - Minimap is visible in Details Area when no build/details options are not selected (in other words, when 'details' mouse context is active but no target has been selected, or map overlays/resource extraction mode are activated).
 
@@ -537,11 +537,19 @@ Exit criteria:
 
 5. Integrate the DetailsArea component into the sidebar. Give the Sidebar a setBuildOptions method and pass that to the DetailsArea so it can close itself/notify the Sidebar when it has been closed.
 
-### 6. When in expanded mode, have the DetailsArea component render text element saying 'Build Options' as well as five buttons: Habitation modules, Industrial modules, Logistics, Vehicles, and BACK.
+6. When in expanded mode, have the DetailsArea component render text element saying 'Build Options' as well as five buttons: Habitation modules, Industrial modules, Logistics, Vehicles, and BACK.
 
-### 7. Create console log handlers for all but the last of these buttons; give the BACK button the setter function for the sidebar itself, so hitting it not only shrinks the details area again but also tells the Sidebar to resume showing and handling its own buttons.
+7. Create console log handlers for all but the last of these buttons; give the BACK button the setter function for the sidebar itself, so hitting it not only shrinks the details area again but also tells the Sidebar to resume showing and handling its own buttons.
 
 8. When the building options are not selected, have the Details Area show the game's minimap!
+
+9. Add an hour hand to the Martian clock.
+
+10. Add a buildTypeSelection value to the DetailsArea's constructor. Add a setBuildTypeSelection method as well, which takes a string argument and uses it to set that value.
+
+11. Give each building category's button handler method the ability to set the build type selection to a string that will go into a switch block, to determine which building options to show when that button is clicked.
+
+12. Create a showBuildingOptions method for the DetailsArea that is called by the render method only if there is a value for buildTypeSelection (truthiness in action: if the string has no characters it's considered false!). This method will eventually fetch a list of building options from the server and use their data to fill out Building Chips - button-like components that display several bits of information about a structure or module. For now have the showBuildings method just print which building category was selected in a text element at the top of the details area, as well as rendering a 'back' button which sets the buildTypeSelection back to "", causing the building category options to be rendered again.
 
 ## Chapter X: Loading Games (Guessing it will be... fourteen)
 

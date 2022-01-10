@@ -134,16 +134,25 @@ export default class Sidebar {
         this._buildOptionsOpen = status;
     }
 
+    renderClock = () => {
+        const p5 = this._p5;
+        // Martian Clock
+        p5.fill(constants.BLUE_BG);
+        p5.circle(this._clockX, this._clockY, 64);
+        // Show hands of the clock at different angle as the day progresses
+        p5.stroke(constants.EGGSHELL);
+        p5.line(this._clockX, this._clockY, this._clockX, this._clockY - 24);
+    }
+
     render = () => {
         const p5 = this._p5;
         p5.strokeWeight(4);
         p5.stroke(constants.ALMOST_BLACK);
         p5.fill(constants.SIDEBAR_BG);
         p5.rect(this._position, 0, this._width, this._height);
-        // Martian Clock
-        p5.fill(constants.BLUE_BG);
-        p5.circle(this._clockX, this._clockY, 64);
+        this.renderClock();
         // Weather gauge
+        p5.stroke(constants.ALMOST_BLACK);
         p5.fill(constants.RED_BG);
         p5.circle(this._clockX + 84, this._clockY, 64);
         // Martian Date
