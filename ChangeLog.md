@@ -523,8 +523,7 @@ Exit criteria:
 
 - All top-level buttons and components are visible and have minimal functionality, including the clock and Martian calendar.
 - Engine setMouseContext method is created and passed to the Sidebar; activated when e.g. building new modules.
-- Clicking the Build button alters SB layout to show more options; selecting a module or logistical component to build displays information about it in the Details Panel area.
-- Sidebar has little triangular buttons on its left-hand side that can minimize it to show more of the map.
+- Clicking the Build button alters SB layout to show building category options; selecting a category brings up a list of individual building options.
 - Minimap is visible in Details Area when no build/details options are not selected (in other words, when 'details' mouse context is active but no target has been selected, or map overlays/resource extraction mode are activated).
 
 1. Choose a new colour for the non-screen buttons (Build, Extract, Details and Overlays), then make each of those buttons, plus their handler functions (can be simple console logs for now).
@@ -550,6 +549,16 @@ Exit criteria:
 11. Give each building category's button handler method the ability to set the build type selection to a string that will go into a switch block, to determine which building options to show when that button is clicked.
 
 12. Create a showBuildingOptions method for the DetailsArea that is called by the render method only if there is a value for buildTypeSelection (truthiness in action: if the string has no characters it's considered false!). This method will eventually fetch a list of building options from the server and use their data to fill out Building Chips - button-like components that display several bits of information about a structure or module. For now have the showBuildings method just print which building category was selected in a text element at the top of the details area, as well as rendering a 'back' button which sets the buildTypeSelection back to "", causing the building category options to be rendered again.
+
+13. Create a new component class, BuildingChip, which will extend the Button Class but with default values supplied to all of its constructor function arguments so that the BuildingChip's own constructor will only need one argument which is the buildingData object, whose shape can be very simple right now (just a name, in fact). As well as x and y... and p5, naturally... Wow, this component has more arguments than the Spanish Inquisition has chief weapons.
+
+14. Import the BuildingChip class into the Details area and have the \_optionsButtons property be a list of those instead of regular buttons.
+
+15. Tell the handleHabitation button responder to create a list of three BuildingChips by making one for each of a short list of strings and pushing them to the optionsButtons list.
+
+16. Tell the showBuildingOptions method to render all of the \_optionsButtons.
+
+17. Create a populateBuildingOptions method to be called by each of the individual category buttons.
 
 ## Chapter X: Loading Games (Guessing it will be... fourteen)
 

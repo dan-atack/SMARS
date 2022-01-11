@@ -1,6 +1,7 @@
 // The details area is an expandable section of the sidebar, used to display information and building options
 import P5 from "p5";
 import Button from "./button";
+import BuildingChip from "./buildingChip";
 import Minimap from "./minimap";
 import { constants } from "./constants";
 
@@ -15,12 +16,12 @@ export default class DetailsArea {
     _normalHeight: number;
     _extendedHeight: number;
     _buttonHeight: number;
-    _buttonMargin: number;          // Height plus a margin; used directly for positioning buttons with a gap in between
+    _buttonMargin: number;              // Height plus a margin; used directly for positioning buttons with a gap in between
     _isExtended: boolean;
-    _buildTypeSelection: string;    // Case name for which category of building, if any, is selected
-    _categoryButtons: Button[];     // First-level buttons: build option categories
-    _optionbuttons: Button[];       // Second-level buttons: actual build options (sorted into categories)
-    _backButton: Button;            // Button to return from the building options list to the building categories list
+    _buildTypeSelection: string;        // Case name for which category of building, if any, is selected
+    _categoryButtons: Button[];         // First-level buttons: build option categories
+    _optionbuttons: BuildingChip[];     // Second-level buttons: actual build options (sorted into categories)
+    _backButton: Button;                // Button to return from the building options list to the building categories list
     _minimap: Minimap;
     // TODO: add _currentOption as new component type, buildingDetails, which shows an image of a building and all of its info
     setOpen: (status: boolean) => void; // Alerts the sidebar that the details area has been closed (so it can reshow its own buttons)
@@ -66,20 +67,41 @@ export default class DetailsArea {
         }
     }
 
+    // Take a list of building data objects and use it to populate the building option buttons list:
+    populateBuildingOptions = (buildings: string[]) => {
+        this._optionbuttons = [];       // Clear existing options
+        buildings.forEach((mod, idx) => {
+            const data = {
+                name: mod,
+            }
+            const m = new BuildingChip(this._p5, data, this._x, this._buttonY + idx * this._buttonMargin);
+            this._optionbuttons.push(m);
+        })
+    }
+
     handleHabitation = () => {
         this.setBuildTypeSelection("habitation");
+        // TODO: Add server action to fetch a list of buildings with the 'habitation' type; pass the result to building populator (above)
+        const modules = ["Sleeping Quarters", "Cantina", "Recreation Area"];
+        this.populateBuildingOptions(modules);
     }
 
     handleIndustrial = () => {
         this.setBuildTypeSelection("industrial");
+        const modules = ["Glass Smelter", "Rover Garage", "Oxygen Factory"];
+        this.populateBuildingOptions(modules);
     }
 
     handleLogistics = () => {
         this.setBuildTypeSelection("logistics");
+        const modules = ["Pipes", "Ladder", "Ventilation Duct"];
+        this.populateBuildingOptions(modules);
     }
 
     handleVehicles = () => {
         this.setBuildTypeSelection("vehicles");
+        const modules = ["Simple Rover"];
+        this.populateBuildingOptions(modules);
     }
 
     // Close the build categories list (and return to top-level sidebar display)
@@ -121,7 +143,10 @@ export default class DetailsArea {
         }
         this._backButton.render();  // Render back button to return to building categories menu
         // Render individual building options:
-        
+        this._optionbuttons.forEach((button) => {
+            button.render();
+        })
+        // TODO: Add rules for pagination if list length exceeds 4 items
     }
 
     render = () => {
