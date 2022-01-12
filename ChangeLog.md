@@ -560,6 +560,14 @@ Exit criteria:
 
 17. Create a populateBuildingOptions method to be called by each of the individual category buttons.
 
+18. In the Engine, create a new method called setMouseContext, as well as a field for storing the mouse context, which will be a string. There will be a few different options that can eventually be given here, each of which will correspond to a case in a switch block within the handleClicks method for clicks falling outside the sidebar. Default value for this string will be "select" to represent the fact that when you first arrive in the game's UI you haven't actually selected anything, and thus clicking on an item (module, colonist, etc) selects it for examination.
+
+19. Add a switch case to the handleClicks method in the Engine, to console log different mouse contexts when the mouse is clicked within the game's "world" area (i.e. not the sidebar).
+
+### 20. Next, change the constructor requirements for the Sidebar and DetailsArea components to accept the setMouseContext method and store it as one of their own methods.
+
+### 21. From the Details Area, pass the setMouseContext function to
+
 ## Chapter X: Loading Games (Guessing it will be... fourteen)
 
 ### Exit Criteria for backend save game chapter:

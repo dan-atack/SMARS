@@ -26,10 +26,11 @@ export default class Sidebar {
     _martianDate: number[];                     // Martian date = year, month, date. Screw Date objects!
     switchScreen: (switchTo: string) => void;   // App-level SCREEN switcher (passed down via drill from the app)
     changeView: (newView: string) => void;      // Game-level VIEW switcher (passed down from the game module)
+    setMouseContext: (value: string) => void    // Changes the mouse click handler response in the Engine
     menuButton: Button;                 // The Main Menu button stands apart from the regular buttons list to ensure it's always rendered.
     detailsArea: DetailsArea;
 
-    constructor(p5:P5, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void) {
+    constructor(p5:P5, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, setMouseContext: (value: string) => void) {
         this._p5 = p5;
         this._width = constants.SIDEBAR_WIDTH // Just over one quarter of the screen is given to the sidebar
         this._height = constants.SCREEN_HEIGHT
@@ -50,8 +51,9 @@ export default class Sidebar {
         this._martianDate = [1, 1, 2030];       // Game begins January 1st, 2030!
         this.switchScreen = switchScreen;
         this.changeView = changeView;
+        this.setMouseContext = setMouseContext;
         this.menuButton = new Button(this._p5, "Menu", constants.SCREEN_WIDTH - 88, 16, this.handleMenuButton, 76, 64, constants.GREEN_TERMINAL, constants.ALMOST_BLACK, 24);
-        this.detailsArea = new DetailsArea(p5, this.setBuildOptionsOpen);
+        this.detailsArea = new DetailsArea(p5, this.setBuildOptionsOpen, setMouseContext);  // OR ThIS.SetMouseContex?
     }
 
     setup = () => {
@@ -109,20 +111,32 @@ export default class Sidebar {
     }
     
     handleResource = () => {
-        console.log("Let's get some resources!");
+        this.setMouseContext("resource");
+        this.resetSelectedButton();
+        this._buttons[5].setSelected(true);
     }
 
     handleDetails = () => {
-        console.log("Let me take a look at that");
+        this.resetSelectedButton();
+        this._buttons[6].setSelected(true);
     }
 
     handleOverlays = () => {
+        this.resetSelectedButton();
+        this._buttons[7].setSelected(true);
         console.log("Let's see some overlays!");
     }
 
     handleMenuButton = () => {
         this.setMenuOpen(true);
         this.switchScreen("inGameMenu");
+        this.setMouseContext("select");     // Reset mouse context if menu is opened
+    }
+
+    resetSelectedButton = () => {
+        this._buttons.forEach((button) => {
+            button.setSelected(false);
+        })
     }
 
     // Setter for flag that the menu has just opened:

@@ -8,14 +8,16 @@ export default class Engine extends View {
     // Engine types
     _sidebar: Sidebar;
     _sidebarExtended: boolean;
+    mouseContext: string;       // Mouse context tells the Engine's click handler what to do when the mouse is pressed.
     switchScreen: (switchTo: string) => void;   // App-level SCREEN switcher (passed down via drill from the app)
     // Game data!!!
 
     constructor(p5: P5, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void) {
         super(p5, changeView);
         this.switchScreen = switchScreen;
-        this._sidebar = new Sidebar(p5, this.switchScreen, this.changeView);
+        this._sidebar = new Sidebar(p5, this.switchScreen, this.changeView, this.setMouseContext);
         this._sidebarExtended = true;   // Side bar can be partially hidden to expand map view - should this be here or in the SB itself??
+        this.mouseContext = "select"    // Default mouse context is the user wants to select what they click on (if they click on the map)
     }
 
     setup = () => {
@@ -31,8 +33,23 @@ export default class Engine extends View {
         if (mouseX > constants.SCREEN_WIDTH - this._sidebar._width) {
             this._sidebar.handleClicks(mouseX, mouseY);
         } else {
-            console.log("click is in the world");
+            // Click is on the map somewhere:
+            switch (this.mouseContext) {
+                case "select":
+                    console.log("Select");
+                    break;
+                case "place":
+                    console.log("Place");
+                    break;
+                case "resource":
+                    console.log("Resource");
+                    break;
+            }
         }
+    }
+
+    setMouseContext = (value: string) => {
+        this.mouseContext = value;
     }
 
     render = () => {

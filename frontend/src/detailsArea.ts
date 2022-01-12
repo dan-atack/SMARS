@@ -25,8 +25,9 @@ export default class DetailsArea {
     _minimap: Minimap;
     // TODO: add _currentOption as new component type, buildingDetails, which shows an image of a building and all of its info
     setOpen: (status: boolean) => void; // Alerts the sidebar that the details area has been closed (so it can reshow its own buttons)
+    setMouseContext: (value: string) => void;   // Updater for the Engine's mouse context when a building is selected
 
-    constructor(p5: P5, setOpen: (status: boolean) => void) {
+    constructor(p5: P5, setOpen: (status: boolean) => void, setMouseContext: (value: string) => void) {
         this._p5 = p5;
         this._x = constants.SCREEN_WIDTH - constants.SIDEBAR_WIDTH + 4;
         this._y = 432;
@@ -49,6 +50,7 @@ export default class DetailsArea {
         this._backButton = new Button(p5, "BACK", this._x, this._buttonY + 4 * this._buttonMargin, this.handleBack, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG);
         this._minimap = new Minimap(p5, this._x + 24, this._y + 256, []);
         this.setOpen = setOpen;
+        this.setMouseContext = setMouseContext;
     }
 
     handleClicks = (mouseX: number, mouseY: number) => {
