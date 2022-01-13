@@ -56,7 +56,7 @@ export default class Engine extends View {
         const p5 = this._p5;
         p5.background(constants.APP_BACKGROUND);
         p5. fill(constants.GREEN_TERMINAL);
-        p5.text("Hello Engine!", constants.SCREEN_WIDTH  * 3/8 , 540);
+        p5.text(this.mouseContext, constants.SCREEN_WIDTH  * 3/8 , 540);
         this._sidebar.render();
     }
 

@@ -76,7 +76,7 @@ export default class DetailsArea {
             const data = {
                 name: mod,
             }
-            const m = new BuildingChip(this._p5, data, this._x, this._buttonY + idx * this._buttonMargin);
+            const m = new BuildingChip(this._p5, data, this._x, this._buttonY + idx * this._buttonMargin, this.setMouseContext);
             this._optionbuttons.push(m);
         })
     }

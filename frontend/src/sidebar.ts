@@ -68,10 +68,10 @@ export default class Sidebar {
         // Construction, resources and map options buttons:
         const build = new Button(this._p5, "BUILD", this._position + 4, this._mapButtonsY, this.handleBuild, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 24);
         const resource = new Button(this._p5, "RESOURCE", this._position + this._viewButtonWidth + 12, this._mapButtonsY, this.handleResource, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
-        const details = new Button(this._p5, "DETAILS", this._position + 4, this._mapButtonsY + this._viewButtonHeight + 8, this.handleDetails, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 24);
+        const select = new Button(this._p5, "SELECT", this._position + 4, this._mapButtonsY + this._viewButtonHeight + 8, this.handleSelect, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 24);
         const overlays = new Button(this._p5, "OVERLAYS", this._position + this._viewButtonWidth + 12, this._mapButtonsY + this._viewButtonHeight + 8, this.handleOverlays, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
 
-        this._buttons = [earth, industry, tech, population, build, resource, details, overlays];
+        this._buttons = [earth, industry, tech, population, build, resource, select, overlays];
     }
 
     // General-purpose click dispatcher
@@ -116,7 +116,8 @@ export default class Sidebar {
         this._buttons[5].setSelected(true);
     }
 
-    handleDetails = () => {
+    handleSelect = () => {
+        this.setMouseContext("select");
         this.resetSelectedButton();
         this._buttons[6].setSelected(true);
     }

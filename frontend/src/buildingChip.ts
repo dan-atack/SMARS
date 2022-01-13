@@ -11,10 +11,22 @@ type BuildingData = {
 export default class BuildingChip extends Button {
     // Building Chip types:
     buildingData: BuildingData;
+    setMouseContext: (value: string) => void;
 
-    constructor(p5: P5, buildingData: BuildingData, x: number, y: number) {
-        super(p5, buildingData.name, x, y, () => console.log("they called him space man"), constants.SIDEBAR_WIDTH, 88, constants.EGGSHELL, constants.ALMOST_BLACK, 20);
+    constructor(p5: P5, buildingData: BuildingData, x: number, y: number, setMouseContext: (value: string) => void) {
+        super(p5, buildingData.name, x, y, () => console.log("they called him space man"), constants.SIDEBAR_WIDTH, 88, constants.EGGSHELL, constants.ALMOST_BLACK, 20);    // Handler here is a dud since the build chip uses the set mouse context function as its handler and this requires a string argument (instead of no argument).
         this.buildingData = buildingData;
+        this.setMouseContext = setMouseContext;
+    }
+
+    // Based on the ancestral button class, but with a twist: 
+    handleClick = (mouseX: number, mouseY: number) => {
+        // Establish that click is within button's borders:
+        const xMatch = mouseX >= this._x && mouseX < this._x + this._width;
+        const yMatch = mouseY >= this._y && mouseY < this._y + this._height;
+        if (xMatch && yMatch) { // TODO: When more detailed building data is available, add a case for a two-part placement label
+            this.setMouseContext("place");
+        }
     }
 
     render = () => {

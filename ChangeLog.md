@@ -522,7 +522,7 @@ Before diving into the game's world directly, let's take a few moments to comple
 Exit criteria:
 
 - All top-level buttons and components are visible and have minimal functionality, including the clock and Martian calendar.
-- Engine setMouseContext method is created and passed to the Sidebar; activated when e.g. building new modules.
+- Engine setMouseContext method is created and passed to the Sidebar; activated when e.g. building new modules or hitting select or resource buttons.
 - Clicking the Build button alters SB layout to show building category options; selecting a category brings up a list of individual building options.
 - Minimap is visible in Details Area when no build/details options are not selected (in other words, when 'details' mouse context is active but no target has been selected, or map overlays/resource extraction mode are activated).
 
@@ -564,9 +564,9 @@ Exit criteria:
 
 19. Add a switch case to the handleClicks method in the Engine, to console log different mouse contexts when the mouse is clicked within the game's "world" area (i.e. not the sidebar).
 
-### 20. Next, change the constructor requirements for the Sidebar and DetailsArea components to accept the setMouseContext method and store it as one of their own methods.
+20. Next, change the constructor requirements for the Sidebar and DetailsArea components to accept the setMouseContext method and store it as one of their own methods.
 
-### 21. From the Details Area, pass the setMouseContext function to
+21. From the Details Area, pass the setMouseContext function to the BuildingChip component. Then give that component a handler function (overriding the basic button class's handler) that supplies a text string for the type of building activity (initially just 'place', but with the possibility of alternating between that and other options, e.g. 'twoPartPlace' or some such, in the future).
 
 ## Chapter X: Loading Games (Guessing it will be... fourteen)
 
