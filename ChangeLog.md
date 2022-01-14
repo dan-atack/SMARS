@@ -568,7 +568,26 @@ Exit criteria:
 
 21. From the Details Area, pass the setMouseContext function to the BuildingChip component. Then give that component a handler function (overriding the basic button class's handler) that supplies a text string for the type of building activity (initially just 'place', but with the possibility of alternating between that and other options, e.g. 'twoPartPlace' or some such, in the future).
 
-## Chapter X: Loading Games (Guessing it will be... fourteen)
+## Chapter Fourteen: Rendering the map (terrain)! (Difficulty Estimate: 5 - it's been done before but we need to consider scrolling)
+
+### January 13, 2022
+
+Now that the sidebar has been set up, it's time to start rendering the game's world, starting with the map terrain. Taking the data from the pre-game selection screen, the Engine will print a series of blocks that will be the in-game terrain. In this chapter we'll need to establish rules for displaying the map, scrolling through the map if it's wider than one screen's width, and how much information each block will contain (does it just have a 'type' or is there more information about resource quantities and the like?)
+
+Exit criteria:
+
+- When the game starts, the map is visible in the game's world area
+- If a map is too wide to be shown all at once, only a portion of it is rendered in the game's world area
+- Clicking the mouse near the edge of the world (or hovering over it for a second) scrolls the map to that direction
+- Resource information for the individual blocks is out of scope for this issue
+
+### 1. Let's start by making some new classes: Map and Block. Look at the work done for the proof-of-concept project for inspiration.
+
+### 2. Make a block dictionary INSIDE THE CONSTANTS FILE! Use this to add six different block type entries to interact with the Block class's constructor function.
+
+### 3. Add block width value to constants file as well; use it to adjust the width of the game's columns.
+
+## Chapter X: Loading Games (Forecast now says it'll be chapter 18...)
 
 ### Exit Criteria for backend save game chapter:
 

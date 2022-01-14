@@ -28,8 +28,7 @@ const sketch = (p5:P5) => {
     const switchScreen = (switchTo: string) => {
         switch (switchTo) {
             case "game":
-                // TODO: If this is a new game, pass the pre-game setup data from the newGameSetup screen to the game 
-                if (!game._gameLoaded) {
+                if (!game._gameLoaded) {    // Game data is set before the game's setup operation is run:
                     game.setGameData(newGame.gameData, username);
                 }
                 game.setup();

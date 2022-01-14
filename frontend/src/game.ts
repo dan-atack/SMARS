@@ -65,7 +65,7 @@ export default class Game extends Screen {
         p5.textSize(48);
         p5.stroke(constants.ALMOST_BLACK);
         p5.textAlign(p5.CENTER, p5.CENTER);
-        this._engine.setup();   // Show the engine (world) view first (includes in-game sidebar)
+        this._engine.setup(this._gameData);   // Show the engine (world) view first (includes in-game sidebar)
     }
 
     changeView = (newView: string) => {
@@ -78,7 +78,7 @@ export default class Game extends Screen {
                 this._earth.setup();
                 break;
             case "engine":  // Show the game's main world first (represented by the engine, which manages it [i.e. the game's world])
-                this._engine.setup();   // TODO: Engine's setup routine needs to take game data as argument IF it doesn't already have it
+                this._engine.setup(this._gameData);   // TODO: Engine's setup routine needs to take game data as argument IF it doesn't already have it
                 break;
             case "industry":
                 this._industry.setup();
