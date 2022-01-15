@@ -600,7 +600,7 @@ Exit criteria:
 
 9. Make 3 more maps in the Blockland Editor, this time considerably wider so that we can test scrolling abilities more extensively.
 
-### 7. In order to situate the player in the middle of the map (as opposed to near its left-hand edge), have the Map's setup calculate the total width of the map and then add an initial offset so that when the map renders it is already offset (and thus the player can immediately scroll either to the left or right, to make things more immersive).
+10. In order to situate the player in the middle of the map (as opposed to near its left-hand edge), have the Map's setup calculate the total width of the map and then add an initial offset so that when the map renders it is already offset (and thus the player can immediately scroll either to the left or right, to make things more immersive).
 
 ## Chapter X: Loading Games (Forecast now says it'll be chapter 18...)
 

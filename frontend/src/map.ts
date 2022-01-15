@@ -7,13 +7,15 @@ export default class Map {
     // Map types:
     _p5: P5;
     _mapData: number[][];
-    _horizontalOffset: number; // Value is in pixels
+    _horizontalOffset: number;  // Value is in pixels
+    _maxOffset: number;         // Farthest scroll distance, in pixels
     _columns: Block[][];
 
     constructor(p5: P5) {
         this._p5 = p5;
         this._mapData = []; // Map data is recieved by setup function
         this._horizontalOffset = 0;
+        this._maxOffset = 0;    // Determined during setup routine
         this._columns = [];
     }
 
@@ -34,6 +36,7 @@ export default class Map {
     // Initial terrain setup (Blockland style but with array for columns list as well as for blocks within a column)
     setup = (mapData: number[][]) => {
         this._mapData = mapData;
+        this._maxOffset = mapData.length * constants.BLOCK_WIDTH - constants.WORLD_VIEW_WIDTH;
         this._mapData.forEach((column, idx) => {
             this._columns.push([]);
             column.forEach((blockType, jdx) => {

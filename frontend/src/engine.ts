@@ -51,7 +51,7 @@ export default class Engine extends View {
         this._gameData = gameData;
         this._sidebar.setup();
         this._map.setup(this._gameData.mapTerrain);
-        console.log(this._map._columns);
+        this._horizontalOffset = this._map._maxOffset / 2   // Put player in the middle of the map to start out
         this._sidebar.detailsArea._minimap.updateTerrain(this._gameData.mapTerrain);
         // Sidebar minimap display - does it only need it during 'setup' or does it also need occasional updates?
     }
@@ -81,7 +81,7 @@ export default class Engine extends View {
 
     // Handler for when the mouse button is being held down (will fire on every click, so be careful what you tell it to do!)
     handleMouseDown = (mouseX: number, mouseY: number) => {
-        if (mouseX < this._scrollDistance) {        // Determine if user is clicking within the 'scroll area':
+        if (mouseX < this._scrollDistance) {
             this._scrollingLeft = true;
         } else if (mouseX > constants.WORLD_VIEW_WIDTH - this._scrollDistance) {
             this._scrollingRight = true;
@@ -93,16 +93,17 @@ export default class Engine extends View {
     }
 
     render = () => {
-        // Scroll over 1 pixel per refresh cycle if mouse is held down over scrolling area:
-        if (this._scrollingLeft) {
+        // Scroll over 1 pixel per refresh cycle if mouse is pressed and the game is not yet at the right or left edge of the map:
+        if (this._scrollingLeft && this._horizontalOffset > 0) {
             this._horizontalOffset --;
-        } else if (this._scrollingRight){
+        } else if (this._scrollingRight && this._horizontalOffset < this._map._maxOffset){
             this._horizontalOffset ++;
         }
         const p5 = this._p5;
         p5.background(constants.APP_BACKGROUND);
         p5. fill(constants.GREEN_TERMINAL);
-        p5.text(this._horizontalOffset, constants.SCREEN_WIDTH  * 3/8 , 540);
+        p5.text(this._horizontalOffset, constants.SCREEN_WIDTH  * 3/8 , 450);
+        p5.text(this._map._maxOffset, constants.SCREEN_WIDTH  * 3/8 , 500)
         this._map.render(this._horizontalOffset);
         this._sidebar.render();
     }
