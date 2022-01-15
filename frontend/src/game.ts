@@ -32,6 +32,7 @@ export default class Game extends Screen {
     _gameData: GameData;
     _gameLoaded: boolean;       // Flag for whether to import info from the game setup screen.
     _username: string;
+    _mouseDown: boolean;        // Flag for whether the mouse button is currently being clicked (held down)
 
     switchScreen: (switchTo: string) => void;
 
@@ -54,6 +55,7 @@ export default class Game extends Screen {
         }
         this._gameLoaded = false;
         this._username = "";
+        this._mouseDown = false;
     }
 
     setup = () => {
@@ -105,11 +107,26 @@ export default class Game extends Screen {
 
     // Determine which 'view' is active and call its click handler:
     handleClicks = (mouseX: number, mouseY: number) => {
-        if (this._engine.currentView) this._engine.handleClicks(mouseX, mouseY);
+        if (this._engine.currentView) {
+            if (this._mouseDown) {
+                this._mouseDown = false;
+            }
+            this._engine.handleClicks(mouseX, mouseY);
+        }
         if (this._earth.currentView) this._earth.handleClicks(mouseX, mouseY);
         if (this._industry.currentView) this._industry.handleClicks(mouseX, mouseY);
         if (this._techTree.currentView) this._techTree.handleClicks(mouseX, mouseY);
         if (this._population.currentView) this._population.handleClicks(mouseX, mouseY);
+    }
+
+    // This fires once the instant a mouse button is depressed; the click event handler comes when the mouse is 'up' again.
+    // Hence it is a useful way of initiating events that last so long as the mouse is down (with the regular click handler
+    // signaling the end of the event)
+    handleMouseDowns = (mouseX: number, mouseY: number) => {
+        if (this._p5.mouseIsPressed) {
+            this._mouseDown = true;
+            this._engine.handleMouseDown(mouseX, mouseY);
+        }
     }
 
     // Same as the app; check which view is the 'current' one and call its render method:

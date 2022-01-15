@@ -12,15 +12,23 @@ export const constants = {
     ALMOST_BLACK: "#010101",
     APP_BACKGROUND: "#03090A",
     SIDEBAR_BG: "#4B4446",
+    GRAY_METEOR: "#353837",
+    GRAY_IRON_ORE: "#2E1409",
+    GRAY_DRY_ICE: "#BCC4C1",
     EGGSHELL: "#F6F7E9",
     RED_ERROR: "#D10000",
     RED_CONTRAST: "#FF4230",
     RED_BG: "#450701",
+    RED_ROCK: "#882000",
+    BROWN_SAND: "#B8A27D",
+    BROWN_MUD: "#3B1E05",
     YELLOW_BG: "#544503",
     YELLOW_TEXT: "#FFD412",
+    BLUE_ICE: "#A0EBE3",
     GREEN_TERMINAL: "#0FFF13",
     GREEN_MODULE: "#22B14C",
     GREEN_DARK: "#023803",
+    BLUEGREEN_CRYSTAL: "#00F2BA",
     BLUEGREEN_DARK: "#052E26",
     BLUE_BG: "#00004F",
 }
@@ -39,7 +47,7 @@ export const constants = {
      {
         type: 1,
         name: "rock",
-        color: constants.RED_BG,
+        color: constants.RED_ROCK,
         resource: "minerals",
         hp: 300,
         yield: 1
@@ -47,7 +55,7 @@ export const constants = {
      {
         type: 2,
         name: "sand",
-        color: constants.YELLOW_BG,
+        color: constants.BROWN_SAND,
         resource: "minerals",
         hp: 100,
         yield: 2
@@ -55,7 +63,7 @@ export const constants = {
      {
         type: 3,
         name: "ice",
-        color: constants.BLUE_BG,
+        color: constants.BLUE_ICE,
         resource: "water",
         hp: 200,
         yield: 5
@@ -63,7 +71,7 @@ export const constants = {
      {
         type: 4,
         name: "iron_ore",
-        color: constants.SIDEBAR_BG,
+        color: constants.GRAY_IRON_ORE,
         resource: "minerals",
         hp: 500,
         yield: 3
@@ -71,7 +79,7 @@ export const constants = {
      {
         type: 5,
         name: "dry_ice",
-        color: constants.EGGSHELL,
+        color: constants.GRAY_DRY_ICE,
         resource: "carbon",
         hp: 150,
         yield: 4
@@ -79,7 +87,7 @@ export const constants = {
      {
         type: 6,
         name: "meteor",
-        color: constants.GREEN_MODULE,
+        color: constants.GRAY_METEOR,
         resource: "carbon",
         hp: 300,
         yield: 2
@@ -87,7 +95,7 @@ export const constants = {
      {
         type: 7,
         name: "frozen_mud",
-        color: constants.GREEN_DARK,
+        color: constants.BROWN_MUD,
         resource: "water",
         hp: 250,
         yield: 2
@@ -95,7 +103,7 @@ export const constants = {
      {
          type: 8,
          name: "crystal",
-         color: "#89DF0C",
+         color: constants.BLUEGREEN_CRYSTAL,
          resource: "minerals",
          hp: 1000,
          yield: 10

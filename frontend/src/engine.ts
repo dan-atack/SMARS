@@ -19,6 +19,10 @@ export default class Engine extends View {
     _sidebarExtended: boolean;
     _gameData: GameData;
     _map: Map;
+    _horizontalOffset: number;  // This will be used to offset all elements in the game's world, starting with the map
+    _scrollDistance: number;    // Pixels from the edge of the world area in which scrolling occurs
+    _scrollingLeft: boolean;    // Flags for whether the user is currently engaged in scrolling one way or the other
+    _scrollingRight: boolean;
     mouseContext: string;       // Mouse context tells the Engine's click handler what to do when the mouse is pressed.
     switchScreen: (switchTo: string) => void;   // App-level SCREEN switcher (passed down via drill from the app)
     // Game data!!!
@@ -35,6 +39,10 @@ export default class Engine extends View {
             mapTerrain: []
         }   // Game data is loaded from the Game module when it calls the setup method
         this._map = new Map(this._p5);
+        this._horizontalOffset = 0;
+        this._scrollDistance = 50;
+        this._scrollingLeft = false;
+        this._scrollingRight = false;
         this.mouseContext = "select"    // Default mouse context is the user wants to select what they click on (if they click on the map)
     }
 
@@ -48,13 +56,15 @@ export default class Engine extends View {
         // Sidebar minimap display - does it only need it during 'setup' or does it also need occasional updates?
     }
 
-    // When there is a click, establish whether it's in the 'world' or the sidebar:
     handleClicks = (mouseX: number, mouseY: number) => {
+        // Since the 'click' event occurs on the mouseup part of the button press, a click always signals the end of any scrolling:
+        this._scrollingRight = false;
+        this._scrollingLeft = false;
         // Click is in sidebar:
         if (mouseX > constants.SCREEN_WIDTH - this._sidebar._width) {
             this._sidebar.handleClicks(mouseX, mouseY);
         } else {
-            // Click is on the map somewhere:
+            // Click is on the map, between the scroll zones
             switch (this.mouseContext) {
                 case "select":
                     console.log("Select");
@@ -65,7 +75,16 @@ export default class Engine extends View {
                 case "resource":
                     console.log("Resource");
                     break;
-            }
+            }   
+        }
+    }
+
+    // Handler for when the mouse button is being held down (will fire on every click, so be careful what you tell it to do!)
+    handleMouseDown = (mouseX: number, mouseY: number) => {
+        if (mouseX < this._scrollDistance) {        // Determine if user is clicking within the 'scroll area':
+            this._scrollingLeft = true;
+        } else if (mouseX > constants.WORLD_VIEW_WIDTH - this._scrollDistance) {
+            this._scrollingRight = true;
         }
     }
 
@@ -74,12 +93,18 @@ export default class Engine extends View {
     }
 
     render = () => {
+        // Scroll over 1 pixel per refresh cycle if mouse is held down over scrolling area:
+        if (this._scrollingLeft) {
+            this._horizontalOffset --;
+        } else if (this._scrollingRight){
+            this._horizontalOffset ++;
+        }
         const p5 = this._p5;
         p5.background(constants.APP_BACKGROUND);
         p5. fill(constants.GREEN_TERMINAL);
-        p5.text(this.mouseContext, constants.SCREEN_WIDTH  * 3/8 , 540);
+        p5.text(this._horizontalOffset, constants.SCREEN_WIDTH  * 3/8 , 540);
+        this._map.render(this._horizontalOffset);
         this._sidebar.render();
-        this._map.render();
     }
 
 }

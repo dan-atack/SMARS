@@ -580,12 +580,27 @@ Exit criteria:
 - If a map is too wide to be shown all at once, only a portion of it is rendered in the game's world area
 - Clicking the mouse near the edge of the world (or hovering over it for a second) scrolls the map to that direction
 - Resource information for the individual blocks is out of scope for this issue
+- Vertical map scrolling will also be out-of-scope for now
 
-### 1. Let's start by making some new classes: Map and Block. Look at the work done for the proof-of-concept project for inspiration.
+1. Let's start by making some new classes: Map and Block. Look at the work done for the proof-of-concept project for inspiration.
 
-### 2. Make a block dictionary INSIDE THE CONSTANTS FILE! Use this to add six different block type entries to interact with the Block class's constructor function.
+2. Make a block dictionary INSIDE THE CONSTANTS FILE! Use this to add six different block type entries to interact with the Block class's constructor function. Export as a separate constant ('blocks') since most modules importing the constants won't need it.
 
-### 3. Add block width value to constants file as well; use it to adjust the width of the game's columns.
+3. Add block width value to constants file as well; use it to adjust the width of the game's columns.
+
+4. Experiment with map scrolling by adding a new app-level method that fires on mousePressed (mousedown) as opposed to mouseClick (which is equivalent to mouseup). Then pass this to the Game and Engine modules so that they receive a different signal when the mouse is pressed, followed by the regular one when the click button is released.
+
+5. Give the Engine a handleMouseDown method, which fires on the mousedown event, and looks to see if the click was within the 'scroll range' of either the right or left side of the map area. If it is, set a new flag for scrolling left/right to true until the mouse button is released.
+
+6. Have the Engine's regular click handler reset the scrolling flags so that when the mouse button is released, no scrolling occurs.
+
+7. Give the Engine a horizontal offset value and increase it by one pixel per render so long as the scrolling flag is set (or decrease by one pixel per render if the scroll direction is to the left).
+
+8. Add an offset argument to the Map's render method so that the Engine can pass its offset value to the Map to include in its render calculations. As the offset increases (or decreases), this should cause the map's rendered output to shift to the side.
+
+9. Make 3 more maps in the Blockland Editor, this time considerably wider so that we can test scrolling abilities more extensively.
+
+### 7. In order to situate the player in the middle of the map (as opposed to near its left-hand edge), have the Map's setup calculate the total width of the map and then add an initial offset so that when the map renders it is already offset (and thus the player can immediately scroll either to the left or right, to make things more immersive).
 
 ## Chapter X: Loading Games (Forecast now says it'll be chapter 18...)
 

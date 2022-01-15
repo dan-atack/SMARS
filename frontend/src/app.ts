@@ -80,6 +80,11 @@ const sketch = (p5:P5) => {
         if (inGameMenu.currentScreen) inGameMenu.handleClicks(p5.mouseX, p5.mouseY); 
     }
 
+    // Handler for in-game operations that involve holding the mouse button down (as opposed to regular clicks):
+    p5.mousePressed = () => {
+        if (game.currentScreen) game.handleMouseDowns(p5.mouseX, p5.mouseY);
+    }
+
     p5.draw = () => {
         // Check for login if username hasn't been set yet:
         if (username.length === 0) checkForLogin();

@@ -32,7 +32,8 @@ export default class Block {
         this._currentHp = this._blockData?.hp || 100;
     }
 
-    render = () => {    // TODO: Block gets offset values as arguments to renderer
+    render = (xOffset: number) => {    // TODO: Block gets y offset values as arguments to renderer
+        this._xOffset = xOffset;
         const x = this._x * this._width - this._xOffset;
         const y = this._y * this._width - this._yOffset;
         this._p5.fill(this._color);

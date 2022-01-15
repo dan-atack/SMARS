@@ -17,13 +17,16 @@ export default class Map {
         this._columns = [];
     }
 
-    render = () => {
-        // Only render one screen width's worth:
-        const range = [0, constants.WORLD_VIEW_WIDTH / constants.BLOCK_WIDTH];
+    // The Engine passes the H-offset (V-offset coming soon) value here so that the blocks' positions are updated with every render:
+    render = (horizontalOffset: number) => {
+        this._horizontalOffset = horizontalOffset;
+        // Only render one screen width's worth, taking horizontal offset into account:
+        const leftEdge = Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH);    // Edges are in terms of columns
+        const rightEdge = (this._horizontalOffset + constants.WORLD_VIEW_WIDTH) / constants.BLOCK_WIDTH;
         this._columns.forEach((column, idx) => {
-            if (idx >= range[0] && idx < range[1])
+            if (idx >= leftEdge && idx < rightEdge)
             column.forEach((block) => {
-                block.render();     // TODO: Pass offset values to the blocks here
+                block.render(this._horizontalOffset);     // TODO: Pass offset values to the blocks here
             })
         })
     }
