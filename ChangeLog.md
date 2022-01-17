@@ -600,7 +600,28 @@ Exit criteria:
 
 9. Make 3 more maps in the Blockland Editor, this time considerably wider so that we can test scrolling abilities more extensively.
 
-10. In order to situate the player in the middle of the map (as opposed to near its left-hand edge), have the Map's setup calculate the total width of the map and then add an initial offset so that when the map renders it is already offset (and thus the player can immediately scroll either to the left or right, to make things more immersive).
+10. In order to situate the player in the middle of the map (as opposed to on its left-hand edge), have the Map's setup calculate the total width of the map and then add an initial offset so that when the map renders it is already offset (and thus the player can immediately scroll either to the left or right, to make things more immersive).
+
+## Chapter Fifteen: The Passage of Time (Difficulty Estimate: 3)
+
+### January 15, 2022
+
+The moment has arrived to implement the second of Kant's intuitions in the SMARS universe: time. The passage of time needs to be recorded by updating the game's internal clock and calendar so long as the Engine is running. Each render update will be recorded by the Engine as a tick, and every so many ticks will advance the game's internal clock by a certain amount. It should be possible to adjust the pace of time in the game by altering the amount of ticks in a... tock (increment). Ultimately the time keeping system should allow the implementation of day/night cycles and changing weather patterns between the Martian seasons. Rules for how to represent the Martian calendar should be established before implementing anything too complicated.
+
+Exit criteria:
+
+- The game has an internal clock that can monitor minutes, hours, days and years (years condensed to four days for brevity's sake) as well as an AM/PM cycle
+- Game's clock and calendar display are updated by these values
+- Clicking the Earth screen shows the current Earth date (calculated relative to Smartian date)
+- Sidebar has new buttons: pause, slow, fast and turbo (labeled with chevrons to save space) that set the pace of time by altering the Engine's ticks per minute
+
+1. Add a tick property to the game's Engine, and tell the render function to increase it by one every render.
+
+2. Add a ticks per minute property and a minutes counter to the game's Engine and tell the render function to reset ticks to zero every time this number is reached, and augment minutes counter by one. Display minutes count in the world area to watch it tick.
+
+3. Isolate time-keeping functions into their own Engine method so that the renderer can call that every time the basic tick counter is reset.
+
+4. Add rules for the time-keeper to reset minutes each hour, and hours each day (actually twice per day; add an AM/PM value too). Print the whole time string to the screen and watch it for a whole "day" (hereafter referred to as a Sol).
 
 ## Chapter X: Loading Games (Forecast now says it'll be chapter 18...)
 
@@ -610,3 +631,10 @@ Exit criteria:
 - It is possible to update a saved game file for a given user.
 - It is possible to retrieve a list of saved games for a given user.
 - It is possible to retrieve all of the game data for a specific saved game file.
+
+## Chapter XX: DevOps Interlude (Forecast says sooner is better... do item one as soon as time-keeping is finished)
+
+- Dev mode environment variable enables some information displays in the world screen area
+- Unit tests for in-game functionality (challenge yourself to think of and implement a unit test that's actually useful!)
+- Build/test pipeline update
+- Deploy the backend to Heroku??
