@@ -44,13 +44,13 @@ export default class Sidebar {
         this._clockX = this._position + 56;
         this._clockY = 48;
         this._gameSpeedButtonX = this._position + 120;
-        this._gameSpeedButtonY = 88;
+        this._gameSpeedButtonY = 94;
         this._viewButtonWidth = this._width / 2 - 8;        // Minus eight for the padding space
         this._viewButtonHeight = this._width / 4 - 8;
         this._gameSpeedButtonWidth = 24;
         this._gameSpeedButtonMargin = 32;
-        this._viewButtonY = 120;
-        this._mapButtonsY = 276;
+        this._viewButtonY = 132;
+        this._mapButtonsY = 284;
         this._detailsAreaY = 432;
         this._extendedDetailsAreaY = 120;
         this._detailsAreaHeight = 284;
@@ -243,7 +243,7 @@ export default class Sidebar {
         const dateString = `Day ${this._martianDate[0]}, Year ${this._martianDate[1]}`;
         p5.strokeWeight(2);
         p5.textSize(14);
-        p5.text(dateString, this._clockX, this._clockY + 54);
+        p5.text(dateString, this._clockX, this._clockY + 60);
         this.menuButton.render();
         this._gameSpeedButtons.forEach((button) => {
             button.render();

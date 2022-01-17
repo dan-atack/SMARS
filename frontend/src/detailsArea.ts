@@ -31,11 +31,11 @@ export default class DetailsArea {
         this._p5 = p5;
         this._x = constants.SCREEN_WIDTH - constants.SIDEBAR_WIDTH + 4;
         this._y = 432;
-        this._yExtended = 120;
+        this._yExtended = 124;
         this._buttonY = 240;
         this._width = constants.SIDEBAR_WIDTH - 8;
         this._normalHeight = 284;
-        this._extendedHeight = 596;
+        this._extendedHeight = 592;
         this._buttonHeight = 88;
         this._buttonMargin = 96;
         this._isExtended = false;
@@ -148,6 +148,7 @@ export default class DetailsArea {
         this._optionbuttons.forEach((button) => {
             button.render();
         })
+        p5.textAlign(p5.CENTER, p5.CENTER);
         // TODO: Add rules for pagination if list length exceeds 4 items
     }
 
