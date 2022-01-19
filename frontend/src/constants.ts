@@ -8,6 +8,7 @@ export const constants = {
     SIDEBAR_WIDTH: 280,
     WORLD_VIEW_WIDTH: 680,    // Screen width minus sidebar width
     BLOCK_WIDTH: 20,
+    EARTH_DAYS_PER_HOUR: 7.15, // With 4 Smartian days per Smars year, this makes 1 Smartian year = 687 Earth days
     // Colours (darkest to lightest gray at top, then ROYGBIV going downwards below that)
     ALMOST_BLACK: "#010101",
     APP_BACKGROUND: "#03090A",

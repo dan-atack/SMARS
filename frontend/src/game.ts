@@ -40,7 +40,7 @@ export default class Game extends Screen {
         super(p5);
         this.switchScreen = switchScreen;
         // Pass view and screen changer functions to the engine (For the sidebar to use)
-        this._engine = new Engine(p5, this.switchScreen, this.changeView);
+        this._engine = new Engine(p5, this.switchScreen, this.changeView, this.updateEarthData);
         this._population = new Population(p5, this.changeView);
         this._techTree = new TechTree(p5, this.changeView);
         this._earth = new Earth(p5, this.changeView) // There IS no planet B!!!
@@ -95,6 +95,10 @@ export default class Game extends Screen {
                 this._techTree.setup();
                 break;
         }
+    }
+
+    updateEarthData = () => {
+        this._earth.setEarthDate(constants.EARTH_DAYS_PER_HOUR); // Add seven days to Earth calendar for every hour that passes on SMARS
     }
 
     // Pass data from the pre-game setup screen and username from the App itself, to the game with this method:

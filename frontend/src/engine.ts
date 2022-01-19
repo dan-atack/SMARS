@@ -36,11 +36,13 @@ export default class Engine extends View {
     _solsPerYear: number;
     _smartianYear: number;          // Smartian year (AKA mission year) is the amount of times SMARS has orbited the sun since mission start (Lasts approximately twice as long as a Terrestrial year).
     switchScreen: (switchTo: string) => void;   // App-level SCREEN switcher (passed down via drill from the app)
+    updateEarthData: () => void;    // Updater for the date on Earth (for starters)
     // Game data!!!
 
-    constructor(p5: P5, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void) {
+    constructor(p5: P5, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, updateEarthData: () => void) {
         super(p5, changeView);
         this.switchScreen = switchScreen;
+        this.updateEarthData = updateEarthData;
         this._sidebar = new Sidebar(p5, this.switchScreen, this.changeView, this.setMouseContext, this.setGameSpeed);
         this._sidebarExtended = true;   // Side bar can be partially hidden to expand map view - should this be here or in the SB itself??
         this._gameData = {
@@ -130,11 +132,11 @@ export default class Engine extends View {
                 break;
             case "fast":
                 console.log("faster! faster!");
-                this.ticksPerMinute = 30;
+                this.ticksPerMinute = 20;
                 break;
             case "blazing":
                 console.log("Johnny Blaze!");
-                this.ticksPerMinute = 10;
+                this.ticksPerMinute = 6;
                 break;
         }
     }
@@ -148,6 +150,7 @@ export default class Engine extends View {
                 this._minute ++;    // Advance minutes
             } else {
                 this._minute = 0;
+                this.updateEarthData();     // Advance Earth date every game hour
                 if (this._hour < this._hoursPerClockCycle) {
                     this._hour ++;      // Advance hours
                     if (this._hour === this._hoursPerClockCycle) {  // Advance day/night cycle when hour hits twelve
