@@ -623,6 +623,34 @@ Exit criteria:
 
 4. Add rules for the time-keeper to reset minutes each hour, and hours each day (actually twice per day; add an AM/PM value too). Print the whole time string to the screen and watch it for a whole "day" (hereafter referred to as a Sol).
 
+## Chapter Sixteen: Modal Dialogues (Difficulty Estimate: 5 due to planning of how and when modals will appear and be dealt with)
+
+### January 20, 2022
+
+An important feature of SMARS's complex User Interface will be in-game popup dialogues AKA modals, which will be used liberally throughout the game to communicate important information to the player such as random events, [optional] tutorial info/advice, and various other events as the game develops ("I'd say from the depth of this ice that this thing must have been buried for at least 100,000 years!")
+
+Exit criteria:
+
+- In-game modal popup is shown at the start of the game and goes away when its 'dismiss' button is clicked
+- Modal popups display text and have up to two different 'dismiss' buttons, which can produce different outcomes in the game's Engine
+- Even though it's not directly related, this chapter will see the introduction of an environment variable for Dev Mode in the game's frontend directory, and an additional Modal popup will appear at the game's start when we're in dev mode (and not when this value is removed).
+- Modal popup tells you when a full Smartian day has passed (Dev Mode feature)
+
+1. Create the Modal class (brand new class) to be deployed by the Engine. Have a bit of a think about what its layout will be first, as well as how the Engine will know when to show you one, what its handler/s will be, etc.
+
+2. Create a new method for the Engine, generateEvent, to be called each hour by the clock advance method. Have it take an optional number argument, which will be the percentage probability of firing an event. If it is called with no arguments it should take that as a signal to fire an event from a sequential list; if it gets the probability argument then it should only fire if a random number falls within the range of likelihood, and take an event from a different list.
+
+### 3. Create new game constants lists: random events and scheduled events, to be called by the Engine. Events in both lists should have:
+
+- A title
+- A caption/text
+- A unique ID number
+- A one-item list of "resolutions" that will come to represent the various options for events where the player has to choose between different outcomes (multiple outcomes are outside the scope of this ticket but it's worth preparing for them now)
+
+### 4. Have the Engine console log the title of a scheduled event at 1:00AM on the first day.
+
+### 5. Have the Engine console log the title of a random event (with 50% odds) by calling the random event generator once every hour until it fires.
+
 ## Chapter X: Loading Games (Forecast now says it'll be chapter 18...)
 
 ### Exit Criteria for backend save game chapter:
@@ -637,4 +665,5 @@ Exit criteria:
 - Dev mode environment variable enables some information displays in the world screen area
 - Unit tests for in-game functionality (challenge yourself to think of and implement a unit test that's actually useful!)
 - Build/test pipeline update
+- Directory structure for frontend components before they get totally out of hand
 - Deploy the backend to Heroku??

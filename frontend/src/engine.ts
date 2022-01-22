@@ -3,6 +3,7 @@ import P5 from "p5";
 import View from "./view";
 import Sidebar from "./sidebar";
 import Map from "./map";
+import Modal from "./modal";
 import { constants } from "./constants";
 
 // Define object shape for pre-game data from game setup screen:
@@ -19,6 +20,7 @@ export default class Engine extends View {
     _sidebarExtended: boolean;
     _gameData: GameData;
     _map: Map;
+    _modal: Modal | null;
     _horizontalOffset: number;  // This will be used to offset all elements in the game's world, starting with the map
     _scrollDistance: number;    // Pixels from the edge of the world area in which scrolling occurs
     _scrollingLeft: boolean;    // Flags for whether the user is currently engaged in scrolling one way or the other
@@ -52,6 +54,7 @@ export default class Engine extends View {
             mapTerrain: []
         }   // Game data is loaded from the Game module when it calls the setup method
         this._map = new Map(this._p5);
+        this._modal = null;
         this._horizontalOffset = 0;
         this._scrollDistance = 50;
         this._scrollingLeft = false;
@@ -85,8 +88,8 @@ export default class Engine extends View {
         // Since the 'click' event occurs on the mouseup part of the button press, a click always signals the end of any scrolling:
         this._scrollingRight = false;
         this._scrollingLeft = false;
-        // Click is in sidebar:
-        if (mouseX > constants.SCREEN_WIDTH - this._sidebar._width) {
+        // Click is in sidebar (not valid if modal is open):
+        if (mouseX > constants.SCREEN_WIDTH - this._sidebar._width && !this._modal) {
             this._sidebar.handleClicks(mouseX, mouseY);
         } else {
             // Click is on the map, between the scroll zones
@@ -100,19 +103,24 @@ export default class Engine extends View {
                 case "resource":
                     console.log("Resource");
                     break;
+                case "modal":
+                    this._modal?.handleClicks(mouseX, mouseY);
+                    break;
             }   
         }
     }
 
-    // Handler for when the mouse button is being held down (will fire on every click, so be careful what you tell it to do!)
+    // Handler for when the mouse button is being held down (for scrolling))
     handleMouseDown = (mouseX: number, mouseY: number) => {
-        if (!(mouseX > constants.SCREEN_WIDTH - this._sidebar._width)) {
-            if (mouseX < this._scrollDistance) {
-                this._scrollingLeft = true;
-            } else if (mouseX > constants.WORLD_VIEW_WIDTH - this._scrollDistance) {
-                this._scrollingRight = true;
-            }
-        }  
+        if (!this._modal) {     // Do not allow scrolling when modal is opened
+            if (!(mouseX > constants.SCREEN_WIDTH - this._sidebar._width)) {    // Do not allow scrolling from the sidebar
+                if (mouseX < this._scrollDistance) {
+                    this._scrollingLeft = true;
+                } else if (mouseX > constants.WORLD_VIEW_WIDTH - this._scrollDistance) {
+                    this._scrollingRight = true;
+                }
+            } 
+        } 
     }
 
     setMouseContext = (value: string) => {
@@ -123,46 +131,65 @@ export default class Engine extends View {
         this.gameOn = true;     // Always start by assuming the game is on
         switch (value) {
             case "pause":
-                console.log("pause!");
                 this.gameOn = false;
                 break;
             case "slow":
-                console.log("slow down!");
                 this.ticksPerMinute = 60;
                 break;
             case "fast":
-                console.log("faster! faster!");
                 this.ticksPerMinute = 20;
                 break;
             case "blazing":
-                console.log("Johnny Blaze!");
-                this.ticksPerMinute = 6;
+                this.ticksPerMinute = 1;    // Ultra fast mode in dev mode?!
                 break;
         }
+    }
+
+    // In-game event generator: produces scheduled and/or random events which will create modal popups
+    generateEvent = (probability?: number) => {
+        if (probability) {
+            this.createModal(true, 0);
+        } else {
+            this.createModal(false, 0);
+        }
+    }
+
+    createModal = (random: boolean, id: number) => {
+        this.gameOn = false;
+        this._modal = new Modal(this._p5, this.closeModal, random, id);
+        this.setMouseContext("modal");
+    }
+
+    closeModal = () => {
+        this.gameOn = true;
+        this._modal = null;
+        this.setMouseContext("select");
     }
 
     advanceClock = () => {
         if (this._tick < this.ticksPerMinute) {
             if (this.gameOn) this._tick ++;      // Advance ticks if game is unpaused
         } else {
-            this._tick = 0;
+            this._tick = 0;     // Advance minutes
             if (this._minute < this._minutesPerHour - 1) {  // Minus one tells the minutes counter to reset to zero after 59
-                this._minute ++;    // Advance minutes
+                this._minute ++;
             } else {
-                this._minute = 0;
+                this._minute = 0;   // Advance hours (anything on an hourly schedule should go here)
                 this.updateEarthData();     // Advance Earth date every game hour
+                // this.generateEvent();
+                this.generateEvent(50);
                 if (this._hour < this._hoursPerClockCycle) {
-                    this._hour ++;      // Advance hours
+                    this._hour ++;
                     if (this._hour === this._hoursPerClockCycle) {  // Advance day/night cycle when hour hits twelve
                         if (this._clockCycle === "AM") {
                             this._clockCycle = "PM"
                         } else {
-                            this._clockCycle = "AM";
+                            this._clockCycle = "AM";        // Advance date (anything on a daily schedule should go here)
                             if (this._sol < this._solsPerYear) {
-                                this._sol ++;       // Advance date
+                                this._sol ++;
                             } else {
                                 this._sol = 1;
-                                this._smartianYear ++;      // Advance year
+                                this._smartianYear ++;      // Advance year (anything on an yearly schedule should go here)
                             }
                             this._sidebar.setDate(this._sol, this._smartianYear);   // Update sidebar date display
                         }  
@@ -186,12 +213,14 @@ export default class Engine extends View {
         p5.background(constants.APP_BACKGROUND);
         p5. fill(constants.GREEN_TERMINAL);
         p5.text(this._horizontalOffset, constants.SCREEN_WIDTH  * 3/8 , 450);
-        p5.text(this._map._maxOffset, constants.SCREEN_WIDTH  * 3/8 , 500)
-        const min = p5.map(this._minute, 0, 60, 0, 360);
+        p5.text(this._map._maxOffset, constants.SCREEN_WIDTH  * 3/8 , 500);
         p5.text(`Date: ${this._sol}-${this._smartianYear}`, constants.SCREEN_WIDTH * 3/8, 240);
         p5.text(`Time: ${this._hour}:${this._minute} ${this._clockCycle}`, constants.SCREEN_WIDTH * 3/8, 300);
         this._map.render(this._horizontalOffset);
         this._sidebar.render(this._minute, this._hour, this._clockCycle);
+        if (this._modal) {
+            this._modal.render();
+        }
     }
 
 }

@@ -110,3 +110,25 @@ export const constants = {
          yield: 10
      }
  ]
+
+ export type EventData = {
+    id: number,
+    title: string,
+    text: string
+ }
+
+ export const randomEvents = [
+    {
+       id: 0,
+       title: "You're So Random!",
+       text: "Calling NASA, calling NASA, Houston this is Apollo Nine, we've landed on SMARS..."
+    }
+ ]
+
+ export const scheduledEvents = [
+    {
+       id: 0,
+       title: "Right on Schedule!",
+       text: "This is a scheduled event."
+    }
+ ]
