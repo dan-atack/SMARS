@@ -1,5 +1,6 @@
 // Top-level component for the game environment (as opposed to game interface, which is in game.ts)
 import P5 from "p5";
+import * as dotenv from "dotenv";
 import View from "./view";
 import Sidebar from "./sidebar";
 import Map from "./map";
@@ -13,6 +14,8 @@ type GameData = {
     randomEvents: boolean,
     mapTerrain: number[][];
 }
+
+// TODO: Load Environment variables
 
 export default class Engine extends View {
     // Engine types
@@ -146,9 +149,10 @@ export default class Engine extends View {
     }
 
     // In-game event generator: produces scheduled and/or random events which will create modal popups
-    generateEvent = (probability?: number) => {
+    generateEvent = (probability?: number) => {     // Probability is given optionally as a percent value
         if (probability) {
-            this.createModal(true, 0);
+            const rand = Math.floor(Math.random() * 100);           // Generate random value and express as a percent
+            if (rand <= probability) this.createModal(true, 0);     // Fire if given probability is higher than random value
         } else {
             this.createModal(false, 0);
         }
@@ -176,8 +180,8 @@ export default class Engine extends View {
             } else {
                 this._minute = 0;   // Advance hours (anything on an hourly schedule should go here)
                 this.updateEarthData();     // Advance Earth date every game hour
-                // this.generateEvent();
-                this.generateEvent(50);
+                this.generateEvent();
+                // this.generateEvent(50);
                 if (this._hour < this._hoursPerClockCycle) {
                     this._hour ++;
                     if (this._hour === this._hoursPerClockCycle) {  // Advance day/night cycle when hour hits twelve

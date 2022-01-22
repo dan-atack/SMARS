@@ -114,21 +114,28 @@ export const constants = {
  export type EventData = {
     id: number,
     title: string,
-    text: string
+    text: string,
+    resolutions: string[]
  }
 
- export const randomEvents = [
+ export const randomEvents: EventData[] = [
     {
        id: 0,
        title: "You're So Random!",
-       text: "Calling NASA, calling NASA, Houston this is Apollo Nine, we've landed on SMARS..."
+       text: "Calling NASA, calling NASA, Houston this is Apollo Nine,\nwe've landed on SMARS...",
+       resolutions: [
+          "Sheeee"
+       ]
     }
  ]
 
- export const scheduledEvents = [
+ export const scheduledEvents: EventData[] = [
     {
        id: 0,
        title: "Right on Schedule!",
-       text: "This is a scheduled event."
+       text: "This is a scheduled event.",
+       resolutions: [
+          "Affirmative"
+       ]
     }
  ]
