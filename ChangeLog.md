@@ -654,6 +654,58 @@ Exit criteria:
 
 7. Quickly experiment with adding a directory structure to the Frontend to categorize resources
 
+## Chapter Seventeen: Managing Buildings in the Backend (Difficulty Estimate: 5)
+
+### February 1, 2022
+
+After a brief pause to do some design work, the time has come to add the first module data to the backend! The goal for this chapter is to create the mechanisms for adding new buildings (modules and logistical/connector structures) to the game's database. Since there will eventually be many different types of modules and logistical connector things, each will have its own collection within the DB: Modules and Connectors. This chapter will focus on making the first few test structures to add to the game's interface in the next chapter, but more importantly, it will create the tools to easily add more buildings, as well as determining the object shape for modules and connectors.
+
+Exit Criteria:
+
+- Preliminary types for modules established
+- Preliminary types for connectors established
+- Modules and Connectors collections created in the DB
+- Database function created for uploading a structure's info to either of these collections
+- Database function for modifying a structure's info for either of these collections
+- Database function for deleting a structure from either collection
+- Database function for getting structures from the DB, initially just getting everything from a collection
+- Server endpoint for using the reader function
+- NPM scripts to run any of the above functions
+
+1. Create the Modules collection in the DB.
+
+2. Create the Connectors collection in the DB.
+
+3. In a new file in the "world editor" directory (now renamed) make a file, newBuildings, that exports the Type information for Modules. This file will also contain the initial buildings' data, since the world editor directory is gitignored.
+
+4. Create another file, add_building, which will read a list of new building info objects (using the Module type info) and upload any new items to the database's modules collection. As an experiment, add an \_id property to the module type info, and see if that can be taken advantage of to prevent duplicates from being accidentally pushed to the DB. If this doesn't solve that potential problem, then just be careful with the module uploader when adding new structures.
+
+5. Fill out the information for a single test building, to use to validate the uploader function.
+
+6. Add a new script to the world_editor's package.json file, which transpiles and runs the code in the add_buildings file. Run this script twice to see how many entries end up in the modules collection... Update: Mongo seems to understand what we're at with the \_id property but Typescript is getting really confused by it, so we will have to resort to just being careful when adding new buildings to the DB, and keeping older modules in a separate file called older_buildings for posterity.
+
+7. Create the type information for Connectors now, in the new add_connectors file.
+
+8. Copy the add_buildings file's database function into the add_connectors file, and modify it to point to the Connectors collection. Then rename add_buildings back to add_modules, as they will be kept completely separate. More code but less work this way - an ugly system to be sure but functional which is what counts right now.
+
+9. Add a new script to the package.json for adding new connectors. Keep old connectors in a separate list within the older_buildings file when they're uploaded to the DB.
+
+10. Make updater function for changing a module, and test it with its own package.json script.
+
+11. Make updater function for changing a connector, and test it with its own package.json script.
+
+12. Make deleter function for removing a connector/module (the specs go in the file itself) and deploy it with its own package.json script.
+
+13. Make finder function to get structures from either the modules or connectors collections, and connect that to a new endpoint.
+
+14. Make new endpoint for searching for structures in the backend, and add it to the server's index file.
+
+## Chapter Eighteen: Getting Building Info in the Frontend (Difficulty Estimate: 8 for unit tests)
+
+### February 25, 2022
+
+Following the addition of some basic structure data to the backend, it is time to make the connection and get buildings added to the game's interface. This will be a gradual
+
 ## Chapter X: Loading Games (Forecast now says it'll be chapter 18...)
 
 ### Exit Criteria for backend save game chapter:

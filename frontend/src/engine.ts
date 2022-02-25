@@ -16,6 +16,8 @@ type GameData = {
 }
 
 // TODO: Load Environment variables
+if (process.env.ENVIRONMENT) console.log(process.env.ENVIRONMENT);
+
 
 export default class Engine extends View {
     // Engine types
