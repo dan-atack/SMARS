@@ -137,7 +137,7 @@ export default class Game extends Screen {
     render = () => {
         if (this._engine._sidebar._menuOpen) {  // Check if main menu is open, and close down this screen if so
             this.currentScreen = false;
-            this._engine._sidebar.setMenuOpen(false);
+            this._engine._sidebar.setMenuOpen(false);       // And reset the flag!?
         }
         if (this._engine.currentView) this._engine.render();
         if (this._earth.currentView) this._earth.render();

@@ -700,11 +700,53 @@ Exit Criteria:
 
 14. Make new endpoint for searching for structures in the backend, and add it to the server's index file.
 
-## Chapter Eighteen: Getting Building Info in the Frontend (Difficulty Estimate: 8 for unit tests)
+## Chapter Eighteen: Buildings in the Frontend (Difficulty Estimate: 6 due to regular difficulty plus a coat of rust on this here programmer!)
 
 ### February 25, 2022
 
-Following the addition of some basic structure data to the backend, it is time to make the connection and get buildings added to the game's interface. This will be a gradual
+Following the addition of some basic structure data to the backend, it is time to make the connection and get buildings added to the game's interface. The goal of this chapter will be to get the building data from the backend into the Build menu (which may need to be re-worked to be more dynamic), then establishing the rules for structure placement. We'll also take this opportunity to implement the first of the frontend's unit tests, to verify that the logic for structure placement works correctly. This will probably involve using Mock tests to simulate the placement of buildings in the game's world, and checking that no undesired behaviour is allowed (such as buildings floating above the ground, buildings overlapping each other, etc.) This chapter will take a gradual approach to adding complexity to building placement, starting with simple overlap tests, then terrain checking, and finally structural strength evaluation. Calculations relating to costs will be out of scope, as will considerations of pressurized vs non-pressurized volume.
+
+Exit criteria:
+
+- Test building data can be fetched from the backend and displayed in a console log from the frontend
+- The player can select a building from the sidebar and place it on the map (when the structure is selected would be a good time to console log its extended data, by the way)
+- Placing a building is constrained by:
+  -- Terrain (no obstacles in the way)
+  -- Terrain/gravity (must be placed on flat ground or on top of other module)
+  -- Infrastructure (no other modules in the way)
+  -- [STRETCH] Infrastructure/gravity (strength of the module beneath)
+
+1. Make a new server function to call the modules endpoint in the backend. This function should take two arguments, which are the category and type of structure to get from the backend. UPDATE: by making the second argument (for module/collection TYPE) optional, we can now use this function to return EITHER the list of structures for a given type, OR the list of types themselves for either category of structure. This would also be expandable in the future, i.e. if more than two categories are used (Never say never, vehicles collection!)
+
+2. Go back to the backend and add a new structure finding function that queries one of the two collections (modules or connectors) and returns a list of the unique types of structures within that collection.
+
+3. Re-structure the detailsArea component to initially show a two-item list of options: modules and connectors (and the back button). Remove all other top-level buttons from this component.
+
+4. Add new field to the detailsArea component to hold information about which structure category is selected, along with which type (so there can be a total of 3 'layers' of option buttons).
+
+5. Import the getStructures function to the detailsArea component, then have it get called with a single argument by your two new buttons (Modules and Connectors).
+
+6. Now modify the getStructures function to accept an additional, mandatory argument, the setter function to pass the list of types it retrieves to the detailsArea component when it gets them from the backend.
+
+7. Separate the original getStructures function from the getStructureTypes variant, so that each can be called separately.
+
+8. When the detailsArea's buildTypeOptions value is set, render a new set of buttons, labelled for the different Types. Do not render the actual building options themselves, and ensure that the component's click handlers are also adjusted.
+
+9. Re-jigger the detailsArea's whole button rendering logic to allow it to show three layers of options: building categories, building types (within a category) and individual building options (within a type).
+
+10. When a building type is selected, do a second fetch to get the buildings for that type, then console log them when they come in.
+
+11. Update the building list fetcher to take an argument for a setter function, and copy the type definition for building data into the frontend's server functions file so it can set the types for the data passed to the buildingOptions field.
+
+12. Time to enforce a standard: All database read functions will convert all queries and results to lowercase, and all structures in the modules and connectors collections will be updated to have their TYPE fields in lowercase.
+
+### 4. After that's done, it'll be time to add the Infrastructure class to the Engine, inspired by the game jam version which we should totally go look up when we get to this step.
+
+5. Alter the backend's structure functions and endpoints so that modules and connectors use a different endpoint, and the request parameters can be used to specify the type of module/connector, instead of having the parameter be either 'module' or 'connector' and then returning every item from one of those two categories.
+
+6. Update the README file for the World Editor suite to include detailed instructions on what to do and what to expect when adding modules/connectors to the game's backend.
+
+### 7. Update the building getter server function to take one additional argument, the setter function for the details area's building options list, to pass the information to that component after the fetch is completed.
 
 ## Chapter X: Loading Games (Forecast now says it'll be chapter 18...)
 

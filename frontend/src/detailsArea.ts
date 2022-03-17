@@ -3,6 +3,8 @@ import P5 from "p5";
 import Button from "./button";
 import BuildingChip from "./buildingChip";
 import Minimap from "./minimap";
+// Types and functions from 'Server functions' file (for backend connectivity)
+import { getStructureTypes, getStructures, ModuleInfo, ConnectorInfo } from "./server_functions";
 import { constants } from "./constants";
 
 export default class DetailsArea {
@@ -18,14 +20,24 @@ export default class DetailsArea {
     _buttonHeight: number;
     _buttonMargin: number;              // Height plus a margin; used directly for positioning buttons with a gap in between
     _isExtended: boolean;
-    _buildTypeSelection: string;        // Case name for which category of building, if any, is selected
-    _categoryButtons: Button[];         // First-level buttons: build option categories
-    _optionbuttons: BuildingChip[];     // Second-level buttons: actual build options (sorted into categories)
+    // Category/type selection status
+    _buildCategorySelection: string;    // Which CATEGORY of building, if any, is selected
+    _buildTypeSelection: string;        // Which TYPE of building, if any, is selected
+    // Data from backend
+    _buildTypeOptions: string[];                        // Storage variable for TYPE OPTIONS data fetched from the backend
+    _buildingOptions: ModuleInfo[] | ConnectorInfo[];   // Storage variable for BUILDING OPTIONS data fetched from the backend
+    // Buttons
+    _categoryButtons: Button[];         // First-level buttons: general building CATEGORIES (modules, connectors... vehicles??)
+    _typeButtons: Button[];             // Second-level buttons: building TYPE options (habitation, transport, etc.)
+    _optionButtons: BuildingChip[];     // Third-level buttons: actual building options (sorted by type)
     _backButton: Button;                // Button to return from the building options list to the building categories list
+    // Minimap
     _minimap: Minimap;
     // TODO: add _currentOption as new component type, buildingDetails, which shows an image of a building and all of its info
     setOpen: (status: boolean) => void; // Alerts the sidebar that the details area has been closed (so it can reshow its own buttons)
     setMouseContext: (value: string) => void;   // Updater for the Engine's mouse context when a building is selected
+    getStructureTypes: (setter: (options: string[]) => void, category: string) => void;   // Server function to fetch lists for building types
+    getStructures: (setter: (options: ModuleInfo[] | ConnectorInfo[]) => void, category: string, type: string) => void
 
     constructor(p5: P5, setOpen: (status: boolean) => void, setMouseContext: (value: string) => void) {
         this._p5 = p5;
@@ -39,117 +51,162 @@ export default class DetailsArea {
         this._buttonHeight = 88;
         this._buttonMargin = 96;
         this._isExtended = false;
-        this._buildTypeSelection = "";      // Default is no selection
-        const hab = new Button(p5, "Habitation Modules", this._x, this._buttonY, this.handleHabitation, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
-        const ind = new Button(p5, "Industrial Modules", this._x, this._buttonY + this._buttonMargin, this.handleIndustrial, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
-        const log = new Button(p5, "Logistics", this._x, this._buttonY + 2 * this._buttonMargin, this.handleLogistics, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
-        const veh = new Button(p5, "Vehicles", this._x, this._buttonY + 3 * this._buttonMargin, this.handleVehicles, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
+        this._buildCategorySelection = "";  // Default is no selection for first-level category
+        this._buildTypeSelection = "";      // Default is no selection for second-level category (type)
+        this._buildTypeOptions = [];
+        this._buildingOptions = [];
+        const mods = new Button(p5, "Modules", this._x, this._buttonY, this.handleModules, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
+        const cons = new Button(p5, "Connectors", this._x, this._buttonY + this._buttonMargin, this.handleConnectors, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
         const close = new Button(p5, "BACK", this._x, this._buttonY + 4 * this._buttonMargin, this.handleClose, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG);  // Close is the 'Back' button from the categories list; de-expands DA
-        this._categoryButtons = [hab, ind, log, veh, close];
-        this._optionbuttons = [];
+        this._categoryButtons = [mods, cons, close];
+        this._typeButtons = [];
+        this._optionButtons = [];
         this._backButton = new Button(p5, "BACK", this._x, this._buttonY + 4 * this._buttonMargin, this.handleBack, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG);
         this._minimap = new Minimap(p5, this._x + 24, this._y + 256, []);
         this.setOpen = setOpen;
         this.setMouseContext = setMouseContext;
+        this.getStructureTypes = getStructureTypes;
+        this.getStructures = getStructures;
     }
 
     handleClicks = (mouseX: number, mouseY: number) => {
         if (this._isExtended) {
             // Set individual button groups to active depending on which level of selection the user is at:
-            if (this._buildTypeSelection) {
-                this._optionbuttons.forEach((button) => {
+            if (this._buildTypeSelection) { // If the build TYPE is selected, show the individual buildings
+                this._optionButtons.forEach((button) => {
                     button.handleClick(mouseX, mouseY);
                 })
                 this._backButton.handleClick(mouseX, mouseY);   // Back button is shown alongside building options
+            } else if (this._buildCategorySelection) {  // If the type isn't selected but category is, show type options
+                this._typeButtons.forEach((button) => {
+                    button.handleClick(mouseX, mouseY);
+                })
+                this._backButton.handleClick(mouseX, mouseY);   // Back button is shown alongside type options too
             } else {
                 this._categoryButtons.forEach((button) => {
                     button.handleClick(mouseX, mouseY);
                 })
-            }   
+            }
         }
     }
 
-    // Take a list of building data objects and use it to populate the building option buttons list:
-    populateBuildingOptions = (buildings: string[]) => {
-        this._optionbuttons = [];       // Clear existing options
-        buildings.forEach((mod, idx) => {
-            const data = {
-                name: mod,
-            }
-            const m = new BuildingChip(this._p5, data, this._x, this._buttonY + idx * this._buttonMargin, this.setMouseContext);
-            this._optionbuttons.push(m);
+    // Take a list of building type name strings and use it to populate the second-level buttons:
+    populateTypeOptions = (types: string[]) => {
+        this._typeButtons = []; // Clear existing options
+        types.forEach((buildingType, idx) => {
+            const button = new Button(this._p5, buildingType, this._x, this._buttonY + idx * this._buttonMargin, () => this.handleTypeSelection(buildingType), this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
+            this._typeButtons.push(button);
         })
     }
 
-    handleHabitation = () => {
-        this.setBuildTypeSelection("habitation");
-        // TODO: Add server action to fetch a list of buildings with the 'habitation' type; pass the result to building populator (above)
-        const modules = ["Sleeping Quarters", "Cantina", "Recreation Area"];
-        this.populateBuildingOptions(modules);
+    // Take a list of building data objects and use it to populate the building option buttons list:
+    populateBuildingOptions = (buildings: ModuleInfo[] | ConnectorInfo[]) => {
+        this._optionButtons = [];       // Clear existing options
+        buildings.forEach((bld, idx) => {
+            const m = new BuildingChip(this._p5, bld, this._x, this._buttonY + idx * this._buttonMargin, this.setMouseContext);
+            this._optionButtons.push(m);
+        })
     }
 
-    handleIndustrial = () => {
-        this.setBuildTypeSelection("industrial");
-        const modules = ["Glass Smelter", "Rover Garage", "Oxygen Factory"];
-        this.populateBuildingOptions(modules);
+    handleModules = () => {
+        this.setBuildCategorySelection("modules");
+        this.getStructureTypes(this.setBuildTypeOptions, "modules");
     }
 
-    handleLogistics = () => {
-        this.setBuildTypeSelection("logistics");
-        const modules = ["Pipes", "Ladder", "Ventilation Duct"];
-        this.populateBuildingOptions(modules);
+    handleConnectors = () => {
+        this.setBuildCategorySelection("connectors");
+        this.getStructureTypes(this.setBuildTypeOptions, "connectors");
     }
 
-    handleVehicles = () => {
-        this.setBuildTypeSelection("vehicles");
-        const modules = ["Simple Rover"];
-        this.populateBuildingOptions(modules);
+    handleTypeSelection = (selection: string) => {
+        this.setBuildTypeSelection(selection);
+        this.getStructures(this.setBuildingOptions, this._buildCategorySelection, this._buildTypeSelection)
     }
 
-    // Close the build categories list (and return to top-level sidebar display)
+    // Close down the component (and return to top-level sidebar display)
     handleClose = () => {
-        this.setOpen(false);        // For Sidebar
-        this._isExtended = false;   // For self
+        this.setOpen(false);                // For Sidebar
+        this.setExtended(false);            // For self
     }
 
-    // Close a specific building category's modules list and return to build category options (keeping details area extended)
+    // Goes back one level of options, either from the buildings themselves, or the building types (keeping details area extended)
     handleBack = () => {
-        this.setBuildTypeSelection("");
+        // If build type is selected, clear individual building options and remove type selection:
+        if (this._buildTypeSelection) {
+            console.log("Back hit from building selection menu: returning to type selection options");
+            this.setBuildingOptions([]);
+            this.setBuildTypeSelection("");
+        } else if (this._buildCategorySelection) {
+            console.log("Back hit from type selection menu: returning to category selection options");
+            this.setBuildCategorySelection("");
+            this.setBuildTypeOptions([]);
+        }
     }
 
     setExtended = (extended: boolean) => {
         this._isExtended = extended;
+        this._buildCategorySelection = "";  // Reset default values whenever the menu is opened/closed
+        this._buildTypeSelection = "";
+        this._buildTypeOptions = [];
+        this._buildingOptions = [];
+    }
+
+    setBuildCategorySelection = (value: string) => {
+        this._buildCategorySelection = value;
     }
 
     setBuildTypeSelection = (value: string) => {
         this._buildTypeSelection = value;
     }
 
+    // Setter that is passed to the building TYPES server function
+    setBuildTypeOptions = (options: string[]) => {
+        this._buildTypeOptions = options;
+        this.populateTypeOptions(options);  // Create the buttons when the types are fetched from the backend
+    }
+
+    // Setter that is passed to the fetcher for the actual building options
+    setBuildingOptions = (options: ModuleInfo[] | ConnectorInfo[]) =>  {
+        this._buildingOptions = options;
+        this.populateBuildingOptions(options);
+    }
+
     showBuildingOptions = () => {
         const p5 = this._p5;
         p5.textSize(22);
         p5.fill(constants.GREEN_TERMINAL);
-        switch (this._buildTypeSelection) {
-            case "habitation":
-                p5.text("Select Habitation Module", this._x + (this._width / 2), this._yExtended + 64);
-                break;
-            case "industrial":
-                p5.text("Select Industrial Module", this._x + (this._width / 2), this._yExtended + 64);
-                break;
-            case "logistics":
-                p5.text("Build Logistical Module", this._x + (this._width / 2), this._yExtended + 64);
-                break;
-            case "vehicles":
-                p5.text("Build New Vehicle", this._x + (this._width / 2), this._yExtended + 64);
-                break;
-        }
+        p5.text("Select", this._x + (this._width / 2), this._yExtended + 64);
+        p5.text(`${this._buildTypeSelection} ${this._buildCategorySelection}:`, this._x + (this._width / 2), this._yExtended + 88);
         this._backButton.render();  // Render back button to return to building categories menu
         // Render individual building options:
-        this._optionbuttons.forEach((button) => {
+        this._optionButtons.forEach((button) => {
             button.render();
         })
         p5.textAlign(p5.CENTER, p5.CENTER);
         // TODO: Add rules for pagination if list length exceeds 4 items
+    }
+
+    showTypeOptions = () => {
+        const p5 = this._p5;
+        p5.textSize(22);
+        p5.fill(constants.GREEN_TERMINAL);
+        p5.text(`Select ${this._buildCategorySelection.slice(0, -1)} type:`, this._x + (this._width / 2), this._yExtended + 64);
+        this._backButton.render();
+        this._typeButtons.forEach((button) => {
+            button.render();
+        })
+        p5.textAlign(p5.CENTER, p5.CENTER);
+    }
+
+    showCategoryOptions = () => {
+        const p5 = this._p5;
+        p5.textSize(22);
+        p5.fill(constants.GREEN_TERMINAL);
+        p5.text("Select Building Category", this._x + (this._width / 2), this._yExtended + 64);
+        this._categoryButtons.forEach((button) => {
+            button.render();
+        })
+        p5.textAlign(p5.CENTER, p5.CENTER);
     }
 
     render = () => {
@@ -158,15 +215,13 @@ export default class DetailsArea {
         p5.strokeWeight(2);
         if (this._isExtended) { // If building option is selected from sidebar menu, expand the details area
             p5.rect(this._x, this._yExtended, this._width, this._extendedHeight, 8, 8, 8, 8);
-            if (this._buildTypeSelection) { // If building type has been selected, show building options for that type
+            // If type is selected show building options; else show type options; else show category options
+            if (this._buildTypeSelection) {
                 this.showBuildingOptions();
+            } else if (this._buildCategorySelection) {
+                this.showTypeOptions();
             } else {
-                this._categoryButtons.forEach((button) => { // If not, show the buttons to choose a building category
-                    button.render();
-                })
-                p5.textSize(22);
-                p5.fill(constants.GREEN_TERMINAL);
-                p5.text("Select Construction Type", this._x + (this._width / 2), this._yExtended + 64)
+                this.showCategoryOptions();
             }
         } else {    // If Details Area is not extended, show it with normal height and display the Minimap in the middle of it
             p5.rect(this._x, this._y, this._width, this._normalHeight, 8, 8, 8, 8);
@@ -175,5 +230,7 @@ export default class DetailsArea {
             p5.text("Minimap", this._x + (this._width / 2), this._y + 64);
             this._minimap.render();
         }
+        p5.text(this._buildTypeOptions, this._x - 500, this._y - 200);
+        p5.text(this._buildTypeSelection, this._x - 500, this._y - 250);
     }
 }

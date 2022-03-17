@@ -2,6 +2,7 @@
 import P5 from "p5";
 import Button from "./button";
 import DetailsArea from "./detailsArea";
+import { getStructures } from "./server_functions";
 import { constants } from "./constants";
 
 export default class Sidebar {
@@ -58,7 +59,7 @@ export default class Sidebar {
         this._buttons = [];
         this._gameSpeedButtons = [];
         this._buildOptionsOpen = false;     // Flag for showing the build options buttons instead of regular top-level buttons
-        this._menuOpen = false;             // Use this flag to alert the Engine if the menu has just been opened
+        this._menuOpen = false;             // Use this flag to alert the Game screen if the menu has just been opened
         this._martianDate = [1, 0];         // Date, Year: Game starts on day 1 of year zero in the Smartian calendar!
         this.switchScreen = switchScreen;
         this.changeView = changeView;
