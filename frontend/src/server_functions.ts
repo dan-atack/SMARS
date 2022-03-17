@@ -22,6 +22,7 @@ export type ModuleInfo = {
     maintenanceCosts: Object[]    // Same idea as above
     storageCapacity: Object[]     // Once again, the amount of each type of resource (if any) that can be stored in this module
     crewCapacity: number    // How many humans can fit into a phone booth??
+    // TODO: SHAPES!
 }
 
 export type ConnectorInfo = {
@@ -33,6 +34,7 @@ export type ConnectorInfo = {
     maintenanceCosts: Object[]  // Ditto
     vertical: boolean       // Can this go up/down? Ladders can, rails cannot.
     horizontal: boolean     // Can this go from side to side? Air ducts can, elevators cannot.
+    // TODO: WIDTH!
 }
 
 // Send login request with req body consisting of a username and password to the game's server

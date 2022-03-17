@@ -20,9 +20,10 @@ export default class DetailsArea {
     _buttonHeight: number;
     _buttonMargin: number;              // Height plus a margin; used directly for positioning buttons with a gap in between
     _isExtended: boolean;
-    // Category/type selection status
+    // Category/type/structure selection status
     _buildCategorySelection: string;    // Which CATEGORY of building, if any, is selected
     _buildTypeSelection: string;        // Which TYPE of building, if any, is selected
+    _buildingSelection: ModuleInfo | ConnectorInfo | null;     // the actual building itself (if any)
     // Data from backend
     _buildTypeOptions: string[];                        // Storage variable for TYPE OPTIONS data fetched from the backend
     _buildingOptions: ModuleInfo[] | ConnectorInfo[];   // Storage variable for BUILDING OPTIONS data fetched from the backend
@@ -53,11 +54,12 @@ export default class DetailsArea {
         this._isExtended = false;
         this._buildCategorySelection = "";  // Default is no selection for first-level category
         this._buildTypeSelection = "";      // Default is no selection for second-level category (type)
+        this._buildingSelection = null;     // Default is no building selection
         this._buildTypeOptions = [];
         this._buildingOptions = [];
         const mods = new Button(p5, "Modules", this._x, this._buttonY, this.handleModules, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
         const cons = new Button(p5, "Connectors", this._x, this._buttonY + this._buttonMargin, this.handleConnectors, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
-        const close = new Button(p5, "BACK", this._x, this._buttonY + 4 * this._buttonMargin, this.handleClose, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG);  // Close is the 'Back' button from the categories list; de-expands DA
+        const close = new Button(p5, "CANCEL", this._x, this._buttonY + 4 * this._buttonMargin, this.handleClose, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG);  // Close is the 'Back' button from the categories list; de-expands DA
         this._categoryButtons = [mods, cons, close];
         this._typeButtons = [];
         this._optionButtons = [];
@@ -103,7 +105,7 @@ export default class DetailsArea {
     populateBuildingOptions = (buildings: ModuleInfo[] | ConnectorInfo[]) => {
         this._optionButtons = [];       // Clear existing options
         buildings.forEach((bld, idx) => {
-            const m = new BuildingChip(this._p5, bld, this._x, this._buttonY + idx * this._buttonMargin, this.setMouseContext);
+            const m = new BuildingChip(this._p5, bld, this._x, this._buttonY + idx * this._buttonMargin, this.setMouseContext, this.setBuildingSelection);
             this._optionButtons.push(m);
         })
     }
@@ -127,6 +129,7 @@ export default class DetailsArea {
     handleClose = () => {
         this.setOpen(false);                // For Sidebar
         this.setExtended(false);            // For self
+        this._buildingSelection = null;     // Reset building selection if player closes build menu
     }
 
     // Goes back one level of options, either from the buildings themselves, or the building types (keeping details area extended)
@@ -149,6 +152,7 @@ export default class DetailsArea {
         this._buildTypeSelection = "";
         this._buildTypeOptions = [];
         this._buildingOptions = [];
+        this._buildingSelection = null;     // Reset building selection if player closes build menu
     }
 
     setBuildCategorySelection = (value: string) => {
@@ -169,6 +173,11 @@ export default class DetailsArea {
     setBuildingOptions = (options: ModuleInfo[] | ConnectorInfo[]) =>  {
         this._buildingOptions = options;
         this.populateBuildingOptions(options);
+    }
+
+    setBuildingSelection = (value: ModuleInfo | ConnectorInfo) => {
+        this._buildingSelection = value;
+        console.log(this._buildingSelection);
     }
 
     showBuildingOptions = () => {
@@ -230,7 +239,5 @@ export default class DetailsArea {
             p5.text("Minimap", this._x + (this._width / 2), this._y + 64);
             this._minimap.render();
         }
-        p5.text(this._buildTypeOptions, this._x - 500, this._y - 200);
-        p5.text(this._buildTypeSelection, this._x - 500, this._y - 250);
     }
 }

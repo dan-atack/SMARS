@@ -740,13 +740,19 @@ Exit criteria:
 
 12. Time to enforce a standard: All database read functions will convert all queries and results to lowercase, and all structures in the modules and connectors collections will be updated to have their TYPE fields in lowercase.
 
-### 4. After that's done, it'll be time to add the Infrastructure class to the Engine, inspired by the game jam version which we should totally go look up when we get to this step.
+13. Alter the backend's structure functions and endpoints so that modules and connectors use a different endpoint, and the request parameters can be used to specify the type of module/connector, instead of having the parameter be either 'module' or 'connector' and then returning every item from one of those two categories.
 
-5. Alter the backend's structure functions and endpoints so that modules and connectors use a different endpoint, and the request parameters can be used to specify the type of module/connector, instead of having the parameter be either 'module' or 'connector' and then returning every item from one of those two categories.
+14. Update the README file for the World Editor suite to include detailed instructions on what to do and what to expect when adding modules/connectors to the game's backend.
 
-6. Update the README file for the World Editor suite to include detailed instructions on what to do and what to expect when adding modules/connectors to the game's backend.
+15. Add a field to the detailsArea for 'selectedBuilding,' which holds the data for a module / connector.
 
-### 7. Update the building getter server function to take one additional argument, the setter function for the details area's building options list, to pass the information to that component after the fetch is completed.
+16. Create the Module class, which will take ModuleInfo sized data as its main constructor argument.
+
+17. Create the Connector class, which will take ConnectorInfo sized data as its main constructor argument.
+
+18. Create the Infrastructure class. Take a look at the game jam version first, for inspiration. Then take almost nothing from it.
+
+### 19. When the detailsArea has a building selected, have the Engine register that fact.
 
 ## Chapter X: Loading Games (Forecast now says it'll be chapter 18...)
 

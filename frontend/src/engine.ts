@@ -4,6 +4,7 @@ import * as dotenv from "dotenv";
 import View from "./view";
 import Sidebar from "./sidebar";
 import Map from "./map";
+import Infrastructure from "./infrastructure";
 import Modal from "./modal";
 import { constants } from "./constants";
 
@@ -25,6 +26,7 @@ export default class Engine extends View {
     _sidebarExtended: boolean;
     _gameData: GameData;
     _map: Map;
+    _infrastructure: Infrastructure;
     _modal: Modal | null;
     _horizontalOffset: number;  // This will be used to offset all elements in the game's world, starting with the map
     _scrollDistance: number;    // Pixels from the edge of the world area in which scrolling occurs
@@ -59,6 +61,7 @@ export default class Engine extends View {
             mapTerrain: []
         }   // Game data is loaded from the Game module when it calls the setup method
         this._map = new Map(this._p5);
+        this._infrastructure = new Infrastructure(p5);
         this._modal = null;
         this._horizontalOffset = 0;
         this._scrollDistance = 50;
@@ -223,6 +226,7 @@ export default class Engine extends View {
         p5.text(`Date: ${this._sol}-${this._smartianYear}`, constants.SCREEN_WIDTH * 3/8, 240);
         p5.text(`Time: ${this._hour}:${this._minute} ${this._clockCycle}`, constants.SCREEN_WIDTH * 3/8, 300);
         this._map.render(this._horizontalOffset);
+        this._infrastructure.render(this._horizontalOffset);
         this._sidebar.render(this._minute, this._hour, this._clockCycle);
         if (this._modal) {
             this._modal.render();
