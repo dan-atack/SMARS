@@ -132,15 +132,32 @@ export default class DetailsArea {
         this._buildingSelection = null;     // Reset building selection if player closes build menu
     }
 
+    // If the actual building is selected, keep the building options but deselect current building and change mouse context
+    handleCancelBuilding = () => {
+        this.setBuildingSelection(null);
+        this.setMouseContext("select");
+    }
+
+    // If build type is selected, clear individual building options and remove type selection
+    handleCancelType = () => {
+        this.setBuildingOptions([]);
+        this.setBuildTypeSelection("");
+    }
+
+    // If only the category is selected, clear the type options and remove category selection
+    handleCancelCategory = () => {
+        this.setBuildCategorySelection("");
+        this.setBuildTypeOptions([]);
+    }
+
     // Goes back one level of options, either from the buildings themselves, or the building types (keeping details area extended)
     handleBack = () => {
-        // If build type is selected, clear individual building options and remove type selection:
-        if (this._buildTypeSelection) {
-            this.setBuildingOptions([]);
-            this.setBuildTypeSelection("");
+        if (this._buildingSelection) {
+            this.handleCancelBuilding();
+        } else if (this._buildTypeSelection) {
+            this.handleCancelType();
         } else if (this._buildCategorySelection) {
-            this.setBuildCategorySelection("");
-            this.setBuildTypeOptions([]);
+            this.handleCancelCategory();
         }
     }
 
@@ -173,7 +190,7 @@ export default class DetailsArea {
         this.populateBuildingOptions(options);
     }
 
-    setBuildingSelection = (value: ModuleInfo | ConnectorInfo) => {
+    setBuildingSelection = (value: ModuleInfo | ConnectorInfo | null) => {
         this._buildingSelection = value;
     }
 

@@ -760,15 +760,13 @@ Exit criteria:
 
 22. Now figure out how to make the Infrastructure/Building classes render on the screen.
 
-### 22. When the Engine has a building selected and is in place mode, make the mouse cursor a shadow of the selected building when its hovering over the map area. Also, make it snap to the grid. (Look at the game jam for an example of how this is done).
+23. When the Engine has a building selected and is in place mode, make the mouse cursor a shadow of the selected building when it's hovering over the map area. Also, make it snap to the grid. (Look at the game jam for an example of how this is done).
 
-### 23. Now when the mouse is pressed and a building is selected and we're in place mode, add that building to the Engine's Infrastructure component (matching the building type - module or connector - to the appropriate Infrastructure list).
+24. Now when the mouse is pressed and a building is selected and we're in place mode, add that building to the Engine's Infrastructure component (matching the building type - module or connector - to the appropriate Infrastructure list).
 
-### 24. Cancelling a building: add a right-click handler to the Engine, and test its response.
+25. Add a cancelBuilding method to the Engine, to be activated by the back button if a building is selected. Clicking 'back' when a building is selected does not change the displayed building option buttons, but cancels the placement selection process for the currently selected building (sets the mouse context back to select and sets the selected building value to null).
 
-### 25. Add a cancelBuilding method to the Engine, to be activated by the right click handler. This function should reset the Engine's selected building and the detailsArea's selected building to null, and reset the engine's mouse context to 'select.'
-
-### 26. Iron out the kinks in building rendering and placement so that buildings don't disappear until they're entirely outside of the screen (right now they disappear as soon as one of their columns is outside the game's render area).
+### 26. Iron out the kinks in building rendering and placement so that buildings don't disappear until they're entirely outside of the screen (right now they disappear as soon as one of their columns is outside the game's render area). Also, the building placement shadow should only be rendered if the mouse is over the map area, not the sidebar.
 
 ## Chapter X: Loading Games (Forecast now says it'll be chapter 18...)
 

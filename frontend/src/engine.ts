@@ -202,7 +202,12 @@ export default class Engine extends View {
     closeModal = () => {
         this.gameOn = true;
         this._modal = null;
-        this.setMouseContext("select");
+        // Reset mouse context to 'select' unless a building has been selected for construction:
+        if (this.selectedBuilding) {
+            this.setMouseContext("place");
+        } else {
+            this.setMouseContext("select");
+        }
     }
 
     advanceClock = () => {
@@ -240,6 +245,23 @@ export default class Engine extends View {
         }
     }
 
+    // For building placement
+    renderBuildingShadow = () => {
+        const p5 = this._p5;
+        let [x, y] = this.getMouseGridPosition(p5.mouseX, p5.mouseY);
+        x = x * constants.BLOCK_WIDTH - this._horizontalOffset;
+        y = y * constants.BLOCK_WIDTH;
+        if (this.selectedBuilding !== null) {
+            if (this._infrastructure.isModule(this.selectedBuilding)) {
+                const w = this.selectedBuilding.width * constants.BLOCK_WIDTH;
+                const h = this.selectedBuilding.height * constants.BLOCK_WIDTH;
+                p5.rect(x, y, w, h);
+            } else {
+                p5.rect(x, y, constants.BLOCK_WIDTH, constants.BLOCK_WIDTH);
+            }
+        }
+    }
+
     render = () => {
         // Scroll over 1 pixel per refresh cycle if mouse is pressed and the game is not yet at the right or left edge of the map:
         if (this._scrollingLeft && this._horizontalOffset > 0) {
@@ -258,6 +280,10 @@ export default class Engine extends View {
         this._map.render(this._horizontalOffset);
         this._infrastructure.render(this._horizontalOffset);
         this._sidebar.render(this._minute, this._hour, this._clockCycle);
+        // Mouse pointer is shadow of selected building, to help with building placement:
+        if (this.selectedBuilding !== null) {
+            this.renderBuildingShadow();
+        }
         if (this._modal) {
             this._modal.render();
         }
