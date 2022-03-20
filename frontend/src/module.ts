@@ -29,9 +29,10 @@ export default class Module {
     }
 
     render = (xOffset: number) => {    // TODO: Block gets y offset values as arguments to renderer
-        this._xOffset = xOffset;
-        const x = this._x * this._width - this._xOffset;
-        const y = this._y * this._width - this._yOffset;
+        this._xOffset = xOffset;    // Offset is in terms of pixels
+        // HERE IS WHERE X AND Y COORDINATES ARE CONVERTED TO PIXEL VALUES:
+        const x = this._x * constants.BLOCK_WIDTH - this._xOffset;
+        const y = this._y * constants.BLOCK_WIDTH - this._yOffset;
         this._p5.fill(this._color);
         this._p5.strokeWeight(2);
         this._p5.stroke(constants.ALMOST_BLACK);

@@ -35,7 +35,7 @@ export default class Sidebar {
     setMouseContext: (value: string) => void    // Changes the mouse click handler response in the Engine
     setGameSpeed: (value: string) => void;      // Changes the game speed (ticks per game minute) in Engine (string goes in switch block)
     menuButton: Button;                 // The Main Menu button stands apart from the regular buttons list to ensure it's always rendered.
-    detailsArea: DetailsArea;
+    _detailsArea: DetailsArea;
 
     constructor(p5:P5, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, setMouseContext: (value: string) => void, setGameSpeed: (value: string) => void) {
         this._p5 = p5;
@@ -66,13 +66,13 @@ export default class Sidebar {
         this.setMouseContext = setMouseContext;
         this.setGameSpeed = setGameSpeed;
         this.menuButton = new Button(this._p5, "Menu", constants.SCREEN_WIDTH - 88, 16, this.handleMenuButton, 76, 64, constants.GREEN_TERMINAL, constants.ALMOST_BLACK, 24);
-        this.detailsArea = new DetailsArea(p5, this.setBuildOptionsOpen, setMouseContext);  // OR ThIS.SetMouseContex?
+        this._detailsArea = new DetailsArea(p5, this.setBuildOptionsOpen, setMouseContext);  // OR ThIS.SetMouseContex?
     }
 
     setup = () => {
         // Ensure top level sidebar display is shown:
         this._buildOptionsOpen = false;
-        this.detailsArea.setExtended(false);
+        this._detailsArea.setExtended(false);
         // Create view-changing buttons:
         const earth = new Button(this._p5, "Earth", this._position + 4, this._viewButtonY, this.handleEarth, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 24);
         const industry = new Button(this._p5, "Industry", this._position + this._viewButtonWidth + 12, this._viewButtonY, this.handleIndustry, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 24);
@@ -100,7 +100,7 @@ export default class Sidebar {
                 button.handleClick(mouseX, mouseY);
             })
         } else {
-            this.detailsArea.handleClicks(mouseX, mouseY);
+            this._detailsArea.handleClicks(mouseX, mouseY);
         }
         this.menuButton.handleClick(mouseX, mouseY);    // Call menu button separately since it's not part of the standard list of buttons
         this._gameSpeedButtons.forEach((button) => {    // Ditto for the game speed buttons
@@ -129,7 +129,7 @@ export default class Sidebar {
     handleBuild = () => {
         // Opening the build options re-arranges the sidebar layout
         this.setBuildOptionsOpen(true);
-        this.detailsArea.setExtended(true);
+        this._detailsArea.setExtended(true);
     }
     
     handleResource = () => {
@@ -255,6 +255,6 @@ export default class Sidebar {
                 button.render();    // Top-level buttons
             })
         }
-        this.detailsArea.render();
+        this._detailsArea.render();
     }
 }

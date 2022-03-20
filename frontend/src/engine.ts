@@ -6,6 +6,7 @@ import Sidebar from "./sidebar";
 import Map from "./map";
 import Infrastructure from "./infrastructure";
 import Modal from "./modal";
+import { ModuleInfo, ConnectorInfo } from "./server_functions";
 import { constants } from "./constants";
 
 // Define object shape for pre-game data from game setup screen:
@@ -28,11 +29,16 @@ export default class Engine extends View {
     _map: Map;
     _infrastructure: Infrastructure;
     _modal: Modal | null;
+    // Map scrolling control
     _horizontalOffset: number;  // This will be used to offset all elements in the game's world, starting with the map
     _scrollDistance: number;    // Pixels from the edge of the world area in which scrolling occurs
     _scrollingLeft: boolean;    // Flags for whether the user is currently engaged in scrolling one way or the other
     _scrollingRight: boolean;
+    // Mouse click control
     mouseContext: string;       // Mouse context tells the Engine's click handler what to do when the mouse is pressed.
+    selectedBuilding: ModuleInfo | ConnectorInfo | null;    // Data storage for when the user is about to place a new structure
+    selectedBuildingCategory: string    // String name of the selected building category (if any)
+    // In-game time control
     gameOn: boolean;            // If the game is on then the time ticker advances; if not it doesn't
     _tick: number;
     ticksPerMinute: number;
@@ -68,7 +74,10 @@ export default class Engine extends View {
         this._scrollingLeft = false;
         this._scrollingRight = false;
         this.mouseContext = "select"    // Default mouse context is the user wants to select what they click on (if they click on the map)
+        this.selectedBuilding = null;   // There is no building info selected by default.
+        this.selectedBuildingCategory = "";  // Keep track of whether the selected building is a module or connector
         // Time-keeping:
+        // TODO: Make the clock its own component, to de-clutter the Engine.
         this.gameOn = true;             // By default the game is on when the Engine starts
         this._tick = 0;
         this.ticksPerMinute = 30        // Medium "fast" speed is set as the default
@@ -87,8 +96,9 @@ export default class Engine extends View {
         this._gameData = gameData;
         this._sidebar.setup();
         this._map.setup(this._gameData.mapTerrain);
-        this._horizontalOffset = this._map._maxOffset / 2   // Put player in the middle of the map to start out
-        this._sidebar.detailsArea._minimap.updateTerrain(this._gameData.mapTerrain);
+        this._horizontalOffset = this._map._maxOffset / 2;   // Put player in the middle of the map to start out
+        this._infrastructure.setup(this._horizontalOffset);
+        this._sidebar._detailsArea._minimap.updateTerrain(this._gameData.mapTerrain);
         // Sidebar minimap display - does it only need it during 'setup' or does it also need occasional updates?
     }
 
@@ -107,6 +117,8 @@ export default class Engine extends View {
                     break;
                 case "place":
                     console.log("Place");
+                    const [x, y] = this.getMouseGridPosition(mouseX, mouseY);
+                    if (this.selectedBuilding != null) this._infrastructure.addBuilding(x, y, this.selectedBuilding);
                     break;
                 case "resource":
                     console.log("Resource");
@@ -114,7 +126,8 @@ export default class Engine extends View {
                 case "modal":
                     this._modal?.handleClicks(mouseX, mouseY);
                     break;
-            }   
+            }
+            this.getMouseGridPosition(mouseX, mouseY);
         }
     }
 
@@ -131,8 +144,25 @@ export default class Engine extends View {
         } 
     }
 
+    // Given to various sub-components, this dictates how the mouse will behave when clicked in different situations
     setMouseContext = (value: string) => {
         this.mouseContext = value;
+        this.selectedBuilding = this._sidebar._detailsArea._buildingSelection;
+        if (this.selectedBuilding != null)  {
+            console.log(`Selected building: ${this.selectedBuilding.name ? this.selectedBuilding.name : null}`);
+        }
+    }
+
+    // Used for placing buildings and anything else that needs to 'snap to' the grid (returns values in grid locations)
+    getMouseGridPosition(mouseX: number, mouseY: number) {
+        const mouseGridX = Math.floor(mouseX / constants.BLOCK_WIDTH)
+        const mouseGridY = Math.floor(mouseY / constants.BLOCK_WIDTH)
+        const horizontalOffGridValue = Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH);
+        const gridX = mouseGridX + horizontalOffGridValue;
+        const gridY = mouseGridY;
+        // TODO: ADD vertical offset calculation
+        // Return coordinates as a tuple:
+        return [gridX, gridY];
     }
 
     setGameSpeed = (value: string) => {

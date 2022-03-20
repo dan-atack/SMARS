@@ -23,9 +23,8 @@ export default class BuildingChip extends Button {
         const xMatch = mouseX >= this._x && mouseX < this._x + this._width;
         const yMatch = mouseY >= this._y && mouseY < this._y + this._height;
         if (xMatch && yMatch) { // TODO: When more detailed building data is available, add a case for a two-part placement label
-            this.setMouseContext("place");
             this.setBuildingSelection(this.buildingData);
-            console.log(this.buildingData.name);
+            this.setMouseContext("place");
         }
     }
 

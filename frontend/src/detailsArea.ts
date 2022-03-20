@@ -136,11 +136,9 @@ export default class DetailsArea {
     handleBack = () => {
         // If build type is selected, clear individual building options and remove type selection:
         if (this._buildTypeSelection) {
-            console.log("Back hit from building selection menu: returning to type selection options");
             this.setBuildingOptions([]);
             this.setBuildTypeSelection("");
         } else if (this._buildCategorySelection) {
-            console.log("Back hit from type selection menu: returning to category selection options");
             this.setBuildCategorySelection("");
             this.setBuildTypeOptions([]);
         }
@@ -177,7 +175,6 @@ export default class DetailsArea {
 
     setBuildingSelection = (value: ModuleInfo | ConnectorInfo) => {
         this._buildingSelection = value;
-        console.log(this._buildingSelection);
     }
 
     showBuildingOptions = () => {

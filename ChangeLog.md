@@ -752,9 +752,29 @@ Exit criteria:
 
 18. Create the Infrastructure class. Take a look at the game jam version first, for inspiration. Then take almost nothing from it.
 
-### 19. When the detailsArea has a building selected, have the Engine register that fact.
+19. When the detailsArea has a building selected, have the Engine register that fact.
+
+20. When a building is selected and the engine's mouse context is 'place,' have the engine console log the selected building's data when the mouse is pressed on the screen.
+
+21. Now, when the mouse is pressed in the place context and there's a building selected, have the engine call a new Infrastructure method called placeBuilding, which adds the selected structure to either the \_modules or \_connectors array for the Infrastructure class.
+
+22. Now figure out how to make the Infrastructure/Building classes render on the screen.
+
+### 22. When the Engine has a building selected and is in place mode, make the mouse cursor a shadow of the selected building when its hovering over the map area. Also, make it snap to the grid. (Look at the game jam for an example of how this is done).
+
+### 23. Now when the mouse is pressed and a building is selected and we're in place mode, add that building to the Engine's Infrastructure component (matching the building type - module or connector - to the appropriate Infrastructure list).
+
+### 24. Cancelling a building: add a right-click handler to the Engine, and test its response.
+
+### 25. Add a cancelBuilding method to the Engine, to be activated by the right click handler. This function should reset the Engine's selected building and the detailsArea's selected building to null, and reset the engine's mouse context to 'select.'
+
+### 26. Iron out the kinks in building rendering and placement so that buildings don't disappear until they're entirely outside of the screen (right now they disappear as soon as one of their columns is outside the game's render area).
 
 ## Chapter X: Loading Games (Forecast now says it'll be chapter 18...)
+
+### Bug List:
+
+1. When the in-game menu is opened then closed, it resets the engine's offset to be back in the middle of the map. The offset value should persist between menu openings.
 
 ### Exit Criteria for backend save game chapter:
 

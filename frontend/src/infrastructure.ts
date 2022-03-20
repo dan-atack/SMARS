@@ -4,6 +4,7 @@ import Module from "./module";
 import Connector from "./connector";
 import { ConnectorInfo, ModuleInfo } from "./server_functions";
 import { constants } from "./constants";
+import p5 from "p5";
 
 export default class Infrastructure {
     // Infrastructure class types:
@@ -23,6 +24,35 @@ export default class Infrastructure {
         this._horizontalOffset = 0;
         // this._missingResources = []  // When a building fails the cost check, list the resources needed
         // this._productionTick = 0;
+    }
+
+    setup(center: number) {
+        const x = center / constants.BLOCK_WIDTH;
+    }
+
+    addBuilding (x: number, y: number, data: ModuleInfo | ConnectorInfo) {
+        if (this.isModule(data)) {
+            console.log("module");
+            this.addModule(x, y, data);
+        } else {
+            console.log("connector");
+            this.addConnector(x, y, data);
+        }
+    }
+
+    // Determines if the new building is a module or a connector:
+    isModule (building: ModuleInfo | ConnectorInfo): building is ModuleInfo {
+        return (building as ModuleInfo).pressurized !== undefined
+    }
+
+    addModule (x: number, y: number, moduleInfo: ModuleInfo) {
+        console.log(moduleInfo.name);
+        this._modules.push(new Module(this._p5, x, y, moduleInfo));
+    }
+
+    addConnector (x: number, y: number, connectorInfo: ConnectorInfo) {
+        console.log(connectorInfo);
+        this._connectors.push(new Connector(this._p5, x, y, connectorInfo));
     }
 
     // Mouse click handler to determine if a click event should be interpreted as a building placement request:
@@ -128,68 +158,12 @@ export default class Infrastructure {
         this._justBuilt = null;
     }
 
-    // runBuildingProduction(consumes, outputs, economy) {
-    //     // Go through a building's outputs and add each one to the economy stockpile AND reduce stockpiles for resources consumed
-    //     Object.keys(consumes).forEach((resource) => {
-    //         economy[resource] -= consumes[resource];
-    //     })
-    //     Object.keys(outputs).forEach((resource) => {
-    //         economy[resource] += outputs[resource];
-    //     })
-    // }
-
-    // calculateBuildingConsumption(consumes, economy) {
-    //     // Go though a buildings consumption list, and if all needs are met return object with success status
-    //     const response = {
-    //         success: true,
-    //         shortages: []
-    //     }
-    //     const resources = Object.keys(consumes);
-    //     // If there is a shortage, add the name of the missing resource to the shortages list
-    //     resources.forEach((resource) => {
-    //         if (economy[resource] < consumes[resource]) {
-    //             response.shortages.push(resource);
-    //         }
-    //     })
-
-    //     // If there are any shortages, set success status to false before returning the response object
-    //     if (response.shortages.length > 0) {
-    //         response.success = false;
-    //     }
-
-    //     return response;
-    // }
-
-    // Top level economic function loops thru buildings list and for each one carries out the production/consumption routines
-    // handleProduction(economy) {
-    //     // Advance production ticker if it is not on the max tick (which is the equivalent of the economy's "interval" value
-    //     if (this.productionTicker < ECONOMY_TICK_INTERVAL) {
-    //         this.productionTicker ++;
-    //     } else {
-    //         // Go through buildings list; for each building check its resource output fields AND resource consumption fields
-    //         this.buildings.forEach((building) => {
-    //             if (!building.productionToggled) {  // Only calculate buildings that aren't toggled
-    //                 const consumes = building.consumes;
-    //                 const outputs = building.outputs;
-    //                 // Check if consumption needs can be met:
-    //                 const response = this.calculateBuildingConsumption(consumes, economy);
-    //                 if (response.success === true) {    // If so, run the production function to update the game's economy
-    //                     this.runBuildingProduction(consumes, outputs, economy)
-    //                     building.shortfalls = [];   // If the building was showing a shortfall before, clean it up
-    //                 } else {
-    //                     building.shortfalls = response.shortages;
-    //                 }
-    //             } 
-    //         })
-    //         this.productionTicker = 0;
-    //     }        
-    // }
-
     render(horizontalOffset: number) {
+        const p5 = this._p5
         this._horizontalOffset = horizontalOffset;
         // Only render one screen width's worth, taking horizontal offset into account:
         const leftEdge = Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH);    // Edges are in terms of columns
-        const rightEdge = (this._horizontalOffset + constants.WORLD_VIEW_WIDTH) / constants.BLOCK_WIDTH;
+        const rightEdge = Math.floor(this._horizontalOffset + constants.WORLD_VIEW_WIDTH) / constants.BLOCK_WIDTH;
         this._modules.forEach((module) => {
             if (module._x >= leftEdge && module._x < rightEdge) {
                 module.render(this._horizontalOffset);
@@ -200,6 +174,13 @@ export default class Infrastructure {
                 connector.render(this._horizontalOffset);
             }
         })
+        p5.text(this._modules.length, 100, 100);
+        p5.text(`Left edge: ${leftEdge}`, 300, 100);
+        p5.text(`Right edge: ${rightEdge}`, 300, 200);
+        this._modules.forEach((module, idx) => {
+            p5.text(`${module._x}, ${module._y}`, 100, 120 + idx * 20);
+        })
+
     }
 
     reset() {
