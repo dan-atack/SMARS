@@ -4,7 +4,6 @@ import Module from "./module";
 import Connector from "./connector";
 import { ConnectorInfo, ModuleInfo } from "./server_functions";
 import { constants } from "./constants";
-import p5 from "p5";
 
 export default class Infrastructure {
     // Infrastructure class types:
@@ -51,7 +50,7 @@ export default class Infrastructure {
     }
 
     addConnector (x: number, y: number, connectorInfo: ConnectorInfo) {
-        console.log(connectorInfo);
+        console.log(connectorInfo.name);
         this._connectors.push(new Connector(this._p5, x, y, connectorInfo));
     }
 
@@ -165,22 +164,18 @@ export default class Infrastructure {
         const leftEdge = Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH);    // Edges are in terms of columns
         const rightEdge = Math.floor(this._horizontalOffset + constants.WORLD_VIEW_WIDTH) / constants.BLOCK_WIDTH;
         this._modules.forEach((module) => {
-            if (module._x >= leftEdge && module._x < rightEdge) {
+            if (module._x + module._width >= leftEdge && module._x < rightEdge) {
                 module.render(this._horizontalOffset);
+                module._isRendered = true;
+            } else {
+                module._isRendered = false;
             }
         });
         this._connectors.forEach((connector) => {
             if (connector._x >= leftEdge && connector._y < rightEdge) {
                 connector.render(this._horizontalOffset);
             }
-        })
-        p5.text(this._modules.length, 100, 100);
-        p5.text(`Left edge: ${leftEdge}`, 300, 100);
-        p5.text(`Right edge: ${rightEdge}`, 300, 200);
-        this._modules.forEach((module, idx) => {
-            p5.text(`${module._x}, ${module._y}`, 100, 120 + idx * 20);
-        })
-
+        });
     }
 
     reset() {

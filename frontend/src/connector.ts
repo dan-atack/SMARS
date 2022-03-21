@@ -20,8 +20,8 @@ export default class Connector {
         this._x = x;
         this._y = y;
         this._connectorInfo = connectorInfo;
-        this._thickness = constants.BLOCK_WIDTH * 0.75;    // TODO: Replace width with 'thickness' in the backend
-        this._length = constants.BLOCK_WIDTH * 1.5;        // so that either value here can be horizontal/vertical
+        this._thickness = 1     // TODO: Replace width with 'thickness' in the backend...
+        this._length = 1        // ...so that either value here can be horizontal/vertical
         this._xOffset = 0;
         this._yOffset = 0;
         // Determined by matching block type to entry in the blocktionary:
@@ -30,13 +30,15 @@ export default class Connector {
 
     render = (xOffset: number) => {    // TODO: Block gets y offset values as arguments to renderer
         this._xOffset = xOffset;    // Offset is in terms of pixels
-        // HERE IS WHERE X AND Y COORDINATES ARE CONVERTED TO PIXEL VALUES:
+        // HERE IS WHERE X AND Y COORDINATES AND THICKNESS AND LENGTH ARE CONVERTED TO PIXEL VALUES:
         const x = this._x * constants.BLOCK_WIDTH - this._xOffset;
         const y = this._y * constants.BLOCK_WIDTH - this._yOffset;
+        const w = this._thickness * constants.BLOCK_WIDTH;
+        const h = this._length * constants.BLOCK_WIDTH;
         this._p5.fill(this._color);
         this._p5.strokeWeight(2);
         this._p5.stroke(constants.ALMOST_BLACK);
-        this._p5.rect(x, y, this._thickness, this._length);
+        this._p5.rect(x, y, w, h);
     }
 
 }

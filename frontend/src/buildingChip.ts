@@ -8,9 +8,9 @@ export default class BuildingChip extends Button {
     // Building Chip types:
     buildingData: ModuleInfo | ConnectorInfo;
     setMouseContext: (value: string) => void;
-    setBuildingSelection: (value: ModuleInfo | ConnectorInfo) => void;
+    setBuildingSelection: (value: ModuleInfo | ConnectorInfo | null) => void;
 
-    constructor(p5: P5, buildingData: ModuleInfo | ConnectorInfo, x: number, y: number, setMouseContext: (value: string) => void, setBuildingSelection: (value: ModuleInfo | ConnectorInfo) => void) {
+    constructor(p5: P5, buildingData: ModuleInfo | ConnectorInfo, x: number, y: number, setMouseContext: (value: string) => void, setBuildingSelection: (value: ModuleInfo | ConnectorInfo | null) => void) {
         super(p5, buildingData.name, x + 8, y, () => console.log("Exception: build chip click handler is not working."), constants.SIDEBAR_WIDTH - 24, 88, constants.EGGSHELL, constants.ALMOST_BLACK, 20);    // Handler here is a dud since the build chip uses the set mouse context function as its handler and this requires a string argument (instead of no argument)
         this.buildingData = buildingData;
         this.setMouseContext = setMouseContext;
@@ -23,8 +23,16 @@ export default class BuildingChip extends Button {
         const xMatch = mouseX >= this._x && mouseX < this._x + this._width;
         const yMatch = mouseY >= this._y && mouseY < this._y + this._height;
         if (xMatch && yMatch) { // TODO: When more detailed building data is available, add a case for a two-part placement label
-            this.setBuildingSelection(this.buildingData);
-            this.setMouseContext("place");
+            // If building is already selected, clicking its chip again deselects it:
+            if (this._selected) {
+                this.setBuildingSelection(null);
+                this.setMouseContext("select");
+                this.setSelected(false);
+            } else {        // Otherwise set this building as the selection and set mouse context
+                this.setBuildingSelection(this.buildingData);
+                this.setMouseContext("place");
+                this.setSelected(true);
+            }
         }
     }
 

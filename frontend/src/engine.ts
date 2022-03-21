@@ -98,6 +98,7 @@ export default class Engine extends View {
         this._map.setup(this._gameData.mapTerrain);
         this._horizontalOffset = this._map._maxOffset / 2;   // Put player in the middle of the map to start out
         this._infrastructure.setup(this._horizontalOffset);
+        this.selectedBuilding = null;
         this._sidebar._detailsArea._minimap.updateTerrain(this._gameData.mapTerrain);
         // Sidebar minimap display - does it only need it during 'setup' or does it also need occasional updates?
     }
@@ -133,7 +134,8 @@ export default class Engine extends View {
 
     // Handler for when the mouse button is being held down (for scrolling))
     handleMouseDown = (mouseX: number, mouseY: number) => {
-        if (!this._modal) {     // Do not allow scrolling when modal is opened
+        // Do not allow scrolling when modal is opened or during building placement
+        if (!this._modal && !(this.mouseContext === 'place')) {
             if (!(mouseX > constants.SCREEN_WIDTH - this._sidebar._width)) {    // Do not allow scrolling from the sidebar
                 if (mouseX < this._scrollDistance) {
                     this._scrollingLeft = true;
@@ -248,18 +250,21 @@ export default class Engine extends View {
     // For building placement
     renderBuildingShadow = () => {
         const p5 = this._p5;
-        let [x, y] = this.getMouseGridPosition(p5.mouseX, p5.mouseY);
-        x = x * constants.BLOCK_WIDTH - this._horizontalOffset;
-        y = y * constants.BLOCK_WIDTH;
-        if (this.selectedBuilding !== null) {
-            if (this._infrastructure.isModule(this.selectedBuilding)) {
-                const w = this.selectedBuilding.width * constants.BLOCK_WIDTH;
-                const h = this.selectedBuilding.height * constants.BLOCK_WIDTH;
-                p5.rect(x, y, w, h);
-            } else {
-                p5.rect(x, y, constants.BLOCK_WIDTH, constants.BLOCK_WIDTH);
+        // Only render the building shadow if mouse is over the map area (not the sidebar)
+        if (p5.mouseX < constants.SCREEN_WIDTH - this._sidebar._width && !this._modal) {
+            let [x, y] = this.getMouseGridPosition(p5.mouseX, p5.mouseY);
+            x = x * constants.BLOCK_WIDTH - this._horizontalOffset;
+            y = y * constants.BLOCK_WIDTH;
+            if (this.selectedBuilding !== null) {
+                if (this._infrastructure.isModule(this.selectedBuilding)) {
+                    const w = this.selectedBuilding.width * constants.BLOCK_WIDTH;
+                    const h = this.selectedBuilding.height * constants.BLOCK_WIDTH;
+                    p5.rect(x, y, w, h);
+                } else {
+                    p5.rect(x, y, constants.BLOCK_WIDTH, constants.BLOCK_WIDTH);
+                }
             }
-        }
+        }        
     }
 
     render = () => {
@@ -273,10 +278,6 @@ export default class Engine extends View {
         const p5 = this._p5;
         p5.background(constants.APP_BACKGROUND);
         p5. fill(constants.GREEN_TERMINAL);
-        p5.text(this._horizontalOffset, constants.SCREEN_WIDTH  * 3/8 , 450);
-        p5.text(this._map._maxOffset, constants.SCREEN_WIDTH  * 3/8 , 500);
-        p5.text(`Date: ${this._sol}-${this._smartianYear}`, constants.SCREEN_WIDTH * 3/8, 240);
-        p5.text(`Time: ${this._hour}:${this._minute} ${this._clockCycle}`, constants.SCREEN_WIDTH * 3/8, 300);
         this._map.render(this._horizontalOffset);
         this._infrastructure.render(this._horizontalOffset);
         this._sidebar.render(this._minute, this._hour, this._clockCycle);

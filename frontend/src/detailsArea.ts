@@ -136,6 +136,9 @@ export default class DetailsArea {
     handleCancelBuilding = () => {
         this.setBuildingSelection(null);
         this.setMouseContext("select");
+        this._optionButtons.forEach((button) => {
+            button.setSelected(false);
+        })
     }
 
     // If build type is selected, clear individual building options and remove type selection
@@ -191,6 +194,10 @@ export default class DetailsArea {
     }
 
     setBuildingSelection = (value: ModuleInfo | ConnectorInfo | null) => {
+        // De-select all build chips whenever a new selection is made
+        this._optionButtons.forEach((chip) => {
+            chip.setSelected(false);
+        })
         this._buildingSelection = value;
     }
 
