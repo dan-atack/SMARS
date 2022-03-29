@@ -54,6 +54,22 @@ export default class Infrastructure {
         this._connectors.push(new Connector(this._p5, x, y, connectorInfo));
     }
 
+    // Takes in data for a new module and grid coordinates for its location, returns a list of the grid locations it will occupy
+    calculateModuleArea (moduleInfo: ModuleInfo, mouseX: number, mouseY: number) {
+        const w = moduleInfo.width;
+        const h = moduleInfo.height;
+        let coords: {x: number, y: number}[] = [];
+        for (let i = 0; i < w; i++) {
+            for (let k = 0; k < h; k++)  {
+                coords.push({x: i + mouseX, y: k + mouseY});
+            }
+        }
+        return coords;
+    }
+
+    checkTerrain (terrain: number[][], ) {
+        console.log(terrain);
+    }
     // Mouse click handler to determine if a click event should be interpreted as a building placement request:
     // checkForClick(mouseX: number, mouseY: number, buildingData, economy) {
     //     // Only act on mouse click events if a building type has been selected:

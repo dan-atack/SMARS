@@ -710,11 +710,6 @@ Exit criteria:
 
 - Test building data can be fetched from the backend and displayed in a console log from the frontend
 - The player can select a building from the sidebar and place it on the map (when the structure is selected would be a good time to console log its extended data, by the way)
-- Placing a building is constrained by:
-  -- Terrain (no obstacles in the way)
-  -- Terrain/gravity (must be placed on flat ground or on top of other module)
-  -- Infrastructure (no other modules in the way)
-  -- [STRETCH] Infrastructure/gravity (strength of the module beneath)
 
 1. Make a new server function to call the modules endpoint in the backend. This function should take two arguments, which are the category and type of structure to get from the backend. UPDATE: by making the second argument (for module/collection TYPE) optional, we can now use this function to return EITHER the list of structures for a given type, OR the list of types themselves for either category of structure. This would also be expandable in the future, i.e. if more than two categories are used (Never say never, vehicles collection!)
 
@@ -766,7 +761,7 @@ Exit criteria:
 
 25. Add a cancelBuilding method to the Engine, to be activated by the back button if a building is selected. Clicking 'back' when a building is selected does not change the displayed building option buttons, but cancels the placement selection process for the currently selected building (sets the mouse context back to select and sets the selected building value to null).
 
-### 26. Iron out the kinks in building rendering and placement process:
+26. Iron out the kinks in building rendering and placement process:
 
 - Buildings don't disappear until they're entirely outside of the screen
 - Building placement shadow should only be rendered if the mouse is over the map area, not the sidebar
@@ -774,15 +769,34 @@ Exit criteria:
 - Disable map scrolling when mouse context is in building placement mode
 - Clicking the building chip for the building that is already selected unselects it
 
-### 27. Clean up the on-screen 'console log' text before ending the chapter.
+27. Clean up the on-screen 'console log' text before ending the chapter.
 
 ## Chapter Nineteen: Buildings in the Frontend, Part II (Difficulty Estimate: 6 for new dynamics development)
 
-## Chapter X: Loading Games (Forecast now says it'll be chapter 18...)
+### March 22, 2022
+
+Since the implementation of the building placement process is a bit more involved this time around, it was necessary to get the basics down first, then move all of the more advanced rules governing building placement into a separate chapter. This chapter will focus on those more advanced features - namely limiting building placement based on terrain and the locations of other buildings. Once these constraints are in place, we can map out a timeline for adding further considerations, such as resource costs, advanced connector placement (multi-click placement for connector start/stop locations) and connector orientation (horizontal / vertical / composite (H + V) connector segments). Unit tests would be cool as well, he said without much hope or conviction. Some day, maybe.
+
+Exit Criteria:
+
+- Placing a module is constrained by:
+  -- Terrain (no obstacles in the way)
+  -- Terrain/gravity (must be placed on flat ground or on top of other module)
+  -- Infrastructure (no other modules in the way)
+  -- Infrastructure/gravity (strength of the module beneath)
+- Placing a connector is constrained by:
+  -- Must be placed within a module (later connectors might be partially external to the base, i.e. spanning the gap between two modules, but should follow the precedent of always originating/terminating at a module. Else what exactly are they connecting, right?)
+- [STRETCH] Module Info data structure has 'shapes' added to it, so that we can begin to store more elaborate building images in the backend, and have the frontend interpret them. This would be a big boon to the game's development, in terms of enriching the game's Lookanfeel, so let's really aim to have at least something there before ending this chapter.
+
+### 1. Make a new Infrastructure class method, which just has a simple console log statement.
+
+### 2. Make a unit test to validate this new method!
+
+## Chapter X: Loading Games (Forecast now says it'll be chapter 21...)
 
 ### Bug List:
 
-1. When the in-game menu is opened then closed, it resets the engine's offset to be back in the middle of the map. The offset value should persist between menu openings.
+### 1. When the in-game menu is opened then closed, it resets the engine's offset to be back in the middle of the map. The offset value should persist between menu openings.
 
 ### Exit Criteria for backend save game chapter:
 

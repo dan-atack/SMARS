@@ -145,3 +145,7 @@ export const getStructureTypes = (setter: (options: string[]) => void, category:
 export const getSavedGames = (username: string) => {
     console.log(`Getting saved game data for ${username}`);
 }
+
+export const addition = (x: number, y: number) => {
+    return (x + y);
+}
