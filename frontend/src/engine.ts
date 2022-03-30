@@ -118,8 +118,9 @@ export default class Engine extends View {
                     break;
                 case "place":
                     console.log("Place");
+                    // TODO: Separate building placement workflow into dedicated method?
                     const [x, y] = this.getMouseGridPosition(mouseX, mouseY);
-                    if (this.selectedBuilding != null) this._infrastructure.addBuilding(x, y, this.selectedBuilding);
+                    if (this.selectedBuilding != null) this._infrastructure.addBuilding(x, y, this.selectedBuilding, this._map._mapData);
                     break;
                 case "resource":
                     console.log("Resource");

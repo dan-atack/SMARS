@@ -1,5 +1,6 @@
 import { ModuleInfo } from "../src/server_functions";
 
+// Since we can't import the actual Infrastructure class directly, its methods are copied here for unit testing:
 test("Can get all coordinates in area defined by height and width and x and y", () => {
     function calculateModuleArea (w: number, h: number, mouseX: number, mouseY: number) {
         let coords: {x: number, y: number}[] = [];
@@ -10,6 +11,18 @@ test("Can get all coordinates in area defined by height and width and x and y", 
         }
         return coords;
     }
+
+    function checkTerrainForObstructions (moduleArea: {x: number, y: number}[], terrain: number[][], ) {
+        // List only the map columns that match the module area's x coordinates:
+        const cols: number[][] = [];
+        for (let i = 0; i < terrain.length; i++) {
+            if (i >= moduleArea[0].x && i <= moduleArea[moduleArea.length - 1].x) {
+                cols.push(terrain[i]);
+            }
+        }
+        
+    }
+
     expect(calculateModuleArea(1, 1, 0, 0)).toStrictEqual([{"x": 0, "y": 0}]);
     expect(calculateModuleArea(2, 2, 0, 0)).toStrictEqual([
         {"x": 0, "y": 0},

@@ -788,9 +788,23 @@ Exit Criteria:
   -- Must be placed within a module (later connectors might be partially external to the base, i.e. spanning the gap between two modules, but should follow the precedent of always originating/terminating at a module. Else what exactly are they connecting, right?)
 - [STRETCH] Module Info data structure has 'shapes' added to it, so that we can begin to store more elaborate building images in the backend, and have the frontend interpret them. This would be a big boon to the game's development, in terms of enriching the game's Lookanfeel, so let's really aim to have at least something there before ending this chapter.
 
-### 1. Make a new Infrastructure class method, which just has a simple console log statement.
+1. Make a new Infrastructure class method, which just has a simple console log statement.
 
-### 2. Make a unit test to validate this new method!
+2. Make a unit test to validate this new method!
+
+3. Make a new function, which will take number arguments for width, height, x and y, and returns a list of all the coordinate pairs that a shape of those dimensions would occupy.
+
+4. Make a unit test for this method (sadly we can't mock the object class itself because P5 won't permit it).
+
+5. Add the script for calling this new frontend unit test to the GitHub Actions Basic CI workflow. Push changes to deploy the test.
+
+6. Make another new method for the Infrastructure class, which will take the game's map as an argument, and print it out. This and the module coordinate calculator will both be called by the add_module method when it is called by the Engine's mouse responder (when the context is 'place', of course). This will require the Engine to pass the map to the Infra class's add_module method as well, incidentally.
+
+7. Make the terrain collision detection method, which pairs the map info and the projected module location and announces the location of any collisions it detects.
+
+### 8. Make another unit test for this method.
+
+### X. Ensure buildings cannot be placed BELOW the game's screen area.
 
 ## Chapter X: Loading Games (Forecast now says it'll be chapter 21...)
 

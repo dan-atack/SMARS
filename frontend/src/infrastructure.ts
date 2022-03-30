@@ -29,10 +29,10 @@ export default class Infrastructure {
         const x = center / constants.BLOCK_WIDTH;
     }
 
-    addBuilding (x: number, y: number, data: ModuleInfo | ConnectorInfo) {
+    addBuilding (x: number, y: number, data: ModuleInfo | ConnectorInfo, terrain: number[][]) {
         if (this.isModule(data)) {
             console.log("module");
-            this.addModule(x, y, data);
+            this.addModule(x, y, data, terrain);
         } else {
             console.log("connector");
             this.addConnector(x, y, data);
@@ -44,8 +44,10 @@ export default class Infrastructure {
         return (building as ModuleInfo).pressurized !== undefined
     }
 
-    addModule (x: number, y: number, moduleInfo: ModuleInfo) {
+    addModule (x: number, y: number, moduleInfo: ModuleInfo, terrain: number[][]) {
         console.log(moduleInfo.name);
+        const moduleArea = this.calculateModuleArea(moduleInfo, x, y);
+        this.checkTerrainForObstructions(moduleArea, terrain);
         this._modules.push(new Module(this._p5, x, y, moduleInfo));
     }
 
@@ -67,8 +69,32 @@ export default class Infrastructure {
         return coords;
     }
 
-    checkTerrain (terrain: number[][], ) {
-        console.log(terrain);
+    // Takes in data for a new module
+    checkTerrainForObstructions (moduleArea: {x: number, y: number}[], terrain: number[][], ) {
+        let clear = true;   // Reset to false if there is any overlap between the map and the proposed new module
+        const rightEdge = moduleArea[0].x;  // Get x coordinates of the right and left edges of the module
+        const leftEdge = moduleArea[moduleArea.length - 1].x;
+        // Check only the map columns that match the module area's x coordinates:
+        const cols: number[][] = [];
+        for (let i = 0; i < terrain.length; i++) {
+            if (i >= rightEdge && i <= leftEdge) {
+                cols.push(terrain[i]);
+            }
+        }
+        cols.forEach((column, idx) => {
+            moduleArea.forEach((coordPair) => {
+                if (coordPair.x === rightEdge + idx) {
+                    // Match each module column with each terrain column
+                    const y = constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH - coordPair.y - 1;
+                    column.forEach((block, jdx) => {
+                        if (block && jdx === y) {
+                            console.log(`Collision detected at ${idx}, ${jdx}`);
+                            clear = false;
+                        }
+                    })
+                }
+            })
+        })        
     }
     // Mouse click handler to determine if a click event should be interpreted as a building placement request:
     // checkForClick(mouseX: number, mouseY: number, buildingData, economy) {
