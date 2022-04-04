@@ -771,7 +771,7 @@ Exit criteria:
 
 27. Clean up the on-screen 'console log' text before ending the chapter.
 
-## Chapter Nineteen: Buildings in the Frontend, Part II (Difficulty Estimate: 6 for new dynamics development)
+## Chapter Nineteen: Buildings in the Frontend, Part II - Modules (Difficulty Estimate: 6 for new dynamics development)
 
 ### March 22, 2022
 
@@ -780,12 +780,10 @@ Since the implementation of the building placement process is a bit more involve
 Exit Criteria:
 
 - Placing a module is constrained by:
-  -- Terrain (no obstacles in the way)
+  -- [DONE] Terrain (no obstacles in the way)
   -- Terrain/gravity (must be placed on flat ground or on top of other module)
   -- Infrastructure (no other modules in the way)
   -- Infrastructure/gravity (strength of the module beneath)
-- Placing a connector is constrained by:
-  -- Must be placed within a module (later connectors might be partially external to the base, i.e. spanning the gap between two modules, but should follow the precedent of always originating/terminating at a module. Else what exactly are they connecting, right?)
 - [STRETCH] Module Info data structure has 'shapes' added to it, so that we can begin to store more elaborate building images in the backend, and have the frontend interpret them. This would be a big boon to the game's development, in terms of enriching the game's Lookanfeel, so let's really aim to have at least something there before ending this chapter.
 
 1. Make a new Infrastructure class method, which just has a simple console log statement.
@@ -802,9 +800,32 @@ Exit Criteria:
 
 7. Make the terrain collision detection method, which pairs the map info and the projected module location and announces the location of any collisions it detects.
 
-### 8. Make another unit test for this method.
+8. Make another unit test for this method.
+
+9. Prevent new modules from being placed if the terrain collision detector returns anything other than true. If it returns a list, console log it.
+
+10. Use a modified version of the collision detection test's core logic to look at the coordinates of other modules and also use that to prevent incorrect placements.
+
+11. Make a unit test for the above method.
+
+### 11. Develop new logic to compare the terrain to a Module's footprint and determine if the module is on flat ground. Add this to the Module placement method to prevent placements that are not on level ground.
+
+### 11. Make a unit test for the above method.
+
+### 12. Develop new logic, similar to that used for the previous step, to check if a module is going to be placed on top of another module. This will be complicated because we need to allow a module to rest on top of one single other module, or multiple other modules. Therefore the initial need for this method will be to simply go through all of the existing modules and ensure that all of the spaces immediately below the new module have something in them. Then we can start to think about column strength, and cases where there's a combination of terrain and other modules below the prospective build site.
+
+### 11. Make a unit test for the above method.
 
 ### X. Ensure buildings cannot be placed BELOW the game's screen area.
+
+## Chapter Twenty: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 5)
+
+We need to do the Connectors separately, as their placement logic is quite different from the logic for the Modules.
+
+Exit Criteria:
+
+- Placing a connector is constrained by:
+  -- Must be placed within a module (later connectors might be partially external to the base, i.e. spanning the gap between two modules, but should follow the precedent of always originating/terminating at a module. Else what exactly are they connecting, right?)
 
 ## Chapter X: Loading Games (Forecast now says it'll be chapter 21...)
 

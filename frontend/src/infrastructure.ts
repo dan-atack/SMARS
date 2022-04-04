@@ -47,8 +47,15 @@ export default class Infrastructure {
     addModule (x: number, y: number, moduleInfo: ModuleInfo, terrain: number[][]) {
         console.log(moduleInfo.name);
         const moduleArea = this.calculateModuleArea(moduleInfo, x, y);
-        this.checkTerrainForObstructions(moduleArea, terrain);
-        this._modules.push(new Module(this._p5, x, y, moduleInfo));
+        const modClear = this.checkOtherModulesForObstructions(moduleArea);
+        const mapClear = this.checkTerrainForObstructions(moduleArea, terrain); // If clear is true, the building can be placed
+        if (mapClear === true && modClear === true) {
+            this._modules.push(new Module(this._p5, x, y, moduleInfo));
+        } else {
+            console.log(modClear);
+            console.log(mapClear); // If clear is not equal to true it is a list of the terrain tiles that are in the way
+        }
+        
     }
 
     addConnector (x: number, y: number, connectorInfo: ConnectorInfo) {
@@ -69,9 +76,10 @@ export default class Infrastructure {
         return coords;
     }
 
-    // Takes in data for a new module
+    // Takes in data for a new module's location and the game's terrain data and looks for any overlaps
     checkTerrainForObstructions (moduleArea: {x: number, y: number}[], terrain: number[][], ) {
-        let clear = true;   // Reset to false if there is any overlap between the map and the proposed new module
+        let clear = true;               // Set to false if there is any overlap between the map and the proposed new module
+        let collisions: number[][] = [];  // Keep track of the coordinates of any collisions (obstructions) that are detected
         const rightEdge = moduleArea[0].x;  // Get x coordinates of the right and left edges of the module
         const leftEdge = moduleArea[moduleArea.length - 1].x;
         // Check only the map columns that match the module area's x coordinates:
@@ -83,18 +91,49 @@ export default class Infrastructure {
         }
         cols.forEach((column, idx) => {
             moduleArea.forEach((coordPair) => {
+                // Match each module column with each terrain column
                 if (coordPair.x === rightEdge + idx) {
-                    // Match each module column with each terrain column
+                    // Invert y value from the mouse click
                     const y = constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH - coordPair.y - 1;
                     column.forEach((block, jdx) => {
                         if (block && jdx === y) {
-                            console.log(`Collision detected at ${idx}, ${jdx}`);
+                            collisions.push([rightEdge + idx, coordPair.y])
                             clear = false;
                         }
                     })
                 }
             })
-        })        
+        })
+        // If there is no obstruction we get a 'true' here; otherwise return the coordinates that overlap.
+        if (clear) {
+            return true;
+        } else {
+            return collisions;
+        }
+    }
+
+    //  Takes in data for a new module's location and compares it to all of the other existing modules to look for overlaps
+    checkOtherModulesForObstructions (moduleArea: {x: number, y: number}[]) {
+        let clear = true;               // Set to false if there is any overlap between the map and the proposed new module
+        let collisions: number[][] = [];
+        this._modules.forEach((mod) => {
+            // TODO: Improve efficiency by only checking modules with the same X coordinates?
+            const modArea = this.calculateModuleArea(mod._moduleInfo, mod._x, mod._y);
+            modArea.forEach((coordPair) => {
+                moduleArea.forEach((coords) => {
+                    if (coordPair.x === coords.x && coordPair.y === coords.y) {
+                        clear = false;
+                        collisions.push([coordPair.x, coordPair.y]);
+                    }
+                })
+            })
+        })
+        // If there is no obstruction we get a 'true' here; otherwise return the coordinates that overlap.
+        if (clear) {
+            return true;
+        } else {
+            return collisions;
+        }
     }
     // Mouse click handler to determine if a click event should be interpreted as a building placement request:
     // checkForClick(mouseX: number, mouseY: number, buildingData, economy) {
