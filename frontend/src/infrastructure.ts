@@ -47,13 +47,25 @@ export default class Infrastructure {
     addModule (x: number, y: number, moduleInfo: ModuleInfo, terrain: number[][]) {
         console.log(moduleInfo.name);
         const moduleArea = this.calculateModuleArea(moduleInfo, x, y);
+        const {floor, footprint} = this.calculateModuleFootprint(moduleArea);
+        // Check other modules, then the map, for any obstructions:
         const modClear = this.checkOtherModulesForObstructions(moduleArea);
-        const mapClear = this.checkTerrainForObstructions(moduleArea, terrain); // If clear is true, the building can be placed
-        if (mapClear === true && modClear === true) {
+        const mapClear = this.checkTerrainForObstructions(moduleArea, terrain);
+        // Next, check the existing modules to see if they can support the new one; if they can't, then check the terrain
+        const modFloor = this.checkModuleFootprintWithExistingModules(moduleArea);
+        let mapFloor: number[] | boolean = [];
+        if (modFloor !== true) {
+            // If modFloor comes back as anything other than 'true', it will be a list of the columns that aren't supported by an existing module, and we run THAT through the terrain support detector:
+            mapFloor = this.checkModuleFootprintWithTerrain(floor, modFloor, terrain);
+        }
+        if (mapClear === true && modClear === true && (modFloor === true || mapFloor === true)) {
             this._modules.push(new Module(this._p5, x, y, moduleInfo));
         } else {
-            console.log(modClear);
-            console.log(mapClear); // If clear is not equal to true it is a list of the terrain tiles that are in the way
+            // If map/module 'clear' value is not equal to true then it is a list of the coordinates that are obstructed
+            console.log(`Module obstructions: ${modClear === true ? 0 : modClear.length}`);
+            console.log(`Map obstructions: ${mapClear === true ? 0 : mapClear.length}`);
+            console.log(`Terrain gaps underneath module: ${mapFloor}`);
+            console.log(`Module gaps underneath module: ${modFloor}`);
         }
         
     }
@@ -74,6 +86,26 @@ export default class Infrastructure {
             }
         }
         return coords;
+    }
+
+    // Takes in the moduleArea data (returned from the method above) and returns a two-part array, consisting of: the module's "floor" (a single y value) and its "footprint" (the x value of each column to be occupied)
+    calculateModuleFootprint (moduleArea: {x: number, y: number}[]) {
+        let floor: number = moduleArea[0].y;
+        // Get the highest y value to establish the height of the module's "floor"
+        moduleArea.forEach((pair) => {
+            if (pair.y > floor) floor = pair.y;
+        })
+        // Get all unique x values to establish the module's "footprint"
+        const footprint: number[] = [];
+        moduleArea.forEach((pair) => {
+            if (!footprint.includes(pair.x)) {
+                footprint.push(pair.x);
+            }
+        })
+        return {
+            floor: floor,
+            footprint: footprint
+        }
     }
 
     // Takes in data for a new module's location and the game's terrain data and looks for any overlaps
@@ -135,6 +167,67 @@ export default class Infrastructure {
             return collisions;
         }
     }
+
+    checkModuleFootprintWithTerrain (floor: number, footprint: number[], terrain: number[][]) {
+        let okay = true;            // Like the other checks, set this to false if there are any gaps under the requested location
+        let gaps: number[] = [];  // If there are any gaps, keep track of their locations
+        // Compare footprint to map - don't forget to invert the y-value!
+        const y = constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH - floor - 1;
+        terrain.forEach((col, idx) => {
+            // Set okay to false and add a gap if the last non-zero number in the list is not exactly y - 1
+            if (footprint.includes(idx)) {
+                // To make sure you only say there's terrain if there is a block, make sure it's a number and that it's non-zero
+                if (typeof col[y - 1] == "number" && col[y - 1] != 0) {
+                } else {
+                    okay = false;
+                    gaps.push(idx);
+                }
+            } 
+        })
+        // If there are no gaps we get a 'true' here; otherwise return the coordinates where there is no floor:
+        if (okay) {
+            return true;
+        } else {
+            return gaps;
+        }
+    }
+
+    // For the integrated footprint check, we'll run this one AND THEN the terrain one, to allow modules to rest on a combination of other modules and clear ground
+    checkModuleFootprintWithExistingModules = (moduleArea: {x: number, y: number}[]) => {
+        let okay = true;    // This will be reset to false UNLESS every column in the footprint is on top of an existing module
+        let supportedColumns: number[] = [];    // Keep track of all columns that ARE supported as we loop thru everything...
+        let gaps: number[] = [];    // ... Once all existing modules have been checked, then we can see where the gaps are
+        const {floor, footprint} = this.calculateModuleFootprint(moduleArea);
+        // Check each column of each existing module to see if its 'roof' (y-value) is one level below the 'floor' of the proposed new module
+        this._modules.forEach((mod) => {
+            const modArea = this.calculateModuleArea(mod._moduleInfo, mod._x, mod._y);
+            const fp: number[] = [];
+            modArea.forEach((pair) => {
+                if (!fp.includes(pair.x)) {
+                    fp.push(pair.x);
+                }
+            })
+            fp.forEach((column) => {
+                footprint.forEach((col) => {
+                    if (column === col && mod._y - floor === 1) {
+                        supportedColumns.push(col);
+                    }
+                })
+            })
+        })
+        // If there are any columns in the new module's footprint that aren't supported, we must go on to check the terrain
+        if (!(supportedColumns.length === footprint.length)) {
+            okay = false;
+            // Update the 'gaps' list to include just the x values that aren't in the supported columns list
+            gaps = footprint.filter(x => !supportedColumns.includes(x));
+        }
+        if (okay) {
+            return true // This is the return if the new module is entirely on top of existing modules
+        } else {
+            // If there are some 'gaps' then return that list, to pass to the terrain footprint checker
+            return gaps;
+        }
+    }
     // Mouse click handler to determine if a click event should be interpreted as a building placement request:
     // checkForClick(mouseX: number, mouseY: number, buildingData, economy) {
     //     // Only act on mouse click events if a building type has been selected:
@@ -189,42 +282,6 @@ export default class Infrastructure {
     //         return affordable;  // Otherwise return true, meaning green-light the building
     //     }
     // }
-
-    // WORK IN PROGRESS: NEEDS THE BUILDING OBJECT FIRST
-    // Looks through the list of existing buildings to ensure no overlap will occur upon placement of new structure:
-    // checkForBuildingObstructions(x:number, y:number, buildingData: ModuleInfo | ConnectorInfo) {
-    //     let obstruction = false;
-    //     this._buildings.forEach((building) => {
-    //         // Find x and y start and end points for existing structure (for now assume all buildings are rectangles)
-    //         const xRange = [building.x, building.x + building.width];
-    //         // Since Y values are 'upside down', the 'roof' of the structure is its y value, and its 'floor' is y - height. Intuitive!
-    //         const yRange = [building.y + building.height, building.y];
-    //         const right = x + buildingData.width * BLOCK_WIDTH;
-    //         const bottom = y + buildingData.height * BLOCK_WIDTH;
-    //         const leftInRange = x >= xRange[0] && x < xRange[1];
-    //         const topInRange = y < yRange[0] && y >= yRange[1];
-    //         const rightInRange = right > xRange[0] && right < xRange[1];
-    //         const bottomInRange = bottom > yRange[1] && bottom < yRange[0];
-    //         // console.log(y);
-    //         // console.log(yRange);
-    //         // console.log(leftInRange);
-    //         // console.log(topInRange);
-    //         // console.log(rightInRange);
-    //         // console.log(bottomInRange);
-    //         // Obstruction is true if: x is in range AND (y OR y + height) is also in range
-    //         // Set obstruction to true if any part of new building's proposed location overlaps existing structure
-    //         if (leftInRange && (topInRange || bottomInRange)) obstruction = true;
-    //         // console.log(obstruction);
-    //         if (topInRange && (leftInRange || rightInRange)) obstruction = true;
-    //         // console.log(obstruction);
-    //         if (rightInRange && (topInRange || bottomInRange)) obstruction = true;
-    //         // console.log(obstruction);
-    //         if (bottomInRange && (leftInRange || rightInRange)) obstruction = true;
-    //         console.log(obstruction);
-    //     })
-    //     return obstruction;
-    // }
-
     // For the payment, economy is the economy object and costs is a the building's costs dictionary object:
     // payForBuilding(economy, costs) {
     //     const resources = Object.keys(costs);

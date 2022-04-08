@@ -22,7 +22,12 @@ export type ModuleInfo = {
     maintenanceCosts: Object[]    // Same idea as above
     storageCapacity: Object[]     // Once again, the amount of each type of resource (if any) that can be stored in this module
     crewCapacity: number    // How many humans can fit into a phone booth??
-    // TODO: SHAPES!
+    shapes: {
+        shape: string,          // Options are "rect", "quad", "triangle", "ellipse" and "arc"
+        color: string,          // Hex codes only, please
+        params: number[]        // The arguments for creating the shape - Values are all in terms of GRID SPACES, not pixels!!
+        mode?: string[]         // For optional non-numeric arguments to arc shapes
+    }[]
 }
 
 export type ConnectorInfo = {

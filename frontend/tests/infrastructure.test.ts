@@ -153,3 +153,77 @@ test("Can check other modules for obstructions", () => {
     // Two-by-one building just above the floor of the existing modules should overlap in once place
     expect(checkOtherModulesForObstructions([{x: 1, y: 2}, {x: 1, y: 3}])).toStrictEqual([[1, 2]]);
 })
+
+test("Can check module footprint vs terrain to ensure flat ground beneath module", () => {
+    function checkModuleFootprintWithTerrain (moduleArea: {x: number, y: number}[], terrain: number[][]) {
+        let okay = true;            // Like the other checks, set this to false if there are any gaps under the requested location
+        let gaps: number[] = [];  // If there are any gaps, keep track of their locations
+        // Get module floor height and 'footprint' from module Area:
+        let floor: number = moduleArea[0].y;
+        // Get the highest y value to establish the height of the module's "floor"
+        moduleArea.forEach((pair) => {
+            if (pair.y > floor) floor = pair.y;
+        })
+        // Get all unique x values to establish the module's "footprint"
+        const footprint: number[] = [];
+        moduleArea.forEach((pair) => {
+            if (!footprint.includes(pair.x)) {
+                footprint.push(pair.x);
+            }
+        })
+        // Compare footprint to map - don't forget to invert the y-value!
+        const y = constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH - floor - 1;
+        terrain.forEach((col, idx) => {
+            // Set okay to false and add a gap if the last non-zero number in the list is not exactly y - 1
+            if (footprint.includes(idx)) {
+                // To make sure you only say there's terrain if there is a block, make sure it's a number and that it's non-zero
+                if (typeof col[y - 1] == "number" && col[y - 1] != 0) {
+                } else {
+                    okay = false;
+                    gaps.push(idx);
+                }
+            } 
+        })
+        // If there are no gaps we get a 'true' here; otherwise return the coordinates where there is no floor:
+        if (okay) {
+            return true;
+        } else {
+            return gaps;
+        }
+    }
+
+    const tinyModFootprint: {x: number, y: number}[] = [{x: 3, y: 30}, {x: 3, y: 29}];
+    const wideModFootprint: {x: number, y: number}[] = [
+        {x: 0, y: 27},
+        {x: 1, y: 27},
+        {x: 2, y: 27},
+        {x: 0, y: 28},
+        {x: 1, y: 28},
+        {x: 2, y: 28}
+    ];
+    const map1 = [
+        [1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1],
+    ]
+    const map2 = [
+        [1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1],
+    ]
+
+    // Tiny building in a little niche in the map should be clear
+    expect(checkModuleFootprintWithTerrain(tinyModFootprint, map1)).toStrictEqual(true);
+    // Tiny building placed higher up in the air (lower y = higher elevation) has no floor
+    expect(checkModuleFootprintWithTerrain(tinyModFootprint, map2)).toStrictEqual([3]);
+    // Wide building on flat ground is A-Okay
+    expect(checkModuleFootprintWithTerrain(wideModFootprint, map1)).toStrictEqual(true);
+    // Wide building over a gap fails for the gap column
+    expect(checkModuleFootprintWithTerrain(wideModFootprint, map2)).toStrictEqual([1]);
+})

@@ -31,6 +31,7 @@ export default class Module {
     }
 
     render = (xOffset: number) => {    // TODO: Block gets y offset values as arguments to renderer
+        const p5 = this._p5;
         this._xOffset = xOffset;    // Offset is in terms of pixels
         // HERE IS WHERE X AND Y COORDINATES AND WIDTH AND HEIGHT ARE CONVERTED TO PIXEL VALUES:
         const x = this._x * constants.BLOCK_WIDTH - this._xOffset;
@@ -40,7 +41,30 @@ export default class Module {
         this._p5.fill(this._color);
         this._p5.strokeWeight(2);
         this._p5.stroke(constants.ALMOST_BLACK);
-        this._p5.rect(x, y, w, h);
+        if (this._moduleInfo.shapes != undefined) {
+            this._moduleInfo.shapes.forEach((shape) => {
+                const p = shape.params;
+                const b = constants.BLOCK_WIDTH;
+                p5.fill(shape.color);
+                switch (shape.shape) {
+                    case "rect":
+                        if (shape.params.length === 4) {
+                            p5.rect(p[0] * b + x, p[1] * b + y, p[2] * b, p[3] * b);
+                        } else {
+                            p5.rect(p[0] * b + x, p[1] * b + y, p[2] * b, p[3] * b, p[4] * b, p[5] * b, p[6] * b, p[7] * b);    // Rounded corners
+                        }
+                        break;
+                    case "quad":
+                        p5.quad(p[0] * b + x, p[1] * b + y, p[2] * b + x, p[3] * b + y, p[4] * b + x, p[5] * b + y, p[6] * b + x, p[7] * b + y);
+                        break;
+                    case "ellipse":
+                        p5.ellipse(p[0] * b + x, p[1] * b + y, p[2] * b, p[3] ? p[3] * b : p[2] * b);
+                        break;
+                }
+            })
+        } else {
+            p5.rect(x, y, w, h);    // If no image is provided, render a black box:
+        }
     }
 
 }

@@ -775,16 +775,17 @@ Exit criteria:
 
 ### March 22, 2022
 
-Since the implementation of the building placement process is a bit more involved this time around, it was necessary to get the basics down first, then move all of the more advanced rules governing building placement into a separate chapter. This chapter will focus on those more advanced features - namely limiting building placement based on terrain and the locations of other buildings. Once these constraints are in place, we can map out a timeline for adding further considerations, such as resource costs, advanced connector placement (multi-click placement for connector start/stop locations) and connector orientation (horizontal / vertical / composite (H + V) connector segments). Unit tests would be cool as well, he said without much hope or conviction. Some day, maybe.
+Since the implementation of the building placement process is a bit more involved this time around, it was necessary to get the basics down first, then move all of the more advanced rules governing building placement into a separate chapter. This chapter will focus on those more advanced features - namely limiting building placement based on terrain and the locations of other buildings. Once these constraints are in place, we can map out a timeline for adding further considerations, such as resource costs, advanced connector placement (multi-click placement for connector start/stop locations) and connector orientation (horizontal / vertical / composite (H + V) connector segments). Edit: also, Unit tests! Damn the nay-sayers, even if they're highly imperfect since it's hard to wire them up with P5 they're still worth doing, dammit!
 
 Exit Criteria:
 
 - Placing a module is constrained by:
   -- [DONE] Terrain (no obstacles in the way)
-  -- Terrain/gravity (must be placed on flat ground or on top of other module)
-  -- Infrastructure (no other modules in the way)
+  -- [DONE] Terrain/gravity (must be placed on flat ground)
+  -- [DONE] Infrastructure (no other modules in the way)
   -- Infrastructure/gravity (strength of the module beneath)
-- [STRETCH] Module Info data structure has 'shapes' added to it, so that we can begin to store more elaborate building images in the backend, and have the frontend interpret them. This would be a big boon to the game's development, in terms of enriching the game's Lookanfeel, so let's really aim to have at least something there before ending this chapter.
+  -- [DONE] Infrastructure + terrain + gravity (can be placed on a combination of flat ground and other modules)
+- Module Info data structure has 'shapes' added to it, so that we can begin to store more elaborate building images in the backend, and have the frontend interpret them. This would be a big boon to the game's development, in terms of enriching the game's Lookanfeel, so let's really aim to have at least something there before ending this chapter.
 
 1. Make a new Infrastructure class method, which just has a simple console log statement.
 
@@ -808,13 +809,25 @@ Exit Criteria:
 
 11. Make a unit test for the above method.
 
-### 11. Develop new logic to compare the terrain to a Module's footprint and determine if the module is on flat ground. Add this to the Module placement method to prevent placements that are not on level ground.
+12. Develop new logic to compare the terrain to a Module's footprint and determine if the module is on flat ground. Add this to the Module placement method to prevent placements that are not on level ground.
 
-### 11. Make a unit test for the above method.
+13. Make a unit test for the above method.
 
-### 12. Develop new logic, similar to that used for the previous step, to check if a module is going to be placed on top of another module. This will be complicated because we need to allow a module to rest on top of one single other module, or multiple other modules. Therefore the initial need for this method will be to simply go through all of the existing modules and ensure that all of the spaces immediately below the new module have something in them. Then we can start to think about column strength, and cases where there's a combination of terrain and other modules below the prospective build site.
+14. Develop new logic, similar to that used for the previous step, to check if a module is going to be placed on top of another module. This will be complicated because we need to allow a module to rest on top of one single other module, or multiple other modules. Therefore the initial need for this method will be to simply go through all of the existing modules and ensure that all of the columns immediately below the new module have something in them. Then we can pass any gaps that are detected by this test to the terrain/footprint checker, so that a new module can rest on any suitable combination of existing modules and/or terrain.
 
-### 11. Make a unit test for the above method.
+15. Add a new module to the database that is 1 x 1 blocks, to test this whole system.
+
+16. In the World Editor suite, alter the basic object shape for ModuleInfo to include a new array for holding the 'shapes' that comprise the module's graphical depiction.
+
+17. Update the Lander module's info so it can be our first prototype of a graphically interesting module.
+
+18. Copy the updated type info to the Frontend (server functions file) and fix any bugs that this might cause - and thank goodness for Typescript! Now that I think of it actually, once the kinks have been ironed out in the Frontend, make it the exporter of the ModuleInfo type (we'll do the same thing in time with the ConnectorInfo) so that there's no need to copy and paste stuff between the frontend and the world editor, and so that the Frontend, which is in version control, is the source of truth for all database object types.
+
+19. Then update the Module class's render function to look for a 'shapes' array and default to the matte black rectangle if this isn't found.
+
+### 20. Update the images for the other basic modules, using at least one arc in the process. Remember, quads' coords go clockwise; presumably it's the same for triangles.
+
+### LAST. Once the existing dynamics are well validated, add the final bit of logic for column strength calculation, such that a column will only be added to the "supported columns" list if it has the appropriate y value AND has enough column strength (initially "enough" will be defined as "more than 1" but we'll need another, more elaborate function to tackle the issue of taller structures... or we could hold off on that for the moment if it's too nasty).
 
 ### X. Ensure buildings cannot be placed BELOW the game's screen area.
 
