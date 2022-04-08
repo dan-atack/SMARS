@@ -28,6 +28,7 @@ export const constants = {
     YELLOW_TEXT: "#FFD412",
     BLUE_ICE: "#A0EBE3",
     BLUE_SUNSET: "#050094",
+    GREEN_LEAVES: "#049426",
     GREEN_TERMINAL: "#0FFF13",
     GREEN_MODULE: "#22B14C",
     GREEN_DARK: "#023803",

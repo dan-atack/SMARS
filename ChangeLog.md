@@ -825,9 +825,13 @@ Exit Criteria:
 
 19. Then update the Module class's render function to look for a 'shapes' array and default to the matte black rectangle if this isn't found.
 
-### 20. Update the images for the other basic modules, using at least one arc in the process. Remember, quads' coords go clockwise; presumably it's the same for triangles.
+20. Update the images for the other basic modules, using at least one arc in the process. Remember, quads' coords go clockwise; presumably it's the same for triangles.
 
-### LAST. Once the existing dynamics are well validated, add the final bit of logic for column strength calculation, such that a column will only be added to the "supported columns" list if it has the appropriate y value AND has enough column strength (initially "enough" will be defined as "more than 1" but we'll need another, more elaborate function to tackle the issue of taller structures... or we could hold off on that for the moment if it's too nasty).
+21. Add all remaining shapes to the Module class's render switch case.
+
+22. Make a dome with some trees under it to validate the arc and triangle rendering system.
+
+### 23. Very basic column strength logic: If a module has column strength zero, nothing can be placed on top of it; if it has anything greater than that, then the sky's the limit (literally). We'll add more complexity to this formula at a later date; for now this should be good enough to prevent stacking things like domes or any other structure that should be the top of whatever stack it's involved with.
 
 ### X. Ensure buildings cannot be placed BELOW the game's screen area.
 

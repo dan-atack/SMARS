@@ -209,7 +209,9 @@ export default class Infrastructure {
             })
             fp.forEach((column) => {
                 footprint.forEach((col) => {
-                    if (column === col && mod._y - floor === 1) {
+                    // Basic column strength check
+                    const canSupport = mod._moduleInfo.columnStrength > 0;
+                    if (column === col && mod._y - floor === 1 && canSupport) {
                         supportedColumns.push(col);
                     }
                 })

@@ -47,6 +47,9 @@ export default class Module {
                 const b = constants.BLOCK_WIDTH;
                 p5.fill(shape.color);
                 switch (shape.shape) {
+                    case "triangle":
+                        p5.triangle(p[0] * b + x, p[1] * b + y, p[2] * b + x, p[3] * b + y, p[4] * b + x, p[5] * b + y);
+                        break;
                     case "rect":
                         if (shape.params.length === 4) {
                             p5.rect(p[0] * b + x, p[1] * b + y, p[2] * b, p[3] * b);
@@ -59,6 +62,17 @@ export default class Module {
                         break;
                     case "ellipse":
                         p5.ellipse(p[0] * b + x, p[1] * b + y, p[2] * b, p[3] ? p[3] * b : p[2] * b);
+                        break;
+                    case "arc":
+                        let mode: any;
+                        if (shape.mode === "OPEN") {
+                            mode = this._p5.OPEN;
+                        } else if (shape.mode === "PIE") {
+                            mode = this._p5.PIE;
+                        } else if (shape.mode = "CHORD") {
+                            mode = this._p5.CHORD;
+                        }
+                        p5.arc(p[0] * b + x, p[1] * b + y, p[2] * b, p[3] * b, p[4], p[5], mode);
                         break;
                 }
             })

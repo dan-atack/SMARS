@@ -26,7 +26,7 @@ export type ModuleInfo = {
         shape: string,          // Options are "rect", "quad", "triangle", "ellipse" and "arc"
         color: string,          // Hex codes only, please
         params: number[]        // The arguments for creating the shape - Values are all in terms of GRID SPACES, not pixels!!
-        mode?: string[]         // For optional non-numeric arguments to arc shapes
+        mode?: string           // For optional non-numeric arguments to arc shapes
     }[]
 }
 
