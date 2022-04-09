@@ -11,6 +11,7 @@ import Industry from "./industry";
 import Logbook from "./logbook";
 // Game constants:
 import { constants } from "./constants";
+import { SaveInfo } from "./saveGame";
 
 // Define object shape for pre-game data from game setup screen:
 type GameData = {
@@ -107,6 +108,38 @@ export default class Game extends Screen {
         this._gameData = data;
         this._username = username;
         this._gameLoaded = true;
+    }
+
+    // Prepares a SaveInfo object to be passed to the game's backend via the Save Game screen:
+    getGameData = () => {
+        const moduleData: {name: string, x: number, y: number}[] = [];
+        this._engine._infrastructure._modules.forEach((mod) => {
+            const stats = {
+                name: mod._moduleInfo.name,
+                x: mod._x,
+                y: mod._y
+            }
+            moduleData.push(stats);
+        })
+        const saveData: SaveInfo = {
+            game_name: `${this._username}'s Game`,  // Supply a default value until the user can input their own
+            username: this._username,
+            time: new Date (),
+            game_time: {
+                minute: this._engine._minute,
+                hour: this._engine._hour,
+                cycle: this._engine._clockCycle,
+                sol: this._engine._sol,
+                year: this._engine._smartianYear
+            },
+            difficulty: this._gameData.difficulty,
+            map_type: this._gameData.mapType,
+            random_events: this._gameData.randomEvents,
+            terrain: this._engine._map._mapData,
+            modules: moduleData,
+            connectors: []
+        }
+        return saveData;
     }
 
     // Determine which 'view' is active and call its click handler:

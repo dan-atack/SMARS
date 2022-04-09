@@ -36,7 +36,8 @@ app.use(express.json());
 // Server Endpoints
 app.use(require('./endpoints/loginEndpoints'));
 app.use(require('./endpoints/mapEndpoints'));
-app.use(require('./endpoints/structureEndpoints'))
+app.use(require('./endpoints/structureEndpoints'));
+app.use(require('./endpoints/saveEndpoints'));
 // Test functions - do we still need 'em?
 app.get('/api/:dbName/:collection', getTestData);
 // Test endpoint for communication with the frontend:

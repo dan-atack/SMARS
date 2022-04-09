@@ -8,6 +8,7 @@ import Login from "./login";
 import NewGameSetup from "./newGameSetup";
 import InGameMenu from "./inGameMenu";
 import Game from "./game";
+import SaveGame from "./saveGame";
 
 import "./styles.scss";
 
@@ -34,6 +35,7 @@ const sketch = (p5:P5) => {
                 game.setup();
                 break;
             case "inGameMenu":
+                inGameMenu.setUsername(username);
                 inGameMenu.setup();
                 break;
             case "loadGame":
@@ -54,7 +56,8 @@ const sketch = (p5:P5) => {
                 p5.background(constants.GREEN_TERMINAL);
                 break;
             case "save":
-                p5.background(constants.RED_BG);
+                const data = game.getGameData();
+                saveGame.setup(data);
                 break;
         }
     }
@@ -65,6 +68,7 @@ const sketch = (p5:P5) => {
     const newGame = new NewGameSetup(p5, switchScreen);
     const game = new Game(p5, switchScreen);
     const inGameMenu = new InGameMenu(p5, switchScreen);
+    const saveGame = new SaveGame(p5, switchScreen);
 
     p5.setup = () => {
         const canvas = p5.createCanvas(constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT);
@@ -77,7 +81,8 @@ const sketch = (p5:P5) => {
         if (menu.currentScreen) menu.handleClicks(p5.mouseX, p5.mouseY);
         if (newGame.currentScreen) newGame.handleClicks(p5.mouseX, p5.mouseY);
         if (game.currentScreen) game.handleClicks(p5.mouseX, p5.mouseY);
-        if (inGameMenu.currentScreen) inGameMenu.handleClicks(p5.mouseX, p5.mouseY); 
+        if (inGameMenu.currentScreen) inGameMenu.handleClicks(p5.mouseX, p5.mouseY);
+        if (saveGame.currentScreen) saveGame.handleClicks(p5.mouseX, p5.mouseY);
     }
 
     // Handler for in-game operations that involve holding the mouse button down (as opposed to regular clicks):
@@ -94,6 +99,7 @@ const sketch = (p5:P5) => {
         if (newGame.currentScreen) newGame.render();
         if (game.currentScreen) game.render();
         if (inGameMenu.currentScreen) inGameMenu.render();
+        if (saveGame.currentScreen) saveGame.render();
     }
 }
 

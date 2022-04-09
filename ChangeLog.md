@@ -654,7 +654,7 @@ Exit criteria:
 
 7. Quickly experiment with adding a directory structure to the Frontend to categorize resources
 
-## Chapter Seventeen: Managing Buildings in the Backend (Difficulty Estimate: 5)
+## Chapter Seventeen: Managing Buildings in the Backend (Difficulty Estimate: 5 [Hindsight: 8])
 
 ### February 1, 2022
 
@@ -771,7 +771,7 @@ Exit criteria:
 
 27. Clean up the on-screen 'console log' text before ending the chapter.
 
-## Chapter Nineteen: Buildings in the Frontend, Part II - Modules (Difficulty Estimate: 6 for new dynamics development)
+## Chapter Nineteen: Buildings in the Frontend II - Module Placement Logic (Difficulty Estimate: 6 for new dynamics development)
 
 ### March 22, 2022
 
@@ -783,7 +783,7 @@ Exit Criteria:
   -- [DONE] Terrain (no obstacles in the way)
   -- [DONE] Terrain/gravity (must be placed on flat ground)
   -- [DONE] Infrastructure (no other modules in the way)
-  -- Infrastructure/gravity (strength of the module beneath)
+  -- [DONE]Infrastructure/gravity (strength of the module beneath)
   -- [DONE] Infrastructure + terrain + gravity (can be placed on a combination of flat ground and other modules)
 - Module Info data structure has 'shapes' added to it, so that we can begin to store more elaborate building images in the backend, and have the frontend interpret them. This would be a big boon to the game's development, in terms of enriching the game's Lookanfeel, so let's really aim to have at least something there before ending this chapter.
 
@@ -831,11 +831,46 @@ Exit Criteria:
 
 22. Make a dome with some trees under it to validate the arc and triangle rendering system.
 
-### 23. Very basic column strength logic: If a module has column strength zero, nothing can be placed on top of it; if it has anything greater than that, then the sky's the limit (literally). We'll add more complexity to this formula at a later date; for now this should be good enough to prevent stacking things like domes or any other structure that should be the top of whatever stack it's involved with.
+23. Very basic column strength logic: If a module has column strength zero, nothing can be placed on top of it; if it has anything greater than that, then the sky's the limit (literally). We'll add more complexity to this formula at a later date; for now this should be good enough to prevent stacking things like domes or any other structure that should be the top of whatever stack it's involved with.
 
-### X. Ensure buildings cannot be placed BELOW the game's screen area.
+## Chapter Twenty: Saving Games (Difficulty Estimate: 3)
 
-## Chapter Twenty: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 5)
+### April 9, 2022
+
+Now that we have a map, time, and buildings, there is enough data in a game file to be worth saving to the database, to be retrieved (loaded, if you will) in the next chapter. To save a game we will need a button (already created!), a view within the game to take us to the game saving interface, a method (or combination of methods) for collecting the relevant data, and finally, a new collection in the database to keep this info. We'll also need a new server function for the frontend to send the saved game data, and a handler function and endpoint in the backend to recieve and acknowledge the frontend's save game request. Let's start from the database and work backward so that we add the new collection first, then figure out the save game object's shape and create the database function that will upload it, then the end point, then the server function, and finally work out the interface in the frontend once the data structures are well understood.
+
+Exit criteria:
+
+- Player can hit the 'save game' button in the in-game menu, enter a name for their save file, press 'enter' and receive a confirmation message (it can be a console log for now) from the backend, and then exit the menu and resume playing.
+- Save game data can be viewed in its entirety in the game's database under the save_games collection.
+
+1. On paper, make a list of all the information that currently needs to be captured in a save file, and which in-game entities hold that information.
+
+2. Create the new saved_games collection in the database.
+
+3. Update the existing work on the save game types in the save functions backend file.
+
+4. Create a new function to send a Save Game object to the database.
+
+5. Create a new POST endpoint for the save function, and add it to the server.
+
+6. Create a Game class method called getGameData, which cobbles together all of the data into a SaveInfo object.
+
+7. When the in-game menu redirects to the Save Game screen, have the App call that function and then console log the result.
+
+8. Create the Save screen, descended from the Screen class. Style it in same manner as the login screen.
+
+9. Look to the Login screen for inspiration on how to add an input element to a P5 page (the key is to have nothing interesting rendering, so it should be fairly easy given that the Save Game screen is just a little form with a few information displays attached). Add an input element so that the player can enter a name for their save file.
+
+10. Add a Submit button which when pressed console logs the complete SaveInfo object, complete with the game name the user just entered.
+
+### 11. Make a new server function that will take a SaveInfo object and post it to the server. It will just need to console log the status of the server's return, so unlike many other server functions, it will not need to take additional arguments to accept setter functions. Hurray!
+
+### 12. Import the save game server function to the SaveGame class, and have it call the function when the save button is pressed. Check the database to see if a save game's data made it.
+
+### 13. Add a conditionally rendered error text for the game name if an insufficient/nonexistent name is given. Also, add a word about the minumum game name length to the text at the top of the screen.
+
+## Chapter X: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 5)
 
 We need to do the Connectors separately, as their placement logic is quite different from the logic for the Modules.
 
@@ -849,6 +884,10 @@ Exit Criteria:
 ### Bug List:
 
 ### 1. When the in-game menu is opened then closed, it resets the engine's offset to be back in the middle of the map. The offset value should persist between menu openings.
+
+### 2. Ensure buildings cannot be placed BELOW the game's screen area (and by extension, that no map actions are permitted outside the map area).
+
+### 3. At some, but not all x-offset values, the building shadow (and subsequent placement) pulls to the left, to the point that the cursor is outside the designated build area by what appears to be up to a full grid space.
 
 ### Exit Criteria for backend save game chapter:
 

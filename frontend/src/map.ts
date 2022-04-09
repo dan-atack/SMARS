@@ -19,6 +19,8 @@ export default class Map {
         this._columns = [];
     }
 
+    //  NOTE TO FUTURE SELF: When terrain is destroyed or modified, make sure the this._mapData is updated as well
+
     // The Engine passes the H-offset (V-offset coming soon) value here so that the blocks' positions are updated with every render:
     render = (horizontalOffset: number) => {
         this._horizontalOffset = horizontalOffset;
