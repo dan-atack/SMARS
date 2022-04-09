@@ -1,5 +1,5 @@
 import { constants } from "./constants";
-import Button from "../src/button";
+import { SaveInfo } from "./saveGame";
 
 // Request body custom types:
 
@@ -144,6 +144,24 @@ export const getStructureTypes = (setter: (options: string[]) => void, category:
     .then((response) => {
         setter(response.data);
     })
+}
+
+export const sendSaveGame = (saveInfo: SaveInfo, setter: (status: boolean) => void) => {
+    const url = `${constants.URL_PREFIX}/save`;
+    
+    fetch(url, {
+        method: "POST",
+        body: JSON.stringify(saveInfo),
+        headers: {
+            Accept: "application/json",
+            'Content-Type': "application/json",
+        }
+    })
+    .then((res) => {
+        return res.json();
+    })
+    // We really should return the response to the Save Game screen to be displayed in the game's interface
+    .then((response) => setter(response));
 }
 
 // Send a GET request with the current user's username as a req parameter, to fetch all saved game files associated with that user

@@ -1,9 +1,10 @@
 // The Save Game screen is where the player goes to review and name their save file before uploading it to the game's server
 import P5 from "p5";
+import p5 from "p5";
 import Screen from "./screen";
 import Button from "./button";
 import { constants } from "./constants";
-import p5 from "p5";
+import { sendSaveGame } from "./server_functions";
 
 // Save Game type info
 export type SaveInfo = {
@@ -37,6 +38,7 @@ export type SaveInfo = {
 export default class SaveGame extends Screen {
     // Types for the save game screen:
     switchScreen: (switchTo: string) => void;
+    sendSaveGame: (saveInfo: SaveInfo, setter: (status: boolean) => void) => void;
     _buttons: Array<Button>;
     _gameNameInput: p5.Element | null;
     _color: string;
@@ -48,10 +50,14 @@ export default class SaveGame extends Screen {
     _buttonBG: string;
     _justOpened: boolean;       // Experimental prototype method for preventing 'double click' phenomenon on when screen loads
     _saveInfo: SaveInfo | null; // Prepare to store the save info when the game loads this screen
+    _message: string            // Used to display error / success messages when the player hits the confirm button
+    _messageColor: string       // The color code for the message will depend upon the manner of the server's return
+    _saveWasSuccessful: boolean // If a successful save has occurred, set this to true to disable the button to prevent spamming
 
     constructor(p5: P5, switchScreen: (switchTo: string) => void) {
         super(p5);
         this.switchScreen = switchScreen;
+        this.sendSaveGame = sendSaveGame;
         this._buttons = [];
         this._gameNameInput = null;             // This starts as null when the game is first created and is created during setup
         this._color = constants.APP_BACKGROUND;
@@ -64,6 +70,9 @@ export default class SaveGame extends Screen {
         this._buttonBG = constants.GREEN_DARK;
         this._justOpened = false;           // Setup function sets this to true, which will block the very first click response
         this._saveInfo = null;              // When the constructor is first deployed there is not yet any info to save
+        this._message = "";                 // Default is no message
+        this._messageColor = constants.GREEN_TERMINAL;      // Default is optimistic
+        this._saveWasSuccessful = false     // Set to true to disable save button after successful save
     }
 
     // Setup makes the buttons and the input elements:
@@ -90,21 +99,23 @@ export default class SaveGame extends Screen {
     }
 
     handleSave = () => {
-        const game_name = this._gameNameInput?.value() as string;
-        if (this._saveInfo != null && game_name.length > 2) {
-            console.log("proceeding with save.");
-            let finalData = this._saveInfo;
-            finalData.game_name = game_name;
-            console.log(finalData);
-        } else if (this._saveInfo != null) {
-            console.log("Please enter at least 3 characters for the game name.")
-        } else {
-            console.log("Exception: No save occurred because save data was missing")
+        if (!this._saveWasSuccessful) {     // Only allow save to proceed if there hasn't already been a successful save
+            const game_name = this._gameNameInput?.value() as string;
+            if (this._saveInfo != null && game_name.length > 2) {
+                console.log("Saving game - please wait");
+                let finalData = this._saveInfo;
+                finalData.game_name = game_name;
+                this.sendSaveGame(finalData, this.setHttpStatus);
+                this.setMessage("", constants.GREEN_TERMINAL);
+            } else if (this._saveInfo != null) {
+                this.setMessage("Please enter at least 3 characters for the game name.", constants.RED_ERROR);
+            } else {
+                this.setMessage("Exception: No save occurred because save data was missing", constants.RED_ERROR);
+            }
         }
     }
 
     handleReturnToMainMenu = () => {
-        console.log("Returning to main menu.");
         this.handleClose();
         this.switchScreen("inGameMenu");
     }
@@ -115,6 +126,22 @@ export default class SaveGame extends Screen {
         this._gameNameInput?.remove();
     }
 
+    // Color string is red for negative or green for positive
+    setMessage = (message: string, color: string) => {
+        this._message = message;
+        this._messageColor = color;
+    }
+
+    setHttpStatus = (status: boolean) => {
+        if (status) {
+            this.setMessage("Game saved successfully", constants.GREEN_TERMINAL);
+            this._saveWasSuccessful = true;
+        } else {
+            this.setMessage("Sorry, there was an error sending to the server. Please try again.", constants.RED_ERROR);
+            this._saveWasSuccessful = false;
+        }
+    }
+
     render = () => {
         const p5 = this._p5;
         p5.background(this._color);
@@ -122,8 +149,11 @@ export default class SaveGame extends Screen {
         p5.fill(constants.EGGSHELL);
         p5.textStyle(p5.BOLD);
         p5.textAlign(p5.CENTER, p5.TOP);
-        p5.text("Enter name", 480, 96);
-        p5.text("for new save file:", 480, 144);
+        p5.text("Enter name for new save file", 480, 96);
+        p5.text("(3 characters minimum):", 480, 144);
+        p5.fill(this._messageColor);
+        p5.textSize(30);
+        p5.text(this._message, 480, 320);
         this._buttons.forEach((button) => {
             button.render();
         })

@@ -39,21 +39,21 @@ type SaveInfo = {
 }
 
 const handleSave = async (req: Request, res: Response) => {
-    const { saveData } = req.body;
+    const saveInfo: SaveInfo = req.body;
     const client = new MongoClient("mongodb://localhost:27017", {});
     try {
         await client.connect();
         console.log("Connected to database.");
         const db = client.db(dbName);
-        const insert = await db.collection(collectionName).insertOne(saveData);
+        const insert = await db.collection(collectionName).insertOne(saveInfo);
         assert.equal(insert.acknowledged, true);
-        console.log(`Save file created for ${saveData.username}`);
-        res.status(201).json({ message: `Save file created for ${saveData.username} at ${saveData.time.toString()}` });
+        console.log(`Save file created for ${saveInfo.username}`);
+        res.status(201).json({ message: `Save file created for ${saveInfo.username} at ${saveInfo.time.toString()}` });
         console.log("Closing database connection.");
         client.close();
     } catch (err) {
         console.log(err);
-        res.status(400).json({ message: `Error encountered while trying to process save for ${saveData.username}` });
+        res.status(400).json({ success: true, message: `Error encountered while trying to process save for ${saveInfo.username}` });
     }
 }
 

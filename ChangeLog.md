@@ -864,11 +864,13 @@ Exit criteria:
 
 10. Add a Submit button which when pressed console logs the complete SaveInfo object, complete with the game name the user just entered.
 
-### 11. Make a new server function that will take a SaveInfo object and post it to the server. It will just need to console log the status of the server's return, so unlike many other server functions, it will not need to take additional arguments to accept setter functions. Hurray!
+11. Make a new server function that will take a SaveInfo object and post it to the server. It will just need to console log the status of the server's return, so unlike many other server functions, it will not need to take additional arguments to accept setter functions. Hurray! UPDATE: It actually did need a setter for the Save Screen's success/failure message to be able to display onscreen. Whatever.
 
-### 12. Import the save game server function to the SaveGame class, and have it call the function when the save button is pressed. Check the database to see if a save game's data made it.
+12. Import the save game server function to the SaveGame class, and have it call the function when the save button is pressed. Check the database to see if a save game's data made it.
 
-### 13. Add a conditionally rendered error text for the game name if an insufficient/nonexistent name is given. Also, add a word about the minumum game name length to the text at the top of the screen.
+13. Add a conditionally rendered error text for the game name if an insufficient/nonexistent name is given. Also, add a word about the minumum game name length to the text at the top of the screen.
+
+### 14. Disable the save button if a success status is returned, so the user can't accidentally spam the button and flood the database with clones of the same save file.
 
 ## Chapter X: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 5)
 
