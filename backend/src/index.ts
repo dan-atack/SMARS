@@ -35,6 +35,7 @@ app.use(express.json());
 
 // Server Endpoints
 app.use(require('./endpoints/loginEndpoints'));
+app.use(require('./endpoints/loadEndpoints'));
 app.use(require('./endpoints/mapEndpoints'));
 app.use(require('./endpoints/structureEndpoints'));
 app.use(require('./endpoints/saveEndpoints'));

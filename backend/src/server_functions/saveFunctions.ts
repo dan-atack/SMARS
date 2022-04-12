@@ -8,7 +8,7 @@ const collectionName = 'saved_games'
 
 // Template for new save game info:
 
-type SaveInfo = {
+export type SaveInfo = {
     game_name: string           // Save game name
     username: string            // Name of the username associated with this save
     time: Date                  // Timestamp for the save file
@@ -58,5 +58,5 @@ const handleSave = async (req: Request, res: Response) => {
 }
 
 module.exports = {
-    handleSave
+    handleSave,
 }

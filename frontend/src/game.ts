@@ -28,12 +28,13 @@ export default class Game extends Screen {
     _techTree: TechTree;
     _earth: Earth;
     _industry: Industry;
-    // _logbook: Logbook;       // This was a place-filler that there might not be space for now...
+    // _logbook: Logbook;               // This was a place-filler that there might not be space for now...
     _views: View[];
-    _gameData: GameData;
-    _gameLoaded: boolean;       // Flag for whether to import info from the game setup screen.
+    _gameData: GameData;                // Simple data for a new game
+    _loadGameData: SaveInfo | null;     // More elaborate data object for loading a saved game
+    _gameLoaded: boolean;               // Flag for whether to import info from the game setup/load game screen.
     _username: string;
-    _mouseDown: boolean;        // Flag for whether the mouse button is currently being clicked (held down)
+    _mouseDown: boolean;                // Flag for whether the mouse button is currently being clicked (held down)
 
     switchScreen: (switchTo: string) => void;
 
@@ -53,8 +54,9 @@ export default class Game extends Screen {
             mapType: "",
             randomEvents: true,
             mapTerrain: [],
-        }
-        this._gameLoaded = false;
+        };
+        this._loadGameData = null;  // By default there is no loaded game data
+        this._gameLoaded = false;   // Initially no game data is loaded
         this._username = "";
         this._mouseDown = false;
     }
@@ -68,7 +70,17 @@ export default class Game extends Screen {
         p5.textSize(48);
         p5.stroke(constants.ALMOST_BLACK);
         p5.textAlign(p5.CENTER, p5.CENTER);
-        this._engine.setup(this._gameData);   // Show the engine (world) view first (includes in-game sidebar)
+        // Load gameData for a new game OR saveInfo when resuming a previous game
+        if (!this._gameLoaded && this._loadGameData) {
+            console.log("Loading saved game");
+            this._engine.setupSavedGame(this._loadGameData);
+            this._gameLoaded = true;    // Set this to true here, rather than when the data is literally set
+        } else if (!this._gameLoaded) {
+            console.log("Setting up new game");
+            this._engine.setupNewGame(this._gameData);
+            this._gameLoaded = true;    // Set this to true here, rather than when the data is literally set
+        }
+        this._engine.setup();   // Show the engine (world) view first (includes in-game sidebar)
     }
 
     changeView = (newView: string) => {
@@ -80,8 +92,8 @@ export default class Game extends Screen {
             case "earth":
                 this._earth.setup();
                 break;
-            case "engine":  // Show the game's main world first (represented by the engine, which manages it [i.e. the game's world])
-                this._engine.setup(this._gameData);   // TODO: Engine's setup routine needs to take game data as argument IF it doesn't already have it
+            case "engine":
+                this._engine.setup();
                 break;
             case "industry":
                 this._industry.setup();
@@ -103,11 +115,14 @@ export default class Game extends Screen {
     }
 
     // Pass data from the pre-game setup screen and username from the App itself, to the game with this method:
-    setGameData = (data: GameData, username: string) => {
-        console.log("setting new game data");
+    setNewGameData = (data: GameData, username: string) => {
         this._gameData = data;
         this._username = username;
-        this._gameLoaded = true;
+    }
+
+    setLoadedGameData = (data: SaveInfo, username: string) => {
+        this._loadGameData = data;
+        this._username = username;
     }
 
     // Prepares a SaveInfo object to be passed to the game's backend via the Save Game screen:
@@ -125,13 +140,7 @@ export default class Game extends Screen {
             game_name: `${this._username}'s Game`,  // Supply a default value until the user can input their own
             username: this._username,
             time: new Date (),
-            game_time: {
-                minute: this._engine._minute,
-                hour: this._engine._hour,
-                cycle: this._engine._clockCycle,
-                sol: this._engine._sol,
-                year: this._engine._smartianYear
-            },
+            game_time: this._engine._gameTime,
             difficulty: this._gameData.difficulty,
             map_type: this._gameData.mapType,
             random_events: this._gameData.randomEvents,

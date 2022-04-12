@@ -27,7 +27,37 @@ const getStructures = async (req: Request, res: Response) => {
                     client.close();
                     console.log("Closing database collection.");
                 } else {
-                    console.log(`No results found for ${type} connection.`);
+                    console.log(`No results found for ${type} collection.`);
+                    res.status(404).json({ status: 404, data: [] })
+                    client.close();
+                    console.log("Closing database connection.");
+                }
+            })
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+// Given the category, type and name of a structure, retrieve its data
+const getOneStructure = async (req: Request, res: Response) => {
+    // Category = modules/connectors; type = what type of module/connector (e.g. habitation, transport, etc.)
+    const { category, type, name } = req.params;
+    const dbQuery = { "name": name, "type": type };
+    const client = new MongoClient("mongodb://localhost:27017", {});
+    try {
+        await client.connect();
+        console.log("Database connection established.");
+        const db = client.db(dbName);
+        await db
+            .collection(category)
+            .findOne(dbQuery, (err, result) => {
+                if (result != null) {
+                    console.log(`Found result for ${category} named ${name}.`);
+                    res.status(200).json({ status: 200, data: result });
+                    client.close();
+                    console.log("Closing database connection.");
+                } else {
+                    console.log(`No results found for ${name} in ${category} collection`);
                     res.status(404).json({ status: 404, data: [] })
                     client.close();
                     console.log("Closing database connection.");
@@ -79,5 +109,6 @@ const getStructureTypes = async (req: Request, res: Response) => {
 
 module.exports = {
     getStructures,
-    getStructureTypes
+    getStructureTypes,
+    getOneStructure
 }

@@ -7,17 +7,19 @@ import { constants } from "./constants";
 import { sendSaveGame } from "./server_functions";
 
 // Save Game type info
+export type GameTime = {
+    minute: number,
+    hour: number,
+    cycle: string,
+    sol: number,    // The Smartian day is called a 'Sol'
+    year: number    // Smartian year (AKA mission year) is the amount of times SMARS has orbited the sun since mission start (Lasts approximately twice as long as a Terrestrial year).
+}
+
 export type SaveInfo = {
     game_name: string           // Save game name
     username: string            // Name of the username associated with this save
     time: Date                  // Timestamp for the save file
-    game_time: {                // The time on SMARS
-        minute: number,
-        hour: number,
-        cycle: string,
-        sol: number,
-        year: number
-    }
+    game_time: GameTime
     difficulty: string          // Easy, medium or hard - values will be inserted into switch cases throughout the game
     map_type: string            // From the game's initial settings
     terrain: number[][]         // The 'map' consists of terrain plus structures plus sprites
@@ -85,7 +87,8 @@ export default class SaveGame extends Screen {
         const saveGame = new Button(this._p5, "Save Game", this._buttonX, this._buttonY, this.handleSave, this._buttonWidth, this._buttonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK);
         const returnToGame = new Button(this._p5, "Return to Main Menu", this._buttonX, this._buttonY + this._buttonHeight + 16, this.handleReturnToMainMenu, this._buttonWidth, this._buttonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK);
         this._buttons = [saveGame, returnToGame];
-        this._justOpened = true;        // Set to true to block first click responder from firing
+        this._justOpened = true;            // Set to true to block first click responder from firing
+        this._saveWasSuccessful = false;    // Reset to allow new saves to occur each time the screen is opened
     }
 
     handleClicks = (mouseX: number, mouseY: number) => {
@@ -122,6 +125,7 @@ export default class SaveGame extends Screen {
 
     handleClose = () => {
         this.currentScreen = false;
+        this.setMessage("", constants.GREEN_TERMINAL);
         this._p5.clear();
         this._gameNameInput?.remove();
     }
