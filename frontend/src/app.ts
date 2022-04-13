@@ -9,6 +9,7 @@ import NewGameSetup from "./newGameSetup";
 import InGameMenu from "./inGameMenu";
 import Game from "./game";
 import SaveGame from "./saveGame";
+import LoadGame from "./loadGame";
 
 import "./styles.scss";
 
@@ -29,8 +30,13 @@ const sketch = (p5:P5) => {
     const switchScreen = (switchTo: string) => {
         switch (switchTo) {
             case "game":
-                if (!game._gameLoaded) {    // Game data is set before the game's setup operation is run:
-                    game.setGameData(newGame.gameData, username);
+                // If Load Game screen has game loaded AND the Game screen has not yet loaded, boot it up with Load screen's data
+                if (!game._gameLoaded && loadGame._saveInfo != null) {
+                    game.setLoadedGameData(loadGame._saveInfo, username);
+                }
+                // Otherwise, load the game with data from the New Game screen instead
+                if (!game._gameLoaded) {
+                    game.setNewGameData(newGame.gameData, username);
                 }
                 game.setup();
                 break;
@@ -39,7 +45,8 @@ const sketch = (p5:P5) => {
                 inGameMenu.setup();
                 break;
             case "loadGame":
-                p5.background(constants.RED_ERROR);
+                loadGame.setUsername(username);
+                loadGame.setup();
                 break;
             case "login" :
                 username = ""   // Reset username to blank if the logout button is activated
@@ -69,6 +76,7 @@ const sketch = (p5:P5) => {
     const game = new Game(p5, switchScreen);
     const inGameMenu = new InGameMenu(p5, switchScreen);
     const saveGame = new SaveGame(p5, switchScreen);
+    const loadGame = new LoadGame(p5, switchScreen);
 
     p5.setup = () => {
         const canvas = p5.createCanvas(constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT);
@@ -83,6 +91,7 @@ const sketch = (p5:P5) => {
         if (game.currentScreen) game.handleClicks(p5.mouseX, p5.mouseY);
         if (inGameMenu.currentScreen) inGameMenu.handleClicks(p5.mouseX, p5.mouseY);
         if (saveGame.currentScreen) saveGame.handleClicks(p5.mouseX, p5.mouseY);
+        if (loadGame.currentScreen) loadGame.handleClicks(p5.mouseX, p5.mouseY);
     }
 
     // Handler for in-game operations that involve holding the mouse button down (as opposed to regular clicks):
@@ -100,6 +109,7 @@ const sketch = (p5:P5) => {
         if (game.currentScreen) game.render();
         if (inGameMenu.currentScreen) inGameMenu.render();
         if (saveGame.currentScreen) saveGame.render();
+        if (loadGame.currentScreen) loadGame.render();
     }
 }
 

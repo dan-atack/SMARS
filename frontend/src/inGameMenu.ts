@@ -57,7 +57,7 @@ export default class InGameMenu extends Screen {
     }
 
     handleReturnToGame = () => {
-        this.currentScreen = false;
+        this.handleClose();
         this.switchScreen("game");
     }
 

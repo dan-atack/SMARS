@@ -2,7 +2,6 @@
 import P5 from "p5";
 import Button from "./button";
 import DetailsArea from "./detailsArea";
-import { getStructures } from "./server_functions";
 import { constants } from "./constants";
 
 export default class Sidebar {

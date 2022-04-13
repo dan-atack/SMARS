@@ -28,12 +28,13 @@ export default class Game extends Screen {
     _techTree: TechTree;
     _earth: Earth;
     _industry: Industry;
-    // _logbook: Logbook;       // This was a place-filler that there might not be space for now...
+    // _logbook: Logbook;               // This was a place-filler that there might not be space for now...
     _views: View[];
-    _gameData: GameData;
-    _gameLoaded: boolean;       // Flag for whether to import info from the game setup screen.
+    _gameData: GameData;                // Simple data for a new game
+    _loadGameData: SaveInfo | null;     // More elaborate data object for loading a saved game
+    _gameLoaded: boolean;               // Flag for whether to import info from the game setup/load game screen.
     _username: string;
-    _mouseDown: boolean;        // Flag for whether the mouse button is currently being clicked (held down)
+    _mouseDown: boolean;                // Flag for whether the mouse button is currently being clicked (held down)
 
     switchScreen: (switchTo: string) => void;
 
@@ -53,8 +54,9 @@ export default class Game extends Screen {
             mapType: "",
             randomEvents: true,
             mapTerrain: [],
-        }
-        this._gameLoaded = false;
+        };
+        this._loadGameData = null;  // By default there is no loaded game data
+        this._gameLoaded = false;   // Initially no game data is loaded
         this._username = "";
         this._mouseDown = false;
     }
@@ -68,7 +70,14 @@ export default class Game extends Screen {
         p5.textSize(48);
         p5.stroke(constants.ALMOST_BLACK);
         p5.textAlign(p5.CENTER, p5.CENTER);
-        this._engine.setup(this._gameData);   // Show the engine (world) view first (includes in-game sidebar)
+        if (!this._gameLoaded && this._loadGameData) {      // Loading a SAVED game
+            this._engine.setupSavedGame(this._loadGameData);
+            this._gameLoaded = true;
+        } else if (!this._gameLoaded) {                     // Loading a NEW game
+            this._engine.setupNewGame(this._gameData);
+            this._gameLoaded = true;
+        }
+        this._engine.setup();   // Show the engine (world) view first (includes in-game sidebar)
     }
 
     changeView = (newView: string) => {
@@ -80,8 +89,8 @@ export default class Game extends Screen {
             case "earth":
                 this._earth.setup();
                 break;
-            case "engine":  // Show the game's main world first (represented by the engine, which manages it [i.e. the game's world])
-                this._engine.setup(this._gameData);   // TODO: Engine's setup routine needs to take game data as argument IF it doesn't already have it
+            case "engine":
+                this._engine.setup();
                 break;
             case "industry":
                 this._industry.setup();
@@ -103,41 +112,49 @@ export default class Game extends Screen {
     }
 
     // Pass data from the pre-game setup screen and username from the App itself, to the game with this method:
-    setGameData = (data: GameData, username: string) => {
-        console.log("setting new game data");
+    setNewGameData = (data: GameData, username: string) => {
         this._gameData = data;
         this._username = username;
-        this._gameLoaded = true;
+    }
+
+    setLoadedGameData = (data: SaveInfo, username: string) => {
+        this._loadGameData = data;
+        this._username = username;
     }
 
     // Prepares a SaveInfo object to be passed to the game's backend via the Save Game screen:
     getGameData = () => {
-        const moduleData: {name: string, x: number, y: number}[] = [];
+        const moduleData: {name: string, type: string, x: number, y: number}[] = [];
+        const connectorData: {name: string, type: string, x: number, y: number}[] = [];
         this._engine._infrastructure._modules.forEach((mod) => {
             const stats = {
                 name: mod._moduleInfo.name,
+                type: mod._moduleInfo.type,
                 x: mod._x,
                 y: mod._y
             }
             moduleData.push(stats);
+        });
+        this._engine._infrastructure._connectors.forEach((con) => {
+            const stats = {
+                name: con._connectorInfo.name,
+                type: con._connectorInfo.type,
+                x: con._x,
+                y: con._y
+            }
+            connectorData.push(stats);
         })
         const saveData: SaveInfo = {
             game_name: `${this._username}'s Game`,  // Supply a default value until the user can input their own
             username: this._username,
             time: new Date (),
-            game_time: {
-                minute: this._engine._minute,
-                hour: this._engine._hour,
-                cycle: this._engine._clockCycle,
-                sol: this._engine._sol,
-                year: this._engine._smartianYear
-            },
+            game_time: this._engine._gameTime,
             difficulty: this._gameData.difficulty,
             map_type: this._gameData.mapType,
             random_events: this._gameData.randomEvents,
             terrain: this._engine._map._mapData,
             modules: moduleData,
-            connectors: []
+            connectors: connectorData
         }
         return saveData;
     }

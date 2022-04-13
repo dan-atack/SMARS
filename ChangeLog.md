@@ -870,7 +870,76 @@ Exit criteria:
 
 13. Add a conditionally rendered error text for the game name if an insufficient/nonexistent name is given. Also, add a word about the minumum game name length to the text at the top of the screen.
 
-### 14. Disable the save button if a success status is returned, so the user can't accidentally spam the button and flood the database with clones of the same save file.
+14. Disable the save button if a success status is returned, so the user can't accidentally spam the button and flood the database with clones of the same save file.
+
+## Chapter Twenty-One: Loading Games (Difficulty Estimate: 4)
+
+### April 10, 2022
+
+The time has come! Now that we have saved game data in the database, let's try to fetch it back to the frontend, and feed it into the game's Engine so as to start the game in the exact circumstances that the save was taken in. Starting from the backend, create the server functions that will retrieve: 1) all of the save game file names for a particular player, and 2) the full saveInfo object for a specific game. Once that's retrieved, it will be fetched by the frontend, and then passed to the Engine via a new method, the loadSavedGame method (actual name to be determined after consultation with marketing). We'll also need to make the LoadGame screen, which may just be the last Screen component for a while. (We should also insert a humorous 'hello world' screen for when the player clicks the 'Preferences' button at the start of the game, to avoid a crash/UX trap kind of situation).
+
+Exit Criteria:
+
+- The player can go to the Load Game screen in the pre-game menu, and see all of the save files associated with their username.
+- The player can select a saved game file and click the 'Load Game' button to boot up the game's engine with the data from their previous file.
+- Upon loading the Game screen, the Engine displays a modal popup welcoming the player back (pausing the game in the process).
+- The player can do everything they could do before, including saving a new file and then loading THAT, and continuing to play...
+
+1. Make a server function that takes the current username as a parameter, and gets the id, game name, game time and timestamp data for all save files in the game's database that match that username.
+
+2. Make another server function that gets all of the SaveInfo for a particular game, taking that game's id as a parameter.
+
+3. Keep both of these functions in a file called loadFunctions. Export both of them to the new endpoints file loadEndpoints, and set up their URL paths.
+
+4. Patch the Load Game endpoints into the server's index file. Test by visiting a save game's ID in the browser.
+
+5. Create a new server function for the frontend, which will fetch and console log the save games list for the current user.
+
+6. Create a new server function for the frontend, which will fetch and console log the whole save data file for a particular game, given its ID.
+
+7. Have the App call both of these functions when the current screen becomes the load game screen.
+
+8. Create the Load Game screen, descended from the Screen class, and mimicking much of the style of the other various menu screens. Make sure the initial Load Game screen has a working 'Return to Main Menu' button, and a 'Load Game' button that responds when you press it.
+
+9. Add a property for saved games, which will be a list of objects that have a field for each game's ID, game name, game time, and timestamp (Date) object.
+
+10. Import the save game list fetcher server function to the Load Game screen, and have it called by the setup method, to immediately get the list of the current player's saved games when they land on the page.
+
+11. Make a new component, LoadOption, that is descended from the basic button, but which takes additional arguments for the basic save info mentioned in item 1 of this chapter. It should display the timestamp to the one side, and the Smartian time to the other side, below the saved game file's name (Which will form the main text). The ID does not need to be shown.
+
+12. Examine the Blockland Map Editor to see how pagination was implemented for the block type options display, then apply the same principle to the Load Games page, so that it only displays 4 files at time, and allows the user to press 'previous' or 'next' buttons to show more files.
+
+13. Clicking a Load Option should select it, and deselect all of the other ones. The Load Game page should have a field for the current selected game, which will be that same data object with the ID, name, game time and timestamp (the Save Summary).
+
+14. Import the second server function (the one that gets all of a game's data) and assign that to the 'confirm' button on the Load Game screen, so that when you click it, the full save info object for the currently selected game is displayed in the console.
+
+15. Start creating the Game's loadSaveGame method. Just make it a basic console log first, and have the App call it when the switchscreen function lands on the "game" screen and the loadGame screen has a save info object.
+
+16. Separate the Engine's core setup routine from the new game data loading mechanism, so that the setup method can continue to be called in a variety of contexts (not just a new game, but when the player returns to the game from the menu, or now when the player arrives from the load game screen). Bring out the new game stuff into a separate method called loadNewGame, and have the Game call that when it has a GameData (new game) object and the gameHasLoaded flag is set to false.
+
+17. Add a loadSavedGame method to the Engine to handle importing the loaded game's info. Make sure this is only called once and is not a part of the Engine's normal setup routine, so that you don't reload the game's data every time you return to the game from the menu, say.
+
+18. Fill out the Engine's loadSaveGame method so that it takes all of the the info from the Save Info object (which the Game will pass to it when it calls the method) and uses that to set everything to align with the loaded game values. Start by setting the game time and map info in the Engine.
+
+19. Since the beginning of time, Man has loved his buildings. But what happens when the buildings... don't have their full data available? Well, what happens is, it becomes necessary to fetch the building data for each of the buildings in the modules and connectors lists; re-using the server functions for fetching building data and then using that to re-create the buildings from the save game. We'll also want to add exception handling here, to take care of instances where a building's data fails to load (in which case simply erase that building's existence and make a note of it in the console). Update: We need an individual building fetch function! Create one in the backend and add it to the structureFunctions/endpoints system.
+
+20. Now, in the frontend's server_functions file, make a function that can make a request to this endpoint, and take a setter argument to pass the result to the Engine.
+
+21. Create the setter function in the Engine and import the server function. Call it for the first module in the modules list after a game is loaded.
+
+22. Now create an Engine method that will sort the modules list alphabetically, then go through it and add a new Module for each entry in the list, and calling the getOneBuilding function whenever it reaches a new building name. Because this is an asynchronous operation, this operation will need to be broken up to wait for the result of each building info fetch. This might require the addition of a new setter function that skips past setting the current building and instead targets a different property, one which is exclusive to this loading function, and which contains the instructions for re-populating structures directly (so the setter doesn't just get the data, it actually uses it to make the buildings too).
+
+23. Create a new method to the Infrastructure class, which adds a new module without asking any of the usual questions (about footprint, obstacles, etc) so that loaded buildings can be re-populated in any order. Have the Engine call this function when the game loads modules from a save file.
+
+24. Add the same functionality but for Connectors.
+
+25. Alter the Modal popup's constructor to simply take the modal data object itself, instead of an ID to look up a specific message in the game constants file. At a later point we'll want to make most modal messages come from the backend, but for now it will suffice to pass a simple (hardcoded) message that gets created by the Engine when a saved game is loaded.
+
+26. Add a new modal popup to be fired when the Engine loads a saved game, so that the game starts out paused until the player clicks to exit the modal.
+
+27. Add error message display/s to the Load Game screen (for if the button is pressed without a save being selected, or if there are no saves found for the current user).
+
+28. Clean up the remaining console logs for the loading process, and merge that branch!
 
 ## Chapter X: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 5)
 
@@ -880,8 +949,6 @@ Exit Criteria:
 
 - Placing a connector is constrained by:
   -- Must be placed within a module (later connectors might be partially external to the base, i.e. spanning the gap between two modules, but should follow the precedent of always originating/terminating at a module. Else what exactly are they connecting, right?)
-
-## Chapter X: Loading Games (Forecast now says it'll be chapter 21...)
 
 ### Bug List:
 

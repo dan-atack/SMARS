@@ -38,7 +38,7 @@ export const constants = {
 }
 
  // BLOCKTIONARY!!!!
- export type BlockData = {
+export type BlockData = {
     type: number,
     name: string,
     color: string,
@@ -47,7 +47,7 @@ export const constants = {
     yield: number
 }
 
- export const blocks: BlockData[] = [
+export const blocks: BlockData[] = [
      {
         type: 1,
         name: "rock",
@@ -112,33 +112,4 @@ export const constants = {
          hp: 1000,
          yield: 10
      }
- ]
-
- export type EventData = {
-    id: number,
-    title: string,
-    text: string,
-    resolutions: string[]
- }
-
- export const randomEvents: EventData[] = [
-    {
-       id: 0,
-       title: "You're So Random!",
-       text: "Calling NASA, calling NASA, Houston this is Apollo Nine,\nwe've landed on SMARS...",
-       resolutions: [
-          "Sheeee"
-       ]
-    }
- ]
-
- export const scheduledEvents: EventData[] = [
-    {
-       id: 0,
-       title: "Right on Schedule!",
-       text: "This is a scheduled event.",
-       resolutions: [
-          "Affirmative"
-       ]
-    }
- ]
+]

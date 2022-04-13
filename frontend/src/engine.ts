@@ -5,9 +5,10 @@ import View from "./view";
 import Sidebar from "./sidebar";
 import Map from "./map";
 import Infrastructure from "./infrastructure";
-import Modal from "./modal";
-import { ModuleInfo, ConnectorInfo } from "./server_functions";
+import Modal, { EventData } from "./modal";
+import { ModuleInfo, ConnectorInfo, getOneModule, getOneConnector } from "./server_functions";
 import { constants } from "./constants";
+import { SaveInfo, GameTime } from "./saveGame";
 
 // Define object shape for pre-game data from game setup screen:
 type GameData = {
@@ -25,7 +26,8 @@ export default class Engine extends View {
     // Engine types
     _sidebar: Sidebar;
     _sidebarExtended: boolean;
-    _gameData: GameData;
+    _gameData: GameData         // Data object for a new game
+    _saveInfo: SaveInfo | null  // Data object for a saved game
     _map: Map;
     _infrastructure: Infrastructure;
     _modal: Modal | null;
@@ -41,23 +43,22 @@ export default class Engine extends View {
     // In-game time control
     gameOn: boolean;            // If the game is on then the time ticker advances; if not it doesn't
     _tick: number;
+    _gameTime: GameTime;            // The Game's time can now be stored as a GameTime-type object.
     ticksPerMinute: number;
-    _minute: number;
     _minutesPerHour: number;
-    _hour: number;
     _hoursPerClockCycle: number;    // One day = two trips around the clock
-    _clockCycle: string;            // AM or PM
-    _sol: number;                   // On SMARS, days are called "Sols"
     _solsPerYear: number;
-    _smartianYear: number;          // Smartian year (AKA mission year) is the amount of times SMARS has orbited the sun since mission start (Lasts approximately twice as long as a Terrestrial year).
     switchScreen: (switchTo: string) => void;   // App-level SCREEN switcher (passed down via drill from the app)
     updateEarthData: () => void;    // Updater for the date on Earth (for starters)
-    // Game data!!!
+    getModuleInfo: (setter: (selectedBuilding: ModuleInfo, locations: number[][]) => void, category: string, type: string, name: string, locations: number[][]) => void;        // Getter function for loading individual structure data from the backend
+    getConnectorInfo: (setter: (selectedConnector: ConnectorInfo, locations: number[][]) => void, category: string, type: string, name: string, locations: number[][]) => void;
 
     constructor(p5: P5, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, updateEarthData: () => void) {
         super(p5, changeView);
         this.switchScreen = switchScreen;
         this.updateEarthData = updateEarthData;
+        this.getModuleInfo = getOneModule;
+        this.getConnectorInfo = getOneConnector;
         this._sidebar = new Sidebar(p5, this.switchScreen, this.changeView, this.setMouseContext, this.setGameSpeed);
         this._sidebarExtended = true;   // Side bar can be partially hidden to expand map view - should this be here or in the SB itself??
         this._gameData = {
@@ -65,7 +66,8 @@ export default class Engine extends View {
             mapType: "",
             randomEvents: true,
             mapTerrain: []
-        }   // Game data is loaded from the Game module when it calls the setup method
+        }   // New game data is loaded from the Game module when it calls the setupNewGame method
+        this._saveInfo = null;  // Saved game info is loaded from the Game module when it callse the setupSavedGame method
         this._map = new Map(this._p5);
         this._infrastructure = new Infrastructure(p5);
         this._modal = null;
@@ -80,27 +82,120 @@ export default class Engine extends View {
         // TODO: Make the clock its own component, to de-clutter the Engine.
         this.gameOn = true;             // By default the game is on when the Engine starts
         this._tick = 0;
+        this._gameTime = {
+            minute: 0,
+            hour: 12,
+            cycle: "AM",
+            sol: 1,
+            year: 0
+        };                              // New take on the old way of storing the game's time
         this.ticksPerMinute = 30        // Medium "fast" speed is set as the default
-        this._minute = 0;
         this._minutesPerHour = 60;      // Minutes go from 0 - 59, so this should really be called max minutes
-        this._hour = 12;
         this._hoursPerClockCycle = 12;
-        this._clockCycle = "AM";
-        this._sol = 1;
         this._solsPerYear = 4;
-        this._smartianYear = 0;
     }
 
-    setup = (gameData: GameData) => {
+    setup = () => {
         this.currentView = true;
-        this._gameData = gameData;
         this._sidebar.setup();
+        this.selectedBuilding = null;
+        this._sidebar._detailsArea._minimap.updateTerrain(this._map._mapData);
+        // Sidebar minimap display - does it only need it during 'setup' or does it also need occasional updates?
+    }
+
+    setupNewGame = (gameData: GameData) => {
+        this._gameData = gameData;  // gameData object only needs to be set for new games
         this._map.setup(this._gameData.mapTerrain);
         this._horizontalOffset = this._map._maxOffset / 2;   // Put player in the middle of the map to start out
         this._infrastructure.setup(this._horizontalOffset);
-        this.selectedBuilding = null;
-        this._sidebar._detailsArea._minimap.updateTerrain(this._gameData.mapTerrain);
-        // Sidebar minimap display - does it only need it during 'setup' or does it also need occasional updates?
+    }
+
+    setupSavedGame = (saveInfo: SaveInfo) => {
+        this._saveInfo = saveInfo;
+        this._gameTime = saveInfo.game_time;
+        this._map.setup(this._saveInfo.terrain);
+        this._horizontalOffset = this._map._maxOffset / 2;
+        this._infrastructure.setup(this._horizontalOffset);
+        this.loadModulesFromSave(saveInfo.modules);
+        this.loadConnectorsFromSave(saveInfo.connectors);
+        this.createLoadGameModal(saveInfo.username);
+    }
+
+    // Top-level saved module importer
+    loadModulesFromSave = (modules: {name: string, type?: string, x: number, y: number}[]) => {
+        // Only operate if there actually are modules to load:
+        if (modules.length > 0) {
+            // Sort the list by name to avoid over-calling the backend to get module data
+            modules.sort(function(a, b){
+                if (a.name < b.name) { return -1; }
+                if (a.name > b.name) { return 1; }
+                return 0;
+            })
+            // Separate modules by name
+            let modTypes: string[] = [];
+            modules.forEach((mod) => {
+                if (!modTypes.includes(mod.name)) {
+                    modTypes.push(mod.name)
+                }
+            });
+            // For each name (type) of module, get all the coordinates for all instances of that module, then re-populate them
+            modTypes.forEach((mT) => {
+                const mods = modules.filter((mod) => mod.name === mT);
+                const modType = mods[0].type != undefined ? mods[0].type : "test";
+                let coords: number[][] = [];
+                mods.forEach((mod) => {
+                    coords.push([mod.x, mod.y]);
+                })
+                this.getModuleInfo(this.loadModuleFromSave, "modules", modType, mT, coords);
+            })
+        }  
+    }
+
+    // Called by the above method, this will actually use the data from the backend to re-create loaded modules
+    loadModuleFromSave = (selectedBuilding: ModuleInfo, locations: number[][]) => {
+        if (selectedBuilding != null) {
+            locations.forEach((space) => {
+                this._infrastructure.addModuleWithoutChecks(space[0], space[1], selectedBuilding)
+            })
+        }
+    }
+
+    // Top-level saved module importer
+    loadConnectorsFromSave = (connectors: {name: string, type?: string, x: number, y: number}[]) => {
+        // Only operate if there actually are modules to load:
+        if (connectors.length > 0) {
+            // Sort the list by name to avoid over-calling the backend to get module data
+            connectors.sort(function(a, b){
+                if (a.name < b.name) { return -1; }
+                if (a.name > b.name) { return 1; }
+                return 0;
+            })
+            // Separate modules by name
+            let conTypes: string[] = [];
+            connectors.forEach((con) => {
+                if (!conTypes.includes(con.name)) {
+                    conTypes.push(con.name)
+                }
+            });
+            // For each name (type) of module, get all the coordinates for all instances of that module, then re-populate them
+            conTypes.forEach((cT) => {
+                const cons = connectors.filter((con) => con.name === cT);
+                const conType = cons[0].type != undefined ? cons[0].type : "test";
+                let coords: number[][] = [];
+                cons.forEach((con) => {
+                    coords.push([con.x, con.y]);
+                })
+                this.getConnectorInfo(this.loadConnectorFromSave, "modules", conType, cT, coords);
+            })
+        }  
+    }
+
+    loadConnectorFromSave = (selectedConnector: ConnectorInfo, locations: number[][]) => {
+        if (selectedConnector != null) {
+            locations.forEach((space) => {
+                this._infrastructure.addConnectorWithoutChecks(space[0], space[1], selectedConnector);
+            })
+        }
     }
 
     handleClicks = (mouseX: number, mouseY: number) => {
@@ -150,10 +245,11 @@ export default class Engine extends View {
     // Given to various sub-components, this dictates how the mouse will behave when clicked in different situations
     setMouseContext = (value: string) => {
         this.mouseContext = value;
-        this.selectedBuilding = this._sidebar._detailsArea._buildingSelection;
-        if (this.selectedBuilding != null)  {
-            console.log(`Selected building: ${this.selectedBuilding.name ? this.selectedBuilding.name : null}`);
-        }
+        this.setSelectedBuilding(this._sidebar._detailsArea._buildingSelection);
+    }
+
+    setSelectedBuilding = (selectedBuilding: ModuleInfo | ConnectorInfo | null) => {
+        this.selectedBuilding = selectedBuilding;
     }
 
     // Used for placing buildings and anything else that needs to 'snap to' the grid (returns values in grid locations)
@@ -186,19 +282,39 @@ export default class Engine extends View {
         }
     }
 
+    createLoadGameModal = (username: string) => {
+        const data = {
+            id: 1,
+            title: "You're back!!!",
+            text: `Welcome back, Commander ${username}!\n The colonists missed you.\nThey look up to you.`,
+            resolutions: [
+                "The feeling is mutual."
+            ]
+        }
+        this.createModal(false, data);
+    }
+
     // In-game event generator: produces scheduled and/or random events which will create modal popups
     generateEvent = (probability?: number) => {     // Probability is given optionally as a percent value
+        const example: EventData = {
+            id: 0,
+            title: "It's a new day on SMARS",
+            text: "What a difference... a Sol makes,\n Twenty-four-and-a-half little hours,\nnot much sun, and no flowers (yet)\nnor yet any rain...",
+            resolutions: [
+                "How time flies!"
+            ]
+        }
         if (probability) {
             const rand = Math.floor(Math.random() * 100);           // Generate random value and express as a percent
-            if (rand <= probability) this.createModal(true, 0);     // Fire if given probability is higher than random value
+            if (rand <= probability) this.createModal(true, example);     // Fire if given probability is higher than random value
         } else {
-            this.createModal(false, 0);
+            this.createModal(false, example);
         }
     }
 
-    createModal = (random: boolean, id: number) => {
+    createModal = (random: boolean, data: EventData) => {
         this.gameOn = false;
-        this._modal = new Modal(this._p5, this.closeModal, random, id);
+        this._modal = new Modal(this._p5, this.closeModal, random, data);
         this.setMouseContext("modal");
     }
 
@@ -213,36 +329,41 @@ export default class Engine extends View {
         }
     }
 
+    // Sets the Smartian time
+    setClock = () => {
+
+    }
+
     advanceClock = () => {
         if (this._tick < this.ticksPerMinute) {
             if (this.gameOn) this._tick ++;      // Advance ticks if game is unpaused
         } else {
             this._tick = 0;     // Advance minutes
-            if (this._minute < this._minutesPerHour - 1) {  // Minus one tells the minutes counter to reset to zero after 59
-                this._minute ++;
+            if (this._gameTime.minute < this._minutesPerHour - 1) {  // Minus one tells the minutes counter to reset to zero after 59
+                this._gameTime.minute ++;
             } else {
-                this._minute = 0;   // Advance hours (anything on an hourly schedule should go here)
+                this._gameTime.minute = 0;   // Advance hours (anything on an hourly schedule should go here)
                 this.updateEarthData();     // Advance Earth date every game hour
-                this.generateEvent();
                 // this.generateEvent(50);
-                if (this._hour < this._hoursPerClockCycle) {
-                    this._hour ++;
-                    if (this._hour === this._hoursPerClockCycle) {  // Advance day/night cycle when hour hits twelve
-                        if (this._clockCycle === "AM") {
-                            this._clockCycle = "PM"
+                if (this._gameTime.hour < this._hoursPerClockCycle) {
+                    this._gameTime.hour ++;
+                    if (this._gameTime.hour === this._hoursPerClockCycle) {  // Advance day/night cycle when hour hits twelve
+                        if (this._gameTime.cycle === "AM") {
+                            this._gameTime.cycle = "PM"
                         } else {
-                            this._clockCycle = "AM";        // Advance date (anything on a daily schedule should go here)
-                            if (this._sol < this._solsPerYear) {
-                                this._sol ++;
+                            this.generateEvent();           // Modal popup appears every time it's a new day.
+                            this._gameTime.cycle = "AM";        // Advance date (anything on a daily schedule should go here)
+                            if (this._gameTime.sol < this._solsPerYear) {
+                                this._gameTime.sol ++;
                             } else {
-                                this._sol = 1;
-                                this._smartianYear ++;      // Advance year (anything on an yearly schedule should go here)
+                                this._gameTime.sol = 1;
+                                this._gameTime.year ++;      // Advance year (anything on an yearly schedule should go here)
                             }
-                            this._sidebar.setDate(this._sol, this._smartianYear);   // Update sidebar date display
+                            this._sidebar.setDate(this._gameTime.sol, this._gameTime.year);   // Update sidebar date display
                         }  
                     }
                 } else {
-                    this._hour = 1;     // Hour never resets to zero
+                    this._gameTime.hour = 1;     // Hour never resets to zero
                 }
             }      
         }
@@ -281,7 +402,7 @@ export default class Engine extends View {
         p5. fill(constants.GREEN_TERMINAL);
         this._map.render(this._horizontalOffset);
         this._infrastructure.render(this._horizontalOffset);
-        this._sidebar.render(this._minute, this._hour, this._clockCycle);
+        this._sidebar.render(this._gameTime.minute, this._gameTime.hour, this._gameTime.cycle);
         // Mouse pointer is shadow of selected building, to help with building placement:
         if (this.selectedBuilding !== null) {
             this.renderBuildingShadow();

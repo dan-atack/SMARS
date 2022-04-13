@@ -1,5 +1,6 @@
 import { constants } from "./constants";
 import { SaveInfo } from "./saveGame";
+import { SaveSummary } from "./loadGame";
 
 // Request body custom types:
 
@@ -126,6 +127,45 @@ export const getStructures = (setter: (options: ModuleInfo[] | ConnectorInfo[]) 
     })
 }
 
+// Returns an individual structure, based on the category, type and name... And the list of coordinates, since this will be passed directly to the Infrastructure function that will actually re-produce the buildings. It's weird, but it works!
+export const getOneModule = (setter: (selectedBuilding: ModuleInfo, locations: number[][]) => void, category: string, type: string, name: string, locations: number[][]) => {
+
+    const url = `${constants.URL_PREFIX}/${category}/${type}/${name}`;
+
+    fetch(url, {
+        method: "GET",
+        headers: {
+            Accept: "application/json",
+            'Content-Type': "application/json",
+        }
+    })
+    .then((res) => {
+        return res.json();
+    })
+    .then((response) => {
+        setter(response.data, locations);
+    })
+}
+
+export const getOneConnector = (setter: (selectedConnector: ConnectorInfo, locations: number[][]) => void, category: string, type: string, name: string, locations: number[][]) => {
+
+    const url = `${constants.URL_PREFIX}/${category}/${type}/${name}`;
+
+    fetch(url, {
+        method: "GET",
+        headers: {
+            Accept: "application/json",
+            'Content-Type': "application/json",
+        }
+    })
+    .then((res) => {
+        return res.json();
+    })
+    .then((response) => {
+        setter(response.data, locations);
+    })
+}
+
 // Gets just the list of structure TYPES, which are strings, and sets the detailsArea's typeOptions list:
 export const getStructureTypes = (setter: (options: string[]) => void, category: string) => {
 
@@ -165,8 +205,40 @@ export const sendSaveGame = (saveInfo: SaveInfo, setter: (status: boolean) => vo
 }
 
 // Send a GET request with the current user's username as a req parameter, to fetch all saved game files associated with that user
-export const getSavedGames = (username: string) => {
-    console.log(`Getting saved game data for ${username}`);
+export const getSavedGames = (username: string, setter: (saves: SaveSummary[]) => void) => {
+    const url = `${constants.URL_PREFIX}/load-games/${username}`;
+
+    fetch(url, {
+        method: "GET",
+        headers: {
+            Accept: "application/json",
+            'Content-Type': "application/json",
+        }
+    })
+    .then((res) => {
+        return res.json();
+    })
+    .then((response) => {
+        setter(response.saves);
+    })
+}
+
+export const loadGameData = (game_id: string, setter: (saveInfo: SaveInfo) => void) => {
+    const url = `${constants.URL_PREFIX}/load/${game_id}`;
+
+    fetch(url, {
+        method: "GET",
+        headers: {
+            Accept: "application/json",
+            'Content-Type': "application/json",
+        }
+    })
+    .then((res) => {
+        return res.json();
+    })
+    .then((response) => {
+        setter(response.data);
+    })
 }
 
 export const addition = (x: number, y: number) => {

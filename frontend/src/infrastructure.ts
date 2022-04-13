@@ -12,8 +12,6 @@ export default class Infrastructure {
     _connectors: Connector[];
     _justBuilt: ModuleInfo | ConnectorInfo | null;
     _horizontalOffset: number;  // Value is in pixels
-    // _missingResources: [];
-    // _productionTick: number;
 
     constructor(p5: P5) {
         this._p5 = p5;
@@ -21,8 +19,6 @@ export default class Infrastructure {
         this._connectors = [];
         this._justBuilt = null; // When a building has just been added, set this to the building's data
         this._horizontalOffset = 0;
-        // this._missingResources = []  // When a building fails the cost check, list the resources needed
-        // this._productionTick = 0;
     }
 
     setup(center: number) {
@@ -31,10 +27,8 @@ export default class Infrastructure {
 
     addBuilding (x: number, y: number, data: ModuleInfo | ConnectorInfo, terrain: number[][]) {
         if (this.isModule(data)) {
-            console.log("module");
             this.addModule(x, y, data, terrain);
         } else {
-            console.log("connector");
             this.addConnector(x, y, data);
         }
     }
@@ -45,7 +39,6 @@ export default class Infrastructure {
     }
 
     addModule (x: number, y: number, moduleInfo: ModuleInfo, terrain: number[][]) {
-        console.log(moduleInfo.name);
         const moduleArea = this.calculateModuleArea(moduleInfo, x, y);
         const {floor, footprint} = this.calculateModuleFootprint(moduleArea);
         // Check other modules, then the map, for any obstructions:
@@ -62,16 +55,24 @@ export default class Infrastructure {
             this._modules.push(new Module(this._p5, x, y, moduleInfo));
         } else {
             // If map/module 'clear' value is not equal to true then it is a list of the coordinates that are obstructed
-            console.log(`Module obstructions: ${modClear === true ? 0 : modClear.length}`);
-            console.log(`Map obstructions: ${mapClear === true ? 0 : mapClear.length}`);
-            console.log(`Terrain gaps underneath module: ${mapFloor}`);
-            console.log(`Module gaps underneath module: ${modFloor}`);
+            // console.log(`Module obstructions: ${modClear === true ? 0 : modClear.length}`);
+            // console.log(`Map obstructions: ${mapClear === true ? 0 : mapClear.length}`);
+            // console.log(`Terrain gaps underneath module: ${mapFloor}`);
+            // console.log(`Module gaps underneath module: ${modFloor}`);
         }
         
     }
 
+    // Used for loading saved infrastructure
+    addModuleWithoutChecks (x: number, y: number, moduleInfo: ModuleInfo) {
+        this._modules.push(new Module(this._p5, x, y, moduleInfo));
+    }
+
     addConnector (x: number, y: number, connectorInfo: ConnectorInfo) {
-        console.log(connectorInfo.name);
+        this._connectors.push(new Connector(this._p5, x, y, connectorInfo));
+    }
+
+    addConnectorWithoutChecks (x: number, y: number, connectorInfo: ConnectorInfo) {
         this._connectors.push(new Connector(this._p5, x, y, connectorInfo));
     }
 
@@ -230,67 +231,6 @@ export default class Infrastructure {
             return gaps;
         }
     }
-    // Mouse click handler to determine if a click event should be interpreted as a building placement request:
-    // checkForClick(mouseX: number, mouseY: number, buildingData, economy) {
-    //     // Only act on mouse click events if a building type has been selected:
-    //     if (buildingData.name) {
-    //         this.placeBuilding(mouseX, mouseY, buildingData, economy);
-    //     }
-    //     // Check for clicks on existing structures:
-    //     this.buildings.forEach((building) => {
-    //         building.checkForClick(mouseX, mouseY);
-    //     })
-    // }
-
-    // Handles the whole building process, from pre-build checks (cost, obstruction) to payment and setting just built flag:
-    // placeBuilding(x, y, buildingData, economy) {
-    //     // Ensure building is within the map:
-    //     if (x < WORLD_WIDTH * BLOCK_WIDTH && y < WORLD_HEIGHT * BLOCK_WIDTH) {
-    //         // Round mouse position to nearest grid location:
-    //         const gridX = Math.floor(mouseX / BLOCK_WIDTH) * BLOCK_WIDTH;
-    //         const gridY = Math.floor(mouseY / BLOCK_WIDTH) * BLOCK_WIDTH;
-    //         // Ensure there are sufficient resources to pay for building
-    //         if (this.determineBuildingIsAffordable(economy, buildingData)) {
-    //             // Ensure building site is not obstructed
-    //             if (!this.checkForBuildingObstructions(gridX, gridY, buildingData)) {
-    //                 const building = new Building(gridX, gridY, buildingData);
-    //                 this.buildings.push(building);
-    //                 this.payForBuilding(economy, buildingData.costs);
-    //                 this.justBuilt = buildingData;
-    //             } else {
-    //                 console.log('Obstruction detected: building in the way');
-    //             }
-    //         } else {
-    //             console.log('shortage reported'); // TODO: Add in-game visual display of missing resources list
-    //         }
-    //     } else {
-    //         console.log('out of bounds'); // TODO: Add in-game visual display of this message
-    //     }
-    // }
-
-    // Takes the economy object plus the prospective new building's data to establish if you have enough of all required resources:
-    // determineBuildingIsAffordable(economy, buildingData) {
-    //     const affordable = true;
-    //     const shortages = []; // Keep track of any shortages - if you have insufficient of a resource it will be noted.
-    //     const costs = Object.keys(buildingData.costs);    // Get the names of the resources you will need
-    //     costs.forEach((resource) => {
-    //         if (economy[resource] < buildingData.costs[resource]) {
-    //             shortages.push(resource);   // If you have less of a resource than is needed, record the name of the resource
-    //         }
-    //     })
-    //     if (shortages.length > 0) {
-    //         this.missingResources = shortages;   // If there are shortages, keep track of their names
-    //     } else {
-    //         return affordable;  // Otherwise return true, meaning green-light the building
-    //     }
-    // }
-    // For the payment, economy is the economy object and costs is a the building's costs dictionary object:
-    // payForBuilding(economy, costs) {
-    //     const resources = Object.keys(costs);
-    //     resources.forEach((resource) => {
-    //         economy.addResource(resource, -costs[resource]);
-    //     })
-    // }
 
     // Unset missing resources and just built flags:
     resetFlags() {
