@@ -881,7 +881,7 @@ The time has come! Now that we have saved game data in the database, let's try t
 Exit Criteria:
 
 - The player can go to the Load Game screen in the pre-game menu, and see all of the save files associated with their username.
-- The player can select a saved game file and click the 'Load Game' button to start what will essentially be a new game, but with the data from their previous file already loaded into the game's engine.
+- The player can select a saved game file and click the 'Load Game' button to boot up the game's engine with the data from their previous file.
 - Upon loading the Game screen, the Engine displays a modal popup welcoming the player back (pausing the game in the process).
 - The player can do everything they could do before, including saving a new file and then loading THAT, and continuing to play...
 
@@ -925,13 +925,21 @@ Exit Criteria:
 
 20. Now, in the frontend's server_functions file, make a function that can make a request to this endpoint, and take a setter argument to pass the result to the Engine.
 
-### 21. Create the setter function in the Engine and import the server function. Call it for the first module in the modules list after a game is loaded.
+21. Create the setter function in the Engine and import the server function. Call it for the first module in the modules list after a game is loaded.
 
-### 22. Now create an Engine method that will sort the modules list alphabetically, then go through it and add a new Module for each entry in the list, and calling the getOneBuilding function whenever it reaches a new building name.
+22. Now create an Engine method that will sort the modules list alphabetically, then go through it and add a new Module for each entry in the list, and calling the getOneBuilding function whenever it reaches a new building name. Because this is an asynchronous operation, this operation will need to be broken up to wait for the result of each building info fetch. This might require the addition of a new setter function that skips past setting the current building and instead targets a different property, one which is exclusive to this loading function, and which contains the instructions for re-populating structures directly (so the setter doesn't just get the data, it actually uses it to make the buildings too).
 
-### 23. Add a new modal popup to be fired when the Engine loads a saved game, so that the game starts out paused until the player clicks to exit the modal.
+23. Create a new method to the Infrastructure class, which adds a new module without asking any of the usual questions (about footprint, obstacles, etc) so that loaded buildings can be re-populated in any order. Have the Engine call this function when the game loads modules from a save file.
 
-### 16. Add error message display/s to the Load Game screen (for if the button is pressed without a save being selected, or if there are no saves found for the current user).
+24. Add the same functionality but for Connectors.
+
+25. Alter the Modal popup's constructor to simply take the modal data object itself, instead of an ID to look up a specific message in the game constants file. At a later point we'll want to make most modal messages come from the backend, but for now it will suffice to pass a simple (hardcoded) message that gets created by the Engine when a saved game is loaded.
+
+26. Add a new modal popup to be fired when the Engine loads a saved game, so that the game starts out paused until the player clicks to exit the modal.
+
+27. Add error message display/s to the Load Game screen (for if the button is pressed without a save being selected, or if there are no saves found for the current user).
+
+28. Clean up the remaining console logs for the loading process, and merge that branch!
 
 ## Chapter X: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 5)
 

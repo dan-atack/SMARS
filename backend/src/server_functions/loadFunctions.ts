@@ -57,10 +57,14 @@ const loadGameData = async (req: Request, res: Response) => {
         const db = client.db(dbName);
         await db.collection(collectionName).findOne(dbQuery, (err, result) => {
             if (result != null) {
+                console.log(`Dispatching save data for game ${result.game_name}`);
                 res.status(200).json({ status: 200, data: result })
             } else {
+                console.log(`Save data not found for game ${id}`);
                 res.status(404).json({ status: 404, message: "Save file not found :("});
             }
+            client.close();
+            console.log("Closing database client.");
         })
     } catch (err) {
         console.log(err);

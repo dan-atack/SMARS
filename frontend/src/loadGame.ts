@@ -96,20 +96,26 @@ export default class LoadGame extends Screen {
 
     // Stores the save summary data from the server, and creates buttons from it
     setsavedGames = (saves: SaveSummary[]) => {
-        this._savedGames = saves;
-        // Invert order of saved games list to place most recent saves at the top:
-        const flip: SaveSummary[] = [];
-        for (let i = this._savedGames.length - 1; i >= 0; i--) {
-            if (this._savedGames[i] != undefined) {
-                flip.push(this._savedGames[i]);
-            } 
-        }
-        this._savedGames = flip;
-        this.populateLoadOptions();
+        if (saves.length > 0) {
+            this._savedGames = saves;
+            // Invert order of saved games list to place most recent saves at the top:
+            const flip: SaveSummary[] = [];
+            for (let i = this._savedGames.length - 1; i >= 0; i--) {
+                if (this._savedGames[i] != undefined) {
+                    flip.push(this._savedGames[i]);
+                } 
+            }
+            this._savedGames = flip;
+            this.populateLoadOptions();
+        } else {
+            this.setMessage(`No save files found for ${this._username}`, constants.RED_ERROR);
+        } 
     }
 
     // Passed to the load option button to set the basic info for the selected file when clicked
     setSaveSelection = (saveSummary: SaveSummary) => {
+        const name = saveSummary.game_name.length < 18 ? saveSummary.game_name : saveSummary.game_name.slice(0, 17) + "...";
+        this.setMessage(`Game selected: ${name}`, constants.GREEN_TERMINAL);
         this._selectedGame = saveSummary;
     }
 
@@ -127,6 +133,8 @@ export default class LoadGame extends Screen {
     }
 
     handleClicks = (mouseX: number, mouseY: number) => {
+        // Reset the info/error message, unless a game has been selected:
+        if (!this._selectedGame) this.setMessage("", constants.GREEN_TERMINAL);
         this._buttons.forEach((button) => {
             button.handleClick(mouseX, mouseY);
         });
@@ -138,10 +146,10 @@ export default class LoadGame extends Screen {
 
     handleLoad = () => {
         if (this._selectedGame != null) {
-            console.log("Loading game. Please wait.");
+            this.setMessage("Loading game. Please wait.", constants.GREEN_TERMINAL);
             this.loadGameData(this._selectedGame.id, this.setSaveInfo);
         } else {
-            console.log("Please select a game to load");
+            this.setMessage("Please select a game to load", constants.RED_ERROR);
             // TODO: Add a message to the UI here
         }
     }
@@ -165,7 +173,7 @@ export default class LoadGame extends Screen {
         if (this._savedGames.length >= this._optionsShowing + this._optionsPerPage) {
             this._optionsShowing += this._optionsPerPage;
         } else {
-            console.log("No more save options available");
+            this.setMessage("You are at the end of the list.", constants.RED_ERROR);
         }
         this.populateLoadOptions();
     }
@@ -175,7 +183,7 @@ export default class LoadGame extends Screen {
             this._optionsShowing -= this._optionsPerPage;
             if (this._optionsShowing < 0) this._optionsShowing = 0; // Don't go past zero
         } else {
-            console.log("No more save options available");
+            this.setMessage("You are at the start of the list", constants.RED_ERROR);
         }
         this.populateLoadOptions();
     }
@@ -205,8 +213,12 @@ export default class LoadGame extends Screen {
         p5.text("Saved Game:", 180, 160);
         p5.textSize(24);
         p5.fill(constants.GREEN_TERMINAL);
-        p5.text(`Showing ${this._optionsShowing + 1} - ${Math.min(this._optionsShowing + this._optionsPerPage, this._savedGames.length)}`, 180, 240)
+        p5.text(`Showing ${this._optionsShowing + 1} - ${Math.min(this._optionsShowing + this._optionsPerPage, this._savedGames.length)}`, 180, 240);
         p5.text(`of ${this._savedGames.length} saved games`, 180, 272);
+        // Render error/info message:
+        p5.textSize(20);    
+        p5.fill(this._messageColor);
+        p5.text(this._message, 180, 400);
         this._loadOptions.forEach((option) => {
             option.render();
         })

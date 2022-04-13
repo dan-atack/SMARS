@@ -26,11 +26,13 @@ export type SaveInfo = {
     random_events: boolean      // From the game's initial settings
     modules: {                  // Store only a minimal amount of data on the individual modules
         name: string,
+        type: string,           // Module type info is needed to complete search parameters when re-fetching full data object
         x: number,
         y: number
     }[]
     connectors: {               // Connector data's shape will eventually change, but for now it's basically the same as a module
         name: string,
+        type: string,
         x: number,
         y: number
     }[]

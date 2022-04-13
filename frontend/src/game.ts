@@ -70,15 +70,12 @@ export default class Game extends Screen {
         p5.textSize(48);
         p5.stroke(constants.ALMOST_BLACK);
         p5.textAlign(p5.CENTER, p5.CENTER);
-        // Load gameData for a new game OR saveInfo when resuming a previous game
-        if (!this._gameLoaded && this._loadGameData) {
-            console.log("Loading saved game");
+        if (!this._gameLoaded && this._loadGameData) {      // Loading a SAVED game
             this._engine.setupSavedGame(this._loadGameData);
-            this._gameLoaded = true;    // Set this to true here, rather than when the data is literally set
-        } else if (!this._gameLoaded) {
-            console.log("Setting up new game");
+            this._gameLoaded = true;
+        } else if (!this._gameLoaded) {                     // Loading a NEW game
             this._engine.setupNewGame(this._gameData);
-            this._gameLoaded = true;    // Set this to true here, rather than when the data is literally set
+            this._gameLoaded = true;
         }
         this._engine.setup();   // Show the engine (world) view first (includes in-game sidebar)
     }
@@ -127,14 +124,25 @@ export default class Game extends Screen {
 
     // Prepares a SaveInfo object to be passed to the game's backend via the Save Game screen:
     getGameData = () => {
-        const moduleData: {name: string, x: number, y: number}[] = [];
+        const moduleData: {name: string, type: string, x: number, y: number}[] = [];
+        const connectorData: {name: string, type: string, x: number, y: number}[] = [];
         this._engine._infrastructure._modules.forEach((mod) => {
             const stats = {
                 name: mod._moduleInfo.name,
+                type: mod._moduleInfo.type,
                 x: mod._x,
                 y: mod._y
             }
             moduleData.push(stats);
+        });
+        this._engine._infrastructure._connectors.forEach((con) => {
+            const stats = {
+                name: con._connectorInfo.name,
+                type: con._connectorInfo.type,
+                x: con._x,
+                y: con._y
+            }
+            connectorData.push(stats);
         })
         const saveData: SaveInfo = {
             game_name: `${this._username}'s Game`,  // Supply a default value until the user can input their own
@@ -146,7 +154,7 @@ export default class Game extends Screen {
             random_events: this._gameData.randomEvents,
             terrain: this._engine._map._mapData,
             modules: moduleData,
-            connectors: []
+            connectors: connectorData
         }
         return saveData;
     }
