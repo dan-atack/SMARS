@@ -19,7 +19,7 @@ export type ModuleInfo = {
     pressurized: boolean    // Give dees people eaaair!
     columnStrength: number  // How many more modules can fit on top of each column of this structure
     durability: number      // Basically hitpoints
-    buildCosts: Object[]         // List of simple objects, e.g. {minerals: 10}, {money: 100}, etc.
+    buildCosts: { money: number }         // Just a simple object for now, but more keys can be added in future
     maintenanceCosts: Object[]    // Same idea as above
     storageCapacity: Object[]     // Once again, the amount of each type of resource (if any) that can be stored in this module
     crewCapacity: number    // How many humans can fit into a phone booth??
@@ -36,7 +36,7 @@ export type ConnectorInfo = {
     type: string            // Feed this into Engine switch case  - again, ALL IN LOWERCASE!!!
     resourcesCarried: string[]    // Which kinds of things can flow through this connector
     maxFlowRate: number     // Maximum amount of transferrable resource (including people) that can pass per unit of time
-    buildCosts: Object[]    // List of simple objects, e.g. {minerals: 10}, {money: 100}, etc.
+    buildCosts: { money: number }         // Just a simple object for now, but more keys can be added in future
     maintenanceCosts: Object[]  // Ditto
     vertical: boolean       // Can this go up/down? Ladders can, rails cannot.
     horizontal: boolean     // Can this go from side to side? Air ducts can, elevators cannot.

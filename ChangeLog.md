@@ -941,6 +941,74 @@ Exit Criteria:
 
 28. Clean up the remaining console logs for the loading process, and merge that branch!
 
+## Chapter Twenty-Two: It's the Economy, Stupid (Difficulty Estimate: 5 for what is expected to be a large amount of hopefully fairly simple challenges)
+
+### April 13, 2022
+
+With the final basic elements of the game's UI finally in place, we can now proceed to the next major feature from a gameplay standpoint: the first in-game resources, and some of their early uses. This chapter will aim to be modest in its scope, introducing the basic mechanics of the game's resource system without adding anything too fancy (such as building oxygen leakage levels). The game's resources will be managed by a new abstract class, called the Economy class, and this will of course in turn be managed by the game's Engine. The Economy class will be the repository of all resource quantity data, as well as the functions that alter and update those values. One interesting challenge for this chapter will be integrating new resource data into saved game files that didn't initially have a place for them, so once again there will be a need to gracefully handle bringing older save files into a new production environment. Great things to have actually, those legacy files, from a software development cycle learning point of view.
+
+Exit criteria:
+
+- [DONE] When the player starts a new game or loads a saved game, they can see the quantity of the game's 4 basic resources (cash, water, air and food) at the top of the map area
+- [DONE] When the player starts a new game, their choice of difficulty level affects the game's initial resource quantities
+- [DONE] If a save file is loaded that does not contain any resource data, the player gets a normal game's starting resources added to the file when it is loaded in the Engine
+- [DONE] If a save file is loaded that DOES contain resource data, that info should be used and displayed.
+- [DONE] New save files include resource data
+- [DONE] New Modules and Connectors cost money; the costs are now subtracted from the player's resource counts when new structures are built
+- [DONE] All buildings in the database have a cost in money
+- [DONE] All buildings leak a small amount of air (can really be just a fixed amount right now, just to prove the concept works, and that it's done by the Economy class)
+- [DONE] [stretch] The Economy class also displays the increase/decrease RATE for each resource in green or red, underneath the current total
+
+1. Create the Economy class and add it to the game Engine's constructor function. The Economy class is a display-only entity, in the sense that the player does not directly interact with it, so it won't need much in the way of a click-handler or setup function, or even a renderer, initially.
+
+2. Add a single field for resources; make it a dictionary and make the types an export at the top of the module(?).
+
+3. Make a second field for resource counts from the previous 'tick.'
+
+4. Add a render method that prints out the symbol and current quantity of each resource at the top of the screen.
+
+5. Encode the positions for the various resource quantity displays as properties of the Economy class.
+
+6. All resource quantities that are kept by the Economy class should be 1000x higher than the values shown on the interface, to allow for fractions/very small changes to be shown to the player.
+
+7. Add a new field to the GameData model used by the New Game screen, to add differing starting amounts of resources based on difficulty.
+
+8. Have the Engine call the Economy's setResources method when it sets up a new game to load up the game with the values appropriate to the player's chosen difficulty level.
+
+9. Add new descriptor info to the pre-game 'game details' display regarding resources. The first one to actually be true!
+
+10. Update the SaveInfo object's data shape to include a resource category. Check to see that this doesn't break anything.
+
+11. Update the Save information gathering method used by the Game class, and make sure the Save Screen is also able to handle the updated information. Validate by saving a game that has modules and connectors and resources.
+
+12. Ensure that the Load Game screen can handle resource information - as well as a lack of it - when importing loaded games from the server. Validate by loading and console logging the info for the game saved in the previous step, as well as another file that was saved before the advent of resources.
+
+13. Add a protocol to the Engine to allow it to handle games that were loaded without resources.
+
+14. Add the logic for the Engine to load games that do have resource data.
+
+15. Add an alternate text for the resume game modal that is shown if the game detects that a load file is missing any fields that are in the latest official definition (like resource data, for example). Inform the player that the world might have changed since they were last there but that their save data is like, totally safe.
+
+16. Ensure all modules and connectors in the database have a monetary cost value.
+
+17. When a new structure is placed, console log its cost from the Engine. Then log it from the Economy class.
+
+18. When a new structure is placed, check if the cost can be met be the player's current resources (in this case, just money).
+
+19. When a new structure is placed, and the player can afford it and it passes all of the checks, subtract its cost from the player's resource stockpile.
+
+20. Oxygen loss from buildings: For the first iteration of this, lets have each module leak 0.01 oxygen per hour; add an oxygen-loss calculator method to the Infrastructure class, which calculates the amount of oxygen leakage based on the length of the modules list, then returns that value. Have the engine call that method, then pass the result to the economy's oxygen reducer method - or better yet, give the economy class a generic resource subtractor function that uses a switch case.
+
+21. Add a set of display elements to the Economy class to display the rate of change for each type of resource.
+
+22. Make the resource subtractor method update not just the current amount for the resource being subtracted, but its previous value as well. Use that to calculate the rate of change for each resource. Also rename the method to the resourceUpdater, since it could be used for positive adjustments as well.
+
+23. Add buildings' monetary costs to the Build Chip element so the player can see the cost for new structures before placing them.
+
+24. Add logic to the resource updater to only allow resource quantities to go down to zero, and to set a flag to true if a resource has been depleted.
+
+25. Use the resource depletion flag to set the change rate and current quantity's text colours.
+
 ## Chapter X: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 5)
 
 We need to do the Connectors separately, as their placement logic is quite different from the logic for the Modules.
@@ -958,12 +1026,14 @@ Exit Criteria:
 
 ### 3. At some, but not all x-offset values, the building shadow (and subsequent placement) pulls to the left, to the point that the cursor is outside the designated build area by what appears to be up to a full grid space.
 
-### Exit Criteria for backend save game chapter:
+### 4. Save game dates seem to be from a different time zone?!
 
-- It is possible to create a new saved game file for a given user.
+### Exit Criteria for backend save/load game chapter:
+
+- [DONE]It is possible to create a new saved game file for a given user.
 - It is possible to update a saved game file for a given user.
-- It is possible to retrieve a list of saved games for a given user.
-- It is possible to retrieve all of the game data for a specific saved game file.
+- [DONE]It is possible to retrieve a list of saved games for a given user.
+- [DONE]It is possible to retrieve all of the game data for a specific saved game file.
 
 ## Chapter XX: DevOps Interlude (Forecast says sooner is better... do item one as soon as time-keeping is finished)
 
