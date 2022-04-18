@@ -54,6 +54,11 @@ export default class BuildingChip extends Button {
         p5.textAlign(p5.LEFT, p5.CENTER);
         // Building Chip label text is slightly above center line, to make space for other info:
         p5.text(this.buildingData.name, this._x + 12, this._y + this._height / 4);
+        p5.textSize(this._fontSize - 4);
+        p5.fill(constants.GREEN_TERMINAL);
+        let cost = this.buildingData.buildCosts.money.toString();
+        cost = cost.slice(0, cost.length - 2) + "." + cost.slice(cost.length - 3, cost.length - 1);
+        p5.text(`$${cost}`, this._x + 12, this._y + this._height * 3 / 4);
     }
     
 }

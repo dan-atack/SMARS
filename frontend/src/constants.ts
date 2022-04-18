@@ -1,4 +1,13 @@
 // Global variables for the front-end:
+import { Resources } from "./economy"
+
+const basicResources: Resources = {
+   money: ["$", 10000000],
+   oxygen: ["Air", 100],
+   water: ["H20", 10000],
+   food: ["Food", 10000],
+ }
+
 export const constants = {
     // Backend connection
     URL_PREFIX: "http://localhost:7000/api",
@@ -35,6 +44,7 @@ export const constants = {
     BLUEGREEN_CRYSTAL: "#00F2BA",
     BLUEGREEN_DARK: "#052E26",
     BLUE_BG: "#00004F",
+    BASIC_RESOURCES: basicResources
 }
 
  // BLOCKTIONARY!!!!

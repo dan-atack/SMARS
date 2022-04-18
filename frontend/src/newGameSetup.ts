@@ -3,8 +3,17 @@ import P5 from "p5";
 import Screen from "./screen";
 import Button from "./button";
 import Minimap from "./minimap";
+import { Resources } from "./economy";
 import { constants } from "./constants";
 import { getMap } from "./server_functions";
+
+export type GameData = {
+    difficulty: string,
+    mapType: string,
+    randomEvents: boolean,
+    mapTerrain: number[][];
+    startingResources: Resources;
+}
 
 export default class NewGameSetup extends Screen {
     // Pre-game setup types:
@@ -27,12 +36,7 @@ export default class NewGameSetup extends Screen {
     _randomHeight: number;
     _mapTerrain: number[][];
     minimap: Minimap;
-    gameData: {
-        difficulty: string,
-        mapType: string,
-        randomEvents: boolean,
-        mapTerrain: number[][];
-    }
+    gameData: GameData;
 
     constructor(p5: P5, switchScreen: (switchTo: string) => void) {
         super(p5);
@@ -60,7 +64,13 @@ export default class NewGameSetup extends Screen {
             difficulty: "",
             mapType: "",
             randomEvents: true,
-            mapTerrain: []
+            mapTerrain: [],
+            startingResources: {
+                money: ["$", 0],
+                oxygen: ["Air", 0],
+                water: ["H20", 0],
+                food: ["Food", 0],
+            }
         }
     }
 
@@ -256,12 +266,38 @@ export default class NewGameSetup extends Screen {
         this._buttons[7].setSelected(true);
     }
 
+    setStartingResources = (difficulty: string) => {
+        const basic: Resources = {
+            money: ["$", 10000000],
+            oxygen: ["Air", 10000],
+            water: ["H20", 10000],
+            food: ["Food", 10000],
+        };
+        const austere: Resources = {
+            money: ["$", 5000000],
+            oxygen: ["Air", 7500],
+            water: ["H20", 7500],
+            food: ["Food", 5000],
+        }
+        switch (difficulty) {
+            case "easy":
+                return basic;
+            case "medium":
+                return basic;
+            case "hard":
+                return austere;
+            default:
+                return basic;
+        }
+    }
+
     handleStartGame = () => {
         this.gameData = {   // Prepare to dispatch the following info to the new game's set
             difficulty: this._difficulty,
             mapType: this._mapType,
             randomEvents: this._randomEvents,
-            mapTerrain: this._mapTerrain
+            mapTerrain: this._mapTerrain,
+            startingResources: this.setStartingResources(this._difficulty)
         }
         this.switchScreen("game");
         this.cleanup();
@@ -286,21 +322,7 @@ export default class NewGameSetup extends Screen {
         const messages = [];
         p5.fill(constants.EGGSHELL);
         p5.textSize(18);
-        p5.textAlign(p5.LEFT)
-        switch(this._difficulty) {
-            case "easy":
-                messages.push("- reduced upkeep costs");
-                if (this._randomEvents) messages.push("- luckier random events");
-                break;
-            case "medium":
-                messages.push("- regular costs");
-                if (this._randomEvents) messages.push("- average luck");
-                break;
-            case "hard":
-                messages.push("- steeper upkeep costs");
-                messages.push("- unfair starting situation");
-                if (this._randomEvents) messages.push("- unlucky random events")
-        }
+        p5.textAlign(p5.LEFT);
         switch(this._mapType) {
             case "polar":
                 messages.push("- abundant water ice");
@@ -308,13 +330,32 @@ export default class NewGameSetup extends Screen {
                 break;
             case "highlands":
                 messages.push("- buildings leak air faster");
-                messages.push("- better power generation");
+                messages.push("- solar is more efficient");
                 break;
             case "riverbed":
                 messages.push("- abundant resources");
-                messages.push("- minimal air leakage");
                 messages.push("- lower radiation levels");
         }
+        switch(this._difficulty) {
+            case "easy":
+                messages.push("- lower resource costs");
+                messages.push("- normal resources")
+                if (this._randomEvents) messages.push("- luckier random events");
+                messages.push("\"Good for a first try\"");
+                break;
+            case "medium":
+                messages.push("- regular costs");
+                messages.push("- normal resources")
+                if (this._randomEvents) messages.push("- average luck");
+                messages.push("\"Good for a challenge\"");
+                break;
+            case "hard":
+                messages.push("- higher upkeep costs");
+                messages.push("- reduced resources");
+                if (this._randomEvents) messages.push("- unlucky random events");
+                messages.push("** For masochists only **")
+        }
+        
         messages.forEach((msg, idx) => {
             p5.text(msg, alignment, startingPoint + idx * interval);
         })

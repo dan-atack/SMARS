@@ -12,14 +12,8 @@ import Logbook from "./logbook";
 // Game constants:
 import { constants } from "./constants";
 import { SaveInfo } from "./saveGame";
+import { GameData } from "./newGameSetup";
 
-// Define object shape for pre-game data from game setup screen:
-type GameData = {
-    difficulty: string,
-    mapType: string,
-    randomEvents: boolean,
-    mapTerrain: number[][];
-}
 
 export default class Game extends Screen {
     // Types for the Game class: The sub-screens it alternates between
@@ -54,6 +48,12 @@ export default class Game extends Screen {
             mapType: "",
             randomEvents: true,
             mapTerrain: [],
+            startingResources: {
+                money: ["$", 0],
+                oxygen: ["Air", 0],
+                water: ["H20", 0],
+                food: ["Food", 0],
+            }
         };
         this._loadGameData = null;  // By default there is no loaded game data
         this._gameLoaded = false;   // Initially no game data is loaded
@@ -154,7 +154,8 @@ export default class Game extends Screen {
             random_events: this._gameData.randomEvents,
             terrain: this._engine._map._mapData,
             modules: moduleData,
-            connectors: connectorData
+            connectors: connectorData,
+            resources: this._engine._economy._resources,
         }
         return saveData;
     }

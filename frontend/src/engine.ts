@@ -5,18 +5,12 @@ import View from "./view";
 import Sidebar from "./sidebar";
 import Map from "./map";
 import Infrastructure from "./infrastructure";
+import Economy, { Resources } from "./economy";
 import Modal, { EventData } from "./modal";
 import { ModuleInfo, ConnectorInfo, getOneModule, getOneConnector } from "./server_functions";
 import { constants } from "./constants";
 import { SaveInfo, GameTime } from "./saveGame";
-
-// Define object shape for pre-game data from game setup screen:
-type GameData = {
-    difficulty: string,
-    mapType: string,
-    randomEvents: boolean,
-    mapTerrain: number[][];
-}
+import { GameData } from "./newGameSetup";
 
 // TODO: Load Environment variables
 if (process.env.ENVIRONMENT) console.log(process.env.ENVIRONMENT);
@@ -26,10 +20,11 @@ export default class Engine extends View {
     // Engine types
     _sidebar: Sidebar;
     _sidebarExtended: boolean;
-    _gameData: GameData         // Data object for a new game
+    _gameData: GameData | null  // Data object for a new game
     _saveInfo: SaveInfo | null  // Data object for a saved game
     _map: Map;
     _infrastructure: Infrastructure;
+    _economy: Economy;
     _modal: Modal | null;
     // Map scrolling control
     _horizontalOffset: number;  // This will be used to offset all elements in the game's world, starting with the map
@@ -61,15 +56,11 @@ export default class Engine extends View {
         this.getConnectorInfo = getOneConnector;
         this._sidebar = new Sidebar(p5, this.switchScreen, this.changeView, this.setMouseContext, this.setGameSpeed);
         this._sidebarExtended = true;   // Side bar can be partially hidden to expand map view - should this be here or in the SB itself??
-        this._gameData = {
-            difficulty: "",
-            mapType: "",
-            randomEvents: true,
-            mapTerrain: []
-        }   // New game data is loaded from the Game module when it calls the setupNewGame method
+        this._gameData = null;
         this._saveInfo = null;  // Saved game info is loaded from the Game module when it callse the setupSavedGame method
         this._map = new Map(this._p5);
         this._infrastructure = new Infrastructure(p5);
+        this._economy = new Economy(p5);
         this._modal = null;
         this._horizontalOffset = 0;
         this._scrollDistance = 50;
@@ -106,6 +97,7 @@ export default class Engine extends View {
     setupNewGame = (gameData: GameData) => {
         this._gameData = gameData;  // gameData object only needs to be set for new games
         this._map.setup(this._gameData.mapTerrain);
+        this._economy.setResources(this._gameData.startingResources);
         this._horizontalOffset = this._map._maxOffset / 2;   // Put player in the middle of the map to start out
         this._infrastructure.setup(this._horizontalOffset);
     }
@@ -114,11 +106,17 @@ export default class Engine extends View {
         this._saveInfo = saveInfo;
         this._gameTime = saveInfo.game_time;
         this._map.setup(this._saveInfo.terrain);
+        this._economy.setResources(saveInfo.resources);
         this._horizontalOffset = this._map._maxOffset / 2;
         this._infrastructure.setup(this._horizontalOffset);
         this.loadModulesFromSave(saveInfo.modules);
         this.loadConnectorsFromSave(saveInfo.connectors);
-        this.createLoadGameModal(saveInfo.username);
+        // Check if game has resource data and if it doesn't, render an alternate welcome back message
+        if (!saveInfo.resources) {
+            this.createLoadGameModal(saveInfo.username, true);
+        } else {
+            this.createLoadGameModal(saveInfo.username, false);
+        }
     }
 
     // Top-level saved module importer
@@ -155,7 +153,7 @@ export default class Engine extends View {
     loadModuleFromSave = (selectedBuilding: ModuleInfo, locations: number[][]) => {
         if (selectedBuilding != null) {
             locations.forEach((space) => {
-                this._infrastructure.addModuleWithoutChecks(space[0], space[1], selectedBuilding)
+                this._infrastructure.addModule(space[0], space[1], selectedBuilding)
             })
         }
     }
@@ -185,7 +183,7 @@ export default class Engine extends View {
                 cons.forEach((con) => {
                     coords.push([con.x, con.y]);
                 })
-                this.getConnectorInfo(this.loadConnectorFromSave, "modules", conType, cT, coords);
+                this.getConnectorInfo(this.loadConnectorFromSave, "connectors", conType, cT, coords);
             })
         }  
     }
@@ -193,7 +191,7 @@ export default class Engine extends View {
     loadConnectorFromSave = (selectedConnector: ConnectorInfo, locations: number[][]) => {
         if (selectedConnector != null) {
             locations.forEach((space) => {
-                this._infrastructure.addConnectorWithoutChecks(space[0], space[1], selectedConnector);
+                this._infrastructure.addConnector(space[0], space[1], selectedConnector);
             })
         }
     }
@@ -213,9 +211,7 @@ export default class Engine extends View {
                     break;
                 case "place":
                     console.log("Place");
-                    // TODO: Separate building placement workflow into dedicated method?
-                    const [x, y] = this.getMouseGridPosition(mouseX, mouseY);
-                    if (this.selectedBuilding != null) this._infrastructure.addBuilding(x, y, this.selectedBuilding, this._map._mapData);
+                    this.handleStructurePlacement(mouseX, mouseY);
                     break;
                 case "resource":
                     console.log("Resource");
@@ -264,6 +260,33 @@ export default class Engine extends View {
         return [gridX, gridY];
     }
 
+    handleStructurePlacement = (mouseX: number, mouseY: number) => {
+        const [x, y] = this.getMouseGridPosition(mouseX, mouseY);
+        if (this.selectedBuilding != null) {
+            const affordable = this._economy.checkResources(this.selectedBuilding.buildCosts);
+            if (this._infrastructure.isModule(this.selectedBuilding)) {
+                const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._mapData);
+                if (clear && affordable) {
+                    this._infrastructure.addModule(x, y, this.selectedBuilding);
+                    this._economy.subtractMoney(this.selectedBuilding.buildCosts);
+                } else {
+                    console.log(`Clear: ${clear}`);
+                    console.log(`Affordable: ${affordable}`);
+                }
+            } else {    // For connector placement
+                if (affordable) {
+                    this._infrastructure.addConnector(x, y, this.selectedBuilding);
+                    this._economy.subtractMoney(this.selectedBuilding.buildCosts);
+                }
+            }
+        }
+    }
+
+    handleResourceConsumption = () => {
+        const air = this._infrastructure.calculateModulesOxygenLoss();
+        this._economy.updateResource("oxygen", air);
+    }
+
     setGameSpeed = (value: string) => {
         this.gameOn = true;     // Always start by assuming the game is on
         switch (value) {
@@ -282,13 +305,16 @@ export default class Engine extends View {
         }
     }
 
-    createLoadGameModal = (username: string) => {
+    // Prints a welcome-back modal when the player loads a saved file. Updates means the game has been updated since the save
+    createLoadGameModal = (username: string, updates: boolean) => {
+        const messageUpdates: string = `Welcome back, Commander ${username}! While you\nwere away there may have been a few changes made\nhere and there, but your save data is like, totally safe.\nLike, Nintety... eight percent guaranteed it's all there.`;
+        const messageNoUpdates: string = `Welcome back, Commander ${username}!\n The colonists missed you.\nThey look up to you.`;
         const data = {
             id: 1,
             title: "You're back!!!",
-            text: `Welcome back, Commander ${username}!\n The colonists missed you.\nThey look up to you.`,
+            text: updates ? messageUpdates : messageNoUpdates,
             resolutions: [
-                "The feeling is mutual."
+                updates ? "I like those odds!" : "The feeling is mutual."
             ]
         }
         this.createModal(false, data);
@@ -331,7 +357,7 @@ export default class Engine extends View {
 
     // Sets the Smartian time
     setClock = () => {
-
+        console.log("The clock has been set");
     }
 
     advanceClock = () => {
@@ -343,6 +369,7 @@ export default class Engine extends View {
                 this._gameTime.minute ++;
             } else {
                 this._gameTime.minute = 0;   // Advance hours (anything on an hourly schedule should go here)
+                this.handleResourceConsumption();
                 this.updateEarthData();     // Advance Earth date every game hour
                 // this.generateEvent(50);
                 if (this._gameTime.hour < this._hoursPerClockCycle) {
@@ -402,6 +429,7 @@ export default class Engine extends View {
         p5. fill(constants.GREEN_TERMINAL);
         this._map.render(this._horizontalOffset);
         this._infrastructure.render(this._horizontalOffset);
+        this._economy.render();
         this._sidebar.render(this._gameTime.minute, this._gameTime.hour, this._gameTime.cycle);
         // Mouse pointer is shadow of selected building, to help with building placement:
         if (this.selectedBuilding !== null) {

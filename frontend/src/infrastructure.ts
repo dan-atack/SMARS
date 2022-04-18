@@ -25,20 +25,12 @@ export default class Infrastructure {
         const x = center / constants.BLOCK_WIDTH;
     }
 
-    addBuilding (x: number, y: number, data: ModuleInfo | ConnectorInfo, terrain: number[][]) {
-        if (this.isModule(data)) {
-            this.addModule(x, y, data, terrain);
-        } else {
-            this.addConnector(x, y, data);
-        }
-    }
-
     // Determines if the new building is a module or a connector:
     isModule (building: ModuleInfo | ConnectorInfo): building is ModuleInfo {
         return (building as ModuleInfo).pressurized !== undefined
     }
 
-    addModule (x: number, y: number, moduleInfo: ModuleInfo, terrain: number[][]) {
+    checkModulePlacement (x: number, y: number, moduleInfo: ModuleInfo, terrain: number[][]) {
         const moduleArea = this.calculateModuleArea(moduleInfo, x, y);
         const {floor, footprint} = this.calculateModuleFootprint(moduleArea);
         // Check other modules, then the map, for any obstructions:
@@ -52,27 +44,22 @@ export default class Infrastructure {
             mapFloor = this.checkModuleFootprintWithTerrain(floor, modFloor, terrain);
         }
         if (mapClear === true && modClear === true && (modFloor === true || mapFloor === true)) {
-            this._modules.push(new Module(this._p5, x, y, moduleInfo));
+            return true;
         } else {
             // If map/module 'clear' value is not equal to true then it is a list of the coordinates that are obstructed
             // console.log(`Module obstructions: ${modClear === true ? 0 : modClear.length}`);
             // console.log(`Map obstructions: ${mapClear === true ? 0 : mapClear.length}`);
             // console.log(`Terrain gaps underneath module: ${mapFloor}`);
             // console.log(`Module gaps underneath module: ${modFloor}`);
+            return false;
         }
-        
     }
 
-    // Used for loading saved infrastructure
-    addModuleWithoutChecks (x: number, y: number, moduleInfo: ModuleInfo) {
+    addModule (x: number, y: number, moduleInfo: ModuleInfo) {
         this._modules.push(new Module(this._p5, x, y, moduleInfo));
     }
 
     addConnector (x: number, y: number, connectorInfo: ConnectorInfo) {
-        this._connectors.push(new Connector(this._p5, x, y, connectorInfo));
-    }
-
-    addConnectorWithoutChecks (x: number, y: number, connectorInfo: ConnectorInfo) {
         this._connectors.push(new Connector(this._p5, x, y, connectorInfo));
     }
 
@@ -230,6 +217,13 @@ export default class Infrastructure {
             // If there are some 'gaps' then return that list, to pass to the terrain footprint checker
             return gaps;
         }
+    }
+
+    // Basic oxygen loss calculator
+    calculateModulesOxygenLoss = () => {
+        const loss_rate = 1;
+        return loss_rate * this._modules.length;
+        
     }
 
     // Unset missing resources and just built flags:
