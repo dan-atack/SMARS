@@ -1009,6 +1009,38 @@ Exit criteria:
 
 25. Use the resource depletion flag to set the change rate and current quantity's text colours.
 
+## Chapter Twenty-Three: The Colonists (Difficulty Estimate: 7 for new rules to govern colonist movements and animation)
+
+### April 18, 2022
+
+Following the creation of the in-game resource system, it is time to finally meet the Smartians! The colonists will represent the first dynamic elements of our simulated world, and so their addition to the game represents a major milestone in the game's interestingness. The early colonists will have a simple existence, simply moving about more or less randomly across the map, and consuming resources directly from the economy class's stockpiles via telepathy. Later generations will eventually move to specific locations within the base to access resources and services (e.g. kitchens and rest areas), and still later generations will move to more distant locations, to explore and do work for the expanding colony!
+
+Exit Criteria:
+
+- Colonist class is created to render the individual colonists in the game's world. Colonists can stand still or walk to either the left or right
+- Population class is used to manage colonist activities, including resource consumption and movement (calling the handler functions of the individual colonists)
+- Each colonist consumes a small amount of air and water each hour
+- Each colonist consumes a small amount of food every CYCLE (AM and PM)
+- Colonists as a collective have a horizontal range that they cannot wander outside of
+- Colonists walk around at random within that horizontal range and have unlimited climbing ability
+- [STRETCH] colonists climb at a slow rate, and will avoid climbing down anything steeper than one tile (basic terrain navigation sense for colonists)
+
+### 1. Create the Colonist class. Initially it should be very simple, resembling a block, but without even a type. Add a simple render function (a circle ought to do it) for now.
+
+### 2. Create the Population class. This will be created by the Engine at the game's outset to keep track of all the individual Smartians. Population class will initially be quite simple, like the Economy or Infrastructure classes were at their outset.
+
+### 3. Plug the Population class into the Engine when it loads up and have it render a single colonist, at the location of the first module in the Infrastructure's list. Or, if there is no infrastructure yet built, at the horizontal center of the map (bonus if they're placed at the surface level on the first attempt).
+
+### 4. Once the first Colonist is rendered as a circle, upgrade their 'body' to include hands and feet, and a helmet. Keep each of these as distinct fields of the Colonist class, so they can be easily kept track of during the scripting of movement animations.
+
+### 5. Add a method for the Colonist to detect what they're standing on (check the 'player' class from the game jam for inspiration here).
+
+### 6. Create a rudimentary animation sequence for the Colonist, to be rendered when they are walking. Animation should start and end with the moving parts in the same position, so it can be looped with itself. Animation is rendered one frame at a time, with each render increasing an 'animation tick' variable that resets when the loop is complete. Animation data is either a series of positions for each individual element, or a mathematical formula to derive position for each frame in the loop. Bonus points if you use the latter method to any extent!
+
+### 7. Create an isWalking field for the Colonists, and tie the walking animation to that. If the value is true, keep looping the animation; if it is false, end any current animation and show the static image of the colonist.
+
+### 8. Using the same principles as described in step 6, make a 'standing' animation, so that the Colonists are always moving at least a little bit!
+
 ## Chapter X: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 5)
 
 We need to do the Connectors separately, as their placement logic is quite different from the logic for the Modules.
