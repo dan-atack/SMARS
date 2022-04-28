@@ -1,7 +1,6 @@
 // The Block class represents the individual terrain tiles on the map
 import P5 from "p5";
-import { constants, blocks } from "./constants";
-import { BlockData } from "./constants";
+import { constants, blocks, BlockData } from "./constants";
 
 export default class Block {
     // Block types:

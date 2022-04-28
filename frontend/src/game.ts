@@ -4,7 +4,7 @@ import Screen from "./screen";
 import View from "./view";
 // In-game views:
 import Engine from "./engine";
-import Population from "./population";
+import PopulationView from "./populationView";
 import TechTree from "./tech";
 import Earth from "./earth";
 import Industry from "./industry";
@@ -18,7 +18,7 @@ import { GameData } from "./newGameSetup";
 export default class Game extends Screen {
     // Types for the Game class: The sub-screens it alternates between
     _engine: Engine;
-    _population: Population;
+    _population: PopulationView;
     _techTree: TechTree;
     _earth: Earth;
     _industry: Industry;
@@ -37,7 +37,7 @@ export default class Game extends Screen {
         this.switchScreen = switchScreen;
         // Pass view and screen changer functions to the engine (For the sidebar to use)
         this._engine = new Engine(p5, this.switchScreen, this.changeView, this.updateEarthData);
-        this._population = new Population(p5, this.changeView);
+        this._population = new PopulationView(p5, this.changeView);
         this._techTree = new TechTree(p5, this.changeView);
         this._earth = new Earth(p5, this.changeView) // There IS no planet B!!!
         this._industry = new Industry(p5, this.changeView);
