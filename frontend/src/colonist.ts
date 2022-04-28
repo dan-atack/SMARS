@@ -166,11 +166,11 @@ export default class Colonist {
         switch (delta) {
             // Jumping down from either 1 or 2 blocks takes the same movement
             case 2:
-                this._movementType = "big-slide";
+                this._movementType = "big-drop";
                 this._movementCost = 5;
                 break;
             case 1:
-                this._movementType = "small-slide";
+                this._movementType = "small-drop";
                 this._movementCost = 3;
                 break;
             case 0:
@@ -221,10 +221,10 @@ export default class Colonist {
             case "big-climb":
                 this._y -= 2;
                 break;
-            case "small-slide":
+            case "small-drop":
                 this._y++;
                 break;    
-            case "big-slide":
+            case "big-drop":
                 this._y += 2;
                 break;
         }
@@ -251,7 +251,19 @@ export default class Colonist {
                 break;
             case "small-climb":
                 xAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
+                yAnimation = -((1 / fpm) * this._animationTick) / this._movementCost;
+                break;
+            case "big-climb":
+                xAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
+                yAnimation = -((2 / fpm) * this._animationTick) / this._movementCost;
+                break;
+            case "small-drop":
+                xAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
                 yAnimation = ((1 / fpm) * this._animationTick) / this._movementCost;
+                break;
+            case "big-drop":
+                xAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
+                yAnimation = ((2 / fpm) * this._animationTick) / this._movementCost;
                 break;
         }
         let offsets: number[] = [];
@@ -264,12 +276,12 @@ export default class Colonist {
         this._p5.fill(constants.EGGSHELL);
         this._p5.strokeWeight(2);
         const x = (this._x + offsets[0]) * constants.BLOCK_WIDTH - this._xOffset;
-        const y = (this._y + 0.6 - yAnimation) * constants.BLOCK_WIDTH - this._yOffset;
+        const y = (this._y + 0.6 + yAnimation) * constants.BLOCK_WIDTH - this._yOffset;
         const w = 0.8 * constants.BLOCK_WIDTH;
         this._p5.ellipse(x, y, w);
         // Visor
         const vX = (this._x + offsets[1]) * constants.BLOCK_WIDTH - this._xOffset;
-        const vY = (this._y + 0.6 - yAnimation) * constants.BLOCK_WIDTH - this._yOffset;
+        const vY = (this._y + 0.6 + yAnimation) * constants.BLOCK_WIDTH - this._yOffset;
         const vW = 0.6 * constants.BLOCK_WIDTH;
         this._p5.ellipse(vX, vY, vW);
         this._p5.stroke(constants.EGGSHELL);
@@ -290,11 +302,23 @@ export default class Colonist {
                 break;
             case "small-climb":
                 xAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
+                yAnimation = -((1 / fpm) * this._animationTick) / this._movementCost;
+                break;
+            case "big-climb":
+                xAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
+                yAnimation = -((2 / fpm) * this._animationTick) / this._movementCost;
+                break;
+            case "small-drop":
+                xAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
                 yAnimation = ((1 / fpm) * this._animationTick) / this._movementCost;
+                break;
+            case "big-drop":
+                xAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
+                yAnimation = ((2 / fpm) * this._animationTick) / this._movementCost;
                 break;
         }
         const x = (this._x + 0.1 + xAnimation) * constants.BLOCK_WIDTH - this._xOffset;
-        const y = (this._y + 0.9 - yAnimation) * constants.BLOCK_WIDTH;
+        const y = (this._y + 0.9 + yAnimation) * constants.BLOCK_WIDTH;
         const w = 0.8 * constants.BLOCK_WIDTH;
         const h = 0.9 * constants.BLOCK_WIDTH;
         this._p5.rect(x, y, w, h);
@@ -318,8 +342,26 @@ export default class Colonist {
             case "small-climb":
                 xlAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
                 xrAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
+                ylAnimation = -((1 / fpm) * this._animationTick) / this._movementCost;
+                yrAnimation = -((1 / fpm) * this._animationTick) / this._movementCost;
+                break;
+            case "big-climb":
+                xlAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
+                xrAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
+                ylAnimation = -((2 / fpm) * this._animationTick) / this._movementCost;
+                yrAnimation = -((2 / fpm) * this._animationTick) / this._movementCost;
+                break;
+            case "small-drop":
+                xlAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
+                xrAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
                 ylAnimation = ((1 / fpm) * this._animationTick) / this._movementCost;
                 yrAnimation = ((1 / fpm) * this._animationTick) / this._movementCost;
+                break;
+            case "big-drop":
+                xlAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
+                xrAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
+                ylAnimation = ((2 / fpm) * this._animationTick) / this._movementCost;
+                yrAnimation = ((2 / fpm) * this._animationTick) / this._movementCost;
                 break;
         }
         // Invert which hand gets which instructions if the colonist is moving to the left:
@@ -330,11 +372,11 @@ export default class Colonist {
         }
         // Left
         const xL = (this._x + 0.15 + xlAnimation) * constants.BLOCK_WIDTH - this._xOffset;
-        const yL = (this._y + 1.3 - ylAnimation) * constants.BLOCK_WIDTH - this._yOffset;
+        const yL = (this._y + 1.3 + ylAnimation) * constants.BLOCK_WIDTH - this._yOffset;
         const w = 0.3 * constants.BLOCK_WIDTH;  // Both hands are the same size
         // Right hand
         const xR = (this._x + 0.8 + xrAnimation) * constants.BLOCK_WIDTH - this._xOffset;
-        const yR = (this._y + 1.3 - yrAnimation) * constants.BLOCK_WIDTH - this._yOffset;
+        const yR = (this._y + 1.3 + yrAnimation) * constants.BLOCK_WIDTH - this._yOffset;
         this._p5.ellipse(xL, yL, w);
         this._p5.ellipse(xR, yR, w);
     }
@@ -355,8 +397,26 @@ export default class Colonist {
             case "small-climb":
                 xlAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
                 xrAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
+                ylAnimation = -((1 / fpm) * this._animationTick) / this._movementCost;
+                yrAnimation = -((1 / fpm) * this._animationTick) / this._movementCost;
+                break;
+            case "big-climb":
+                xlAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
+                xrAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
+                ylAnimation = -((2 / fpm) * this._animationTick) / this._movementCost;
+                yrAnimation = -((2 / fpm) * this._animationTick) / this._movementCost;
+                break;
+            case "small-drop":
+                xlAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
+                xrAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
                 ylAnimation = ((1 / fpm) * this._animationTick) / this._movementCost;
                 yrAnimation = ((1 / fpm) * this._animationTick) / this._movementCost;
+                break;
+            case "big-drop":
+                xlAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
+                xrAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
+                ylAnimation = ((2 / fpm) * this._animationTick) / this._movementCost;
+                yrAnimation = ((2 / fpm) * this._animationTick) / this._movementCost;
                 break;
         }
         if (this._facing === "left") {
@@ -366,11 +426,11 @@ export default class Colonist {
         }
         // Left boot
         const xL = (this._x + 0.15 + xlAnimation) * constants.BLOCK_WIDTH - this._xOffset;
-        const yL = (this._y + 1.85 - ylAnimation) * constants.BLOCK_WIDTH - this._yOffset;
+        const yL = (this._y + 1.85 + ylAnimation) * constants.BLOCK_WIDTH - this._yOffset;
         const w = 0.3 * constants.BLOCK_WIDTH;  // Both hands are the same size
         // Right boot
         const xR = (this._x + 0.85 + xrAnimation) * constants.BLOCK_WIDTH - this._xOffset;
-        const yR = (this._y + 1.85 - yrAnimation) * constants.BLOCK_WIDTH - this._yOffset;
+        const yR = (this._y + 1.85 + yrAnimation) * constants.BLOCK_WIDTH - this._yOffset;
         this._p5.ellipse(xL, yL, w);
         this._p5.ellipse(xR, yR, w);
     }

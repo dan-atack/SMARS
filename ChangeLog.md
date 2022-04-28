@@ -1086,17 +1086,19 @@ Exit Criteria:
 - Placing a connector is constrained by:
   -- Must be placed within a module (later connectors might be partially external to the base, i.e. spanning the gap between two modules, but should follow the precedent of always originating/terminating at a module. Else what exactly are they connecting, right?)
 
-### Bug List:
+### Bug List (Severity in square brackets):
 
-### 1. When the in-game menu is opened then closed, it resets the engine's offset to be back in the middle of the map. The offset value should persist between menu openings.
+### 1. [2: UX / Convenience] When the in-game menu is opened then closed, it resets the engine's offset to be back in the middle of the map. The offset value should persist between menu openings.
 
-### 2. Ensure buildings cannot be placed BELOW the game's screen area (and by extension, that no map actions are permitted outside the map area).
+### 2. [8: Major gameplay issue] Ensure buildings cannot be placed BELOW the game's screen area (and by extension, that no map actions are permitted outside the map area).
 
-### 3. At some, but not all x-offset values, the building shadow (and subsequent placement) pulls to the left, to the point that the cursor is outside the designated build area by what appears to be up to a full grid space.
+### 3. [5: UX / Minor gameplay issue] At some, but not all x-offset values, the building shadow (and subsequent placement) pulls to the left, to the point that the cursor is outside the designated build area by what appears to be up to a full grid space.
 
-### 4. Save game dates seem to be from a different time zone?!
+### 4. [1: Aesthetics / Inaccurate info display] Save game dates seem to be from a different time zone?!
 
-### 5. Economy save data should really include the previous value/rate of change numbers so the player doesn't have to wait an hour for an Economy update. Economy rate-of-change calculation system in general is in need of an overhaul, actually.
+### 5. [3: UX / Inaccurate info display] Economy save data should really include the previous value/rate of change numbers so the player doesn't have to wait an hour for an Economy update. Economy rate-of-change calculation system in general is in need of an overhaul, actually.
+
+### 6. [1: Aesthetics / Animation glitch] When the game speed is adjusted, it can cause moving colonists' animations to be momentarily displaced (no gameplay effect).
 
 ### Exit Criteria for backend save/load game chapter:
 
