@@ -13,8 +13,13 @@ export default class Economy {
     // Economy class types:
     _p5: P5;
     _resources: Resources;
-    _lastResources: Resources;
-    _resourceDisplayFraction: number;       // The amount by which to divide each resource's display quantity
+    _resourceChangeRates: {             // Resource change rates calculated at moment of update
+        money: number
+        oxygen: number,
+        water: number,
+        food: number,
+    };
+    _resourceDisplayFraction: number;           // The amount by which to divide each resource's display quantity
     _resourceShortages: {
         money: boolean,
         oxygen: boolean,
@@ -35,12 +40,12 @@ export default class Economy {
             water: ["H20", 10000],
             food: ["Food", 10000],
         };
-        this._lastResources = {
-            money: ["$", 10000000],
-            oxygen: ["Air", 10000],
-            water: ["H20", 10000],
-            food: ["Food", 10000],
-        };
+        this._resourceChangeRates = {
+            money: 0,
+            oxygen: 0,
+            water: 0,
+            food: 0,
+        }
         this._resourceDisplayFraction = 100;        // We can display 'decimals' down to 0.01
         this._resourceShortages = {
             money: false,
@@ -68,16 +73,15 @@ export default class Economy {
     subtractMoney = (cost: { money: number }) => {
         const money = this._resources.money[1] - cost.money;
         this._resources.money[1] = money;
+        this._resourceChangeRates.money -= cost.money;
     };
 
     updateResource = ( resource: string, amount: number) => {
-        this._lastResources.money[1] = this._resources.money[1];
-        this._lastResources.water[1] = this._resources.water[1];
-        this._lastResources.oxygen[1] = this._resources.oxygen[1];
-        this._lastResources.food[1] = this._resources.food[1];
+        this._resourceChangeRates.money = 0;    // Reset financial costs record each update cycle
         switch (resource) {
             case "oxygen":
                 this._resources.oxygen[1] -= amount;
+                this._resourceChangeRates.oxygen = -amount; // We have assumed that a positive amount means a decrease
                 if (this._resources.oxygen[1] <= 0) {
                     // If value gets to or below zero, add its name to the 'resource shortages' list
                     this._resources.oxygen[1] = 0;
@@ -88,6 +92,7 @@ export default class Economy {
                 break;
             case "water":
                 this._resources.water[1] -= amount;
+                this._resourceChangeRates.water = -amount;
                 if (this._resources.water[1] < 0) {
                     this._resources.water[1] = 0;
                     this._resourceShortages.water = true;
@@ -97,6 +102,7 @@ export default class Economy {
                 break;
             case "food":
                 this._resources.food[1] -= amount;
+                this._resourceChangeRates.food = -amount;
                 if (this._resources.food[1] < 0) {
                     this._resources.food[1] = 0;
                     this._resourceShortages.food = true;
@@ -114,14 +120,6 @@ export default class Economy {
         if (resources) {
             // Ridiculous, convoluted way to avoid 'binding' the current and previous resource values
             this._resources = resources;
-            const money = resources.money[1] * 1;
-            this._lastResources.money[1] = money;
-            const oxy = resources.oxygen[1] * 1;
-            this._lastResources.oxygen[1] = oxy;
-            const water = resources.water[1] * 1;
-            this._lastResources.water[1] = water;
-            const food = resources.food[1] * 1;
-            this._lastResources.food[1] = food;
         } else {
             // If a file that has no resource data is loaded, give the player the regular new game's default starting resources
             this.setResources({
@@ -151,15 +149,15 @@ export default class Economy {
         p5.text(val, x + offset + 24, y);
     }
 
-    displayResourceChangeRate = (current: number, previous: number, x: number, y: number, shortage: boolean) => {
+    displayResourceChangeRate = (delta: number, x: number, y: number, shortage: boolean) => {
         const p5 = this._p5;
         p5.textSize(16);
-        if (!shortage && current - previous >= 0) {
+        if (!shortage && delta >= 0) {
             p5.fill(constants.GREEN_TERMINAL);
-            p5.text(`+ ${(current - previous) / this._resourceDisplayFraction} / hour`, x, y);
+            p5.text(`+ ${(delta) / this._resourceDisplayFraction} / hour`, x, y);
         } else {
             p5.fill(constants.RED_ERROR);
-            p5.text(`${(current - previous) / this._resourceDisplayFraction} / hour`, x, y);
+            p5.text(`${(delta) / this._resourceDisplayFraction} / hour`, x, y);
         }
         
     }
@@ -167,11 +165,11 @@ export default class Economy {
     render = () => {
         const p5 = this._p5;
         p5.textSize(16);
-        const prevs = Object.values(this._lastResources);
+        const deltas = Object.values(this._resourceChangeRates);
         Object.values(this._resources).forEach((resource, idx) => {
             const shortage = Object.values(this._resourceShortages)[idx];
             this.displayResource(resource, this._displayX + idx * this._xInterval, this._displayY, shortage);
-            this.displayResourceChangeRate(resource[1], prevs[idx][1], this._displayX + 32 + idx * this._xInterval, this._displayY + 24, shortage);
+            this.displayResourceChangeRate(deltas[idx], this._displayX + 32 + idx * this._xInterval, this._displayY + 24, shortage);
         })
     }
 

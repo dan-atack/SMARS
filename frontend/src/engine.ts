@@ -297,8 +297,14 @@ export default class Engine extends View {
     }
 
     handleResourceConsumption = () => {
-        const air = this._infrastructure.calculateModulesOxygenLoss();
-        this._economy.updateResource("oxygen", air);
+        const leakage = this._infrastructure.calculateModulesOxygenLoss();
+        const { air, water, food } = this._population.calculatePopulationResourceConsumption(this._gameTime.hour);
+        console.log(`Air loss rate: ${air + leakage}`);
+        console.log(`Water loss rate: ${water}`);
+        console.log(`Food loss rate: ${food}`);
+        this._economy.updateResource("oxygen", air + leakage);
+        this._economy.updateResource("water", water);
+        this._economy.updateResource("food", food);
     }
 
     setGameSpeed = (value: string) => {

@@ -49,6 +49,14 @@ export default class Population {
         })
     }
 
+    calculatePopulationResourceConsumption = (hour: number) => {
+        const air = this._colonists.length;
+        const water = this._colonists.length;
+        let food = 0;
+        if (hour % 8 === 0) food = this._colonists.length;
+        return { air, water, food };
+    }
+
     // Gets horizontal offset and fps (game speed) data from the Engine's render method
     render = (xOffset: number, fps: number, gameOn: boolean) => {
         const p5 = this._p5;

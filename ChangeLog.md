@@ -1075,9 +1075,9 @@ Exit Criteria:
 
 23. Add some filler text to this View as well.
 
-### 24. Add a Population-level function to handle Colonists' resource consumption. Call it every hour along with the rest of their updates, and deduct a small quantity of and water from the Economy's stockpiles every hour, for every colonist.
+24. Add a Population-level function to handle Colonists' resource consumption. Call it every hour along with the rest of their updates, and deduct a small quantity of air and water from the Economy's stockpiles every hour, for every colonist.
 
-### 25. Add an additional outcome to the above-mentioned function, to also decrement food every 8 hours.
+25. Add an additional outcome to the above-mentioned function, to also decrement food every 8 hours.
 
 ### 26. Add a 'colonists' field to the Save Info type, so that new saves can take data about colonists. The colonists field should be an array of 'ColonistData' type objects, which have the following fields: x, y, needs (food, air, water), current goal, isMoving, movement type, movement cost, movement progress, movement destination, and the direction they are facing. Animation tick is not needed, as the save data's temporal resolution only goes to the minute, not the individual tick.
 
@@ -1114,7 +1114,7 @@ Exit Criteria:
 
 ### 4. [1: UX / Inaccurate info display] Save game dates seem to be from a different time zone?!
 
-### 5. [3: UX / Inaccurate info display] Economy save data should really include the previous value/rate of change numbers so the player doesn't have to wait an hour for an Economy update. Economy rate-of-change calculation system in general is in need of an overhaul, actually.
+### 5. [3: UX / Inaccurate info display] Economy save data should really include the previous value/rate of change numbers so the player doesn't have to wait an hour for an Economy update. Also, consider how to show rates of change that occur less frequently than every hour (like colonist meals).
 
 ### 6. [1: UX / Animation glitch] When the game speed is adjusted, it can cause moving colonists' animations to be momentarily displaced (no gameplay effect).
 
