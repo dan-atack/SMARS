@@ -24,7 +24,7 @@ export default class Population {
     // Needs terrain info for position updates (every minute), a boolean for whether to update colonists' needs (every hour), and the Engine's game speed, express as the number of ticks (frames) per minute
     updateColonists = (terrain: number[][], needs: boolean) => {
         this.updateColonistPositions(terrain);              // Should happen once every minute
-        if (needs) this.updateColonistNeedsAndGoals();      // Should happen once every hour
+        if (needs) this.updateColonistNeedsAndGoals(terrain);      // Should happen once every hour
     }
 
     updateColonistPositions = (terrain: number[][]) => {
@@ -39,13 +39,13 @@ export default class Population {
                 cols.push(terrain[colonist._x + 1]);
             }
             // The colonists' movement functions will be controlled indirectly by the goal status checker
-            colonist.checkGoalStatus(cols);
+            colonist.checkGoalStatus(cols, terrain.length - 1);
         })
     }
 
-    updateColonistNeedsAndGoals = () => {
+    updateColonistNeedsAndGoals = (terrain: number[][]) => {
         this._colonists.forEach((colonist) => {
-            colonist.updateNeedsAndGoals();
+            colonist.updateNeedsAndGoals(terrain.length - 1);
         })
     }
 
@@ -56,7 +56,6 @@ export default class Population {
         this._colonists.forEach((colonist) => {
             colonist.render(this._xOffset, fps, gameOn);
         })
-        p5.text(`Colonists: ${this._colonists.length}`, 100, 100);
     }
 
 }

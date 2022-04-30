@@ -110,7 +110,7 @@ export default class Engine extends View {
 
     setupSavedGame = (saveInfo: SaveInfo) => {
         this._saveInfo = saveInfo;
-        this._gameTime = saveInfo.game_time;
+        this.setClock(saveInfo.game_time);
         this._map.setup(this._saveInfo.terrain);
         this._economy.setResources(saveInfo.resources);
         this._horizontalOffset = this._map._maxOffset / 2;
@@ -370,8 +370,8 @@ export default class Engine extends View {
     }
 
     // Sets the Smartian time
-    setClock = () => {
-        console.log("The clock has been set");
+    setClock = (gameTime: GameTime) => {
+        this._gameTime = gameTime;
     }
 
     advanceClock = () => {

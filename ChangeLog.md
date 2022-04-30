@@ -1061,11 +1061,29 @@ Exit Criteria:
 
 16. Create a rudimentary animation sequence for the Colonist, to be rendered when they are walking. Animation should start and end with the moving parts in the same position, so it can be looped with itself. Animation is rendered one frame at a time, with each render increasing an 'animation tick' variable that resets when the loop is complete (or the move is ended). Animation data is either a series of positions for each individual element, or a mathematical formula to derive position for each frame in the loop. Bonus points if you use the latter method to any extent!
 
-### 7. For Colonist animations to work properly, we'll need to pass them the Engine's game speed setting (specifically, the number of ticks per game minute) to determine how many frames should be played for a given movement sequence. Total frames to allocate to an animation = frames per minute \* movement cost (so that short movements will be over quickly while longer ones play out slowly).
+17. For Colonist animations to work properly, we'll need to pass them the Engine's game speed setting (specifically, the number of ticks per game minute) to determine how many frames should be played for a given movement sequence. Total frames to allocate to an animation = frames per minute times movement cost (so that short movements will be over quickly while longer ones play out slowly).
 
-### 7. Use the Colonists' movementType field to detect which type of movement animation to play. If there is no movement going on, render the image of the standing colonist.
+18. Use the Colonists' movementType field to detect which type of movement animation to play. If there is no movement going on, render the image of the standing colonist.
 
-### 8. Using the same principles as described in step 16, make a 'standing' animation, so that the Colonists are always moving at least a little bit!
+19. Extract the code for the Colonists' animation position calculations to the animationFunctions file, and export that to be used by the Colonist class. Export the entire switch case for each body part as a separate function (e.g. getHeadPosition, getBodyPosition, etc.).
+
+### 20. Explore the use of keyframes for the simple climb animation, by creating a tuple or an array containing the time markers for each individual movement, as a fraction of the whole move. So for example if you had four equal movements, their key frame times would be 0.25, 0.5, 0.75 and 1, with the final frame at time = 1 being the fully-translated position (identical to where the update-position method will place the colonist's standing image an instant later).
+
+### 21. Using the techniques developed for step 20, quickly create similar animations for the other three types of movement. They can all be highly derivative of the small climb one (as in, big climb can be the exact same motions but with double the y values, and the descent moves can just be the same sequence but in reverse!)
+
+22. Add the population counter to the Engine's Population view.
+
+23. Add some filler text to this View as well.
+
+### 24. Add a Population-level function to handle Colonists' resource consumption. Call it every hour along with the rest of their updates, and deduct a small quantity of and water from the Economy's stockpiles every hour, for every colonist.
+
+### 25. Add an additional outcome to the above-mentioned function, to also decrement food every 8 hours.
+
+### 26. Add a 'colonists' field to the Save Info type, so that new saves can take data about colonists. The colonists field should be an array of 'ColonistData' type objects, which have the following fields: x, y, needs (food, air, water), current goal, isMoving, movement type, movement cost, movement progress, movement destination, and the direction they are facing. Animation tick is not needed, as the save data's temporal resolution only goes to the minute, not the individual tick.
+
+### 27. Get the Game to populate this info before passing SaveInfo to the Save Game Screen. Console log it on the Save Screen to validate.
+
+### 28. As for loading saved games that include population data, create a new method for the Population class that takes the saved info and creates a colonist that is programmed with that data. It might be simplest to use just the x and y info for the existing addColonist method, then create a new method called loadColonistData, which simply calls a loadSaveData method for the colonist class, which does the job of actually updating all of the fields that are described in step 26. This method can expect the ColonstData type as its sole argument.
 
 ### 9. Before closing the chapter, add a new graphic to the mockups folder, with a diagram of the Colonist's decision-making process tree.
 
@@ -1088,17 +1106,17 @@ Exit Criteria:
 
 ### Bug List (Severity in square brackets):
 
-### 1. [2: UX / Convenience] When the in-game menu is opened then closed, it resets the engine's offset to be back in the middle of the map. The offset value should persist between menu openings.
+### 1. [2: UX] When the in-game menu is opened then closed, it resets the engine's offset to be back in the middle of the map. The offset value should persist between menu openings.
 
 ### 2. [8: Major gameplay issue] Ensure buildings cannot be placed BELOW the game's screen area (and by extension, that no map actions are permitted outside the map area).
 
 ### 3. [5: UX / Minor gameplay issue] At some, but not all x-offset values, the building shadow (and subsequent placement) pulls to the left, to the point that the cursor is outside the designated build area by what appears to be up to a full grid space.
 
-### 4. [1: Aesthetics / Inaccurate info display] Save game dates seem to be from a different time zone?!
+### 4. [1: UX / Inaccurate info display] Save game dates seem to be from a different time zone?!
 
 ### 5. [3: UX / Inaccurate info display] Economy save data should really include the previous value/rate of change numbers so the player doesn't have to wait an hour for an Economy update. Economy rate-of-change calculation system in general is in need of an overhaul, actually.
 
-### 6. [1: Aesthetics / Animation glitch] When the game speed is adjusted, it can cause moving colonists' animations to be momentarily displaced (no gameplay effect).
+### 6. [1: UX / Animation glitch] When the game speed is adjusted, it can cause moving colonists' animations to be momentarily displaced (no gameplay effect).
 
 ### Exit Criteria for backend save/load game chapter:
 
@@ -1107,7 +1125,7 @@ Exit Criteria:
 - [DONE]It is possible to retrieve a list of saved games for a given user.
 - [DONE]It is possible to retrieve all of the game data for a specific saved game file.
 
-## Chapter XX: DevOps Interlude (Forecast says sooner is better... do item one as soon as time-keeping is finished)
+## Chapter XX: DevOps Interlude and First Deployment! (Aim to complete deployment by June of 2022)
 
 - Dev mode environment variable enables some information displays in the world screen area
 - Unit tests for in-game functionality (challenge yourself to think of and implement a unit test that's actually useful!)

@@ -99,7 +99,7 @@ export default class Game extends Screen {
             //     this._logbook.setup();
             //     break;
             case "population":
-                this._population.setup();
+                this._population.setup(this._engine._population._colonists.length);
                 break;
             case "tech":
                 this._techTree.setup();

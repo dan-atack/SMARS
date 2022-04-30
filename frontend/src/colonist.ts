@@ -1,6 +1,7 @@
 // The Colonist class represents the individual Smartian colonist. That's... something about a... giant leap... damn!
 import P5 from "p5";
 import { constants } from "./constants";
+import { bodyAnimations, headAnimations, handAnimations, footAnimations } from "./animationFunctions";
 
 export type ColonistNeeds = {
     water: number,
@@ -57,10 +58,10 @@ export default class Colonist {
     }
 
     // Handles hourly updates to the colonist's needs and priorities (goals)
-    updateNeedsAndGoals = () => {
+    updateNeedsAndGoals = (maxColumns: number) => {
         // TODO: Only introduce need-based goal-setting when they are possible to fulfill
         // this.updateNeeds();
-        this.updateGoal();
+        this.updateGoal(maxColumns);
     }
 
     // This may take arguments some day, like how much the Colonist has exerted himself since the last update
@@ -72,7 +73,7 @@ export default class Colonist {
     }
 
     // Checks whether any needs have exceeded their threshold and assigns a new goal if so; otherwise sets goal to 'explore'
-    updateGoal = () => {
+    updateGoal = (maxColumns: number) => {
         // If the colonist has no current goal, or is set to exploring, check if any needs have reached their thresholds
         if (this._currentGoal === "explore" || this._currentGoal === "") {
             Object.keys(this._needs).forEach((need) => {
@@ -85,12 +86,13 @@ export default class Colonist {
         // If no goal has been set, tell them to go exploring
         if (this._currentGoal === "") {
             console.log("Going exploring.");
-            this.setGoal("explore");
+            this.setGoal("explore", maxColumns);
         };
     }
 
     // Takes a string naming the current goal, and uses that to set the destination (and sets that string as the current goal)
-    setGoal = (goal: string) => {
+    // Also takes optional parameter when setting the "explore" goal, to ensure the colonist isn't sent off the edge of the world
+    setGoal = (goal: string, maxColumns?: number) => {
         this._currentGoal = goal;
         switch(this._currentGoal) {
             case "explore":
@@ -99,6 +101,10 @@ export default class Colonist {
                 const dist = Math.ceil(Math.random() * 10);
                 const dest = dir ? dist : -dist;
                 this._movementDestination = Math.max(this._x + dest, 0);    // Ensure the colonist doesn't wander off the edge
+                if (maxColumns && this._movementDestination > maxColumns) {
+                    this._movementDestination = maxColumns;
+                    console.log("Right edge reached.")
+                }
                 break;
             case "get-water":
                 break;
@@ -114,14 +120,14 @@ export default class Colonist {
     }
 
     // Determines if a colonist has reached their destination, and if so, what to do next
-    checkGoalStatus = (terrain: number[][]) => {
+    checkGoalStatus = (terrain: number[][], maxColumns: number) => {
         // Check if colonist is at their destination and update their goal if so...
         if (this._x === this._movementDestination) {
             console.log(`Reached destination for goal ${this._currentGoal}: ${this._x} = ${this._movementDestination}`);
             // If the goal was to explore, check if any needs have become urgent enough to make them the new goal
             if (this._currentGoal === "explore") {
                 this.resolveGoal();
-                this.updateGoal();
+                this.updateGoal(maxColumns);
             } else {
                 console.log(`Arrived at destination for goal ${this._currentGoal}. Interact with building now?`);
                 // TODO: Resolve goal for non-exploration cases!
@@ -242,45 +248,16 @@ export default class Colonist {
 
     // FPM = game speed in frames per game minute (greater = slower) and sign = +1 for facing right, and -1 for facing left
     drawHead = (fpm: number, sign: number) => {
-        // Reposition helmet and visor depending on which direction the colonist is facing and the type of movement:
-        let xAnimation: number = 0;
-        let yAnimation: number = 0;
-        switch (this._movementType) {
-            case "walk":
-                xAnimation = (1 / fpm) * this._animationTick * sign;
-                break;
-            case "small-climb":
-                xAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                yAnimation = -((1 / fpm) * this._animationTick) / this._movementCost;
-                break;
-            case "big-climb":
-                xAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                yAnimation = -((2 / fpm) * this._animationTick) / this._movementCost;
-                break;
-            case "small-drop":
-                xAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                yAnimation = ((1 / fpm) * this._animationTick) / this._movementCost;
-                break;
-            case "big-drop":
-                xAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                yAnimation = ((2 / fpm) * this._animationTick) / this._movementCost;
-                break;
-        }
-        let offsets: number[] = [];
-        if (this._facing === "right") {
-            offsets = [0.6 + xAnimation, 0.7 + xAnimation];
-        } else {
-            offsets = [0.4 + xAnimation, 0.3 + xAnimation];
-        }
+        const { xOffsets, yAnimation } = headAnimations(this._movementType, fpm, this._animationTick, this._movementCost, sign);
         // Helmet
         this._p5.fill(constants.EGGSHELL);
         this._p5.strokeWeight(2);
-        const x = (this._x + offsets[0]) * constants.BLOCK_WIDTH - this._xOffset;
+        const x = (this._x + xOffsets[0]) * constants.BLOCK_WIDTH - this._xOffset;
         const y = (this._y + 0.6 + yAnimation) * constants.BLOCK_WIDTH - this._yOffset;
         const w = 0.8 * constants.BLOCK_WIDTH;
         this._p5.ellipse(x, y, w);
         // Visor
-        const vX = (this._x + offsets[1]) * constants.BLOCK_WIDTH - this._xOffset;
+        const vX = (this._x + xOffsets[1]) * constants.BLOCK_WIDTH - this._xOffset;
         const vY = (this._y + 0.6 + yAnimation) * constants.BLOCK_WIDTH - this._yOffset;
         const vW = 0.6 * constants.BLOCK_WIDTH;
         this._p5.ellipse(vX, vY, vW);
@@ -294,29 +271,8 @@ export default class Colonist {
         this._p5.stroke(constants.ALMOST_BLACK);
         this._p5.strokeWeight(2);
         this._p5.fill(constants.ORANGE_JUMPSUIT);
-        let xAnimation: number = 0;
-        let yAnimation: number = 0;
-        switch (this._movementType) {
-            case "walk":
-                xAnimation = (1 / fpm) * this._animationTick * sign;
-                break;
-            case "small-climb":
-                xAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                yAnimation = -((1 / fpm) * this._animationTick) / this._movementCost;
-                break;
-            case "big-climb":
-                xAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                yAnimation = -((2 / fpm) * this._animationTick) / this._movementCost;
-                break;
-            case "small-drop":
-                xAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                yAnimation = ((1 / fpm) * this._animationTick) / this._movementCost;
-                break;
-            case "big-drop":
-                xAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                yAnimation = ((2 / fpm) * this._animationTick) / this._movementCost;
-                break;
-        }
+        // Use body animation helper function to get x and y animation  values
+        const { xAnimation, yAnimation } = bodyAnimations(this._movementType, fpm, this._animationTick, this._movementCost, sign);
         const x = (this._x + 0.1 + xAnimation) * constants.BLOCK_WIDTH - this._xOffset;
         const y = (this._y + 0.9 + yAnimation) * constants.BLOCK_WIDTH;
         const w = 0.8 * constants.BLOCK_WIDTH;
@@ -326,51 +282,8 @@ export default class Colonist {
 
     drawHands = (fpm: number, sign: number) => {
         this._p5.fill(constants.GRAY_METEOR);
-        // Determine both hands' animated positions first:
-        let xlAnimation: number = 0;
-        let xrAnimation: number = 0;
-        let ylAnimation: number = 0;
-        let yrAnimation: number = 0;
-        switch (this._movementType) {
-            case "walk":
-                // Right moves first and stops halfway through the movement animation
-                // TODO: Correct xlAnimation to add graceful 'swing back' animation for arm movement
-                xlAnimation = (2.5 / fpm) * Math.min(fpm / 2, this._animationTick) * sign;
-                // Left moves immediately afterwards and stops at the end of the animation
-                xrAnimation = (2 / fpm) * Math.max(0, this._animationTick - fpm / 2) * sign;
-                break;
-            case "small-climb":
-                xlAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                xrAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                ylAnimation = -((1 / fpm) * this._animationTick) / this._movementCost;
-                yrAnimation = -((1 / fpm) * this._animationTick) / this._movementCost;
-                break;
-            case "big-climb":
-                xlAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                xrAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                ylAnimation = -((2 / fpm) * this._animationTick) / this._movementCost;
-                yrAnimation = -((2 / fpm) * this._animationTick) / this._movementCost;
-                break;
-            case "small-drop":
-                xlAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                xrAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                ylAnimation = ((1 / fpm) * this._animationTick) / this._movementCost;
-                yrAnimation = ((1 / fpm) * this._animationTick) / this._movementCost;
-                break;
-            case "big-drop":
-                xlAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                xrAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                ylAnimation = ((2 / fpm) * this._animationTick) / this._movementCost;
-                yrAnimation = ((2 / fpm) * this._animationTick) / this._movementCost;
-                break;
-        }
-        // Invert which hand gets which instructions if the colonist is moving to the left:
-        if (this._facing === "left") {
-            const s = xrAnimation;
-            xrAnimation = xlAnimation;
-            xlAnimation = s;
-        }
-        // Left
+        const { xlAnimation, xrAnimation, ylAnimation, yrAnimation } = handAnimations(this._movementType, fpm, this._animationTick, this._movementCost, sign);
+        // Left hand
         const xL = (this._x + 0.15 + xlAnimation) * constants.BLOCK_WIDTH - this._xOffset;
         const yL = (this._y + 1.3 + ylAnimation) * constants.BLOCK_WIDTH - this._yOffset;
         const w = 0.3 * constants.BLOCK_WIDTH;  // Both hands are the same size
@@ -383,47 +296,7 @@ export default class Colonist {
 
     drawFeet = (fpm: number, sign: number) => {
         this._p5.fill(constants.GRAY_IRON_ORE);
-        let xlAnimation: number = 0;
-        let xrAnimation: number = 0;
-        let ylAnimation: number = 0;
-        let yrAnimation: number = 0;
-        switch (this._movementType) {
-            case "walk":
-                // Right moves first and stops halfway through the movement animation
-                xlAnimation = (2 / fpm) * Math.min(fpm / 2, this._animationTick) * sign;
-                // Left moves immediately afterwards and stops at the end of the animation
-                xrAnimation = (2 / fpm) * Math.max(0, this._animationTick - fpm / 2) * sign;
-                break;
-            case "small-climb":
-                xlAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                xrAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                ylAnimation = -((1 / fpm) * this._animationTick) / this._movementCost;
-                yrAnimation = -((1 / fpm) * this._animationTick) / this._movementCost;
-                break;
-            case "big-climb":
-                xlAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                xrAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                ylAnimation = -((2 / fpm) * this._animationTick) / this._movementCost;
-                yrAnimation = -((2 / fpm) * this._animationTick) / this._movementCost;
-                break;
-            case "small-drop":
-                xlAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                xrAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                ylAnimation = ((1 / fpm) * this._animationTick) / this._movementCost;
-                yrAnimation = ((1 / fpm) * this._animationTick) / this._movementCost;
-                break;
-            case "big-drop":
-                xlAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                xrAnimation = ((1 / fpm) * this._animationTick * sign) / this._movementCost;
-                ylAnimation = ((2 / fpm) * this._animationTick) / this._movementCost;
-                yrAnimation = ((2 / fpm) * this._animationTick) / this._movementCost;
-                break;
-        }
-        if (this._facing === "left") {
-            const s = xrAnimation;
-            xrAnimation = xlAnimation;
-            xlAnimation = s;
-        }
+        const { xlAnimation, xrAnimation, ylAnimation, yrAnimation } = footAnimations(this._movementType, fpm, this._animationTick, this._movementCost, sign);
         // Left boot
         const xL = (this._x + 0.15 + xlAnimation) * constants.BLOCK_WIDTH - this._xOffset;
         const yL = (this._y + 1.85 + ylAnimation) * constants.BLOCK_WIDTH - this._yOffset;
