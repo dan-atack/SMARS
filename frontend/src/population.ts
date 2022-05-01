@@ -1,6 +1,6 @@
 // The Population class is the disembodied list of all your colonists, and the functions for updating them.
 import P5 from "p5";
-import Colonist from "./colonist";
+import Colonist, { ColonistSaveData } from "./colonist";
 import { constants } from "./constants";
 
 export default class Population {
@@ -55,6 +55,37 @@ export default class Population {
         let food = 0;
         if (hour % 8 === 0) food = this._colonists.length;
         return { air, water, food };
+    }
+
+    prepareColonistSaveData = () => {
+        const colonistData: ColonistSaveData[] = [];
+        this._colonists.forEach((colonist) => {
+            const d: ColonistSaveData = {
+                x: colonist._x,
+                y: colonist._y,
+                needs: colonist._needs,
+                goal: colonist._currentGoal,
+                isMoving: colonist._isMoving,
+                movementType: colonist._movementType,
+                movementCost: colonist._movementCost,
+                movementProg: colonist._movementProg,
+                movementDest: colonist._movementDest,
+                facing: colonist._facing
+            };
+            colonistData.push(d);
+        })
+        return colonistData;
+    }
+
+    loadColonistData = (data: ColonistSaveData[]) => {
+        if (data) {
+            data.forEach((colonist) => {
+                const c = new Colonist(this._p5, colonist.x, colonist.y, colonist);
+                this._colonists.push(c);
+            });
+        } else {
+            console.log("No colonist data in save file.");
+        }
     }
 
     // Gets horizontal offset and fps (game speed) data from the Engine's render method

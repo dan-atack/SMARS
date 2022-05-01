@@ -1079,11 +1079,13 @@ Exit Criteria:
 
 25. Add an additional outcome to the above-mentioned function, to also decrement food every 8 hours.
 
-### 26. Add a 'colonists' field to the Save Info type, so that new saves can take data about colonists. The colonists field should be an array of 'ColonistData' type objects, which have the following fields: x, y, needs (food, air, water), current goal, isMoving, movement type, movement cost, movement progress, movement destination, and the direction they are facing. Animation tick is not needed, as the save data's temporal resolution only goes to the minute, not the individual tick.
+26. Add a 'colonists' field to the Save Info type, so that new saves can take data about colonists. The colonists field should be an array of 'ColonistData' type objects, which have the following fields: x, y, needs (food, air, water), current goal, isMoving, movement type, movement cost, movement progress, movement destination, and the direction they are facing. Animation tick is not needed, as the save data's temporal resolution only goes to the minute, not the individual tick. The Population class will need to construct an array of Colonist Data objects from its colonists list, and the game will call that function and store the return as part of the upgraded SaveInfo package.
 
-### 27. Get the Game to populate this info before passing SaveInfo to the Save Game Screen. Console log it on the Save Screen to validate.
+27. Get the Game to populate this info before passing SaveInfo to the Save Game Screen. Console log it on the Save Screen to validate.
 
-### 28. As for loading saved games that include population data, create a new method for the Population class that takes the saved info and creates a colonist that is programmed with that data. It might be simplest to use just the x and y info for the existing addColonist method, then create a new method called loadColonistData, which simply calls a loadSaveData method for the colonist class, which does the job of actually updating all of the fields that are described in step 26. This method can expect the ColonstData type as its sole argument.
+28. As for loading saved games that include population data, create a new method for the Population class that takes the saved info and creates a colonist that is programmed with that data. Also update the Colonist class' constructor function to accept this info as an optional third parameter, so colonists can be created with or without the loaded game data.
+
+29. Add the population count to the LoadOption pseudo-button, so players can see their colonies' population from the Load Game screen.
 
 ### 9. Before closing the chapter, add a new graphic to the mockups folder, with a diagram of the Colonist's decision-making process tree.
 
@@ -1117,6 +1119,8 @@ Exit Criteria:
 ### 5. [3: UX / Inaccurate info display] Economy save data should really include the previous value/rate of change numbers so the player doesn't have to wait an hour for an Economy update. Also, consider how to show rates of change that occur less frequently than every hour (like colonist meals).
 
 ### 6. [1: UX / Animation glitch] When the game speed is adjusted, it can cause moving colonists' animations to be momentarily displaced (no gameplay effect).
+
+### 7. [1: Coding Convention] Colonist class should have a unique ID field, to individuate the colony's population.
 
 ### Exit Criteria for backend save/load game chapter:
 

@@ -63,7 +63,7 @@ const sketch = (p5:P5) => {
                 p5.background(constants.GREEN_TERMINAL);
                 break;
             case "save":
-                const data = game.getGameData();
+                const data = game.prepareSaveData();
                 saveGame.setup(data);
                 break;
         }

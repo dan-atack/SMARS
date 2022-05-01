@@ -103,9 +103,9 @@ export default class Engine extends View {
         this._economy.setResources(this._gameData.startingResources);
         this._horizontalOffset = this._map._maxOffset / 2;   // Put player in the middle of the map to start out
         this._infrastructure.setup(this._horizontalOffset);
-        // Temporary test
+        // Add two new colonists
         this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH), 20);
-        // this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH) + 1, 20);
+        this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH) + 2, 20);
     }
 
     setupSavedGame = (saveInfo: SaveInfo) => {
@@ -115,22 +115,26 @@ export default class Engine extends View {
         this._economy.setResources(saveInfo.resources);
         this._horizontalOffset = this._map._maxOffset / 2;
         this._infrastructure.setup(this._horizontalOffset);
+        this._population.loadColonistData(saveInfo.colonists);
         this.loadModulesFromSave(saveInfo.modules);
         this.loadConnectorsFromSave(saveInfo.connectors);
-        // Check if game has resource data and if it doesn't, render an alternate welcome back message
-        if (!saveInfo.resources) {
+        // Check if game has colonist data and if it doesn't, render an alternate welcome back message
+        if (!saveInfo.colonists) {
             this.createLoadGameModal(saveInfo.username, true);
+            // Add one colonist if the save file has no colonist data
+            console.log("Adding two colonists.");
+            if (this._saveInfo.modules.length > 0) {
+                const { x, y } = this._saveInfo.modules[0];
+                // this._population.addColonist(x - 2, y - 1);
+                this._population.addColonist(x - 2, y - 4);
+                this._population.addColonist(x + 2, y - 4);
+            } else {
+                this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH), 20);
+                this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH + 2), 20);
+            }
         } else {
             this.createLoadGameModal(saveInfo.username, false);
         }
-        // Temporary test
-        if (this._saveInfo.modules.length > 0) {
-            const { x, y } = this._saveInfo.modules[0];
-            // this._population.addColonist(x - 2, y - 1);
-            this._population.addColonist(x, y - 10);
-        } else {
-            this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH), 20);
-        } 
     }
 
     // Top-level saved module importer

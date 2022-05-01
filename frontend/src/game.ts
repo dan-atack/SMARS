@@ -123,7 +123,7 @@ export default class Game extends Screen {
     }
 
     // Prepares a SaveInfo object to be passed to the game's backend via the Save Game screen:
-    getGameData = () => {
+    prepareSaveData = () => {
         const moduleData: {name: string, type: string, x: number, y: number}[] = [];
         const connectorData: {name: string, type: string, x: number, y: number}[] = [];
         this._engine._infrastructure._modules.forEach((mod) => {
@@ -156,6 +156,7 @@ export default class Game extends Screen {
             modules: moduleData,
             connectors: connectorData,
             resources: this._engine._economy._resources,
+            colonists: this._engine._population.prepareColonistSaveData(),
         }
         return saveData;
     }

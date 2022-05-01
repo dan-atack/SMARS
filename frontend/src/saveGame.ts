@@ -6,6 +6,7 @@ import Button from "./button";
 import { constants } from "./constants";
 import { sendSaveGame } from "./server_functions";
 import { Resources } from "./economy";
+import { ColonistSaveData } from "./colonist";
 
 // Save Game type info
 export type GameTime = {
@@ -38,7 +39,7 @@ export type SaveInfo = {
         y: number
     }[]
     resources: Resources;
-
+    colonists: ColonistSaveData[];
 }
 
 export default class SaveGame extends Screen {

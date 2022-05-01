@@ -6,7 +6,27 @@ import assert from "assert";
 const dbName = 'smars'
 const collectionName = 'saved_games'
 
-// Template for new save game info:
+
+// Template for Colonist Save Info (copy from Colonist.ts):
+
+export type ColonistSaveData = {
+    x: number,
+    y: number,
+    needs: {
+        oxygen: number,
+        water: number,
+        food: number
+    },
+    goal: string,
+    isMoving: boolean,
+    movementType: string,
+    movementCost: number,
+    movementProg: number,
+    movementDest: number,
+    facing: string
+};
+
+// Template for new save game info (copy from SaveGame.ts):
 
 export type SaveInfo = {
     game_name: string           // Save game name
@@ -33,10 +53,10 @@ export type SaveInfo = {
         x: number,
         y: number
     }[]
-    // units: any          // TODO: Fill in the blanks here big time before going much further with save files!
+    colonists: ColonistSaveData[];
     // resources: any      // TODO: Ditto; probably need a sub-object which is a dictionary of resource names to numbers.
     // techs: any          // TODO: Again, a list of some kind of object that requires a well thought-out sub-type
-}
+};
 
 const handleSave = async (req: Request, res: Response) => {
     const saveInfo: SaveInfo = req.body;

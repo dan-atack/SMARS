@@ -9,6 +9,19 @@ export type ColonistNeeds = {
     rest: number,
 };
 
+export type ColonistSaveData = {
+    x: number,
+    y: number,
+    needs: ColonistNeeds,
+    goal: string,
+    isMoving: boolean,
+    movementType: string,
+    movementCost: number,
+    movementProg: number,
+    movementDest: number,
+    facing: string
+};
+
 export default class Colonist {
     // Colonist types:
     _p5: P5;
@@ -24,12 +37,12 @@ export default class Colonist {
     _isMoving: boolean;             // Is the colonist currently trying to get somewhere?
     _movementType: string           // E.g. walk, climb-up, climb-down, etc. (used to control animations)
     _movementCost: number;          // The cost, in units of time (and perhaps later, 'exertion') for the current movement
-    _movementProgress: number;      // The amount of time and/or exertion expended towards the current movement cost
-    _movementDestination: number;   // The x value of the current destination for the colonist's movement
+    _movementProg: number;          // The amount of time and/or exertion expended towards the current movement cost
+    _movementDest: number;          // The x value of the current destination for the colonist's movement
     _facing: string;                // Either "right" or "left"... until SMARS 3D is released, that is!
     _animationTick: number;         // Governs the progression of movement/activity animations
 
-    constructor(p5: P5, x: number, y: number) {
+    constructor(p5: P5, x: number, y: number, saveData?: ColonistSaveData) {
         this._p5 = p5;
         this._x = x;
         this._y = y;
@@ -37,24 +50,24 @@ export default class Colonist {
         this._height = 2;
         this._xOffset = 0;
         this._yOffset = 0;
-        this._needs = {             // Needs all start with zero intensity and increase gradually over time
+        this._needs = saveData ? saveData.needs : { // Load existing needs, or set to zero for new colonists
             water: 0,
             food: 0,
             rest: 0
         };
-        this._needThresholds = {    // The higher the threshold, the longer a colonist can go without
+        this._needThresholds = {                    // The higher the threshold, the longer a colonist can go without
             water: 4,
             food: 6,
             rest: 8
         };
-        this._currentGoal = ""          // By default, colonists have no goals in life.
-        this._isMoving = false;         // Colonists are at rest by default
-        this._movementType = ""         // An empty string is used when to particular animation is needed
-        this._movementCost = 0;         // No movement means no movement costs
-        this._movementProgress = 0;
-        this._movementDestination = this._x + 1;    // By default, the colonist should move one step to the right if they can
-        this._facing = "right";         // Let's not make this a political issue, Terry.
-        this._animationTick = 0;        // By default, no animation is playing
+        this._currentGoal = saveData ? saveData.goal : "explore"    // Load saved goal, or go exploring (for new colonists).
+        this._isMoving = saveData ? saveData.isMoving : false;      // Load saved status or colonists is at rest by default
+        this._movementType = saveData ? saveData.movementType :  "" // Load name of movement type or default to no movement
+        this._movementCost = saveData ? saveData.movementCost : 0;  // Load value or default to zero
+        this._movementProg = saveData ? saveData.movementProg : 0;  // Load value or default to zero
+        this._movementDest = saveData ? saveData.movementDest : this._x + 1; // Load destination or go one to the right
+        this._facing = saveData ? saveData.facing : "right";        // Let's not make this a political issue, Terry.
+        this._animationTick = 0;                                    // By default, no animation is playing
     }
 
     // Handles hourly updates to the colonist's needs and priorities (goals)
@@ -85,7 +98,6 @@ export default class Colonist {
         };
         // If no goal has been set, tell them to go exploring
         if (this._currentGoal === "") {
-            console.log("Going exploring.");
             this.setGoal("explore", maxColumns);
         };
     }
@@ -100,10 +112,9 @@ export default class Colonist {
                 const dir = Math.random() > 0.5;
                 const dist = Math.ceil(Math.random() * 10);
                 const dest = dir ? dist : -dist;
-                this._movementDestination = Math.max(this._x + dest, 0);    // Ensure the colonist doesn't wander off the edge
-                if (maxColumns && this._movementDestination > maxColumns) {
-                    this._movementDestination = maxColumns;
-                    console.log("Right edge reached.")
+                this._movementDest = Math.max(this._x + dest, 0);    // Ensure the colonist doesn't wander off the edge
+                if (maxColumns && this._movementDest > maxColumns) {
+                    this._movementDest = maxColumns;
                 }
                 break;
             case "get-water":
@@ -116,20 +127,19 @@ export default class Colonist {
     // Resets all goal-oriented values
     resolveGoal = () => {
         this.setGoal("");
-        this._movementDestination = this._x;
+        this._movementDest = this._x;
     }
 
     // Determines if a colonist has reached their destination, and if so, what to do next
     checkGoalStatus = (terrain: number[][], maxColumns: number) => {
         // Check if colonist is at their destination and update their goal if so...
-        if (this._x === this._movementDestination) {
-            console.log(`Reached destination for goal ${this._currentGoal}: ${this._x} = ${this._movementDestination}`);
+        if (this._x === this._movementDest) {
             // If the goal was to explore, check if any needs have become urgent enough to make them the new goal
             if (this._currentGoal === "explore") {
                 this.resolveGoal();
                 this.updateGoal(maxColumns);
             } else {
-                console.log(`Arrived at destination for goal ${this._currentGoal}. Interact with building now?`);
+                // console.log(`Arrived at destination for goal ${this._currentGoal}. Interact with building now?`);
                 // TODO: Resolve goal for non-exploration cases!
             }
         } else {
@@ -149,13 +159,13 @@ export default class Colonist {
         this.detectTerrainBeneath(terrain[currentColumn]);
         // 2 - Conclude moves in progress
         if (this._isMoving) {
-            this._movementProgress ++;
-            if (this._movementProgress >= this._movementCost) {    // If current movement is complete
+            this._movementProg ++;
+            if (this._movementProg >= this._movementCost) {    // If current movement is complete
                 this.updatePosition();
                 this.stopMovement();
             }
         // 3 - If no movement is currently taking place and the colonist is not at their destination, start a new move
-        } else if (this._x !== this._movementDestination) {
+        } else if (this._x !== this._movementDest) {
             this.startMovement(terrain, currentColumn);
         }
     }
@@ -163,7 +173,7 @@ export default class Colonist {
     // Determines what type of move is needed next (walking, climbing, etc) and initiates it
     startMovement = (terrain: number[][], currentColumn: number) => {
         // Determine direction
-        const dir = this._x > this._movementDestination ? "left" : "right";
+        const dir = this._x > this._movementDest ? "left" : "right";
         this._facing = dir;
         // Determine movement type by comparing current height to height of target column
         const currentHeight = terrain[currentColumn].length;
@@ -207,7 +217,7 @@ export default class Colonist {
         this._isMoving = false;
         this._movementType = "";
         this._movementCost = 0;
-        this._movementProgress = 0;
+        this._movementProg = 0;
     }
 
     // Update colonist position (x AND y) when movement is completed

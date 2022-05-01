@@ -65,7 +65,8 @@ export default class LoadOption extends Button {
         p5.text(this._saveInfo.game_name, this._x + 12, this._y + this._height / 4);
         p5.text(this.getTerranDate(), this._x + 280, this._y + this._height / 4);
         p5.fill(constants.GREEN_TERMINAL);
-        p5.textSize(18);
+        p5.textSize(16);
+        p5.text(`Population: ${this._saveInfo.population}`, this._x + 12, this._y + this._height / 2 + 4);
         p5.text(`Smartian Date: ${this.getSmartianTime()}`, this._x + 12, this._y + this._height * 5 / 6);
     }
 
