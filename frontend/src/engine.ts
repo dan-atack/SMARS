@@ -104,8 +104,8 @@ export default class Engine extends View {
         this._horizontalOffset = this._map._maxOffset / 2;   // Put player in the middle of the map to start out
         this._infrastructure.setup(this._horizontalOffset);
         // Add two new colonists
-        this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH), 20);
-        this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH) + 2, 20);
+        // this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH), 20);
+        this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH) + 22, 20);
     }
 
     setupSavedGame = (saveInfo: SaveInfo) => {
@@ -303,9 +303,6 @@ export default class Engine extends View {
     handleResourceConsumption = () => {
         const leakage = this._infrastructure.calculateModulesOxygenLoss();
         const { air, water, food } = this._population.calculatePopulationResourceConsumption(this._gameTime.hour);
-        console.log(`Air loss rate: ${air + leakage}`);
-        console.log(`Water loss rate: ${water}`);
-        console.log(`Food loss rate: ${food}`);
         this._economy.updateResource("oxygen", air + leakage);
         this._economy.updateResource("water", water);
         this._economy.updateResource("food", food);
@@ -385,40 +382,40 @@ export default class Engine extends View {
     }
 
     advanceClock = () => {
-        if (this._tick < this.ticksPerMinute) {
-            if (this.gameOn) this._tick ++;      // Advance ticks if game is unpaused
-        } else {
-            this._tick = 0;     // Advance minutes
-            // Update colonists' locations each 'minute', and all of their other stats every hour
-            this._population.updateColonists(this._map._mapData, this._gameTime.minute === 0);
-            if (this._gameTime.minute < this._minutesPerHour - 1) {  // Minus one tells the minutes counter to reset to zero after 59
-                this._gameTime.minute ++;
-            } else {
-                this._gameTime.minute = 0;   // Advance hours (anything on an hourly schedule should go here)
-                this.handleResourceConsumption();
-                this.updateEarthData();     // Advance Earth date every game hour
-                // this.generateEvent(50);
-                if (this._gameTime.hour < this._hoursPerClockCycle) {
-                    this._gameTime.hour ++;
-                    if (this._gameTime.hour === this._hoursPerClockCycle) {  // Advance day/night cycle when hour hits twelve
-                        if (this._gameTime.cycle === "AM") {
-                            this._gameTime.cycle = "PM"
-                        } else {
-                            this.generateEvent();           // Modal popup appears every time it's a new day.
-                            this._gameTime.cycle = "AM";        // Advance date (anything on a daily schedule should go here)
-                            if (this._gameTime.sol < this._solsPerYear) {
-                                this._gameTime.sol ++;
-                            } else {
-                                this._gameTime.sol = 1;
-                                this._gameTime.year ++;      // Advance year (anything on an yearly schedule should go here)
-                            }
-                            this._sidebar.setDate(this._gameTime.sol, this._gameTime.year);   // Update sidebar date display
-                        }  
-                    }
+        if (this.gameOn) {
+            this._tick++;
+            if (this._tick >= this.ticksPerMinute) {
+                this._tick = 0;     // Advance minutes
+                // Update colonists' locations each 'minute', and all of their other stats every hour
+                this._population.updateColonists(this._map._mapData, this._gameTime.minute === 0);
+                if (this._gameTime.minute < this._minutesPerHour - 1) {  // Minus one tells the minutes counter to reset to zero after 59
+                    this._gameTime.minute ++;
                 } else {
-                    this._gameTime.hour = 1;     // Hour never resets to zero
-                }
-            }      
+                    this._gameTime.minute = 0;   // Advance hours (anything on an hourly schedule should go here)
+                    this.handleResourceConsumption();
+                    this.updateEarthData();     // Advance Earth date every game hour
+                    if (this._gameTime.hour < this._hoursPerClockCycle) {
+                        this._gameTime.hour ++;
+                        if (this._gameTime.hour === this._hoursPerClockCycle) {  // Advance day/night cycle when hour hits twelve
+                            if (this._gameTime.cycle === "AM") {
+                                this._gameTime.cycle = "PM"
+                            } else {
+                                this.generateEvent();           // Modal popup appears every time it's a new day.
+                                this._gameTime.cycle = "AM";        // Advance date (anything on a daily schedule should go here)
+                                if (this._gameTime.sol < this._solsPerYear) {
+                                    this._gameTime.sol ++;
+                                } else {
+                                    this._gameTime.sol = 1;
+                                    this._gameTime.year ++;      // Advance year (anything on an yearly schedule should go here)
+                                }
+                                this._sidebar.setDate(this._gameTime.sol, this._gameTime.year);   // Update sidebar date display
+                            }  
+                        }
+                    } else {
+                        this._gameTime.hour = 1;     // Hour never resets to zero
+                    }
+                } 
+            }
         }
     }
 

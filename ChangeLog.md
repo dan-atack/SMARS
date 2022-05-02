@@ -1021,12 +1021,12 @@ Exit Criteria:
 
 - [DONE] Colonist class is created to render the individual colonists in the game's world. Colonists can stand still or walk to either the left or right
 - [DONE] Population class is created to manage colonist activities, including managing resource needs and movement (calling the handler functions of the individual colonists)
-- Each colonist consumes a small amount of air and water each hour
-- Each colonist consumes a small amount of food every CYCLE (AM and PM)
+- [DONE] Each colonist consumes a small amount of air and water each hour
+- [DONE] Each colonist consumes a small amount of food every eight hours
 - [DONE] Colonists walk around at random within that horizontal range and are restricted by their climbing abilities (see next point)
 - [DONE] Colonists climb at a slow rate, and will avoid climbing up or down anything steeper than two tiles (basic terrain navigation sense for colonists)
-- Population View shows the number of colonists, along with some filler text.
-- Colonist positions, needs, goals and progress are included in save file data, and colonists resume whatever they were doing before the game was saved without missing a beat (tick)
+- [DONE] Population View shows the number of colonists, along with some filler text.
+- [DONE] Colonist positions, needs, goals and progress are included in save file data, and colonists resume whatever they were doing before the game was saved without missing a beat (tick)
 - [STRETCH] Colonists' movements, including walking, climbing, and standing still, are animated
 
 1. Create the Colonist class. Initially it should be very simple, resembling a block, but without even a type. Add a simple render function (a circle ought to do it) for now.
@@ -1091,11 +1091,11 @@ Exit Criteria:
 
 ### 10. Add another diagram outlining the movement process - from the moment a move is initiated by the startMovement method, to when it is stopped by the stopMovement method.
 
-## Chapter Twenty-Four: UNIT TESTS (Difficulty Estimate: )
+## Chapter Twenty-Four: BACKDOOR UNIT TESTS (Difficulty Estimate: 7 For Refactoring and Familiarization with Jest Mocks)
 
 ### DATE
 
-Following the fairly complex (and often very painful) implementation of the basic Colonist movement and decision-making logic, the need for robust, reliable unit tests has been in the media again. A new approach to this issue has been hypothesized, which is to use a 'data-processing' object class for each in-game class, and then wrapping that in a shell class that contains the P5/rendering elements. That way, all of the data-processing that goes on behind the scenes for entities that need to have an on-screen display of some kind can be carried out (and tested) with a class that DOESN'T require P5 and thus should be fully mockable. Let's devote some time towards experimenting with this method of doing things and see if it finally allows for the creation of some useful mock tests.
+Following the fairly complex (and often very painful) implementation of the basic Colonist movement and decision-making logic, the need for robust, reliable unit tests has been in the media again. A new approach to this issue has been hypothesized, which is to use a 'data-processing' object class for each in-game class, and then wrapping that in a shell class that contains the P5/rendering elements. That way, all of the data-processing that goes on behind the scenes for entities that have an on-screen display of some kind can be carried out (and tested) with a class that DOESN'T require P5 and thus should be fully mockable. Let's devote some time towards experimenting with this method of doing things and see if it finally allows for the creation of some useful mock tests.
 
 ## Chapter X: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 5)
 
@@ -1118,7 +1118,7 @@ Exit Criteria:
 
 ### 5. [3: UX / Inaccurate info display] Economy save data should really include the previous value/rate of change numbers so the player doesn't have to wait an hour for an Economy update. Also, consider how to show rates of change that occur less frequently than every hour (like colonist meals).
 
-### 6. [1: UX / Animation glitch] When the game speed is adjusted, it can cause moving colonists' animations to be momentarily displaced (no gameplay effect).
+### 6. [1: UX / Animation glitch] When the game speed is adjusted, it can cause moving colonists' animations to fly apart for a moment. Add a command for the Engine when the time speed is changed to immediately halt all colonist animations (the Engine should call a Population-level function that tells the individual colonists to reset their animation frame counts). Bonus if they can switch to the new animation speed on the fly rather than simply showing nothing until the next movement.
 
 ### 7. [1: Coding Convention] Colonist class should have a unique ID field, to individuate the colony's population.
 

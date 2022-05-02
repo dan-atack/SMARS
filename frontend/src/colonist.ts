@@ -258,7 +258,14 @@ export default class Colonist {
 
     // FPM = game speed in frames per game minute (greater = slower) and sign = +1 for facing right, and -1 for facing left
     drawHead = (fpm: number, sign: number) => {
-        const { xOffsets, yAnimation } = headAnimations(this._movementType, fpm, this._animationTick, this._movementCost, sign);
+        const { xAnimation, yAnimation } = headAnimations(this._movementType, fpm, this._animationTick, this._movementCost, sign);
+        let xOffsets: number[] = [];
+        // Sign of 1 = colonist faces right
+        if (sign === 1) {
+            xOffsets = [0.6 + xAnimation, 0.7 + xAnimation];
+        } else {
+            xOffsets = [0.4 + xAnimation, 0.3 + xAnimation];
+        }
         // Helmet
         this._p5.fill(constants.EGGSHELL);
         this._p5.strokeWeight(2);
@@ -281,7 +288,7 @@ export default class Colonist {
         this._p5.stroke(constants.ALMOST_BLACK);
         this._p5.strokeWeight(2);
         this._p5.fill(constants.ORANGE_JUMPSUIT);
-        // Use body animation helper function to get x and y animation  values
+        // Use body animation helper function to get x and y animation values IF game speed is not set to blazing
         const { xAnimation, yAnimation } = bodyAnimations(this._movementType, fpm, this._animationTick, this._movementCost, sign);
         const x = (this._x + 0.1 + xAnimation) * constants.BLOCK_WIDTH - this._xOffset;
         const y = (this._y + 0.9 + yAnimation) * constants.BLOCK_WIDTH;
@@ -305,7 +312,7 @@ export default class Colonist {
     }
 
     drawFeet = (fpm: number, sign: number) => {
-        this._p5.fill(constants.GRAY_IRON_ORE);
+        this._p5.fill(constants.RED_ERROR);
         const { xlAnimation, xrAnimation, ylAnimation, yrAnimation } = footAnimations(this._movementType, fpm, this._animationTick, this._movementCost, sign);
         // Left boot
         const xL = (this._x + 0.15 + xlAnimation) * constants.BLOCK_WIDTH - this._xOffset;

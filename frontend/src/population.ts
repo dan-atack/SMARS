@@ -90,7 +90,6 @@ export default class Population {
 
     // Gets horizontal offset and fps (game speed) data from the Engine's render method
     render = (xOffset: number, fps: number, gameOn: boolean) => {
-        const p5 = this._p5;
         this._xOffset = xOffset;
         this._colonists.forEach((colonist) => {
             colonist.render(this._xOffset, fps, gameOn);
