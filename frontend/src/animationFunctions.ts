@@ -9,15 +9,16 @@ export const bodyAnimations = (movementType: string, fpm: number, tick: number, 
     let ySpeeds: number[] = [0, 0];
     switch (movementType) {
         case "walk":
-            keyframes = [0.5, 1];
-            frameRate = 0.5;
-            xSpeeds = [1, 1];
-            break;
-        case "small-climb":
             keyframes = [0.2, 0.4, 0.6, 0.8, 1];
             frameRate = 0.2;
             xSpeeds = [1, 1, 1, 1, 1];
-            ySpeeds = [-1, -1, -1, -1, -1];
+            ySpeeds = [0, 0, 0, 0, 0];
+            break;
+        case "small-climb":
+            keyframes = [0.25, 0.5, 0.75, 1];
+            frameRate = 0.25;
+            xSpeeds = [0, 0, 3, 1];
+            ySpeeds = [0, -3, 0, -1];
             break;
         case "big-climb":
             keyframes = [0.2, 0.4, 0.6, 0.8, 1];
@@ -65,10 +66,10 @@ export const headAnimations = (movementType: string, fpm: number, tick: number, 
     let ySpeeds: number[] = [0, 0];
     switch (movementType) {
         case "walk":
-            keyframes = [0.5, 1];
-            frameRate = 0.5;
-            xSpeeds = [1, 1];
-            ySpeeds = [0, 0];
+            keyframes = [0.2, 0.4, 0.6, 0.8, 1];
+            frameRate = 0.2;
+            xSpeeds = [1, 1, 1, 1, 1];
+            ySpeeds = [0, 0, 0, 0, 0];
             break;
         case "small-climb":
             keyframes = [0.25, 0.5, 0.75, 1];
@@ -77,10 +78,10 @@ export const headAnimations = (movementType: string, fpm: number, tick: number, 
             ySpeeds = [0, -3, 0, -1];
             break;
         case "big-climb":
-            keyframes = [0.25, 0.5, 0.75, 1];
-            frameRate = 0.25;
-            xSpeeds = [0, 0, 3, 1];
-            ySpeeds = [0, -6, 0, -2];
+            keyframes = [0.2, 0.4, 0.6, 0.8, 1];
+            frameRate = 0.2;
+            xSpeeds = [0, 0, 1, 1, 3];
+            ySpeeds = [0, 0, -4, -4, -2];
             break;
         case "small-drop":
             keyframes = [0.5, 1];
@@ -126,10 +127,12 @@ export const handAnimations = (movementType: string, fpm: number, tick: number, 
     let yrSpeeds: number[] = [0, 0];
     switch (movementType) {
         case "walk":
-            keyframes = [0.5, 1];
-            frameRate = 0.5;
-            xrSpeeds = [0, 2];  // Right moves first and stops halfway through the movement animation
-            xlSpeeds = [2, 0];  // Left moves immediately afterwards and stops at the end of the animation
+            keyframes = [0.25, 0.5, 0.75, 1];
+            frameRate = 0.25;
+            xrSpeeds = [0, 0, 2, 2];  // Right moves first and stops halfway through the movement animation
+            yrSpeeds = [0, 0, 0, 0];
+            xlSpeeds = [2, 2, 0, 0];  // Left moves immediately afterwards and stops at the end of the animation
+            ylSpeeds = [0, -0.5, 0, 0.5];
             break;
         case "small-climb":
             // Declare how many frames you are going to use, and how much each component moves in every frame
@@ -195,8 +198,11 @@ export const handAnimations = (movementType: string, fpm: number, tick: number, 
     // Invert which hand gets which instructions if the colonist is moving to the left:
     if (sign === -1) {
         const s = xrAnimation;
+        const t = yrAnimation;
         xrAnimation = xlAnimation;
+        yrAnimation = ylAnimation;
         xlAnimation = s;
+        ylAnimation = t;
     }
     return { xlAnimation, xrAnimation, ylAnimation, yrAnimation };
 }
@@ -214,10 +220,12 @@ export const footAnimations = (movementType: string, fpm: number, tick: number, 
     let yrSpeeds: number[] = [0, 0];
     switch (movementType) {
         case "walk":
-            keyframes = [0.5, 1];
-            frameRate = 0.5;
-            xrSpeeds = [0, 2];  // Right moves first and stops halfway through the movement animation
-            xlSpeeds = [2, 0];
+            keyframes = [0.25, 0.5, 0.75, 1];
+            frameRate = 0.25;
+            xrSpeeds = [0, 0, 2, 2];  // Right moves second and stops at the end of the animation
+            yrSpeeds = [0, 0, -0.5, 0.5];
+            xlSpeeds = [2, 2, 0, 0];  // Left moves immediately and stops halfway through the movement animation
+            ylSpeeds = [-0.5, 0.5, 0, 0];
             break;
         case "small-climb":
             keyframes = [0.25, 0.5, 0.75, 1];
