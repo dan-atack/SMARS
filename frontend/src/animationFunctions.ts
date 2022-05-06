@@ -11,32 +11,32 @@ export const bodyAnimations = (movementType: string, fpm: number, tick: number, 
         case "walk":
             keyframes = [0.2, 0.4, 0.6, 0.8, 1];
             frameRate = 0.2;
-            xSpeeds = [1, 1, 1, 1, 1];
-            ySpeeds = [0, 0, 0, 0, 0];
+            xSpeeds = [1, 1, 1, 1, 1];  // X speeds combined times frame rate = 1
+            ySpeeds = [0, 0, 0, 0, 0];  // y speeds combined times frame rate = 0 (No change in elevation)
             break;
         case "small-climb":
-            keyframes = [0.25, 0.5, 0.75, 1];
-            frameRate = 0.25;
-            xSpeeds = [0, 0, 3, 1];
-            ySpeeds = [0, -3, 0, -1];
+            keyframes = [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1];
+            frameRate = 0.125;
+            xSpeeds = [1, 0, 0, 1, 1, 1, 2, 2];                 // X speeds must sum to 8
+            ySpeeds = [-1, 0, -2, -1, -4, 0, 0, 0];             // Y speeds must sum to -8
             break;
         case "big-climb":
-            keyframes = [0.2, 0.4, 0.6, 0.8, 1];
-            frameRate = 0.2;
-            xSpeeds = [0, 0, 1, 1, 3];
-            ySpeeds = [0, 0, -4, -4, -2];
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xSpeeds = [1, -1, 1, 0, 0, 1, 1, 2, 3, 2];              // X speeds must sum to 10
+            ySpeeds = [0, 0, -3, -1, 0, -2, -4, -2, -4, -4];        // Y speeds must sum to -20
             break;
         case "small-drop":
-            keyframes = [0.2, 0.4, 0.6, 0.8, 1];
-            frameRate = 0.2;
-            xSpeeds = [0, 0, 1, 3];
-            ySpeeds = [0, 3, 3, 2];
+            keyframes = [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1];
+            frameRate = 0.125;
+            xSpeeds = [0, 1, 2, 2, 1, 1, 1, 0];
+            ySpeeds = [0, 0, 1, 2, 3, 3, -1, 0];
             break;
         case "big-drop":
-            keyframes = [0.2, 0.4, 0.6, 0.8, 1];
-            frameRate = 0.2;
-            xSpeeds = [0, 0, 1, 3];
-            ySpeeds = [0, 3, 3, 2];
+            keyframes = [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1];
+            frameRate = 0.125;
+            xSpeeds = [1, 2, 1, 1, 1, 1, 1, 0];
+            ySpeeds = [0, 2, 3, 4, 5, 3, -1, 0];
             break;
         default:
             keyframes = [0.5, 1];
@@ -72,28 +72,28 @@ export const headAnimations = (movementType: string, fpm: number, tick: number, 
             ySpeeds = [0, 0, 0, 0, 0];
             break;
         case "small-climb":
-            keyframes = [0.25, 0.5, 0.75, 1];
-            frameRate = 0.25;
-            xSpeeds = [0, 0, 3, 1];
-            ySpeeds = [0, -3, 0, -1];
+            keyframes = [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1];
+            frameRate = 0.125;
+            xSpeeds = [1, 1, 1, 1, 1, 1, 1, 1];                 // X speeds must sum to 8
+            ySpeeds = [-1, 0, -2, 0, -3, 0, -1, -1];            // Y speeds must sum to -8
             break;
         case "big-climb":
-            keyframes = [0.2, 0.4, 0.6, 0.8, 1];
-            frameRate = 0.2;
-            xSpeeds = [0, 0, 1, 1, 3];
-            ySpeeds = [0, 0, -4, -4, -2];
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xSpeeds = [1, 0, 0, 0, 0, 1, 1, 2, 3, 2];
+            ySpeeds = [0, 0, -3, -1, 0, -2, -4, -3, -3, -4];
             break;
         case "small-drop":
-            keyframes = [0.5, 1];
-            frameRate = 0.5;
-            xSpeeds = [1, 1];
-            ySpeeds = [0, 0];
+            keyframes = [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1];
+            frameRate = 0.125;
+            xSpeeds = [0, 1, 2, 2, 1, 1, 1, 0];
+            ySpeeds = [0, 0, 1, 2, 3, 4, -1, -1];
             break;
         case "big-drop":
-            keyframes = [0.5, 1];
-            frameRate = 0.5;
-            xSpeeds = [1, 1];
-            ySpeeds = [0, 0];
+            keyframes = [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1];
+            frameRate = 0.125;
+            xSpeeds = [1, 2, 2, 1, 1, 1, 1, -1];
+            ySpeeds = [1, 3, 3, 4, 5, 2, -2, 0];
             break;
         default:
             keyframes = [0.5, 1];
@@ -135,38 +135,36 @@ export const handAnimations = (movementType: string, fpm: number, tick: number, 
             ylSpeeds = [0, -0.5, 0, 0.5];
             break;
         case "small-climb":
-            // Declare how many frames you are going to use, and how much each component moves in every frame
-            // Reminder: Y values are negative when you're climbing
-            keyframes = [0.25, 0.5, 0.75, 1];
-            frameRate = 0.25;
-            xlSpeeds = [3, 0, 0, 1];            // X values sum to 1 (when multiplied by frame rate)
-            ylSpeeds = [-1, 0, 0, -3];          // Y values sum to -1 (when multiplied by frame rate)
-            xrSpeeds = [1, 0, 0, 3];
-            yrSpeeds = [0, 0, -1, -3];
+            keyframes = [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1];
+            frameRate = 0.125;
+            xlSpeeds = [4, 4, 0, 0, 0, 0, 0, 0, 0];            // X values sum to 8
+            ylSpeeds = [-1, -1, 0, 0, -2, -4, -1, 1];            // Y values sum to -8
+            xrSpeeds = [2, 2, 0, 0, 2, 3, -1, 0];
+            yrSpeeds = [-1, -1, 0, 0, -3, -4, 1, 0,];
             break;
         case "big-climb":
-            keyframes = [0.25, 0.5, 0.75, 1];
-            frameRate = 0.25;
-            xlSpeeds = [3, 0, 1, 0];        // X values sum to 1 (when multiplied by frame rate)
-            ylSpeeds = [-3, 0, -3, -2];     // Y values sum to -2 (when multiplied by frame rate)
-            xrSpeeds = [0, 1, 0, 3];
-            yrSpeeds = [0, -5, 0, -3];
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xlSpeeds = [5, 4, 0, 0, 1, 1, 0, 0, 0, -1];                              // X values sum to 10
+            ylSpeeds = [-1, -1, 0, 0, -4, -3, 0, 0, -4, -7];                            // Y values sum to -20
+            xrSpeeds = [2, 0, 1, 0, 0, 0, 3, 2, 0, 2];
+            yrSpeeds = [0, 0, -4, -2, 0, 0, -4, -4, 0, -6];
             break;
         case "small-drop":
-            keyframes = [0.25, 0.5, 0.75, 1];
-            frameRate = 0.25;
-            xlSpeeds = [2, 0, 0, 2];        // X values sum to 1 (when multiplied by frame rate)
-            ylSpeeds = [3, 0, 0, 1];        // Y values sum to 1 (when multiplied by frame rate)
-            xrSpeeds = [1, 0, 0, 3];
-            yrSpeeds = [3, 0, 0, 1];
+            keyframes = [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1];
+            frameRate = 0.125;
+            xrSpeeds = [1, 2, 1, 1, 1, 1, 1, 0];        // X values sum to 8
+            yrSpeeds = [0, 1, 2, 2, 3, 1, -1, 0];       // Y values sum to 8
+            xlSpeeds = [1, 0, 0, 0, 3, 2, 2, 0];
+            ylSpeeds = [3, 3, 0, 0, 2, 1, -1, 0];
             break;
         case "big-drop":
-            keyframes = [0.25, 0.5, 0.75, 1];
-            frameRate = 0.25;
-            xlSpeeds = [2, 0, 1, 1];        // X values sum to 1 (when multiplied by frame rate)
-            ylSpeeds = [3, 0, 5, 0];        // Y values sum to 2 (when multiplied by frame rate)
-            xrSpeeds = [1, 0, 1, 2];
-            yrSpeeds = [3, 0, 5, 0];
+            keyframes = [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1];
+            frameRate = 0.125;
+            xrSpeeds = [1, 2, 1, 1, 1, 1, 1, 0];        // X values sum to 8
+            yrSpeeds = [0, 2, 3, 4, 5, 3, -2, 1];       // Y values sum to 16
+            xlSpeeds = [1, 0, 0, 0, 3, 2, 2, 0];
+            ylSpeeds = [4, 3, 0, 0, 5, 4, 1, -1];
             break;
         default:
             // Ensure no glitches for standing still animation
@@ -228,36 +226,36 @@ export const footAnimations = (movementType: string, fpm: number, tick: number, 
             ylSpeeds = [-0.5, 0.5, 0, 0];
             break;
         case "small-climb":
-            keyframes = [0.25, 0.5, 0.75, 1];
-            frameRate = 0.25;
-            xlSpeeds = [3, 0, 0, 1];
-            ylSpeeds = [-1, 0, 0, -3];
-            xrSpeeds = [0, 1, 0, 3];
-            yrSpeeds = [0, -2, 0, -2];
+            keyframes = [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1];
+            frameRate = 0.125;
+            xlSpeeds = [4, 4, 0, 0, 0, 0, 0, 0];        // Sum to 8
+            ylSpeeds = [-2, 0, 0, 0, -4, -3, 1, 0];        // Sum to -8
+            xrSpeeds = [0, 0, 2, 2, 0, 0, 3, 1];
+            yrSpeeds = [0, 0, -4, 0, 0, 0, -5, 1];
             break;
         case "big-climb":
-            keyframes = [0.25, 0.5, 0.75, 1];
-            frameRate = 0.25;
-            xlSpeeds = [3, 0, 0, 1];
-            ylSpeeds = [-2, 0, -3, -3];
-            xrSpeeds = [0, 0, 0, 4];
-            yrSpeeds = [0, -4, 0, -4];
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xlSpeeds = [5, 5, 0, 0, 0, 0, 0, 0, 0, 0];                              // X values sum to 10
+            ylSpeeds = [-2, -1, 0, 0, -4, -4, 0, 0, -5, -4];                            // Y values sum to -20
+            xrSpeeds = [0, 0, 2, 1, 0, 0, 1, 1, 0, 5];
+            yrSpeeds = [0, 0, -4, -2, 0, 0, -6, -6, 0, -2];
             break;
         case "small-drop":
-            keyframes = [0.25, 0.5, 0.75, 1];
-            frameRate = 0.25;
-            xlSpeeds = [0, 0, 3, 1];
-            ylSpeeds = [0, 0, 3, 1];
-            xrSpeeds = [0, 0, 3, 1];
-            yrSpeeds = [0, 0, 3, 1];
+            keyframes = [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1];
+            frameRate = 0.125;
+            xrSpeeds = [0, 0, 2, 2, 2, 2, 0, 0];        // Sums to 8
+            yrSpeeds = [0, 0, 1, 2, 3, 2, 0, 0];        // Sums to 8
+            xlSpeeds = [3, 3, 2, 0, 0, 0, 0, 0];
+            ylSpeeds = [0, 1, 2, 3, 2, 0, 0, 0];
             break;
         case "big-drop":
-            keyframes = [0.25, 0.5, 0.75, 1];
-            frameRate = 0.25;
-            xlSpeeds = [0, 0, 3, 1];
-            ylSpeeds = [0, 1, 5, 2];
-            xrSpeeds = [0, 0, 3, 1];
-            yrSpeeds = [0, 1, 5, 2];
+            keyframes = [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1];
+            frameRate = 0.125;
+            xrSpeeds = [1, 2, 1, 1, 1, 1, 1, 0];
+            yrSpeeds = [0, 1, 4, 5, 4, 2, 0, 0];
+            xlSpeeds = [2, 2, 1, 1, 1, 1, 0, 0];
+            ylSpeeds = [0, 3, 4, 5, 4, 0, 0, 0];
             break;
         default:
             keyframes = [0.5, 1];
