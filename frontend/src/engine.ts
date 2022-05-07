@@ -104,7 +104,7 @@ export default class Engine extends View {
         this._horizontalOffset = this._map._maxOffset / 2;   // Put player in the middle of the map to start out
         this._infrastructure.setup(this._horizontalOffset);
         // Add two new colonists
-        // this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH), 20);
+        this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH), 20);
         this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH) + 22, 20);
     }
 

@@ -1027,7 +1027,7 @@ Exit Criteria:
 - [DONE] Colonists climb at a slow rate, and will avoid climbing up or down anything steeper than two tiles (basic terrain navigation sense for colonists)
 - [DONE] Population View shows the number of colonists, along with some filler text.
 - [DONE] Colonist positions, needs, goals and progress are included in save file data, and colonists resume whatever they were doing before the game was saved without missing a beat (tick)
-- [STRETCH] Colonists' movements, including walking, climbing, and standing still, are animated
+- [DONE] [STRETCH] Colonists' movements, including walking, climbing, and standing still, are animated
 
 1. Create the Colonist class. Initially it should be very simple, resembling a block, but without even a type. Add a simple render function (a circle ought to do it) for now.
 
@@ -1067,9 +1067,9 @@ Exit Criteria:
 
 19. Extract the code for the Colonists' animation position calculations to the animationFunctions file, and export that to be used by the Colonist class. Export the entire switch case for each body part as a separate function (e.g. getHeadPosition, getBodyPosition, etc.).
 
-### 20. Explore the use of keyframes for the simple climb animation, by creating a tuple or an array containing the time markers for each individual movement, as a fraction of the whole move. So for example if you had four equal movements, their key frame times would be 0.25, 0.5, 0.75 and 1, with the final frame at time = 1 being the fully-translated position (identical to where the update-position method will place the colonist's standing image an instant later).
+20. Explore the use of keyframes for the simple climb animation, by creating a tuple or an array containing the time markers for each individual movement, as a fraction of the whole move. So for example if you had four equal movements, their key frame times would be 0.25, 0.5, 0.75 and 1, with the final frame at time = 1 being the fully-translated position (identical to where the update-position method will place the colonist's standing image an instant later).
 
-### 21. Using the techniques developed for step 20, quickly create similar animations for the other three types of movement. They can all be highly derivative of the small climb one (as in, big climb can be the exact same motions but with double the y values, and the descent moves can just be the same sequence but in reverse!)
+21. Using the techniques developed for step 20, quickly create similar animations for the other three types of movement. They can all be highly derivative of the small climb one (as in, big climb can be the exact same motions but with double the y values, and the descent moves can just be the same sequence but in reverse!)
 
 22. Add the population counter to the Engine's Population view.
 
@@ -1093,7 +1093,7 @@ Exit Criteria:
 
 ## Chapter Twenty-Four: BACKDOOR UNIT TESTS (Difficulty Estimate: 7 For Refactoring and Familiarization with Jest Mocks)
 
-### DATE
+### May 6, 2022
 
 Following the fairly complex (and often very painful) implementation of the basic Colonist movement and decision-making logic, the need for robust, reliable unit tests has been in the media again. A new approach to this issue has been hypothesized, which is to use a 'data-processing' object class for each in-game class, and then wrapping that in a shell class that contains the P5/rendering elements. That way, all of the data-processing that goes on behind the scenes for entities that have an on-screen display of some kind can be carried out (and tested) with a class that DOESN'T require P5 and thus should be fully mockable. Let's devote some time towards experimenting with this method of doing things and see if it finally allows for the creation of some useful mock tests.
 

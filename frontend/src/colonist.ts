@@ -202,14 +202,13 @@ export default class Colonist {
                 this._movementCost = 10;
                 break;
             default:
-                console.log("Insurmountable obstacle ahead. Aborting movement.");
+                // Abort movement if terrain is too steep
                 this.stopMovement();
                 this.setGoal("explore");   // Reset colonist goal if they reach an impassable obstacle.
                 break;
         }
         // Start new move
         this._isMoving = true;
-        // TODO: Make sure this doesn't go ape if the colonist as at the map's edge
     }
 
     // Halts all movement and resets movement-related values
@@ -218,6 +217,7 @@ export default class Colonist {
         this._movementType = "";
         this._movementCost = 0;
         this._movementProg = 0;
+        this._animationTick = 0;
     }
 
     // Update colonist position (x AND y) when movement is completed
@@ -226,8 +226,6 @@ export default class Colonist {
         if (this._movementType) {
             this._facing === "right" ? this._x++ : this._x--;
             this._animationTick = 0;    // Reset animation sequence tick immediately after horizontal translation
-        } else {
-            console.log("Position update called without movement type");
         }
         // Only moves with a vertical component are considered here (no case for 'walk' since it's horizontal only)
         switch (this._movementType) {
