@@ -1009,6 +1009,94 @@ Exit criteria:
 
 25. Use the resource depletion flag to set the change rate and current quantity's text colours.
 
+## Chapter Twenty-Three: The Colonists (Difficulty Estimate: 8 for new rules to govern colonist movements and animation)
+
+### April 18, 2022
+
+Following the creation of the in-game resource system, it is time to finally meet the Smartians! The colonists will represent the first dynamic elements of our simulated world, and so their addition to the game represents a major milestone in the game's interestingness. The early colonists will have a simple existence, simply moving about more or less randomly across the map, and consuming resources directly from the economy class's stockpiles via telepathy. While their initial behaviour will be simple, we can still take advantage of this moment to set up the structure that will allow for more complex behaviour in the future. This will involve setting up a needs/goals-based approach to determining colonist behaviour, so that colonists will wander around until one of their needs (e.g. food and water) creeps up above a certain pre-set threshold, at which point they will set a 'goal' to go and find whatever resource will satisfy their need. This feature will be setup in this chapter, but the gradual increase in needs for food and water will be suppressed for the moment, until it is possible to satisfy them by moving to specific locations within the base to access resources and services (e.g. kitchens and rest areas). Later generations of colonists will move to still more distant locations, to explore and do work for the expanding colony!
+
+The chapter will conclude by adding some basic stats about each individual colonist to the game's save files, so that colonists can immediately resume what they were doing when a saved game is loaded.
+
+Exit Criteria:
+
+- [DONE] Colonist class is created to render the individual colonists in the game's world. Colonists can stand still or walk to either the left or right
+- [DONE] Population class is created to manage colonist activities, including managing resource needs and movement (calling the handler functions of the individual colonists)
+- [DONE] Each colonist consumes a small amount of air and water each hour
+- [DONE] Each colonist consumes a small amount of food every eight hours
+- [DONE] Colonists walk around at random within that horizontal range and are restricted by their climbing abilities (see next point)
+- [DONE] Colonists climb at a slow rate, and will avoid climbing up or down anything steeper than two tiles (basic terrain navigation sense for colonists)
+- [DONE] Population View shows the number of colonists, along with some filler text.
+- [DONE] Colonist positions, needs, goals and progress are included in save file data, and colonists resume whatever they were doing before the game was saved without missing a beat (tick)
+- [DONE] [STRETCH] Colonists' movements, including walking, climbing, and standing still, are animated
+
+1. Create the Colonist class. Initially it should be very simple, resembling a block, but without even a type. Add a simple render function (a circle ought to do it) for now.
+
+2. Create the Population class. This will be created by the Engine at the game's outset to keep track of all the individual Smartians. Population class will initially be quite simple, like the Economy or Infrastructure classes were at their outset.
+
+3. Plug the Population class into the Engine when it loads up and have it render a single colonist, at the location of the first module in the Infrastructure's list. Or, if there is no infrastructure yet built, at the horizontal center of the map. It doesn't matter if they end up in the air or anything, their simple rules of physics will be added soon enough.
+
+4. Once the first Colonist is rendered as a circle, upgrade their 'body' to include hands and feet, and a helmet. Keep each of these as distinct fields of the Colonist class, so they can be easily kept track of during the scripting of movement animations.
+
+5. Add a method for the Colonist to detect what they're standing on (check the 'player' class from the game jam for inspiration here). If they're not standing on anything, have them instantly 'fall' down to the surface of whatever column they're standing on.
+
+6. Prepare the ground for motivation/decision-based actions for the Colonists: Add a field for a colonist's "needs" which will take the form of a dictionary (with an explicitly defined type, ColonistNeeds), and map each type of need to a number from 1-10 that indicates its urgency. The same object type can be used again for a related property, needThresholds, which will map the same keys to a different set of numbers, these ones representing the cut-off point at which a colonist will "choose" to try to satisfy a given need.
+
+7. Next, add a 'current goal' field to the Colonist class, to store the string name of the activity the colonist is attempting to perform. This can have a default value of 'explore', so that the colonist will just wander around until he/she gets hungry/thirsty enough to seek out whatever resource is needed to satisfy their need/s.
+
+8. Add an 'update needs' method to the Colonist class which augments the value of each need by a certain amount.
+
+9. Create an 'update decision' method to check the current needs, and then on the basis of that, either keep the current activity as it is, or set it to 'get food' or 'get water' or whatever code name will be used to represent a particular course of action.
+
+10. Adjust the Population class's updater methods so that it splits along updating each colonist's position every minute, and their needs once every hour. The position update will first check goal status, and then that will pass along the signal to either start or continue movement.
+
+11. Fine tune the Colonist's updateGoal method to check needs vs thresholds and set a goal for the first need to cross the threshold. Make sure it also respects an existing goal once one is set (except for 'explore', that is) and waits for the goal to be reset before assigning a new one.
+
+12. Create a separate method for setting the colonist's goal, which includes a switch block based on which type of goal has been chosen (exploration vs getting food, water or rest) and which calculates a destination based on the type of goal and the location of resources/facilities to satisfy it. This will become more complex when we add the ability for modules to hold resources and allow the colonists to transact with them, as they will have to have to be able to update/alter their plans if resource locations change, or are unavailable. For now we'll simply fill out the 'explore' case so that the colonist is sent to move to a randomly chosen nearby location.
+
+13. Create a "Check Goal Status" method, which will be called every minute, to ensure that a colonist always has a goal, and that they are always moving to pursue it - or to detect if they're arrived at their destination, in which case it's either time to get a new goal (in the case of an 'exploration' goal) or to perform some kind of secondary action (such as getting the needed resource from a module, or in time, doing some kind of work task).
+
+14. Colonist movement: Colonists will always be in a particular grid space, to avoid having to introduce a more complex physics system. When a colonist makes the decision to move to an adjacent space, they will begin the move, at which point a walking animation will be shown, and then after a given amount of time (which varies depending on the terrain being crossed) they arrive in the destination tile, at which point the movement animation stops playing. Movement thus happens 'instantaneously' after a brief delay which represents the effort to move into the destination space.
+
+15. Create a 'start movement' method for the Colonist class that checks the column to the colonist's left/right and then reports the "cost" of moving to that location (1 for flat ground, various other values for when the elevation is different), then initiates a move (sets the movement type and cost and sets the isMoving flag to true).
+
+16. Create a rudimentary animation sequence for the Colonist, to be rendered when they are walking. Animation should start and end with the moving parts in the same position, so it can be looped with itself. Animation is rendered one frame at a time, with each render increasing an 'animation tick' variable that resets when the loop is complete (or the move is ended). Animation data is either a series of positions for each individual element, or a mathematical formula to derive position for each frame in the loop. Bonus points if you use the latter method to any extent!
+
+17. For Colonist animations to work properly, we'll need to pass them the Engine's game speed setting (specifically, the number of ticks per game minute) to determine how many frames should be played for a given movement sequence. Total frames to allocate to an animation = frames per minute times movement cost (so that short movements will be over quickly while longer ones play out slowly).
+
+18. Use the Colonists' movementType field to detect which type of movement animation to play. If there is no movement going on, render the image of the standing colonist.
+
+19. Extract the code for the Colonists' animation position calculations to the animationFunctions file, and export that to be used by the Colonist class. Export the entire switch case for each body part as a separate function (e.g. getHeadPosition, getBodyPosition, etc.).
+
+20. Explore the use of keyframes for the simple climb animation, by creating a tuple or an array containing the time markers for each individual movement, as a fraction of the whole move. So for example if you had four equal movements, their key frame times would be 0.25, 0.5, 0.75 and 1, with the final frame at time = 1 being the fully-translated position (identical to where the update-position method will place the colonist's standing image an instant later).
+
+21. Using the techniques developed for step 20, quickly create similar animations for the other three types of movement. They can all be highly derivative of the small climb one (as in, big climb can be the exact same motions but with double the y values, and the descent moves can just be the same sequence but in reverse!)
+
+22. Add the population counter to the Engine's Population view.
+
+23. Add some filler text to this View as well.
+
+24. Add a Population-level function to handle Colonists' resource consumption. Call it every hour along with the rest of their updates, and deduct a small quantity of air and water from the Economy's stockpiles every hour, for every colonist.
+
+25. Add an additional outcome to the above-mentioned function, to also decrement food every 8 hours.
+
+26. Add a 'colonists' field to the Save Info type, so that new saves can take data about colonists. The colonists field should be an array of 'ColonistData' type objects, which have the following fields: x, y, needs (food, air, water), current goal, isMoving, movement type, movement cost, movement progress, movement destination, and the direction they are facing. Animation tick is not needed, as the save data's temporal resolution only goes to the minute, not the individual tick. The Population class will need to construct an array of Colonist Data objects from its colonists list, and the game will call that function and store the return as part of the upgraded SaveInfo package.
+
+27. Get the Game to populate this info before passing SaveInfo to the Save Game Screen. Console log it on the Save Screen to validate.
+
+28. As for loading saved games that include population data, create a new method for the Population class that takes the saved info and creates a colonist that is programmed with that data. Also update the Colonist class' constructor function to accept this info as an optional third parameter, so colonists can be created with or without the loaded game data.
+
+29. Add the population count to the LoadOption pseudo-button, so players can see their colonies' population from the Load Game screen.
+
+### 9. Before closing the chapter, add a new graphic to the mockups folder, with a diagram of the Colonist's decision-making process tree.
+
+### 10. Add another diagram outlining the movement process - from the moment a move is initiated by the startMovement method, to when it is stopped by the stopMovement method.
+
+## Chapter Twenty-Four: BACKDOOR UNIT TESTS (Difficulty Estimate: 7 For Refactoring and Familiarization with Jest Mocks)
+
+### May 6, 2022
+
+Following the fairly complex (and often very painful) implementation of the basic Colonist movement and decision-making logic, the need for robust, reliable unit tests has been in the media again. A new approach to this issue has been hypothesized, which is to use a 'data-processing' object class for each in-game class, and then wrapping that in a shell class that contains the P5/rendering elements. That way, all of the data-processing that goes on behind the scenes for entities that have an on-screen display of some kind can be carried out (and tested) with a class that DOESN'T require P5 and thus should be fully mockable. Let's devote some time towards experimenting with this method of doing things and see if it finally allows for the creation of some useful mock tests.
+
 ## Chapter X: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 5)
 
 We need to do the Connectors separately, as their placement logic is quite different from the logic for the Modules.
@@ -1018,15 +1106,21 @@ Exit Criteria:
 - Placing a connector is constrained by:
   -- Must be placed within a module (later connectors might be partially external to the base, i.e. spanning the gap between two modules, but should follow the precedent of always originating/terminating at a module. Else what exactly are they connecting, right?)
 
-### Bug List:
+### Bug List (Severity in square brackets):
 
-### 1. When the in-game menu is opened then closed, it resets the engine's offset to be back in the middle of the map. The offset value should persist between menu openings.
+### 1. [2: UX] When the in-game menu is opened then closed, it resets the engine's offset to be back in the middle of the map. The offset value should persist between menu openings.
 
-### 2. Ensure buildings cannot be placed BELOW the game's screen area (and by extension, that no map actions are permitted outside the map area).
+### 2. [8: Major gameplay issue] Ensure buildings cannot be placed BELOW the game's screen area (and by extension, that no map actions are permitted outside the map area).
 
-### 3. At some, but not all x-offset values, the building shadow (and subsequent placement) pulls to the left, to the point that the cursor is outside the designated build area by what appears to be up to a full grid space.
+### 3. [5: UX / Minor gameplay issue] At some, but not all x-offset values, the building shadow (and subsequent placement) pulls to the left, to the point that the cursor is outside the designated build area by what appears to be up to a full grid space.
 
-### 4. Save game dates seem to be from a different time zone?!
+### 4. [1: UX / Inaccurate info display] Save game dates seem to be from a different time zone?!
+
+### 5. [3: UX / Inaccurate info display] Economy save data should really include the previous value/rate of change numbers so the player doesn't have to wait an hour for an Economy update. Also, consider how to show rates of change that occur less frequently than every hour (like colonist meals).
+
+### 6. [1: UX / Animation glitch] When the game speed is adjusted, it can cause moving colonists' animations to fly apart for a moment. Add a command for the Engine when the time speed is changed to immediately halt all colonist animations (the Engine should call a Population-level function that tells the individual colonists to reset their animation frame counts). Bonus if they can switch to the new animation speed on the fly rather than simply showing nothing until the next movement.
+
+### 7. [1: Coding Convention] Colonist class should have a unique ID field, to individuate the colony's population.
 
 ### Exit Criteria for backend save/load game chapter:
 
@@ -1035,7 +1129,7 @@ Exit Criteria:
 - [DONE]It is possible to retrieve a list of saved games for a given user.
 - [DONE]It is possible to retrieve all of the game data for a specific saved game file.
 
-## Chapter XX: DevOps Interlude (Forecast says sooner is better... do item one as soon as time-keeping is finished)
+## Chapter XX: DevOps Interlude and First Deployment! (Aim to complete deployment by June of 2022)
 
 - Dev mode environment variable enables some information displays in the world screen area
 - Unit tests for in-game functionality (challenge yourself to think of and implement a unit test that's actually useful!)

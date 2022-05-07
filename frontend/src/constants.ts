@@ -1,5 +1,5 @@
 // Global variables for the front-end:
-import { Resources } from "./economy"
+import { Resources } from "./economy";
 
 const basicResources: Resources = {
    money: ["$", 10000000],
@@ -33,6 +33,7 @@ export const constants = {
     RED_ROCK: "#882000",
     BROWN_SAND: "#B8A27D",
     BROWN_MUD: "#3B1E05",
+    ORANGE_JUMPSUIT: "#C77E00",
     YELLOW_BG: "#544503",
     YELLOW_TEXT: "#FFD412",
     BLUE_ICE: "#A0EBE3",

@@ -232,7 +232,6 @@ export default class Infrastructure {
     }
 
     render(horizontalOffset: number) {
-        const p5 = this._p5
         this._horizontalOffset = horizontalOffset;
         // Only render one screen width's worth, taking horizontal offset into account:
         const leftEdge = Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH);    // Edges are in terms of columns

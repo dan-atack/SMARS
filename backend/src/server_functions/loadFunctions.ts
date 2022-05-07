@@ -29,7 +29,9 @@ const loadGamesForUser = async (req: Request, res: Response) => {
                             id: save._id,
                             game_name: save.game_name,
                             game_time: save.game_time,
-                            timestamp: save.time
+                            timestamp: save.time,
+                            // Properties that might not be in older files start here:
+                            population: save.colonists ? save.colonists.length : 0,
                         };
                         saves.push(summary);
                     })

@@ -12,7 +12,8 @@ export type SaveSummary = {
     id: string,
     game_name: string,
     game_time: GameTime,
-    timestamp: string
+    timestamp: string,
+    population: number,
 }
 
 export default class LoadGame extends Screen {
@@ -170,7 +171,7 @@ export default class LoadGame extends Screen {
 
     // Pagination button handlers
     handleNext = () => {
-        if (this._savedGames.length >= this._optionsShowing + this._optionsPerPage) {
+        if (this._savedGames.length > this._optionsShowing + this._optionsPerPage) {
             this._optionsShowing += this._optionsPerPage;
         } else {
             this.setMessage("You are at the end of the list.", constants.RED_ERROR);

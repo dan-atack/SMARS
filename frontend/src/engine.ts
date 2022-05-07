@@ -6,6 +6,7 @@ import Sidebar from "./sidebar";
 import Map from "./map";
 import Infrastructure from "./infrastructure";
 import Economy, { Resources } from "./economy";
+import Population from "./population";
 import Modal, { EventData } from "./modal";
 import { ModuleInfo, ConnectorInfo, getOneModule, getOneConnector } from "./server_functions";
 import { constants } from "./constants";
@@ -25,6 +26,7 @@ export default class Engine extends View {
     _map: Map;
     _infrastructure: Infrastructure;
     _economy: Economy;
+    _population: Population;
     _modal: Modal | null;
     // Map scrolling control
     _horizontalOffset: number;  // This will be used to offset all elements in the game's world, starting with the map
@@ -61,6 +63,7 @@ export default class Engine extends View {
         this._map = new Map(this._p5);
         this._infrastructure = new Infrastructure(p5);
         this._economy = new Economy(p5);
+        this._population = new Population(p5);
         this._modal = null;
         this._horizontalOffset = 0;
         this._scrollDistance = 50;
@@ -80,7 +83,7 @@ export default class Engine extends View {
             sol: 1,
             year: 0
         };                              // New take on the old way of storing the game's time
-        this.ticksPerMinute = 30        // Medium "fast" speed is set as the default
+        this.ticksPerMinute = 20        // Medium "fast" speed is set as the default
         this._minutesPerHour = 60;      // Minutes go from 0 - 59, so this should really be called max minutes
         this._hoursPerClockCycle = 12;
         this._solsPerYear = 4;
@@ -100,20 +103,35 @@ export default class Engine extends View {
         this._economy.setResources(this._gameData.startingResources);
         this._horizontalOffset = this._map._maxOffset / 2;   // Put player in the middle of the map to start out
         this._infrastructure.setup(this._horizontalOffset);
+        // Add two new colonists
+        this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH), 20);
+        this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH) + 22, 20);
     }
 
     setupSavedGame = (saveInfo: SaveInfo) => {
         this._saveInfo = saveInfo;
-        this._gameTime = saveInfo.game_time;
+        this.setClock(saveInfo.game_time);
         this._map.setup(this._saveInfo.terrain);
         this._economy.setResources(saveInfo.resources);
         this._horizontalOffset = this._map._maxOffset / 2;
         this._infrastructure.setup(this._horizontalOffset);
+        this._population.loadColonistData(saveInfo.colonists);
         this.loadModulesFromSave(saveInfo.modules);
         this.loadConnectorsFromSave(saveInfo.connectors);
-        // Check if game has resource data and if it doesn't, render an alternate welcome back message
-        if (!saveInfo.resources) {
+        // Check if game has colonist data and if it doesn't, render an alternate welcome back message
+        if (!saveInfo.colonists) {
             this.createLoadGameModal(saveInfo.username, true);
+            // Add one colonist if the save file has no colonist data
+            console.log("Adding two colonists.");
+            if (this._saveInfo.modules.length > 0) {
+                const { x, y } = this._saveInfo.modules[0];
+                // this._population.addColonist(x - 2, y - 1);
+                this._population.addColonist(x - 2, y - 4);
+                this._population.addColonist(x + 2, y - 4);
+            } else {
+                this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH), 20);
+                this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH + 2), 20);
+            }
         } else {
             this.createLoadGameModal(saveInfo.username, false);
         }
@@ -283,8 +301,11 @@ export default class Engine extends View {
     }
 
     handleResourceConsumption = () => {
-        const air = this._infrastructure.calculateModulesOxygenLoss();
-        this._economy.updateResource("oxygen", air);
+        const leakage = this._infrastructure.calculateModulesOxygenLoss();
+        const { air, water, food } = this._population.calculatePopulationResourceConsumption(this._gameTime.hour);
+        this._economy.updateResource("oxygen", air + leakage);
+        this._economy.updateResource("water", water);
+        this._economy.updateResource("food", food);
     }
 
     setGameSpeed = (value: string) => {
@@ -356,43 +377,45 @@ export default class Engine extends View {
     }
 
     // Sets the Smartian time
-    setClock = () => {
-        console.log("The clock has been set");
+    setClock = (gameTime: GameTime) => {
+        this._gameTime = gameTime;
     }
 
     advanceClock = () => {
-        if (this._tick < this.ticksPerMinute) {
-            if (this.gameOn) this._tick ++;      // Advance ticks if game is unpaused
-        } else {
-            this._tick = 0;     // Advance minutes
-            if (this._gameTime.minute < this._minutesPerHour - 1) {  // Minus one tells the minutes counter to reset to zero after 59
-                this._gameTime.minute ++;
-            } else {
-                this._gameTime.minute = 0;   // Advance hours (anything on an hourly schedule should go here)
-                this.handleResourceConsumption();
-                this.updateEarthData();     // Advance Earth date every game hour
-                // this.generateEvent(50);
-                if (this._gameTime.hour < this._hoursPerClockCycle) {
-                    this._gameTime.hour ++;
-                    if (this._gameTime.hour === this._hoursPerClockCycle) {  // Advance day/night cycle when hour hits twelve
-                        if (this._gameTime.cycle === "AM") {
-                            this._gameTime.cycle = "PM"
-                        } else {
-                            this.generateEvent();           // Modal popup appears every time it's a new day.
-                            this._gameTime.cycle = "AM";        // Advance date (anything on a daily schedule should go here)
-                            if (this._gameTime.sol < this._solsPerYear) {
-                                this._gameTime.sol ++;
-                            } else {
-                                this._gameTime.sol = 1;
-                                this._gameTime.year ++;      // Advance year (anything on an yearly schedule should go here)
-                            }
-                            this._sidebar.setDate(this._gameTime.sol, this._gameTime.year);   // Update sidebar date display
-                        }  
-                    }
+        if (this.gameOn) {
+            this._tick++;
+            if (this._tick >= this.ticksPerMinute) {
+                this._tick = 0;     // Advance minutes
+                // Update colonists' locations each 'minute', and all of their other stats every hour
+                this._population.updateColonists(this._map._mapData, this._gameTime.minute === 0);
+                if (this._gameTime.minute < this._minutesPerHour - 1) {  // Minus one tells the minutes counter to reset to zero after 59
+                    this._gameTime.minute ++;
                 } else {
-                    this._gameTime.hour = 1;     // Hour never resets to zero
-                }
-            }      
+                    this._gameTime.minute = 0;   // Advance hours (anything on an hourly schedule should go here)
+                    this.handleResourceConsumption();
+                    this.updateEarthData();     // Advance Earth date every game hour
+                    if (this._gameTime.hour < this._hoursPerClockCycle) {
+                        this._gameTime.hour ++;
+                        if (this._gameTime.hour === this._hoursPerClockCycle) {  // Advance day/night cycle when hour hits twelve
+                            if (this._gameTime.cycle === "AM") {
+                                this._gameTime.cycle = "PM"
+                            } else {
+                                this.generateEvent();           // Modal popup appears every time it's a new day.
+                                this._gameTime.cycle = "AM";        // Advance date (anything on a daily schedule should go here)
+                                if (this._gameTime.sol < this._solsPerYear) {
+                                    this._gameTime.sol ++;
+                                } else {
+                                    this._gameTime.sol = 1;
+                                    this._gameTime.year ++;      // Advance year (anything on an yearly schedule should go here)
+                                }
+                                this._sidebar.setDate(this._gameTime.sol, this._gameTime.year);   // Update sidebar date display
+                            }  
+                        }
+                    } else {
+                        this._gameTime.hour = 1;     // Hour never resets to zero
+                    }
+                } 
+            }
         }
     }
 
@@ -430,6 +453,7 @@ export default class Engine extends View {
         this._map.render(this._horizontalOffset);
         this._infrastructure.render(this._horizontalOffset);
         this._economy.render();
+        this._population.render(this._horizontalOffset, this.ticksPerMinute, this.gameOn);
         this._sidebar.render(this._gameTime.minute, this._gameTime.hour, this._gameTime.cycle);
         // Mouse pointer is shadow of selected building, to help with building placement:
         if (this.selectedBuilding !== null) {
