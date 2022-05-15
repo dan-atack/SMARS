@@ -25,13 +25,17 @@ const loadGamesForUser = async (req: Request, res: Response) => {
                     // Return only a small portion of each file's data:
                     let saves: any[] = [];
                     result.forEach((save) => {
+                        let population = 0;
+                        if (save.colonists) {
+                            population = save.colonists.length;
+                        }
                         const summary = {
                             id: save._id,
                             game_name: save.game_name,
                             game_time: save.game_time,
                             timestamp: save.time,
                             // Properties that might not be in older files start here:
-                            population: save.colonists ? save.colonists.length : 0,
+                            population: population,
                         };
                         saves.push(summary);
                     })

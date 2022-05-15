@@ -1,7 +1,6 @@
 // The Population class is the disembodied list of all your colonists, and the functions for updating them.
 import P5 from "p5";
 import Colonist, { ColonistSaveData } from "./colonist";
-import { constants } from "./constants";
 
 export default class Population {
     // Population types:
@@ -30,22 +29,22 @@ export default class Population {
     updateColonistPositions = (terrain: number[][]) => {
         // For each colonist, isolate the 3 terrain columns around them:
         this._colonists.forEach((colonist) => {
-            let cols: number[][] = [terrain[colonist._x]];
+            let cols: number[][] = [terrain[colonist._data._x]];
             // If colonist is next to the right or left edge of the map, only return 2 columns:
-            if (colonist._x > 0) {
-                cols.unshift(terrain[colonist._x - 1]); // Push leftward column to the START of the array
+            if (colonist._data._x > 0) {
+                cols.unshift(terrain[colonist._data._x - 1]); // Push leftward column to the START of the array
             }
-            if (colonist._x < terrain.length - 1) {
-                cols.push(terrain[colonist._x + 1]);
+            if (colonist._data._x < terrain.length - 1) {
+                cols.push(terrain[colonist._data._x + 1]);
             }
             // The colonists' movement functions will be controlled indirectly by the goal status checker
-            colonist.checkGoalStatus(cols, terrain.length - 1);
+            colonist._data.checkGoalStatus(cols, terrain.length - 1);
         })
     }
 
     updateColonistNeedsAndGoals = (terrain: number[][]) => {
         this._colonists.forEach((colonist) => {
-            colonist.updateNeedsAndGoals(terrain.length - 1);
+            colonist._data.updateNeedsAndGoals(terrain.length - 1);
         })
     }
 
@@ -61,16 +60,16 @@ export default class Population {
         const colonistData: ColonistSaveData[] = [];
         this._colonists.forEach((colonist) => {
             const d: ColonistSaveData = {
-                x: colonist._x,
-                y: colonist._y,
-                needs: colonist._needs,
-                goal: colonist._currentGoal,
-                isMoving: colonist._isMoving,
-                movementType: colonist._movementType,
-                movementCost: colonist._movementCost,
-                movementProg: colonist._movementProg,
-                movementDest: colonist._movementDest,
-                facing: colonist._facing
+                x: colonist._data._x,
+                y: colonist._data._y,
+                needs: colonist._data._needs,
+                goal: colonist._data._currentGoal,
+                isMoving: colonist._data._isMoving,
+                movementType: colonist._data._movementType,
+                movementCost: colonist._data._movementCost,
+                movementProg: colonist._data._movementProg,
+                movementDest: colonist._data._movementDest,
+                facing: colonist._data._facing
             };
             colonistData.push(d);
         })

@@ -1087,15 +1087,31 @@ Exit Criteria:
 
 29. Add the population count to the LoadOption pseudo-button, so players can see their colonies' population from the Load Game screen.
 
-### 9. Before closing the chapter, add a new graphic to the mockups folder, with a diagram of the Colonist's decision-making process tree.
-
-### 10. Add another diagram outlining the movement process - from the moment a move is initiated by the startMovement method, to when it is stopped by the stopMovement method.
-
 ## Chapter Twenty-Four: BACKDOOR UNIT TESTS (Difficulty Estimate: 7 For Refactoring and Familiarization with Jest Mocks)
 
 ### May 6, 2022
 
 Following the fairly complex (and often very painful) implementation of the basic Colonist movement and decision-making logic, the need for robust, reliable unit tests has been in the media again. A new approach to this issue has been hypothesized, which is to use a 'data-processing' object class for each in-game class, and then wrapping that in a shell class that contains the P5/rendering elements. That way, all of the data-processing that goes on behind the scenes for entities that have an on-screen display of some kind can be carried out (and tested) with a class that DOESN'T require P5 and thus should be fully mockable. Let's devote some time towards experimenting with this method of doing things and see if it finally allows for the creation of some useful mock tests.
+
+Exit Criteria:
+
+- [DONE] The Colonist class uses its ColonistData subclass for all non-visual data processing
+- The ColonistData subclass is mocked in a unit test that validates the Colonist's movement/position update logic
+- The ColonistData subclass has at least one mock test that validates its logic for goal determination
+
+1. Create a new class, called ColonistData, which will hold all of the Colonist's logic and data processing abilities, but none of its rendering/P5-related functionality. Copy all of the non-P5 attributes and methods from the Colonist class into this new class.
+
+2. Import this class to the Colonist class, and have the Colonist's constructor make a new instance of this class, stored under a new field, this.\_data.
+
+3. Remove all of the copied methods and attributes from the Colonist class, and rewire the remaining methods (render and drawing methods) to use values from the ColonistData sub-class instead of the Colonist class itself.
+
+4. Update the Population-level updater functions for the Colonist class to pass on update requests to the dataFunctions (ColonistData) class instead of trying to perform the updates in the Colonist class directly. Manually test the game to make sure it runs the way it did before these changes.
+
+### 5. Now, create a new test file called ColonistData.test, and try setting up a simple unit test that creates an instance of the ColonistData class and uses that to directly test its functionality. This will be an improvement over previous unit test attempts, as it will be an actual instance of this class, instead of a one-time copy of its individual methods, like we set up with the Infrastructure class unit tests. Start by seeing if you can create a mock instance of the ColonistData class before getting into the weeds with more complex unit tests.
+
+### 9. Before closing the chapter, add a new graphic to the mockups folder, with a diagram of the Colonist's decision-making process tree.
+
+### 10. Add another diagram outlining the movement process - from the moment a move is initiated by the startMovement method, to when it is stopped by the stopMovement method.
 
 ## Chapter X: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 5)
 
