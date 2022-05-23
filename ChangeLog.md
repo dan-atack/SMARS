@@ -1087,15 +1087,48 @@ Exit Criteria:
 
 29. Add the population count to the LoadOption pseudo-button, so players can see their colonies' population from the Load Game screen.
 
-### 9. Before closing the chapter, add a new graphic to the mockups folder, with a diagram of the Colonist's decision-making process tree.
-
-### 10. Add another diagram outlining the movement process - from the moment a move is initiated by the startMovement method, to when it is stopped by the stopMovement method.
-
 ## Chapter Twenty-Four: BACKDOOR UNIT TESTS (Difficulty Estimate: 7 For Refactoring and Familiarization with Jest Mocks)
 
 ### May 6, 2022
 
 Following the fairly complex (and often very painful) implementation of the basic Colonist movement and decision-making logic, the need for robust, reliable unit tests has been in the media again. A new approach to this issue has been hypothesized, which is to use a 'data-processing' object class for each in-game class, and then wrapping that in a shell class that contains the P5/rendering elements. That way, all of the data-processing that goes on behind the scenes for entities that have an on-screen display of some kind can be carried out (and tested) with a class that DOESN'T require P5 and thus should be fully mockable. Let's devote some time towards experimenting with this method of doing things and see if it finally allows for the creation of some useful mock tests.
+
+Exit Criteria:
+
+- [DONE] The Colonist class uses its ColonistData subclass for all non-visual data processing
+- [DONE] The ColonistData subclass has at least one unit test that validates the Colonist's movement/position update logic
+
+1. Create a new class, called ColonistData, which will hold all of the Colonist's logic and data processing abilities, but none of its rendering/P5-related functionality. Copy all of the non-P5 attributes and methods from the Colonist class into this new class.
+
+2. Import this class to the Colonist class, and have the Colonist's constructor make a new instance of this class, stored under a new field, this.\_data.
+
+3. Remove all of the copied methods and attributes from the Colonist class, and rewire the remaining methods (render and drawing methods) to use values from the ColonistData sub-class instead of the Colonist class itself.
+
+4. Update the Population-level updater functions for the Colonist class to pass on update requests to the dataFunctions (ColonistData) class instead of trying to perform the updates in the Colonist class directly. Manually test the game to make sure it runs the way it did before these changes.
+
+5. Now, create a new test file called ColonistData.test, and try setting up a simple unit test that creates an instance of the ColonistData class and uses that to directly test its functionality. This will be an improvement over previous unit test attempts, as it will be an actual instance of this class, instead of a one-time copy of its individual methods, like we set up with the Infrastructure class unit tests. Start with a simple test to check if the setGoal method alters the \_currentGoal property.
+
+6. Before closing the chapter, add a new graphic to the mockups folder, with a diagram of the Colonist's decision-making process tree in the upper half, and the movement process tree below, to illustrate the complete flow from the Population class's general update methods through to the implementation of individual movements by each Colonist.
+
+7. Use this diagram to come up with a series of meaningful unit test cases for the Colonist's decision/movement logic.
+
+## Chapter Twenty-Five: The Beginning of the Game (Difficulty Estimate: 6 For New Animations and New Engine Functions)
+
+### May 23, 2022
+
+The game's story needs a beginning, and since it takes place on planet SMARS, it starts with the landing sequence. This chapter will see the improvement of three existing Engine features, and the creation of two new ones, as well as the creation of the Lander class, which will handle the on-screen animation for the landing sequence which begins the game. First, new options will be added to the mouse context system, which will see the addition of a 'landing' context for when the player selects their starting location, as well as a 'wait' context, which will be used to disable mouse-clicks during the landing sequence animation. Secondly, a Modal popup will be created with two possible resolutions, requiring the implementation of a system to use the data in the Modal class's "resolutions" array to activate different responses from the Engine depending on which option is chosen. The third Engine system to be upgraded will be the mouse shadow renderer, which will display in different colours depending on a landing site's feasibility. As for new functions, the Engine will need one function to begin the landing sequence, attached to the click handler for when the mouse context is 'landing', and another function to handle the placement of the colony's first structures when the animation ends. Finally, a new Lander class will be created to handle the visual effects for the landing sequence animation. Plus it would be fun to add/improve a few starting modules, like a cantina, a sleeping quarters, a storeroom and an oxygen recycler, maybe? Maybe even make them non-test types this time!? It's getting real, man!
+
+Exit Criteria:
+
+- An introductory modal is shown immediately when the game starts, inviting the player to choose their landing site
+- When the mouse context is 'landing', the cursor shadow is shown in green or red depending on a site's feasibility
+- When the mouse context is 'landing', the sidebar should not be shown
+- When the mouse is clicked with the 'landing' context, a confirmation modal is shown
+- When the player selects 'No, Wait a second...' option, the modal is closed and the mouse context remains 'landing'
+- When the player selects 'Sure I'm sure!' option, the modal is closed and the mouse context becomes 'wait'
+- When the mouse context is 'wait', the click responder is deactivated, and the sidebar is not shown!
+- When the player selects 'Sure I'm sure', they are shown an animation of a spaceship landing on the spot they chose
+- When the landing animation is finished, the initial base structures are created, and the game begins!
 
 ## Chapter X: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 5)
 
