@@ -1096,8 +1096,7 @@ Following the fairly complex (and often very painful) implementation of the basi
 Exit Criteria:
 
 - [DONE] The Colonist class uses its ColonistData subclass for all non-visual data processing
-- The ColonistData subclass has at least one unit test that validates the Colonist's movement/position update logic
-- The ColonistData subclass has at least one mock test that validates its logic for goal determination
+- [DONE] The ColonistData subclass has at least one unit test that validates the Colonist's movement/position update logic
 
 1. Create a new class, called ColonistData, which will hold all of the Colonist's logic and data processing abilities, but none of its rendering/P5-related functionality. Copy all of the non-P5 attributes and methods from the Colonist class into this new class.
 
@@ -1111,11 +1110,11 @@ Exit Criteria:
 
 6. Before closing the chapter, add a new graphic to the mockups folder, with a diagram of the Colonist's decision-making process tree in the upper half, and the movement process tree below, to illustrate the complete flow from the Population class's general update methods through to the implementation of individual movements by each Colonist.
 
-### 10. Use this diagram to come up with at least one more interesting unit test case for the Colonist's decision/movement logic.
+7. Use this diagram to come up with a series of meaningful unit test cases for the Colonist's decision/movement logic.
 
 ## Chapter Twenty-Five: The Beginning of the Game (Difficulty Estimate: 6 For New Animations and New Engine Functions)
 
-### May 16, 2022
+### May 23, 2022
 
 The game's story needs a beginning, and since it takes place on planet SMARS, it starts with the landing sequence. This chapter will see the improvement of three existing Engine features, and the creation of two new ones, as well as the creation of the Lander class, which will handle the on-screen animation for the landing sequence which begins the game. First, new options will be added to the mouse context system, which will see the addition of a 'landing' context for when the player selects their starting location, as well as a 'wait' context, which will be used to disable mouse-clicks during the landing sequence animation. Secondly, a Modal popup will be created with two possible resolutions, requiring the implementation of a system to use the data in the Modal class's "resolutions" array to activate different responses from the Engine depending on which option is chosen. The third Engine system to be upgraded will be the mouse shadow renderer, which will display in different colours depending on a landing site's feasibility. As for new functions, the Engine will need one function to begin the landing sequence, attached to the click handler for when the mouse context is 'landing', and another function to handle the placement of the colony's first structures when the animation ends. Finally, a new Lander class will be created to handle the visual effects for the landing sequence animation. Plus it would be fun to add/improve a few starting modules, like a cantina, a sleeping quarters, a storeroom and an oxygen recycler, maybe? Maybe even make them non-test types this time!? It's getting real, man!
 
