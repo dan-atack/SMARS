@@ -1109,9 +1109,9 @@ Exit Criteria:
 
 5. Now, create a new test file called ColonistData.test, and try setting up a simple unit test that creates an instance of the ColonistData class and uses that to directly test its functionality. This will be an improvement over previous unit test attempts, as it will be an actual instance of this class, instead of a one-time copy of its individual methods, like we set up with the Infrastructure class unit tests. Start with a simple test to check if the setGoal method alters the \_currentGoal property.
 
-### 9. Before closing the chapter, add a new graphic to the mockups folder, with a diagram of the Colonist's decision-making process tree.
+6. Before closing the chapter, add a new graphic to the mockups folder, with a diagram of the Colonist's decision-making process tree in the upper half, and the movement process tree below, to illustrate the complete flow from the Population class's general update methods through to the implementation of individual movements by each Colonist.
 
-### 10. Add another diagram outlining the movement process - from the moment a move is initiated by the startMovement method, to when it is stopped by the stopMovement method.
+### 10. Use this diagram to come up with at least one more interesting unit test case for the Colonist's decision/movement logic.
 
 ## Chapter Twenty-Five: The Beginning of the Game (Difficulty Estimate: 6 For New Animations and New Engine Functions)
 
