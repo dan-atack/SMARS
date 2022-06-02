@@ -16,7 +16,6 @@ import { GameData } from "./newGameSetup";
 // TODO: Load Environment variables
 if (process.env.ENVIRONMENT) console.log(process.env.ENVIRONMENT);
 
-
 export default class Engine extends View {
     // Engine types
     _sidebar: Sidebar;
@@ -59,7 +58,7 @@ export default class Engine extends View {
         this._sidebar = new Sidebar(p5, this.switchScreen, this.changeView, this.setMouseContext, this.setGameSpeed);
         this._sidebarExtended = true;   // Side bar can be partially hidden to expand map view - should this be here or in the SB itself??
         this._gameData = null;
-        this._saveInfo = null;  // Saved game info is loaded from the Game module when it callse the setupSavedGame method
+        this._saveInfo = null;  // Saved game info is loaded from the Game module when it calls the setupSavedGame method
         this._map = new Map(this._p5);
         this._infrastructure = new Infrastructure(p5);
         this._economy = new Economy(p5);
@@ -106,6 +105,7 @@ export default class Engine extends View {
         // Add two new colonists
         this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH), 20);
         this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH) + 22, 20);
+        this.createNewGameModal();
     }
 
     setupSavedGame = (saveInfo: SaveInfo) => {
@@ -222,23 +222,29 @@ export default class Engine extends View {
         if (mouseX > constants.SCREEN_WIDTH - this._sidebar._width && !this._modal) {
             this._sidebar.handleClicks(mouseX, mouseY);
         } else {
-            // Click is on the map, between the scroll zones
-            switch (this.mouseContext) {
-                case "select":
-                    console.log("Select");
-                    break;
-                case "place":
-                    console.log("Place");
-                    this.handleStructurePlacement(mouseX, mouseY);
-                    break;
-                case "resource":
-                    console.log("Resource");
-                    break;
-                case "modal":
-                    this._modal?.handleClicks(mouseX, mouseY);
-                    break;
-            }
-            this.getMouseGridPosition(mouseX, mouseY);
+            // Click is not outside of the map
+            if (mouseX > 0 && mouseX < constants.SCREEN_WIDTH && mouseY > 0 && mouseY < constants.SCREEN_HEIGHT) {
+                switch (this.mouseContext) {
+                    case "select":
+                        console.log("Select");
+                        break;
+                    case "place":
+                        console.log("Place");
+                        this.handleStructurePlacement(mouseX, mouseY);
+                        break;
+                    case "resource":
+                        console.log("Resource");
+                        break;
+                    case "modal":
+                        this._modal?.handleClicks(mouseX, mouseY);
+                        break;
+                    case "landing":
+                        this.setMouseContext("select"); // Clicking immediately brings the player out of landing mode
+                        console.log("landing site selected.");
+                        break;
+                }
+                this.getMouseGridPosition(mouseX, mouseY);
+            } 
         }
     }
 
@@ -326,16 +332,36 @@ export default class Engine extends View {
         }
     }
 
+    // Prints a welcome-to-the-game message the first time a player begins a game. Explains about the landing sequence (in a cryptic way)
+    createNewGameModal = () => {
+        const data: EventData = {
+            id: 0,
+            title: "Landfall!",
+            text: "The SMARS corporation welcomes you to your new home! \nYou have been appointed by the board of directors to \noversee the latest attempt to establish a colony on this\ndismal speck of dust. They hope that you will be more\nsuccessful than your predecessors. We absolutely cannot\nafford any more rescue missions this quarter.",
+            resolutions: [
+                {
+                    text: "I look forward to this challenge.",
+                    outcomes: [["set-mouse-context", "landing"]]
+                }
+            ],
+        }
+        this.createModal(false, data);
+    }
+
     // Prints a welcome-back modal when the player loads a saved file. Updates means the game has been updated since the save
     createLoadGameModal = (username: string, updates: boolean) => {
         const messageUpdates: string = `Welcome back, Commander ${username}! While you\nwere away there may have been a few changes made\nhere and there, but your save data is like, totally safe.\nLike, Nintety... eight percent guaranteed it's all there.`;
         const messageNoUpdates: string = `Welcome back, Commander ${username}!\n The colonists missed you.\nThey look up to you.`;
-        const data = {
+        const data: EventData = {
             id: 1,
             title: "You're back!!!",
             text: updates ? messageUpdates : messageNoUpdates,
             resolutions: [
-                updates ? "I like those odds!" : "The feeling is mutual."
+                {
+                    text: updates ? "I like those odds!" : "The feeling is mutual.",
+                    outcomes: [["set-mouse-context", "select"]]
+                }
+                
             ]
         }
         this.createModal(false, data);
@@ -344,11 +370,14 @@ export default class Engine extends View {
     // In-game event generator: produces scheduled and/or random events which will create modal popups
     generateEvent = (probability?: number) => {     // Probability is given optionally as a percent value
         const example: EventData = {
-            id: 0,
+            id: 2,
             title: "It's a new day on SMARS",
-            text: "What a difference... a Sol makes,\n Twenty-four-and-a-half little hours,\nnot much sun, and no flowers (yet)\nnor yet any rain...",
+            text: "What a difference... a Sol makes,\n Twenty-four-and-a-half little hours,\nnot much sun, and no flowers (yet)\nnor yet any rain...\n\nYou have received additional funding.",
             resolutions: [
-                "How time flies!"
+                {
+                    text: "How time flies!",
+                    outcomes: [["set-mouse-context", "select"], ["add-money", 50000]]
+                }
             ]
         }
         if (probability) {
@@ -366,14 +395,23 @@ export default class Engine extends View {
     }
 
     closeModal = () => {
-        this.gameOn = true;
-        this._modal = null;
-        // Reset mouse context to 'select' unless a building has been selected for construction:
-        if (this.selectedBuilding) {
-            this.setMouseContext("place");
-        } else {
-            this.setMouseContext("select");
+        if (this._modal) {
+            // Carry out each outcome instruction for the modal's resolution. TODO: Allow user to choose among up to 3 options
+            this._modal._resolutions[0].outcomes.forEach((outcome) => {
+                switch (outcome[0]) {
+                    case "set-mouse-context":
+                        console.log(`Setting mouse context: ${outcome[1]}`);
+                        this.setMouseContext(outcome[1].toString());
+                        break;
+                        // TODO: Add other cases as they are invented
+                    default:
+                        console.log(`Unrecognized modal resolution code: ${outcome[0]}`);
+                }
+            })
         }
+        // Clear modal data and resume the game
+        this._modal = null;
+        this.gameOn = true;
     }
 
     // Sets the Smartian time
@@ -454,7 +492,9 @@ export default class Engine extends View {
         this._infrastructure.render(this._horizontalOffset);
         this._economy.render();
         this._population.render(this._horizontalOffset, this.ticksPerMinute, this.gameOn);
-        this._sidebar.render(this._gameTime.minute, this._gameTime.hour, this._gameTime.cycle);
+        if (!(this.mouseContext === "landing")) {
+            this._sidebar.render(this._gameTime.minute, this._gameTime.hour, this._gameTime.cycle);
+        };
         // Mouse pointer is shadow of selected building, to help with building placement:
         if (this.selectedBuilding !== null) {
             this.renderBuildingShadow();

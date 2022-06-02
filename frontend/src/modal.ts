@@ -3,11 +3,16 @@ import P5 from "p5";
 import Button from "./button";
 import { constants } from "./constants";
 
+export type Resolution = {
+    text: string,                   // Words on the button
+    outcomes: [string, number | string][]    // A tuple consisting of a type (the the Engine's switch case) and a value (which can be either a string or a number)
+}
+
 export type EventData = {
     id: number,
     title: string,
     text: string,
-    resolutions: string[]
+    resolutions: Resolution[]
  }
 
 export default class Modal {
@@ -16,7 +21,7 @@ export default class Modal {
     _eventData: EventData;      // All event data is now passed directly to the constructor; no lookups to the constants file
     _title: string;
     _text: string;
-    _resolutions: string[];
+    _resolutions: Resolution[];
     _width: number;
     _height: number;
     _xPosition: number;
@@ -39,11 +44,11 @@ export default class Modal {
         this._height = constants.SCREEN_HEIGHT / 2;
         this._xPosition = constants.SCREEN_WIDTH / 4;
         this._yPosition = constants.SCREEN_HEIGHT / 4;
-        eventData.resolutions[0].length < 9 ? this._buttonWidth = 128 : this._buttonWidth = 256; // Button width is conditional
+        eventData.resolutions[0].text.length < 9 ? this._buttonWidth = 128 : this._buttonWidth = 360; // Button width is conditional
         this._buttonX = this._xPosition + (this._width / 2) - (this._buttonWidth / 2);
         this._buttonY = this._yPosition + this._height * 3 / 4;
         this._buttons = [];
-        const button = new Button(this._p5, this._resolutions[0], this._buttonX, this._buttonY, this._resume, this._buttonWidth, 48, constants.GREEN_TERMINAL, constants.GREEN_DARK, 22);
+        const button = new Button(this._p5, this._resolutions[0].text, this._buttonX, this._buttonY, this._resume, this._buttonWidth, 48, constants.GREEN_TERMINAL, constants.GREEN_DARK, 22);
         this._buttons.push(button);
     }
 

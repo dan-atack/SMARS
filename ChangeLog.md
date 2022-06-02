@@ -1087,7 +1087,7 @@ Exit Criteria:
 
 29. Add the population count to the LoadOption pseudo-button, so players can see their colonies' population from the Load Game screen.
 
-## Chapter Twenty-Four: BACKDOOR UNIT TESTS (Difficulty Estimate: 7 For Refactoring and Familiarization with Jest Mocks)
+## Chapter Twenty-Four: BACKDOOR UNIT TESTS (Difficulty Estimate: 7 For Refactoring and Familiarization with Jest)
 
 ### May 6, 2022
 
@@ -1120,7 +1120,7 @@ The game's story needs a beginning, and since it takes place on planet SMARS, it
 
 Exit Criteria:
 
-- An introductory modal is shown immediately when the game starts, inviting the player to choose their landing site
+- [DONE] An introductory modal is shown immediately when the game starts, inviting the player to choose their landing site
 - When the mouse context is 'landing', the cursor shadow is shown in green or red depending on a site's feasibility
 - When the mouse context is 'landing', the sidebar should not be shown
 - When the mouse is clicked with the 'landing' context, a confirmation modal is shown
@@ -1129,6 +1129,18 @@ Exit Criteria:
 - When the mouse context is 'wait', the click responder is deactivated, and the sidebar is not shown!
 - When the player selects 'Sure I'm sure', they are shown an animation of a spaceship landing on the spot they chose
 - When the landing animation is finished, the initial base structures are created, and the game begins!
+
+1. Add the creation of a new modal to the Engine's setupNewGame method, displaying a message welcoming the player to SMARS, and instructing them to pick their landing site.
+
+2. Add a new mouse context, 'landing', to the Engine's mouse context switcher. Have it simply console log when the mouse is pressed while in 'landing' mode at first.
+
+3. Update the Modal class's EventData type to convert the 'resolutions' field to a list of tuples, each of which has the structure (buttonText: string, engineMethod: string, value: number) where buttonText would be the writing on the button in the modal, the engineMethod would correspond to a switch case in the Engine's resolveModal method (which we'll take this opportunity to rename, from the closeModal method), and the value will be a number that provides additional data for the Engine's resolve function (such as a quantity of a resource to be added or removed, or an Enum to correspond to a particular mouse context!) Fix all existing Modal data objects to adhere to this new system.
+
+4. Upgrade the closeModal Engine method to resolveModal, with the ability to process different outcome type strings and adjust various values when a modal is resolved. Have it default to the first item in the Modal's resolutions list for now (the ability to choose among different resolutions will be added later).
+
+5. When the mouse context is 'landing', or any other context for that matter, ignore any clicks outside of the play area, to prevent the player from entering the in-game menu before they select their landing site.
+
+### 6. In fact, can we just not even show the menu until the player has landed?? Try that, and have the player's first click upon entering landing mode bring them to the 'select' context (and thus display the menu).
 
 ## Chapter X: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 5)
 
@@ -1143,7 +1155,7 @@ Exit Criteria:
 
 ### 1. [2: UX] When the in-game menu is opened then closed, it resets the engine's offset to be back in the middle of the map. The offset value should persist between menu openings.
 
-### 2. [8: Major gameplay issue] Ensure buildings cannot be placed BELOW the game's screen area (and by extension, that no map actions are permitted outside the map area).
+2. [8: Major gameplay issue] Ensure buildings cannot be placed BELOW the game's screen area (and by extension, that no map actions are permitted outside the map area).
 
 ### 3. [5: UX / Minor gameplay issue] At some, but not all x-offset values, the building shadow (and subsequent placement) pulls to the left, to the point that the cursor is outside the designated build area by what appears to be up to a full grid space.
 
