@@ -1140,7 +1140,17 @@ Exit Criteria:
 
 5. When the mouse context is 'landing', or any other context for that matter, ignore any clicks outside of the play area, to prevent the player from entering the in-game menu before they select their landing site.
 
-### 6. In fact, can we just not even show the menu until the player has landed?? Try that, and have the player's first click upon entering landing mode bring them to the 'select' context (and thus display the menu).
+6. In fact, can we just not even show the menu until the player has landed?? Implement that by first adding a new Engine property, hasLanded, which is set to true upon the player's selection of a landing site. Pass this value to both the Map and Sidebar classes at render time, in the first case to tell it to render a wider area, and for the Sidebar to tell it to not render at all.
+
+7. Ensure the Engine doesn't accept mouse clicks for the Sidebar as long as hasLanded is false.
+
+8. Ensure the mouse click handler is able to register clicks on the expanded map area while hasLanded is false.
+
+### 9. When the mouse context is 'landing' render a mouse cursor shadow that is a green rectangle measuring 8 x 8 grid spaces.
+
+### 10. Alter the scrolling system so that scrolling occurs when the mouse holds the same position for more than 5 frames inside the scroll area, instead of the current system with the mouse click handler and the isScrolling variables. It should be simpler this way, really.
+
+### 11. Remove all maps from the database that are less than 50 columns wide, as they will cause problems with the map when it is in extended mode.
 
 ## Chapter X: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 5)
 

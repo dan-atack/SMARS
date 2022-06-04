@@ -44,6 +44,8 @@ export default class Engine extends View {
     _minutesPerHour: number;
     _hoursPerClockCycle: number;    // One day = two trips around the clock
     _solsPerYear: number;
+    // In-game flag for when the player has chosen their landing site
+    _hasLanded: boolean;
     switchScreen: (switchTo: string) => void;   // App-level SCREEN switcher (passed down via drill from the app)
     updateEarthData: () => void;    // Updater for the date on Earth (for starters)
     getModuleInfo: (setter: (selectedBuilding: ModuleInfo, locations: number[][]) => void, category: string, type: string, name: string, locations: number[][]) => void;        // Getter function for loading individual structure data from the backend
@@ -86,6 +88,7 @@ export default class Engine extends View {
         this._minutesPerHour = 60;      // Minutes go from 0 - 59, so this should really be called max minutes
         this._hoursPerClockCycle = 12;
         this._solsPerYear = 4;
+        this._hasLanded = false;        // At the Engine's creation, the player is presumed not to have landed yet
     }
 
     setup = () => {
@@ -118,6 +121,7 @@ export default class Engine extends View {
         this._population.loadColonistData(saveInfo.colonists);
         this.loadModulesFromSave(saveInfo.modules);
         this.loadConnectorsFromSave(saveInfo.connectors);
+        this._hasLanded = true; // Landing sequence has to take place before saving is possible
         // Check if game has colonist data and if it doesn't, render an alternate welcome back message
         if (!saveInfo.colonists) {
             this.createLoadGameModal(saveInfo.username, true);
@@ -218,8 +222,9 @@ export default class Engine extends View {
         // Since the 'click' event occurs on the mouseup part of the button press, a click always signals the end of any scrolling:
         this._scrollingRight = false;
         this._scrollingLeft = false;
-        // Click is in sidebar (not valid if modal is open):
-        if (mouseX > constants.SCREEN_WIDTH - this._sidebar._width && !this._modal) {
+        // Click is in sidebar (not valid if modal is open or if the player has not chosen a landing site):
+        if (mouseX > constants.SCREEN_WIDTH - this._sidebar._width && !this._modal && this._hasLanded) {
+            console.log("Click in sidebar");
             this._sidebar.handleClicks(mouseX, mouseY);
         } else {
             // Click is not outside of the map
@@ -239,6 +244,7 @@ export default class Engine extends View {
                         this._modal?.handleClicks(mouseX, mouseY);
                         break;
                     case "landing":
+                        // this._hasLanded = true;
                         this.setMouseContext("select"); // Clicking immediately brings the player out of landing mode
                         console.log("landing site selected.");
                         break;
@@ -252,13 +258,22 @@ export default class Engine extends View {
     handleMouseDown = (mouseX: number, mouseY: number) => {
         // Do not allow scrolling when modal is opened or during building placement
         if (!this._modal && !(this.mouseContext === 'place')) {
-            if (!(mouseX > constants.SCREEN_WIDTH - this._sidebar._width)) {    // Do not allow scrolling from the sidebar
+            // Handle scroll range for expanded map area:
+            if (!this._hasLanded) {
                 if (mouseX < this._scrollDistance) {
                     this._scrollingLeft = true;
-                } else if (mouseX > constants.WORLD_VIEW_WIDTH - this._scrollDistance) {
+                } else if (mouseX > constants.SCREEN_WIDTH - this._scrollDistance) {
                     this._scrollingRight = true;
                 }
-            } 
+            } else {
+                if (!(mouseX > constants.SCREEN_WIDTH - this._sidebar._width)) {    // No scrolling from sidebar
+                    if (mouseX < this._scrollDistance) {
+                        this._scrollingLeft = true;
+                    } else if (mouseX > constants.WORLD_VIEW_WIDTH - this._scrollDistance) {
+                        this._scrollingRight = true;
+                    }
+                } 
+            }
         } 
     }
 
@@ -282,6 +297,13 @@ export default class Engine extends View {
         // TODO: ADD vertical offset calculation
         // Return coordinates as a tuple:
         return [gridX, gridY];
+    }
+
+    // All of the routines in the landing sequence occur here:
+    handleLandingSequence = () => {
+        this._map.setExpanded(false);
+        this.setMouseContext("select");
+        this._hasLanded = true;
     }
 
     handleStructurePlacement = (mouseX: number, mouseY: number) => {
@@ -430,6 +452,7 @@ export default class Engine extends View {
                     this._gameTime.minute ++;
                 } else {
                     this._gameTime.minute = 0;   // Advance hours (anything on an hourly schedule should go here)
+                    this.handleLandingSequence();
                     this.handleResourceConsumption();
                     this.updateEarthData();     // Advance Earth date every game hour
                     if (this._gameTime.hour < this._hoursPerClockCycle) {
@@ -492,9 +515,10 @@ export default class Engine extends View {
         this._infrastructure.render(this._horizontalOffset);
         this._economy.render();
         this._population.render(this._horizontalOffset, this.ticksPerMinute, this.gameOn);
-        if (!(this.mouseContext === "landing")) {
+        // Don't render sidebar until the player has chosen a landing site
+        if (this._hasLanded) {
             this._sidebar.render(this._gameTime.minute, this._gameTime.hour, this._gameTime.cycle);
-        };
+        }
         // Mouse pointer is shadow of selected building, to help with building placement:
         if (this.selectedBuilding !== null) {
             this.renderBuildingShadow();

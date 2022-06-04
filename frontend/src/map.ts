@@ -10,6 +10,7 @@ export default class Map {
     _horizontalOffset: number;  // Value is in pixels
     _maxOffset: number;         // Farthest scroll distance, in pixels
     _columns: Block[][];
+    _expanded: boolean          // Sometimes the map occupies the whole screen
 
     constructor(p5: P5) {
         this._p5 = p5;
@@ -17,28 +18,19 @@ export default class Map {
         this._horizontalOffset = 0;
         this._maxOffset = 0;    // Determined during setup routine
         this._columns = [];
+        this._expanded = true; // By default the map is expanded
     }
 
     //  NOTE TO FUTURE SELF: When terrain is destroyed or modified, make sure the this._mapData is updated as well
 
-    // The Engine passes the H-offset (V-offset coming soon) value here so that the blocks' positions are updated with every render:
-    render = (horizontalOffset: number) => {
-        this._horizontalOffset = horizontalOffset;
-        // Only render one screen width's worth, taking horizontal offset into account:
-        const leftEdge = Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH);    // Edges are in terms of columns
-        const rightEdge = (this._horizontalOffset + constants.WORLD_VIEW_WIDTH) / constants.BLOCK_WIDTH;
-        this._columns.forEach((column, idx) => {
-            if (idx >= leftEdge && idx < rightEdge)
-            column.forEach((block) => {
-                block.render(this._horizontalOffset);     // TODO: Pass offset values to the blocks here
-            })
-        })
-    }
-
     // Initial terrain setup (Blockland style but with array for columns list as well as for blocks within a column)
     setup = (mapData: number[][]) => {
         this._mapData = mapData;
-        this._maxOffset = mapData.length * constants.BLOCK_WIDTH - constants.WORLD_VIEW_WIDTH;
+        if (this._expanded) {
+            this._maxOffset = mapData.length * constants.BLOCK_WIDTH - constants.SCREEN_WIDTH;
+        } else {
+            this._maxOffset = mapData.length * constants.BLOCK_WIDTH - constants.WORLD_VIEW_WIDTH;
+        }
         this._mapData.forEach((column, idx) => {
             this._columns.push([]);
             column.forEach((blockType, jdx) => {
@@ -50,6 +42,34 @@ export default class Map {
                 }
             })
         });
+    }
+
+    setExpanded = (expanded: boolean) => {
+        this._expanded = expanded;
+        if (expanded) {
+            this._maxOffset = this._mapData.length * constants.BLOCK_WIDTH - constants.SCREEN_WIDTH;
+        } else {
+            this._maxOffset = this._mapData.length * constants.BLOCK_WIDTH - constants.WORLD_VIEW_WIDTH;
+        }
+    }
+
+    // The Engine passes the H-offset (V-offset coming soon) value here so that the blocks' positions are updated with every render; if the sidebar is open then compact = true, causing a smaller area of the map to be shown:
+    render = (horizontalOffset: number) => {
+        this._horizontalOffset = horizontalOffset;
+        // Only render one screen width's worth, taking horizontal offset into account:
+        const leftEdge = Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH);    // Edges are in terms of columns
+        let rightEdge = 0;
+        if (this._expanded) {
+            rightEdge = (this._horizontalOffset + constants.SCREEN_WIDTH) / constants.BLOCK_WIDTH;
+        } else {
+            rightEdge = (this._horizontalOffset + constants.WORLD_VIEW_WIDTH) / constants.BLOCK_WIDTH;
+        }
+        this._columns.forEach((column, idx) => {
+            if (idx >= leftEdge && idx < rightEdge)
+            column.forEach((block) => {
+                block.render(this._horizontalOffset);     // TODO: Pass offset values to the blocks here
+            })
+        })
     }
 
 }
