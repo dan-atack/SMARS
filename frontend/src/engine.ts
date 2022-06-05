@@ -32,6 +32,8 @@ export default class Engine extends View {
     _scrollDistance: number;    // Pixels from the edge of the world area in which scrolling occurs
     _scrollingLeft: boolean;    // Flags for whether the user is currently engaged in scrolling one way or the other
     _scrollingRight: boolean;
+    _mouseInScrollRange: number // Counts how long the mouse has been within scroll range of the edge
+    _scrollThreshold: number    // Determines the number of frames that must elapse before scrolling begins
     // Mouse click control
     mouseContext: string;       // Mouse context tells the Engine's click handler what to do when the mouse is pressed.
     selectedBuilding: ModuleInfo | ConnectorInfo | null;    // Data storage for when the user is about to place a new structure
@@ -70,6 +72,8 @@ export default class Engine extends View {
         this._scrollDistance = 50;
         this._scrollingLeft = false;
         this._scrollingRight = false;
+        this._mouseInScrollRange = 0;   // Counts how many frames have passed with the mouse within scroll distance of the edge
+        this._scrollThreshold = 10;     // Controls the number of frames that must pass before the map starts to scroll
         this.mouseContext = "select"    // Default mouse context is the user wants to select what they click on (if they click on the map)
         this.selectedBuilding = null;   // There is no building info selected by default.
         this.selectedBuildingCategory = "";  // Keep track of whether the selected building is a module or connector
@@ -219,9 +223,6 @@ export default class Engine extends View {
     }
 
     handleClicks = (mouseX: number, mouseY: number) => {
-        // Since the 'click' event occurs on the mouseup part of the button press, a click always signals the end of any scrolling:
-        this._scrollingRight = false;
-        this._scrollingLeft = false;
         // Click is in sidebar (not valid if modal is open or if the player has not chosen a landing site):
         if (mouseX > constants.SCREEN_WIDTH - this._sidebar._width && !this._modal && this._hasLanded) {
             console.log("Click in sidebar");
@@ -254,27 +255,60 @@ export default class Engine extends View {
         }
     }
 
-    // Handler for when the mouse button is being held down (for scrolling))
+    // Handler for when the mouse button is being held down (not currently in use)
     handleMouseDown = (mouseX: number, mouseY: number) => {
-        // Do not allow scrolling when modal is opened or during building placement
-        if (!this._modal && !(this.mouseContext === 'place')) {
+        // TODO: Add rules for something that starts the minute the mouse is pressed
+        // Add rules for what to do when the mouse is released to handleClicks (the method right above this one)
+    }
+
+    handleMouseScroll = () => {
+        const mouseX = this._p5.mouseX;
+        // Don't allow scrolling if a modal is open:
+        if (!this._modal) {
             // Handle scroll range for expanded map area:
             if (!this._hasLanded) {
+                // Check if mouse is within range of the edge:
                 if (mouseX < this._scrollDistance) {
-                    this._scrollingLeft = true;
+                    this._mouseInScrollRange++;     // Increase scroll frame count
+                    if (this._mouseInScrollRange >= this._scrollThreshold) {
+                        this._scrollingLeft = true;     // Start scrolling if past the threshold
+                    }
                 } else if (mouseX > constants.SCREEN_WIDTH - this._scrollDistance) {
-                    this._scrollingRight = true;
+                    this._mouseInScrollRange++;
+                    if (this._mouseInScrollRange >= this._scrollThreshold) {
+                        this._scrollingRight = true;     // Start scrolling if past the threshold
+                    }
+                } else {    // Reset everything and stop scrolling if the mouse is not within scroll range of either side
+                    this.stopScrolling();
                 }
-            } else {
+            } else {    // If the map is in normal mode (sidebar is present)
                 if (!(mouseX > constants.SCREEN_WIDTH - this._sidebar._width)) {    // No scrolling from sidebar
                     if (mouseX < this._scrollDistance) {
-                        this._scrollingLeft = true;
+                        this._mouseInScrollRange++;
+                        if (this._mouseInScrollRange >= this._scrollThreshold) {
+                            this._scrollingLeft = true;
+                        }   // Use world view width instead of screen width when sidebar is open
                     } else if (mouseX > constants.WORLD_VIEW_WIDTH - this._scrollDistance) {
-                        this._scrollingRight = true;
+                        this._mouseInScrollRange++;
+                        if (this._mouseInScrollRange >= this._scrollThreshold) {
+                            this._scrollingRight = true;
+                        }
+                    } else {
+                        this.stopScrolling();   // Stop scrolling if outside scroll area (but on the map)
                     }
-                } 
+                } else {
+                    this.stopScrolling();       // Stio scrolling if mouse is over the sidebar
+                }
             }
-        } 
+        } else {
+            this.stopScrolling();               // Stop scrolling if a modal is open
+        }
+    }
+
+    stopScrolling = () => {
+        this._mouseInScrollRange = 0;
+        this._scrollingLeft = false;
+        this._scrollingRight = false;
     }
 
     // Given to various sub-components, this dictates how the mouse will behave when clicked in different situations
@@ -501,6 +535,7 @@ export default class Engine extends View {
     }
 
     render = () => {
+        // TODO: Isolate the scrolling process into its own method
         // Scroll over 1 pixel per refresh cycle if mouse is pressed and the game is not yet at the right or left edge of the map:
         if (this._scrollingLeft && this._horizontalOffset > 0) {
             this._horizontalOffset --;
@@ -515,6 +550,7 @@ export default class Engine extends View {
         this._infrastructure.render(this._horizontalOffset);
         this._economy.render();
         this._population.render(this._horizontalOffset, this.ticksPerMinute, this.gameOn);
+        this.handleMouseScroll();   // Every frame, check for mouse scrolling
         // Don't render sidebar until the player has chosen a landing site
         if (this._hasLanded) {
             this._sidebar.render(this._gameTime.minute, this._gameTime.hour, this._gameTime.cycle);

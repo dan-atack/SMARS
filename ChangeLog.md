@@ -1148,7 +1148,7 @@ Exit Criteria:
 
 ### 9. When the mouse context is 'landing' render a mouse cursor shadow that is a green rectangle measuring 8 x 8 grid spaces.
 
-### 10. Alter the scrolling system so that scrolling occurs when the mouse holds the same position for more than 5 frames inside the scroll area, instead of the current system with the mouse click handler and the isScrolling variables. It should be simpler this way, really.
+10. Alter the scrolling system so that scrolling occurs when the mouse holds the same position for more than 5 frames inside the scroll area, instead of the current system with the mouse click handler and the isScrolling variables. It should be simpler this way, really. New system: two new engine variables needed: mouseInScrollArea (which is the number of frames the mouse has spent near to either side of the map) and scrollThreshold, which is the amount of frames that need to pass for scrolling to start.
 
 ### 11. Remove all maps from the database that are less than 50 columns wide, as they will cause problems with the map when it is in extended mode.
 
