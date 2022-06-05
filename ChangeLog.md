@@ -1146,11 +1146,13 @@ Exit Criteria:
 
 8. Ensure the mouse click handler is able to register clicks on the expanded map area while hasLanded is false.
 
-### 9. When the mouse context is 'landing' render a mouse cursor shadow that is a green rectangle measuring 8 x 8 grid spaces.
+9. Add a new Engine method that is the top-level mouse-shadow renderer, and have it be responsible for rendering not only the building shadow, but also the landing path shadow as well, which it will call as sub-methods. Create this distinction with the existing building shadow rendered, and ensure it still works properly.
 
 10. Alter the scrolling system so that scrolling occurs when the mouse holds the same position for more than 5 frames inside the scroll area, instead of the current system with the mouse click handler and the isScrolling variables. It should be simpler this way, really. New system: two new engine variables needed: mouseInScrollArea (which is the number of frames the mouse has spent near to either side of the map) and scrollThreshold, which is the amount of frames that need to pass for scrolling to start.
 
-### 11. Remove all maps from the database that are less than 50 columns wide, as they will cause problems with the map when it is in extended mode.
+11. Add a new Engine method that renders a green rectangle that extends 4 grid places to the left and right of the cursor, and goes all the way from the bottom of the map to the top, but rendered behind the map terrain (the mouse shadow rendered must be called before the map in the Engine render sequence).
+
+### 11. Extend all maps from the database that are less than 50 columns wide, as they will cause problems with the map when it is in extended mode. Update the Map Editor README file to remind users to make all new maps at least 64 columns wide in the future.
 
 ## Chapter X: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 5)
 

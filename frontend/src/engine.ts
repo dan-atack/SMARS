@@ -514,6 +514,30 @@ export default class Engine extends View {
         }
     }
 
+    // The general-purpose mouse-shadow rendering method
+    renderMouseShadow = () => {
+        if (this.selectedBuilding !== null) {
+            this.renderBuildingShadow();
+        } else if (this.mouseContext === "landing") {
+            this.renderLandingPath();
+        }
+    }
+
+    // For the landing sequence
+    renderLandingPath = () => {
+        const p5 = this._p5;
+        if (!this._modal) {
+            let [x, y] = this.getMouseGridPosition(p5.mouseX, p5.mouseY);
+            // Set the mouse in the middle of the landing path
+            x = x * constants.BLOCK_WIDTH - this._horizontalOffset - (4 * constants.BLOCK_WIDTH);
+            y = 0;
+            const w = 8 * constants.BLOCK_WIDTH;
+            const h = constants.SCREEN_HEIGHT;
+            p5.fill(constants.GREEN_DARK);
+            p5.rect(x, y, w, h);
+        }
+    }
+
     // For building placement
     renderBuildingShadow = () => {
         const p5 = this._p5;
@@ -531,7 +555,7 @@ export default class Engine extends View {
                     p5.rect(x, y, constants.BLOCK_WIDTH, constants.BLOCK_WIDTH);
                 }
             }
-        }        
+        }    
     }
 
     render = () => {
@@ -545,7 +569,7 @@ export default class Engine extends View {
         this.advanceClock();
         const p5 = this._p5;
         p5.background(constants.APP_BACKGROUND);
-        p5. fill(constants.GREEN_TERMINAL);
+        this.renderMouseShadow();   // Determine and render mouse shadow first
         this._map.render(this._horizontalOffset);
         this._infrastructure.render(this._horizontalOffset);
         this._economy.render();
@@ -555,10 +579,7 @@ export default class Engine extends View {
         if (this._hasLanded) {
             this._sidebar.render(this._gameTime.minute, this._gameTime.hour, this._gameTime.cycle);
         }
-        // Mouse pointer is shadow of selected building, to help with building placement:
-        if (this.selectedBuilding !== null) {
-            this.renderBuildingShadow();
-        }
+        
         if (this._modal) {
             this._modal.render();
         }
