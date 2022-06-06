@@ -1121,14 +1121,20 @@ The game's story needs a beginning, and since it takes place on planet SMARS, it
 Exit Criteria:
 
 - [DONE] An introductory modal is shown immediately when the game starts, inviting the player to choose their landing site
-- When the mouse context is 'landing', the cursor shadow is shown in green or red depending on a site's feasibility
-- When the mouse context is 'landing', the sidebar should not be shown
+- [DONE] When the mouse context is 'landing', the cursor shadow is shown in green or red depending on a site's feasibility
+- [DONE] When the mouse context is 'landing', the sidebar should not be shown
 - When the mouse is clicked with the 'landing' context, a confirmation modal is shown
 - When the player selects 'No, Wait a second...' option, the modal is closed and the mouse context remains 'landing'
 - When the player selects 'Sure I'm sure!' option, the modal is closed and the mouse context becomes 'wait'
 - When the mouse context is 'wait', the click responder is deactivated, and the sidebar is not shown!
 - When the player selects 'Sure I'm sure', they are shown an animation of a spaceship landing on the spot they chose
 - When the landing animation is finished, the initial base structures are created, and the game begins!
+
+Features Added:
+
+- Modals have 'resolutions' when closed, which can have multiple outcomes in the game (changing mouse context, altering resource values, etc).
+- Engine scroll system now uses mouse hover instead of click-and-hold near the map's edges.
+- Mouse shadow can be rendered under a variety of circumstances
 
 1. Add the creation of a new modal to the Engine's setupNewGame method, displaying a message welcoming the player to SMARS, and instructing them to pick their landing site.
 
@@ -1152,7 +1158,21 @@ Exit Criteria:
 
 11. Add a new Engine method that renders a green rectangle that extends 4 grid places to the left and right of the cursor, and goes all the way from the bottom of the map to the top, but rendered behind the map terrain (the mouse shadow rendered must be called before the map in the Engine render sequence).
 
-### 11. Extend all maps from the database that are less than 50 columns wide, as they will cause problems with the map when it is in extended mode. Update the Map Editor README file to remind users to make all new maps at least 64 columns wide in the future.
+12. Extend all maps from the database that are less than 50 columns wide, as they will cause problems with the map when it is in extended mode. Update the Map Editor README file to remind users to make all new maps at least 64 columns wide in the future.
+
+13. Make the Map follow in the footsteps of the Colonist class, by refactoring its non-rendering attributes and methods into a MapData class. Test that this doesn't break anything.
+
+14. Add a new method to the MapData class, which looks at a range of 8 columns and tells if they're all the same height. It should return true if they are all the same height, and false if they aren't.
+
+### 15. Add a quick unit test for this new Map method, to verify that it returns true and false under the appropriate circumstances.
+
+16. Have the Engine's mouse shadow renderer change the color of the rectangle it draws based on the outcome of this new Map method.
+
+### 17. While the player is in landing selection mode, expand the mouse scroll area to be much larger than usual, so that the landing site tends to sit right in the middle of the screen.
+
+### 18. Ensure the screen doesn't scroll to the left if the mouse is beyond the edge of the screen in that direction.
+
+### 19. If the player has the cursor in the scroll area for more than a second, higher threshold value, scroll at double speed.
 
 ## Chapter X: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 5)
 

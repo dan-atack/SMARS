@@ -99,7 +99,7 @@ export default class Engine extends View {
         this.currentView = true;
         this._sidebar.setup();
         this.selectedBuilding = null;
-        this._sidebar._detailsArea._minimap.updateTerrain(this._map._mapData);
+        this._sidebar._detailsArea._minimap.updateTerrain(this._map._data._mapData);
         // Sidebar minimap display - does it only need it during 'setup' or does it also need occasional updates?
     }
 
@@ -107,7 +107,7 @@ export default class Engine extends View {
         this._gameData = gameData;  // gameData object only needs to be set for new games
         this._map.setup(this._gameData.mapTerrain);
         this._economy.setResources(this._gameData.startingResources);
-        this._horizontalOffset = this._map._maxOffset / 2;   // Put player in the middle of the map to start out
+        this._horizontalOffset = this._map._data._maxOffset / 2;   // Put player in the middle of the map to start out
         this._infrastructure.setup(this._horizontalOffset);
         // Add two new colonists
         this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH), 20);
@@ -120,7 +120,7 @@ export default class Engine extends View {
         this.setClock(saveInfo.game_time);
         this._map.setup(this._saveInfo.terrain);
         this._economy.setResources(saveInfo.resources);
-        this._horizontalOffset = this._map._maxOffset / 2;
+        this._horizontalOffset = this._map._data._maxOffset / 2;
         this._infrastructure.setup(this._horizontalOffset);
         this._population.loadColonistData(saveInfo.colonists);
         this.loadModulesFromSave(saveInfo.modules);
@@ -245,8 +245,10 @@ export default class Engine extends View {
                         this._modal?.handleClicks(mouseX, mouseY);
                         break;
                     case "landing":
-                        // this._hasLanded = true;
-                        this.setMouseContext("select"); // Clicking immediately brings the player out of landing mode
+                        // Allow landing sequence only if an acceptable landing path is selected
+                        const gridX = this.getMouseGridPosition(mouseX, mouseY)[0];
+                        const flat = this._map.determineFlatness(gridX - 4, gridX + 4);
+                        if (flat) this.handleLandingSequence();
                         console.log("landing site selected.");
                         break;
                 }
@@ -345,7 +347,7 @@ export default class Engine extends View {
         if (this.selectedBuilding != null) {
             const affordable = this._economy.checkResources(this.selectedBuilding.buildCosts);
             if (this._infrastructure.isModule(this.selectedBuilding)) {
-                const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._mapData);
+                const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._data._mapData);
                 if (clear && affordable) {
                     this._infrastructure.addModule(x, y, this.selectedBuilding);
                     this._economy.subtractMoney(this.selectedBuilding.buildCosts);
@@ -481,12 +483,12 @@ export default class Engine extends View {
             if (this._tick >= this.ticksPerMinute) {
                 this._tick = 0;     // Advance minutes
                 // Update colonists' locations each 'minute', and all of their other stats every hour
-                this._population.updateColonists(this._map._mapData, this._gameTime.minute === 0);
+                this._population.updateColonists(this._map._data._mapData, this._gameTime.minute === 0);
                 if (this._gameTime.minute < this._minutesPerHour - 1) {  // Minus one tells the minutes counter to reset to zero after 59
                     this._gameTime.minute ++;
                 } else {
                     this._gameTime.minute = 0;   // Advance hours (anything on an hourly schedule should go here)
-                    this.handleLandingSequence();
+                    // this.handleLandingSequence();
                     this.handleResourceConsumption();
                     this.updateEarthData();     // Advance Earth date every game hour
                     if (this._gameTime.hour < this._hoursPerClockCycle) {
@@ -528,12 +530,13 @@ export default class Engine extends View {
         const p5 = this._p5;
         if (!this._modal) {
             let [x, y] = this.getMouseGridPosition(p5.mouseX, p5.mouseY);
+            const flat = this._map.determineFlatness(x - 4, x + 4);  // Check the surface beneath the proposed LZ
             // Set the mouse in the middle of the landing path
             x = x * constants.BLOCK_WIDTH - this._horizontalOffset - (4 * constants.BLOCK_WIDTH);
             y = 0;
             const w = 8 * constants.BLOCK_WIDTH;
             const h = constants.SCREEN_HEIGHT;
-            p5.fill(constants.GREEN_DARK);
+            flat ? p5.fill(constants.GREEN_DARK) : p5.fill(constants.RED_BG);
             p5.rect(x, y, w, h);
         }
     }
@@ -563,7 +566,7 @@ export default class Engine extends View {
         // Scroll over 1 pixel per refresh cycle if mouse is pressed and the game is not yet at the right or left edge of the map:
         if (this._scrollingLeft && this._horizontalOffset > 0) {
             this._horizontalOffset --;
-        } else if (this._scrollingRight && this._horizontalOffset < this._map._maxOffset){
+        } else if (this._scrollingRight && this._horizontalOffset < this._map._data._maxOffset){
             this._horizontalOffset ++;
         }
         this.advanceClock();
