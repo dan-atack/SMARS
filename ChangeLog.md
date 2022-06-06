@@ -1164,7 +1164,7 @@ Features Added:
 
 14. Add a new method to the MapData class, which looks at a range of 8 columns and tells if they're all the same height. It should return true if they are all the same height, and false if they aren't.
 
-### 15. Add a quick unit test for this new Map method, to verify that it returns true and false under the appropriate circumstances.
+15. Add a set of unit tests for this new Map method, to verify that it returns true and false under the appropriate circumstances.
 
 16. Have the Engine's mouse shadow renderer change the color of the rectangle it draws based on the outcome of this new Map method.
 

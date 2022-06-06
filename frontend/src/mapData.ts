@@ -54,18 +54,18 @@ export default class MapData {
     }
 
     // For a given stretch of columns, do they all have the same height? Returns true for yes, false for no
-    determineFlatness = (start: number, stop: number) => {
+    determineFlatness = (start: number, stop: number) => {  // Start at, stop before
         // Ensure this works with numbers going from lower to higher, or vice versa
         const ascending = start < stop;
         let height = 0; // Set this value with the first column to be tested; if any other column is different, return false
         for (let i = start; ascending ? i < stop : i > stop; ascending ? i++ : i--) {
             // Ensure column selection is not outside the map edges:
-            if (i >= 0 && i < this._columns.length) {
+            if (i >= 0 && i < this._mapData.length) {
                 // Set the first column as the measure to compare against
                 if (i === start) {
-                    height = this._columns[i].length;
+                    height = this._mapData[i].length;
                 } else {
-                    if (this._columns[i].length != height) {
+                    if (this._mapData[i].length != height) {
                         // Area is not flat
                         // TODO: Upgrade this method's return to include failure messages
                         return false;
