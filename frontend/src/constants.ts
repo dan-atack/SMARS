@@ -1,4 +1,5 @@
 // Global variables for the front-end:
+import { EventData } from "./modal";
 import { Resources } from "./economy";
 
 const basicResources: Resources = {
@@ -48,7 +49,27 @@ export const constants = {
     BASIC_RESOURCES: basicResources
 }
 
- // BLOCKTIONARY!!!!
+// Modal Data (for now - eventually it should come from the backend!)
+
+export const modalData: EventData[] = [
+   {
+      id: 0,
+      title: "Aha!",
+      text: "What have we here?",
+      resolutions: [
+          {
+              text: "Something!",
+              outcomes: [["set-mouse-context", "select"], ["add-money", 100]]
+          },
+          {
+            text: "Err, nothing!",
+            outcomes: [["set-mouse-context", "resource"], ["add-money", -100]]
+         }
+      ]
+  }
+]
+
+// BLOCKTIONARY!!!!
 export type BlockData = {
     type: number,
     name: string,

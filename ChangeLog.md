@@ -1168,6 +1168,12 @@ Features Added:
 
 16. Have the Engine's mouse shadow renderer change the color of the rectangle it draws based on the outcome of this new Map method.
 
+17. Add a new Engine method, confirmLandingSequence, which will run when the mouse is clicked with the landing context. This method will take care of evaluating whether a valid landing site has been selected, and if so, create a new Modal popup to request confirmation. This modal will be the first to have more than one possible resolution, so the next thing we'll need to do is figure out how to manage multiple outcomes.
+
+18. Update the Modal class to be able to render, and handle more than one possible resolution, depending on the length of the Resolutions property. This will require the addition of a new method to the Modal class, in order to be able to pass the resolution index value to the Engine's closeModal function (which is passed down, via props drilling, into the Modal's soon-to-be many close buttons).
+
+19. Setup the constants file to export modal data, and start using this method immediately to avoid further cluttering the Engine with hard-coded data. Modal data should really come from the backend, ultimately.
+
 ### 17. While the player is in landing selection mode, expand the mouse scroll area to be much larger than usual, so that the landing site tends to sit right in the middle of the screen.
 
 ### 18. Ensure the screen doesn't scroll to the left if the mouse is beyond the edge of the screen in that direction.
@@ -1198,6 +1204,8 @@ Exit Criteria:
 ### 6. [1: UX / Animation glitch] When the game speed is adjusted, it can cause moving colonists' animations to fly apart for a moment. Add a command for the Engine when the time speed is changed to immediately halt all colonist animations (the Engine should call a Population-level function that tells the individual colonists to reset their animation frame counts). Bonus if they can switch to the new animation speed on the fly rather than simply showing nothing until the next movement.
 
 ### 7. [1: Coding Convention] Colonist class should have a unique ID field, to individuate the colony's population.
+
+### 8. [1: UX / Aesthetic] When a modal popup has more than one possible resolution, the buttons for the different resolutions aren't symmetrically aligned on the horizontal axis (they are pulled slightly to the right it seems).
 
 ### Exit Criteria for backend save/load game chapter:
 

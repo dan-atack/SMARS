@@ -9,7 +9,7 @@ import Economy, { Resources } from "./economy";
 import Population from "./population";
 import Modal, { EventData } from "./modal";
 import { ModuleInfo, ConnectorInfo, getOneModule, getOneConnector } from "./server_functions";
-import { constants } from "./constants";
+import { constants, modalData } from "./constants";
 import { SaveInfo, GameTime } from "./saveGame";
 import { GameData } from "./newGameSetup";
 
@@ -245,11 +245,7 @@ export default class Engine extends View {
                         this._modal?.handleClicks(mouseX, mouseY);
                         break;
                     case "landing":
-                        // Allow landing sequence only if an acceptable landing path is selected
-                        const gridX = this.getMouseGridPosition(mouseX, mouseY)[0];
-                        const flat = this._map.determineFlatness(gridX - 4, gridX + 4);
-                        if (flat) this.handleLandingSequence();
-                        console.log("landing site selected.");
+                        this.confirmLandingSequence(mouseX, mouseY);
                         break;
                 }
                 this.getMouseGridPosition(mouseX, mouseY);
@@ -336,6 +332,16 @@ export default class Engine extends View {
     }
 
     // All of the routines in the landing sequence occur here:
+    confirmLandingSequence = (mouseX: number, mouseY: number) => {
+        // Allow landing sequence only if an acceptable landing path is selected
+        const gridX = this.getMouseGridPosition(mouseX, mouseY)[0];
+        const flat = this._map.determineFlatness(gridX - 4, gridX + 4);
+        if (flat) this.handleLandingSequence();
+        // Creates the modal with the newly added data:
+        this.createModal(false, modalData[0]);
+    }
+
+    // Sets up the UI for the post-landing sequence
     handleLandingSequence = () => {
         this._map.setExpanded(false);
         this.setMouseContext("select");
@@ -398,7 +404,7 @@ export default class Engine extends View {
             text: "The SMARS corporation welcomes you to your new home! \nYou have been appointed by the board of directors to \noversee the latest attempt to establish a colony on this\ndismal speck of dust. They hope that you will be more\nsuccessful than your predecessors. We absolutely cannot\nafford any more rescue missions this quarter.",
             resolutions: [
                 {
-                    text: "I look forward to this challenge.",
+                    text: "Sounds good, boss!",
                     outcomes: [["set-mouse-context", "landing"]]
                 }
             ],
@@ -418,8 +424,7 @@ export default class Engine extends View {
                 {
                     text: updates ? "I like those odds!" : "The feeling is mutual.",
                     outcomes: [["set-mouse-context", "select"]]
-                }
-                
+                } 
             ]
         }
         this.createModal(false, data);
@@ -452,14 +457,19 @@ export default class Engine extends View {
         this.setMouseContext("modal");
     }
 
-    closeModal = () => {
+    // Resolution parameter tells the Engine, by index position, which resolution to enact
+    closeModal = (resolution: number) => {
         if (this._modal) {
             // Carry out each outcome instruction for the modal's resolution. TODO: Allow user to choose among up to 3 options
-            this._modal._resolutions[0].outcomes.forEach((outcome) => {
+            this._modal._resolutions[resolution].outcomes.forEach((outcome) => {
                 switch (outcome[0]) {
                     case "set-mouse-context":
                         console.log(`Setting mouse context: ${outcome[1]}`);
                         this.setMouseContext(outcome[1].toString());
+                        break;
+                    case "add-money":
+                        console.log(`Adding money: ${outcome[1]}`);
+                        if (typeof outcome[1] === "number") this._economy.addMoney(outcome[1]);
                         break;
                         // TODO: Add other cases as they are invented
                     default:
