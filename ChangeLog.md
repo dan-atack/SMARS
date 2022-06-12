@@ -1127,10 +1127,10 @@ Exit Criteria:
 - [DONE] When the player selects 'No, Wait a second...' option, the modal is closed and the mouse context remains 'landing'
 - [DONE] When the player selects 'Sure I'm sure!' option, the modal is closed and the mouse context becomes 'wait'
 - [DONE] When the mouse context is 'wait', the click responder is deactivated, and the sidebar is not shown!
-- When the player selects 'Sure I'm sure', they are shown an animation of a spaceship landing on the spot they chose
-- When the landing animation is finished, the game is unpaused
+- [DONE] When the player selects 'Sure I'm sure', they are shown an animation of a spaceship landing on the spot they chose
+- [DONE] When the landing animation is finished, the game emerges from 'wait mode'
 - When the landing animation is finished, the initial base structures are created. These should not be test structures anymore!
-- When the landing animation is finished, the initial colonists appear, and the game begins!
+- [DONE] When the landing animation is finished, the initial colonists appear, and the game begins!
 
 Features Added:
 
@@ -1189,11 +1189,29 @@ Features Added:
 
 24. When the Engine's mouse context is 'wait', have the renderer call a new method, advanceWaitTime, which decrements the waitTime value and resets then calls another new method called resolveWaitPeriod, which can call different scenario-specific methods (in this case, the now-renamed completeLandingSequence - formerly handleLandingSequence - method that sets the hasLanded variable to true, and finally begins the game).
 
-25. Create the Lander class, which will be a fairly simple entity with parameters for x, y, width, height, start (which will be zero), destination (which will be a y value representing the altitude at which the animated spaceship will 'touch down' on the Smartian surface) and duration (amount of renders the animation will last). Give this class a render method that draws a large circle, as well as a smaller circle and a triangle, which overlap to form a teardrop shape.
+25. Create the Lander class, which will be a fairly simple entity with parameters for x, y, width, height, start (which will be zero), destination (which will be a y value representing the altitude at which the animated spaceship will 'touch down' on the Smartian surface) and duration (amount of renders the animation will last). Give this class a render method that draws a large circle, as well as a smaller circle and a triangle, which overlap to form a teardrop shape. It will need to accept offset values.
 
-### 26. Give the Engine a new property, animation, which will be an instance of the Lander class, or null. When the landing sequence is initiated, have the Engine create an instance of the Lander class. In the render method, add a check for the animation property, and if there is an animation, render it (and calculate the horizontal offset of whatever it is that's being rendered and just pass the offsetted value directly to the animated entity. No need to duplicate the data and store it in two places).
+26. Give the Engine a new property, animation, which will be an instance of the Lander class, or null. When the landing sequence is initiated, have the Engine create an instance of the Lander class. In the render method, add a check for the animation property, and if there is an animation, render it.
 
-### 27. Give the Lander class a new method, advanceAnimation, which updates the lander's position to move it 1/duration pixels closer to the destination height. Have the Lander's render function call this to advance the animation.
+27. Give the Lander class a new method, advanceAnimation, which updates the lander's position to move it 1/duration pixels closer to the destination height. Have the Lander's render function call this to advance the animation.
+
+28. Change the new game setup sequence so that colonists are not created the instant the game starts.
+
+29. Make the two colonists spawn by the completeLandingSequence method instead - place them at the left and right edges of the landing zone (add new Engine field to record the altitude and position of the designated landing zone - this info will also be used by the constructor function for the Lander, to position it and tell it where the surface is).
+
+### 30. Design the new structures that will be created after the landing sequence is completed. Focus on the function that Modules will play in the near future: providing resources and services for individual Colonists. Therefore, resource capacities/limits and number of Colonists that can be served should be prominently considered.
+
+### 31. Add the new Module, 'Cantina' to the game's database, including its shapes.
+
+### 32. Add the Module 'Crew Quarters' to the database, including shapes.
+
+### 33. Add Module 'Storage Module' to the database, including shapes.
+
+### 34. Add Module 'Fuel Tank' to the database.
+
+### 35. Have the Engine place each of these modules, in a stack, at the landing zone when the landing animation is complete.
+
+### 36. Revisit the render rules for the Lander, and spruce up that animation, just a little bit.
 
 ### 20. Using comments, organize all of the various Engine methods to better indicate where future methods should go (Major categories are setup functions, structure placement functions, modal functions, landing functions and time keeping functions).
 
@@ -1205,7 +1223,7 @@ Features Added:
 
 ### 19. If the player has the cursor in the scroll area for more than a second, higher threshold value, scroll at double speed.
 
-### 21. Do not allow scrolling while mouse context is 'landing'
+### 21. Do not allow scrolling while mouse context is 'landing' - OR only allow scrolling in the direction of the landing zone?
 
 ## Chapter X: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 5)
 

@@ -49,8 +49,9 @@ export default class Engine extends View {
     _minutesPerHour: number;
     _hoursPerClockCycle: number;    // One day = two trips around the clock
     _solsPerYear: number;
-    // In-game flag for when the player has chosen their landing site
+    // In-game flag for when the player has chosen their landing site, and grid location of landing site's left edge and altitude
     _hasLanded: boolean;
+    _landingSiteCoords: [number, number];
     switchScreen: (switchTo: string) => void;   // App-level SCREEN switcher (passed down via drill from the app)
     updateEarthData: () => void;    // Updater for the date on Earth (for starters)
     getModuleInfo: (setter: (selectedBuilding: ModuleInfo, locations: number[][]) => void, category: string, type: string, name: string, locations: number[][]) => void;        // Getter function for loading individual structure data from the backend
@@ -97,7 +98,8 @@ export default class Engine extends View {
         this._minutesPerHour = 60;      // Minutes go from 0 - 59, so this should really be called max minutes
         this._hoursPerClockCycle = 12;
         this._solsPerYear = 4;
-        this._hasLanded = false;        // At the Engine's creation, the player is presumed not to have landed yet
+        this._hasLanded = false;            // At the Engine's creation, the player is presumed not to have landed yet
+        this._landingSiteCoords = [-1, -1]; // Default value of -1, -1 indicates landing site has not yet been selected
     }
 
     setup = () => {
@@ -114,9 +116,6 @@ export default class Engine extends View {
         this._economy.setResources(this._gameData.startingResources);
         this._horizontalOffset = this._map._data._maxOffset / 2;   // Put player in the middle of the map to start out
         this._infrastructure.setup(this._horizontalOffset);
-        // Add two new colonists
-        this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH), 20);
-        this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH) + 22, 20);
         this.createNewGameModal();
     }
 
@@ -253,7 +252,7 @@ export default class Engine extends View {
                         this.confirmLandingSequence(mouseX, mouseY);
                         break;
                     case "wait":
-                        console.log("Exception: Mouse click response should not be activated in wait mode.");
+                        console.log("Mouse click response suppressed. Reason: 'In wait mode'");
                         break;
                 }
                 this.getMouseGridPosition(mouseX, mouseY);
@@ -349,21 +348,33 @@ export default class Engine extends View {
         // Prompt the player to confirm landing site before initiating landing sequence
         if (flat) {
             this.createModal(false, modalData[0]);
+            this._landingSiteCoords[0] = gridX - 4; // Set landing site location to the left edge of the landing area
+            this._landingSiteCoords[1] = (constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH) - this._map._data._columns[gridX].length;
+            console.log(`Setting landing site X value to ${this._landingSiteCoords[0]}, ${this._landingSiteCoords[1]}`);
         }    
     }
 
     // If the player selects the 'proceed with landing' option, we start a wait period and play the landing animation
     startLandingSequence = () => {
         this.setMouseContext("wait");
-        this.setWaitTime(200);
+        const wait = 200;
+        const x = (this._landingSiteCoords[0] + 4) * constants.BLOCK_WIDTH;
+        const destination = this._landingSiteCoords[1] * constants.BLOCK_WIDTH;
+        this.setWaitTime(wait);
+        // Setup landing animation with 
+        this._animation = new Lander(this._p5, x, 0, 0, destination, wait);
         console.log(`Setting wait time to ${this._waitTime} frames at ${new Date()}`);
     }
 
     // This method sets up the UI after the landing animation has finished
     completeLandingSequence = () => {
+        this._animation = null;         // Delete the animation when it's finished
         this._map.setExpanded(false);
         this.setMouseContext("select");
         this._hasLanded = true;
+        // Add two new colonists, one at each end of the landing zone (Y value is -2 since it is the Colonist's head level)
+        this._population.addColonist(this._landingSiteCoords[0], this._landingSiteCoords[1] - 2);
+        this._population.addColonist(this._landingSiteCoords[0] + 7, this._landingSiteCoords[1] - 2);
     }
 
     handleStructurePlacement = (mouseX: number, mouseY: number) => {
@@ -632,8 +643,11 @@ export default class Engine extends View {
         }
         const p5 = this._p5;
         p5.background(constants.APP_BACKGROUND);
-        this.renderMouseShadow();   // Determine and render mouse shadow first
-        this._map.render(this._horizontalOffset);
+        this.renderMouseShadow();                           // Render mouse shadow first
+        if (this._animation) {
+            this._animation.render(this._horizontalOffset); // Render animation second
+        }
+        this._map.render(this._horizontalOffset);           // Render map third
         this._infrastructure.render(this._horizontalOffset);
         this._economy.render();
         this._population.render(this._horizontalOffset, this.ticksPerMinute, this.gameOn);
