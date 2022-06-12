@@ -8,6 +8,7 @@ import Infrastructure from "./infrastructure";
 import Economy, { Resources } from "./economy";
 import Population from "./population";
 import Modal, { EventData } from "./modal";
+import Lander from "./lander";
 import { ModuleInfo, ConnectorInfo, getOneModule, getOneConnector } from "./server_functions";
 import { constants, modalData } from "./constants";
 import { SaveInfo, GameTime } from "./saveGame";
@@ -27,6 +28,7 @@ export default class Engine extends View {
     _economy: Economy;
     _population: Population;
     _modal: Modal | null;
+    _animation: Lander | null;  // This field holds the current entity being used to control animations, if there is one
     // Map scrolling control
     _horizontalOffset: number;  // This will be used to offset all elements in the game's world, starting with the map
     _scrollDistance: number;    // Pixels from the edge of the world area in which scrolling occurs
@@ -40,7 +42,8 @@ export default class Engine extends View {
     selectedBuildingCategory: string    // String name of the selected building category (if any)
     // In-game time control
     gameOn: boolean;            // If the game is on then the time ticker advances; if not it doesn't
-    _tick: number;
+    _tick: number;              // Updated every frame; keeps track of when to advance the game's clock
+    _waitTime: number;          // Counts down to an unpause action if the game needs to wait for an event or animation to finish
     _gameTime: GameTime;            // The Game's time can now be stored as a GameTime-type object.
     ticksPerMinute: number;
     _minutesPerHour: number;
@@ -68,6 +71,7 @@ export default class Engine extends View {
         this._economy = new Economy(p5);
         this._population = new Population(p5);
         this._modal = null;
+        this._animation = null;
         this._horizontalOffset = 0;
         this._scrollDistance = 50;
         this._scrollingLeft = false;
@@ -81,6 +85,7 @@ export default class Engine extends View {
         // TODO: Make the clock its own component, to de-clutter the Engine.
         this.gameOn = true;             // By default the game is on when the Engine starts
         this._tick = 0;
+        this._waitTime = 0;             // By default there is no wait time
         this._gameTime = {
             minute: 0,
             hour: 12,
@@ -223,8 +228,8 @@ export default class Engine extends View {
     }
 
     handleClicks = (mouseX: number, mouseY: number) => {
-        // Click is in sidebar (not valid if modal is open or if the player has not chosen a landing site):
-        if (mouseX > constants.SCREEN_WIDTH - this._sidebar._width && !this._modal && this._hasLanded) {
+        // Click is in sidebar (unless modal is open or the player has not chosen a landing site, or mouse context is wait):
+        if (mouseX > constants.SCREEN_WIDTH - this._sidebar._width && !this._modal && this._hasLanded && this.mouseContext != "wait") {
             console.log("Click in sidebar");
             this._sidebar.handleClicks(mouseX, mouseY);
         } else {
@@ -246,6 +251,9 @@ export default class Engine extends View {
                         break;
                     case "landing":
                         this.confirmLandingSequence(mouseX, mouseY);
+                        break;
+                    case "wait":
+                        console.log("Exception: Mouse click response should not be activated in wait mode.");
                         break;
                 }
                 this.getMouseGridPosition(mouseX, mouseY);
@@ -331,18 +339,28 @@ export default class Engine extends View {
         return [gridX, gridY];
     }
 
-    // All of the routines in the landing sequence occur here:
+    // LANDING SEQUENCE ROUTINES
+    
+    // This method gets called by any mouse click when the mouse context is 'landing'
     confirmLandingSequence = (mouseX: number, mouseY: number) => {
         // Allow landing sequence only if an acceptable landing path is selected
         const gridX = this.getMouseGridPosition(mouseX, mouseY)[0];
         const flat = this._map.determineFlatness(gridX - 4, gridX + 4);
-        if (flat) this.handleLandingSequence();
-        // Creates the modal with the newly added data:
-        this.createModal(false, modalData[0]);
+        // Prompt the player to confirm landing site before initiating landing sequence
+        if (flat) {
+            this.createModal(false, modalData[0]);
+        }    
     }
 
-    // Sets up the UI for the post-landing sequence
-    handleLandingSequence = () => {
+    // If the player selects the 'proceed with landing' option, we start a wait period and play the landing animation
+    startLandingSequence = () => {
+        this.setMouseContext("wait");
+        this.setWaitTime(200);
+        console.log(`Setting wait time to ${this._waitTime} frames at ${new Date()}`);
+    }
+
+    // This method sets up the UI after the landing animation has finished
+    completeLandingSequence = () => {
         this._map.setExpanded(false);
         this.setMouseContext("select");
         this._hasLanded = true;
@@ -463,6 +481,10 @@ export default class Engine extends View {
             // Carry out each outcome instruction for the modal's resolution. TODO: Allow user to choose among up to 3 options
             this._modal._resolutions[resolution].outcomes.forEach((outcome) => {
                 switch (outcome[0]) {
+                    case "start-landing-sequence":
+                        console.log('Landing sequence initiated.');
+                        this.startLandingSequence();
+                        break;
                     case "set-mouse-context":
                         console.log(`Setting mouse context: ${outcome[1]}`);
                         this.setMouseContext(outcome[1].toString());
@@ -526,6 +548,31 @@ export default class Engine extends View {
         }
     }
 
+    // Methods for controlling wait times
+    setWaitTime = (time: number) => {
+        this._waitTime = time;  // Time is given in number of frames, so a value of ~ 50 equals 1 second in real time
+    }
+
+    advanceWaitTime = () => {
+        if (this._waitTime > 0) {
+            this._waitTime--;
+        }
+        if (this._waitTime <= 0) {
+            // Resolve wait by resetting mouse context and possibly calling additional functions
+            console.log(`Wait period over at ${new Date()}`);
+            this.setMouseContext("select");
+            this.resolveWaitPeriod();
+        }
+    }
+
+    // Check if additional functions should be called at the end of a wait period
+    resolveWaitPeriod = () => {
+        console.log("Resolving wait period.")
+        if (!this._hasLanded) {
+            this.completeLandingSequence();
+        }
+    }
+
     // The general-purpose mouse-shadow rendering method
     renderMouseShadow = () => {
         if (this.selectedBuilding !== null) {
@@ -579,7 +626,10 @@ export default class Engine extends View {
         } else if (this._scrollingRight && this._horizontalOffset < this._map._data._maxOffset){
             this._horizontalOffset ++;
         }
-        this.advanceClock();
+        this.advanceClock();        // Always try to advance the clock; it will halt itself if the game is paused
+        if (this.mouseContext === "wait") {
+            this.advanceWaitTime();
+        }
         const p5 = this._p5;
         p5.background(constants.APP_BACKGROUND);
         this.renderMouseShadow();   // Determine and render mouse shadow first

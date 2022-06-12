@@ -1116,25 +1116,30 @@ Exit Criteria:
 
 ### May 23, 2022
 
-The game's story needs a beginning, and since it takes place on planet SMARS, it starts with the landing sequence. This chapter will see the improvement of three existing Engine features, and the creation of two new ones, as well as the creation of the Lander class, which will handle the on-screen animation for the landing sequence which begins the game. First, new options will be added to the mouse context system, which will see the addition of a 'landing' context for when the player selects their starting location, as well as a 'wait' context, which will be used to disable mouse-clicks during the landing sequence animation. Secondly, a Modal popup will be created with two possible resolutions, requiring the implementation of a system to use the data in the Modal class's "resolutions" array to activate different responses from the Engine depending on which option is chosen. The third Engine system to be upgraded will be the mouse shadow renderer, which will display in different colours depending on a landing site's feasibility. As for new functions, the Engine will need one function to begin the landing sequence, attached to the click handler for when the mouse context is 'landing', and another function to handle the placement of the colony's first structures when the animation ends. Finally, a new Lander class will be created to handle the visual effects for the landing sequence animation. Plus it would be fun to add/improve a few starting modules, like a cantina, a sleeping quarters, a storeroom and an oxygen recycler, maybe? Maybe even make them non-test types this time!? It's getting real, man!
+The game's story needs a beginning, and since it takes place on planet SMARS, it starts with the landing sequence. This chapter will see the improvement of three existing Engine features, and the creation of two new ones, as well as the creation of the Lander class, which will handle the on-screen animation for the landing sequence which begins the game. First, new options will be added to the mouse context system, which will see the addition of a 'landing' context for when the player selects their starting location, as well as a 'wait' context, which will be used to disable mouse-clicks and scrolling during the landing sequence animation. Secondly, a Modal popup will be created with two possible resolutions, requiring the implementation of a system to use the data in the Modal class's "resolutions" array to activate different responses from the Engine depending on which option is chosen. The third Engine system to be upgraded will be the mouse shadow renderer, which will display in different colours depending on a landing site's feasibility. As for new functions, the Engine will need one function to begin the landing sequence, attached to the click handler for when the mouse context is 'landing', and another function to handle the placement of the colony's first structures when the animation ends. Finally, a new Lander class will be created to handle the visual effects for the landing sequence animation. Plus it would be fun to add/improve a few starting modules, like a cantina, a sleeping quarters, a storeroom and an oxygen recycler, maybe? Maybe even make them non-test types this time!? It's getting real, man!
 
 Exit Criteria:
 
 - [DONE] An introductory modal is shown immediately when the game starts, inviting the player to choose their landing site
 - [DONE] When the mouse context is 'landing', the cursor shadow is shown in green or red depending on a site's feasibility
 - [DONE] When the mouse context is 'landing', the sidebar should not be shown
-- When the mouse is clicked with the 'landing' context, a confirmation modal is shown
-- When the player selects 'No, Wait a second...' option, the modal is closed and the mouse context remains 'landing'
-- When the player selects 'Sure I'm sure!' option, the modal is closed and the mouse context becomes 'wait'
-- When the mouse context is 'wait', the click responder is deactivated, and the sidebar is not shown!
+- [DONE] When the mouse is clicked with the 'landing' context, a confirmation modal is shown
+- [DONE] When the player selects 'No, Wait a second...' option, the modal is closed and the mouse context remains 'landing'
+- [DONE] When the player selects 'Sure I'm sure!' option, the modal is closed and the mouse context becomes 'wait'
+- [DONE] When the mouse context is 'wait', the click responder is deactivated, and the sidebar is not shown!
 - When the player selects 'Sure I'm sure', they are shown an animation of a spaceship landing on the spot they chose
-- When the landing animation is finished, the initial base structures are created, and the game begins!
+- When the landing animation is finished, the game is unpaused
+- When the landing animation is finished, the initial base structures are created. These should not be test structures anymore!
+- When the landing animation is finished, the initial colonists appear, and the game begins!
 
 Features Added:
 
-- Modals have 'resolutions' when closed, which can have multiple outcomes in the game (changing mouse context, altering resource values, etc).
+- Modals can have more than one possible resolution, depending on which option the player chooses.
+- Modal resolutions can themselves have can have multiple outcomes in the game (changing mouse context, altering resource values, etc) so that selecting a single resolution can have a number of consequences.
 - Engine scroll system now uses mouse hover instead of click-and-hold near the map's edges.
-- Mouse shadow can be rendered under a variety of circumstances
+- Mouse shadow can be rendered under a variety of circumstances including landing and building placement, based on mouse context.
+- New mouse context added: landing (for handling the selection of the initial landing site, in expanded map view mode)
+- New mouse context added: wait (for temporarily suspending gameplay while still in map mode - to play an animation, say)
 
 1. Add the creation of a new modal to the Engine's setupNewGame method, displaying a message welcoming the player to SMARS, and instructing them to pick their landing site.
 
@@ -1174,11 +1179,33 @@ Features Added:
 
 19. Setup the constants file to export modal data, and start using this method immediately to avoid further cluttering the Engine with hard-coded data. Modal data should really come from the backend, ultimately.
 
+20. Create a new Engine method, startLandingSequence, which will take care of setting the mouse context to 'wait', setting a wait time for the landing animation to play. Initially though, just have it call the handleLandingSequence method (which we will soon rename to completeLandingSequence, or something else that implies its role as the end of that process, rather than the entire thing).
+
+21. Add new mouse context instructions for when the context is 'wait', telling the Engine to ignore all clicks when in this mode.
+
+22. Add a new switch block case to the Engine's closeModal method, to allow the confirm button to trigger the startLandingSequence method.
+
+23. Add new Engine data field for waitTime, to tell the Engine how long to remain in wait mode before reverting to normal behavior. When mouse context is in 'wait' mode, no mouse responses should occur (clicks or even scrolling should be disabled).
+
+24. When the Engine's mouse context is 'wait', have the renderer call a new method, advanceWaitTime, which decrements the waitTime value and resets then calls another new method called resolveWaitPeriod, which can call different scenario-specific methods (in this case, the now-renamed completeLandingSequence - formerly handleLandingSequence - method that sets the hasLanded variable to true, and finally begins the game).
+
+25. Create the Lander class, which will be a fairly simple entity with parameters for x, y, width, height, start (which will be zero), destination (which will be a y value representing the altitude at which the animated spaceship will 'touch down' on the Smartian surface) and duration (amount of renders the animation will last). Give this class a render method that draws a large circle, as well as a smaller circle and a triangle, which overlap to form a teardrop shape.
+
+### 26. Give the Engine a new property, animation, which will be an instance of the Lander class, or null. When the landing sequence is initiated, have the Engine create an instance of the Lander class. In the render method, add a check for the animation property, and if there is an animation, render it (and calculate the horizontal offset of whatever it is that's being rendered and just pass the offsetted value directly to the animated entity. No need to duplicate the data and store it in two places).
+
+### 27. Give the Lander class a new method, advanceAnimation, which updates the lander's position to move it 1/duration pixels closer to the destination height. Have the Lander's render function call this to advance the animation.
+
+### 20. Using comments, organize all of the various Engine methods to better indicate where future methods should go (Major categories are setup functions, structure placement functions, modal functions, landing functions and time keeping functions).
+
+### 21. Remove scrolling functionality from the render method into its own method, handleScrolling, and call that from the render method. Have the handleScrolling method itself check the mouse context to see what parameter/s affect scrolling. This will be helpful for customizing scroll behaviour based on mouse context, to allow for faster scrolling, etc (see below).
+
 ### 17. While the player is in landing selection mode, expand the mouse scroll area to be much larger than usual, so that the landing site tends to sit right in the middle of the screen.
 
 ### 18. Ensure the screen doesn't scroll to the left if the mouse is beyond the edge of the screen in that direction.
 
 ### 19. If the player has the cursor in the scroll area for more than a second, higher threshold value, scroll at double speed.
+
+### 21. Do not allow scrolling while mouse context is 'landing'
 
 ## Chapter X: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 5)
 

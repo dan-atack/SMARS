@@ -54,16 +54,16 @@ export const constants = {
 export const modalData: EventData[] = [
    {
       id: 0,
-      title: "Aha!",
-      text: "What have we here?",
+      title: "Confirm Landing Selection",
+      text: "Really? Are you sure this is a good\nlanding site? I mean, it's your call obviously...",
       resolutions: [
           {
-              text: "Something!",
-              outcomes: [["set-mouse-context", "select"], ["add-money", 100]]
+              text: "Yes I'm sure!",
+              outcomes: [["set-mouse-context", "select"], ["start-landing-sequence", 1]]
           },
           {
-            text: "Err, nothing!",
-            outcomes: [["set-mouse-context", "resource"], ["add-money", -100]]
+            text: "No, go back!",
+            outcomes: [["set-mouse-context", "landing"]]
          }
       ]
   }
