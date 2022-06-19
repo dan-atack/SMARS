@@ -1201,6 +1201,8 @@ Features Added:
 
 ### 30. Design the new structures that will be created after the landing sequence is completed. Focus on the function that Modules will play in the near future: providing resources and services for individual Colonists. Therefore, resource capacities/limits and number of Colonists that can be served should be prominently considered.
 
+### 31. Update the ModuleData type to include a new field, 'purchasable' which will later be used to prevent certain structures from appearing in the build menu (such as the empty tanks on the landing vehicle).
+
 ### 31. Add the new Module, 'Cantina' to the game's database, including its shapes.
 
 ### 32. Add the Module 'Crew Quarters' to the database, including shapes.
@@ -1251,6 +1253,8 @@ Exit Criteria:
 ### 7. [1: Coding Convention] Colonist class should have a unique ID field, to individuate the colony's population.
 
 ### 8. [1: UX / Aesthetic] When a modal popup has more than one possible resolution, the buttons for the different resolutions aren't symmetrically aligned on the horizontal axis (they are pulled slightly to the right it seems).
+
+### 9. [2: IX / Inaccurate info display] The game speed indicator should always be visible, including at the game start, and when the player returns to the game from the menu.
 
 ### Exit Criteria for backend save/load game chapter:
 

@@ -357,7 +357,7 @@ export default class Engine extends View {
     // If the player selects the 'proceed with landing' option, we start a wait period and play the landing animation
     startLandingSequence = () => {
         this.setMouseContext("wait");
-        const wait = 200;
+        const wait = 300;
         const x = (this._landingSiteCoords[0] + 4) * constants.BLOCK_WIDTH;
         const destination = this._landingSiteCoords[1] * constants.BLOCK_WIDTH;
         this.setWaitTime(wait);
