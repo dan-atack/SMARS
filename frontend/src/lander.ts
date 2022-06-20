@@ -42,7 +42,6 @@ export default class Lander {
         const y = this._destination;
         const drift = this._elapsed / 2 - 100;                          // Controls horizontal push for outer clouds
         const settle = Math.max(0, this._elapsed - this._duration);     // Controls dust cloud descent after touchdown
-        console.log(settle);
         p5.strokeWeight(0);
         p5.fill(constants.BROWN_SAND);
         p5.ellipse(x + this._width / 2 + drift, y + settle, this._elapsed / 2);

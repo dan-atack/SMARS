@@ -66,7 +66,18 @@ export const modalData: EventData[] = [
             outcomes: [["set-mouse-context", "landing"]]
          }
       ]
-  }
+  },
+  {
+   id: 1,
+   title: "Touchdown!",
+   text: "The colonists have arrived at the planet's surface,\nmiraculously unharmed!",
+   resolutions: [
+       {
+           text: "Hallelujah!",
+           outcomes: [["set-mouse-context", "select"]]
+       }
+   ]
+}
 ]
 
 // BLOCKTIONARY!!!!

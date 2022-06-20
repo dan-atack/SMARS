@@ -20,7 +20,7 @@ const getStructures = async (req: Request, res: Response) => {
                     // If building category exists, filter the result by type before returning to the front-end:
                     console.log(`Found ${result.length} structures in ${category} collection. Filtering results by type ${type}`);
                     const resultsByType = result.filter((structure) => {
-                        return structure.type.toLowerCase() === type
+                        return structure.type.toLowerCase() === type.toLowerCase();
                     })
                     console.log(`Returning ${resultsByType.length} results for ${category}/${type} structures`)
                     res.status(200).json({ status: 200, data: resultsByType });

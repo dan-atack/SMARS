@@ -370,8 +370,9 @@ export default class Engine extends View {
     completeLandingSequence = () => {
         this._animation = null;         // Delete the animation when it's finished
         this._map.setExpanded(false);
-        this.setMouseContext("select");
         this._hasLanded = true;
+        console.log("Landing sequence complete");
+        this.createModal(false, modalData[1]);
         // Add two new colonists, one at each end of the landing zone (Y value is -2 since it is the Colonist's head level)
         this._population.addColonist(this._landingSiteCoords[0], this._landingSiteCoords[1] - 2);
         this._population.addColonist(this._landingSiteCoords[0] + 7, this._landingSiteCoords[1] - 2);
