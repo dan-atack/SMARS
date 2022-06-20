@@ -12,7 +12,7 @@ export default class Lander {
     _start: number;         // Initial altitude (0)
     _destination: number;   // Final altitude
     _distance: number;      // Distance between start and destination
-    _duration: number;      // How many frames to animate
+    _duration: number;      // How many frames to animate for just the landing (clouds will linger longer)
     _elapsed: number;       // How many frames have been shown
 
     constructor(p5: P5, x: number, y: number, start: number, destination: number, duration: number) {
@@ -24,14 +24,34 @@ export default class Lander {
         this._start = start;
         this._destination = destination;
         this._distance = this._destination - this._start - this._height * 1.6;
-        this._duration = duration;
+        this._duration = duration;  
         this._elapsed = 0;  // Count up to the duration, instead of decrementing it
     }
 
     advanceAnimation = () => {
+        // Only move the lander if the full duration of the landing sequence hasn't finished yet:
         if (this._elapsed <= this._duration) {
+            // TODO: Exponential deceleration (starting fast, then slowing as the surface approaches)
             this._y = this._start + (this._elapsed * this._distance / this._duration);    // Update height parameter (plus equals downwards)
-            this._elapsed++;
+        }
+        this._elapsed++;    // Advance elapsed frames count even if duration is exceeded (to advance dust cloud settlement)
+    }
+
+    drawClouds = (x: number) => {
+        const p5 = this._p5;
+        const y = this._destination;
+        const drift = this._elapsed / 2 - 100;                          // Controls horizontal push for outer clouds
+        const settle = Math.max(0, this._elapsed - this._duration);     // Controls dust cloud descent after touchdown
+        console.log(settle);
+        p5.strokeWeight(0);
+        p5.fill(constants.BROWN_SAND);
+        p5.ellipse(x + this._width / 2 + drift, y + settle, this._elapsed / 2);
+        p5.ellipse(x - this._width / 2 - drift, y + settle, this._elapsed / 2);
+        p5.ellipse(x, y + settle / 2, this._elapsed / 4);
+        // Add more clouds for the final quarter of the animation
+        if (this._elapsed > this._duration * 3 / 5) {
+            p5.ellipse(x + this._width / 3, y + settle / 2, this._elapsed / 3.2);
+            p5.ellipse(x - this._width / 3, y + settle / 2, this._elapsed / 3.2);
         }
     }
 
@@ -62,7 +82,6 @@ export default class Lander {
         p5.quad(x - w / 2.5, y + h * 1.5, x - w / 2.25, y + h * 1.5, x - w / 2, y + h * 1.85, x - w / 2.25, y + h * 1.85);
         p5.quad(x + w / 3.5, y + h * 1.5, x + w / 3, y + h * 1.5, x + w / 2.5, y + h * 1.85, x + w / 3, y + h * 1.85);
         p5.quad(x - w / 3.5, y + h * 1.5, x - w / 3, y + h * 1.5, x - w / 2.5, y + h * 1.85, x - w / 3, y + h * 1.85);
-        // p5.quad(x - w / 8, y + h * 1.5, x + w / 8, y + h * 1.5, x + w / 7, y + h * 1.85, x - w / 7, y + h * 1.85);
         // Flame: Y = Height * 2
         p5.fill(constants.YELLOW_TEXT);
         p5.stroke(constants.ORANGE_JUMPSUIT);
@@ -73,6 +92,10 @@ export default class Lander {
         p5.stroke(constants.YELLOW_TEXT);
         p5.ellipse(x, y + h * 2, w / 2.8, h / 3)
         this.advanceAnimation();
+        // Draw dust clouds if descend is vehicle is halfway to the surface
+        if (this._elapsed >= this._duration / 2) {
+            this.drawClouds(x);
+        }
     }
 
 }

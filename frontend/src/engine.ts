@@ -362,7 +362,7 @@ export default class Engine extends View {
         const destination = this._landingSiteCoords[1] * constants.BLOCK_WIDTH;
         this.setWaitTime(wait);
         // Setup landing animation with 
-        this._animation = new Lander(this._p5, x, 0, 0, destination, wait);
+        this._animation = new Lander(this._p5, x, 0, 0, destination, wait - 50);
         console.log(`Setting wait time to ${this._waitTime} frames at ${new Date()}`);
     }
 
