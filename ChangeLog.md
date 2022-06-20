@@ -1199,13 +1199,13 @@ Features Added:
 
 29. Make the two colonists spawn by the completeLandingSequence method instead - place them at the left and right edges of the landing zone (add new Engine field to record the altitude and position of the designated landing zone - this info will also be used by the constructor function for the Lander, to position it and tell it where the surface is).
 
-### 30. Design the new structures that will be created after the landing sequence is completed. Focus on the function that Modules will play in the near future: providing resources and services for individual Colonists. Therefore, resource capacities/limits and number of Colonists that can be served should be prominently considered.
+30. Design the new structures that will be created after the landing sequence is completed. Focus on the function that Modules will play in the near future: providing resources and services for individual Colonists. Therefore, resource capacities/limits and number of Colonists that can be served should be prominently considered.
 
 ### 31. Update the ModuleData type to include a new field, 'purchasable' which will later be used to prevent certain structures from appearing in the build menu (such as the empty tanks on the landing vehicle).
 
-### 31. Add the new Module, 'Cantina' to the game's database, including its shapes.
+31. Add the new Module, 'Cantina' to the game's database, including its shapes.
 
-### 32. Add the Module 'Crew Quarters' to the database, including shapes.
+32. Add the Module 'Crew Quarters' to the database, including shapes.
 
 ### 33. Add Module 'Storage Module' to the database, including shapes.
 

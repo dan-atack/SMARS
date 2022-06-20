@@ -23,10 +23,12 @@ export const constants = {
     ALMOST_BLACK: "#010101",
     APP_BACKGROUND: "#03090A",
     SIDEBAR_BG: "#4B4446",
+    GRAY_DRY_ICE: "#BCC4C1",
     GRAY_LIGHT: "#7D7D7D",
+    GRAY_MEDIUM: "#626378",
+    GRAY_DARKER: "#595A6B",
     GRAY_METEOR: "#353837",
     GRAY_IRON_ORE: "#2E1409",
-    GRAY_DRY_ICE: "#BCC4C1",
     EGGSHELL: "#F6F7E9",
     RED_ERROR: "#D10000",
     RED_CONTRAST: "#FF4230",
@@ -46,6 +48,7 @@ export const constants = {
     BLUEGREEN_CRYSTAL: "#00F2BA",
     BLUEGREEN_DARK: "#052E26",
     BLUE_BG: "#00004F",
+    PURPLE_LIGHT: "#A67ACF",
     BASIC_RESOURCES: basicResources
 }
 

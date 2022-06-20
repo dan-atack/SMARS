@@ -371,11 +371,29 @@ export default class Engine extends View {
         this._animation = null;         // Delete the animation when it's finished
         this._map.setExpanded(false);
         this._hasLanded = true;
+        this.placeInitialStructures();
         console.log("Landing sequence complete");
         this.createModal(false, modalData[1]);
         // Add two new colonists, one at each end of the landing zone (Y value is -2 since it is the Colonist's head level)
         this._population.addColonist(this._landingSiteCoords[0], this._landingSiteCoords[1] - 2);
         this._population.addColonist(this._landingSiteCoords[0] + 7, this._landingSiteCoords[1] - 2);
+    }
+
+    // Loads the first base structures after the dust clears from the landing sequence
+    placeInitialStructures = () => {
+        const x = this._landingSiteCoords[0];       // Far left edge
+        const y = this._landingSiteCoords[1] - 4;   // Top
+        const rY = this._landingSiteCoords[1] - 1   // Rubble layer
+        const coords = [[x + 4, y], [x, y - 3], [x + 4, y - 3]];
+        const crewCoords = [[x, y]];
+        const modType = "Life Support";
+        this.getModuleInfo(this.loadModuleFromSave, "modules", modType, "Cantina", coords);
+        this.getModuleInfo(this.loadModuleFromSave, "modules", modType, "Crew Quarters", crewCoords);
+        let rubbleCoords: number[][] = [];
+        for (let i = 0; i < 8; i++) {
+            rubbleCoords.push([x + i, rY]);
+        }
+        this.getModuleInfo(this.loadModuleFromSave, "modules", "test", "Small Node", rubbleCoords);
     }
 
     handleStructurePlacement = (mouseX: number, mouseY: number) => {
@@ -388,6 +406,7 @@ export default class Engine extends View {
                     this._infrastructure.addModule(x, y, this.selectedBuilding);
                     this._economy.subtractMoney(this.selectedBuilding.buildCosts);
                 } else {
+                    // TODO: Display this info to the player with an in-game message of some kind
                     console.log(`Clear: ${clear}`);
                     console.log(`Affordable: ${affordable}`);
                 }
