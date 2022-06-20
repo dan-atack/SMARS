@@ -384,11 +384,13 @@ export default class Engine extends View {
         const x = this._landingSiteCoords[0];       // Far left edge
         const y = this._landingSiteCoords[1] - 4;   // Top
         const rY = this._landingSiteCoords[1] - 1   // Rubble layer
-        const coords = [[x + 4, y], [x, y - 3], [x + 4, y - 3]];
+        const coords = [[x, y - 3], [x + 4, y - 3]];
         const crewCoords = [[x, y]];
+        const storeCoords = [[x + 4, y]];
         const modType = "Life Support";
         this.getModuleInfo(this.loadModuleFromSave, "modules", modType, "Cantina", coords);
         this.getModuleInfo(this.loadModuleFromSave, "modules", modType, "Crew Quarters", crewCoords);
+        this.getModuleInfo(this.loadModuleFromSave, "modules", "Storage", "Basic Storage", storeCoords);
         let rubbleCoords: number[][] = [];
         for (let i = 0; i < 8; i++) {
             rubbleCoords.push([x + i, rY]);
