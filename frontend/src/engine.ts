@@ -36,6 +36,7 @@ export default class Engine extends View {
     _scrollingRight: boolean;
     _mouseInScrollRange: number // Counts how long the mouse has been within scroll range of the edge
     _scrollThreshold: number    // Determines the number of frames that must elapse before scrolling begins
+    _fastScrollThreshold: number    // How many frames before fast scrolling occurs
     // Mouse click control
     mouseContext: string;       // Mouse context tells the Engine's click handler what to do when the mouse is pressed.
     selectedBuilding: ModuleInfo | ConnectorInfo | null;    // Data storage for when the user is about to place a new structure
@@ -79,6 +80,7 @@ export default class Engine extends View {
         this._scrollingRight = false;
         this._mouseInScrollRange = 0;   // Counts how many frames have passed with the mouse within scroll distance of the edge
         this._scrollThreshold = 10;     // Controls the number of frames that must pass before the map starts to scroll
+        this._fastScrollThreshold = 60; // Number of frames to pass before fast scroll begins
         this.mouseContext = "select"    // Default mouse context is the user wants to select what they click on (if they click on the map)
         this.selectedBuilding = null;   // There is no building info selected by default.
         this.selectedBuildingCategory = "";  // Keep track of whether the selected building is a module or connector
@@ -311,6 +313,14 @@ export default class Engine extends View {
             }
         } else {
             this.stopScrolling();               // Stop scrolling if a modal is open
+        }
+        // Increase scoll speed if player has been hovering in the scroll zone for longer than one second
+        if (this._scrollingLeft && this._horizontalOffset > 0) {
+            this._mouseInScrollRange > this._fastScrollThreshold ? this._horizontalOffset -= 2 : this._horizontalOffset--;
+            this._horizontalOffset = Math.max(this._horizontalOffset, 0);   // Ensure scroll does not go too far left
+        } else if (this._scrollingRight && this._horizontalOffset < this._map._data._maxOffset){
+            this._mouseInScrollRange > this._fastScrollThreshold ? this._horizontalOffset += 2 : this._horizontalOffset++;
+            this._horizontalOffset = Math.min(this._horizontalOffset, this._map._data._maxOffset);   // Ensure scroll does not go too far right
         }
     }
 
@@ -672,13 +682,7 @@ export default class Engine extends View {
     }
 
     render = () => {
-        // TODO: Isolate the scrolling process into its own method
         // Scroll over 1 pixel per refresh cycle if mouse is pressed and the game is not yet at the right or left edge of the map:
-        if (this._scrollingLeft && this._horizontalOffset > 0) {
-            this._horizontalOffset --;
-        } else if (this._scrollingRight && this._horizontalOffset < this._map._data._maxOffset){
-            this._horizontalOffset ++;
-        }
         this.advanceClock();        // Always try to advance the clock; it will halt itself if the game is paused
         if (this.mouseContext === "wait") {
             this.advanceWaitTime();
@@ -698,7 +702,6 @@ export default class Engine extends View {
         if (this._hasLanded) {
             this._sidebar.render(this._gameTime.minute, this._gameTime.hour, this._gameTime.cycle);
         }
-        
         if (this._modal) {
             this._modal.render();
         }
