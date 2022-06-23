@@ -1201,21 +1201,19 @@ Features Added:
 
 30. Design the new structures that will be created after the landing sequence is completed. Focus on the function that Modules will play in the near future: providing resources and services for individual Colonists. Therefore, resource capacities/limits and number of Colonists that can be served should be prominently considered.
 
-### 31. Update the ModuleData type to include a new field, 'purchasable' which will later be used to prevent certain structures from appearing in the build menu (such as the empty tanks on the landing vehicle).
-
 31. Add the new Module, 'Cantina' to the game's database, including its shapes.
 
 32. Add the Module 'Crew Quarters' to the database, including shapes.
 
-### 33. Add Module 'Storage Module' to the database, including shapes.
+33. Add Module 'Storage Module' to the database, including shapes.
 
-### 34. Add Module 'Fuel Tank' to the database.
+34. Add Oxygen and Water Tank modules, with their shapes.
 
-### 35. Have the Engine place each of these modules, in a stack, at the landing zone when the landing animation is complete.
+35. Have the Engine place each of these modules, in a stack, at the landing zone when the landing animation is complete.
 
-### 36. Revisit the render rules for the Lander, and spruce up that animation, just a little bit.
+36. Revisit the render rules for the Lander, and spruce up that animation, just a little bit.
 
-### 20. Using comments, organize all of the various Engine methods to better indicate where future methods should go (Major categories are setup functions, structure placement functions, modal functions, landing functions and time keeping functions).
+37. Using comments, organize all of the various Engine methods to better indicate where future methods should go (Major categories are setup functions, structure placement functions, modal functions, landing functions and time keeping functions).
 
 ### 21. Remove scrolling functionality from the render method into its own method, handleScrolling, and call that from the render method. Have the handleScrolling method itself check the mouse context to see what parameter/s affect scrolling. This will be helpful for customizing scroll behaviour based on mouse context, to allow for faster scrolling, etc (see below).
 
@@ -1224,6 +1222,8 @@ Features Added:
 ### 18. Ensure the screen doesn't scroll to the left if the mouse is beyond the edge of the screen in that direction.
 
 ### 19. If the player has the cursor in the scroll area for more than a second, higher threshold value, scroll at double speed.
+
+### 31. Update the ModuleData type to include a new field, 'purchasable' which will later be used to prevent certain structures from appearing in the build menu (such as the empty tanks on the landing vehicle).
 
 ### 21. Do not allow scrolling while mouse context is 'landing' - OR only allow scrolling in the direction of the landing zone?
 
@@ -1235,6 +1235,10 @@ Exit Criteria:
 
 - Placing a connector is constrained by:
   -- Must be placed within a module (later connectors might be partially external to the base, i.e. spanning the gap between two modules, but should follow the precedent of always originating/terminating at a module. Else what exactly are they connecting, right?)
+
+## Chapter Y: Tools (Difficulty Estimate: ???)
+
+Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
 
 ### Bug List (Severity in square brackets):
 

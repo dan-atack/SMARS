@@ -102,6 +102,8 @@ export default class Engine extends View {
         this._landingSiteCoords = [-1, -1]; // Default value of -1, -1 indicates landing site has not yet been selected
     }
 
+    //// SETUP METHODS ////
+
     setup = () => {
         this.currentView = true;
         this._sidebar.setup();
@@ -226,6 +228,8 @@ export default class Engine extends View {
         }
     }
 
+    //// MOUSE AND CLICK HANDLER METHODS ////
+
     handleClicks = (mouseX: number, mouseY: number) => {
         // Click is in sidebar (unless modal is open or the player has not chosen a landing site, or mouse context is wait):
         if (mouseX > constants.SCREEN_WIDTH - this._sidebar._width && !this._modal && this._hasLanded && this.mouseContext != "wait") {
@@ -322,10 +326,6 @@ export default class Engine extends View {
         this.setSelectedBuilding(this._sidebar._detailsArea._buildingSelection);
     }
 
-    setSelectedBuilding = (selectedBuilding: ModuleInfo | ConnectorInfo | null) => {
-        this.selectedBuilding = selectedBuilding;
-    }
-
     // Used for placing buildings and anything else that needs to 'snap to' the grid (returns values in grid locations)
     getMouseGridPosition(mouseX: number, mouseY: number) {
         const mouseGridX = Math.floor(mouseX / constants.BLOCK_WIDTH)
@@ -338,64 +338,10 @@ export default class Engine extends View {
         return [gridX, gridY];
     }
 
-    // LANDING SEQUENCE ROUTINES
-    
-    // This method gets called by any mouse click when the mouse context is 'landing'
-    confirmLandingSequence = (mouseX: number, mouseY: number) => {
-        // Allow landing sequence only if an acceptable landing path is selected
-        const gridX = this.getMouseGridPosition(mouseX, mouseY)[0];
-        const flat = this._map.determineFlatness(gridX - 4, gridX + 4);
-        // Prompt the player to confirm landing site before initiating landing sequence
-        if (flat) {
-            this.createModal(false, modalData[0]);
-            this._landingSiteCoords[0] = gridX - 4; // Set landing site location to the left edge of the landing area
-            this._landingSiteCoords[1] = (constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH) - this._map._data._columns[gridX].length;
-            console.log(`Setting landing site X value to ${this._landingSiteCoords[0]}, ${this._landingSiteCoords[1]}`);
-        }    
-    }
+    //// STRUCTURE PLACEMENT METHODS ////
 
-    // If the player selects the 'proceed with landing' option, we start a wait period and play the landing animation
-    startLandingSequence = () => {
-        this.setMouseContext("wait");
-        const wait = 300;
-        const x = (this._landingSiteCoords[0] + 4) * constants.BLOCK_WIDTH;
-        const destination = this._landingSiteCoords[1] * constants.BLOCK_WIDTH;
-        this.setWaitTime(wait);
-        // Setup landing animation with 
-        this._animation = new Lander(this._p5, x, 0, 0, destination, wait - 50);
-        console.log(`Setting wait time to ${this._waitTime} frames at ${new Date()}`);
-    }
-
-    // This method sets up the UI after the landing animation has finished
-    completeLandingSequence = () => {
-        this._animation = null;         // Delete the animation when it's finished
-        this._map.setExpanded(false);
-        this._hasLanded = true;
-        this.placeInitialStructures();
-        console.log("Landing sequence complete");
-        this.createModal(false, modalData[1]);
-        // Add two new colonists, one at each end of the landing zone (Y value is -2 since it is the Colonist's head level)
-        this._population.addColonist(this._landingSiteCoords[0], this._landingSiteCoords[1] - 2);
-        this._population.addColonist(this._landingSiteCoords[0] + 7, this._landingSiteCoords[1] - 2);
-    }
-
-    // Loads the first base structures after the dust clears from the landing sequence
-    placeInitialStructures = () => {
-        const x = this._landingSiteCoords[0];       // Far left edge
-        const y = this._landingSiteCoords[1] - 4;   // Top
-        const rY = this._landingSiteCoords[1] - 1   // Rubble layer
-        const coords = [[x, y - 3], [x + 4, y - 3]];
-        const crewCoords = [[x, y]];
-        const storeCoords = [[x + 4, y]];
-        const modType = "Life Support";
-        this.getModuleInfo(this.loadModuleFromSave, "modules", modType, "Cantina", coords);
-        this.getModuleInfo(this.loadModuleFromSave, "modules", modType, "Crew Quarters", crewCoords);
-        this.getModuleInfo(this.loadModuleFromSave, "modules", "Storage", "Basic Storage", storeCoords);
-        let rubbleCoords: number[][] = [];
-        for (let i = 0; i < 8; i++) {
-            rubbleCoords.push([x + i, rY]);
-        }
-        this.getModuleInfo(this.loadModuleFromSave, "modules", "test", "Small Node", rubbleCoords);
+    setSelectedBuilding = (selectedBuilding: ModuleInfo | ConnectorInfo | null) => {
+        this.selectedBuilding = selectedBuilding;
     }
 
     handleStructurePlacement = (mouseX: number, mouseY: number) => {
@@ -421,6 +367,73 @@ export default class Engine extends View {
         }
     }
 
+    //// LANDING SEQUENCE METHODS ////
+    
+    // This method gets called by any mouse click when the mouse context is 'landing'
+    confirmLandingSequence = (mouseX: number, mouseY: number) => {
+        // Allow landing sequence only if an acceptable landing path is selected
+        const gridX = this.getMouseGridPosition(mouseX, mouseY)[0];
+        const flat = this._map.determineFlatness(gridX - 4, gridX + 4);
+        // Prompt the player to confirm landing site before initiating landing sequence
+        if (flat) {
+            this.createModal(false, modalData[0]);
+            this._landingSiteCoords[0] = gridX - 4; // Set landing site location to the left edge of the landing area
+            this._landingSiteCoords[1] = (constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH) - this._map._data._columns[gridX].length;
+            console.log(`Setting landing site X value to ${this._landingSiteCoords[0]}, ${this._landingSiteCoords[1]}`);
+        }    
+    }
+
+    // If the player selects the 'proceed with landing' option, we start a wait period and play the landing animation
+    startLandingSequence = () => {
+        this.setMouseContext("wait");
+        const wait = 480;
+        const x = (this._landingSiteCoords[0] + 4) * constants.BLOCK_WIDTH;
+        const destination = this._landingSiteCoords[1] * constants.BLOCK_WIDTH;
+        this.setWaitTime(wait);
+        // Setup landing animation with 
+        this._animation = new Lander(this._p5, x, -120, destination, wait - 120);
+        console.log(`Setting wait time to ${this._waitTime} frames at ${new Date()}`);
+    }
+
+    // This method sets up the UI after the landing animation has finished
+    completeLandingSequence = () => {
+        this._animation = null;         // Delete the animation when it's finished
+        this._map.setExpanded(false);
+        this._hasLanded = true;
+        this.placeInitialStructures();
+        console.log("Landing sequence complete");
+        this.createModal(false, modalData[1]);
+        // Add two new colonists, one at each end of the landing zone (Y value is -2 since it is the Colonist's head level)
+        this._population.addColonist(this._landingSiteCoords[0], this._landingSiteCoords[1] - 2);
+        this._population.addColonist(this._landingSiteCoords[0] + 7, this._landingSiteCoords[1] - 2);
+    }
+
+    // Loads the first base structures after the dust clears from the landing sequence
+    placeInitialStructures = () => {
+        const x = this._landingSiteCoords[0];       // Far left edge
+        const y = this._landingSiteCoords[1] - 4;   // Top
+        const rY = this._landingSiteCoords[1] - 1   // Rubble layer
+        const storeCoords = [[x, y - 3]];
+        const tankCoords = [[x + 4, y - 3]];
+        const h20Coords = [[x + 6, y - 3]]
+        const crewCoords = [[x, y]];
+        const canCoords = [[x + 4, y]];
+        const antennaCoords = [[x, y - 8]]
+        this.getModuleInfo(this.loadModuleFromSave, "modules", "Life Support", "Cantina", canCoords);
+        this.getModuleInfo(this.loadModuleFromSave, "modules", "Life Support", "Crew Quarters", crewCoords);
+        this.getModuleInfo(this.loadModuleFromSave, "modules", "Storage", "Basic Storage", storeCoords);
+        this.getModuleInfo(this.loadModuleFromSave, "modules", "Storage", "Oxygen Tank", tankCoords);
+        this.getModuleInfo(this.loadModuleFromSave, "modules", "Storage", "Water Tank", h20Coords);
+        this.getModuleInfo(this.loadModuleFromSave, "modules", "Communications", "Comms Antenna", antennaCoords);
+        let rubbleCoords: number[][] = [];
+        for (let i = 0; i < 8; i++) {
+            rubbleCoords.push([x + i, rY]);
+        }
+        this.getModuleInfo(this.loadModuleFromSave, "modules", "test", "Small Node", rubbleCoords);
+    }
+
+    //// RESOURCE CONSUMPTION METHODS ////
+
     handleResourceConsumption = () => {
         const leakage = this._infrastructure.calculateModulesOxygenLoss();
         const { air, water, food } = this._population.calculatePopulationResourceConsumption(this._gameTime.hour);
@@ -428,6 +441,8 @@ export default class Engine extends View {
         this._economy.updateResource("water", water);
         this._economy.updateResource("food", food);
     }
+
+    //// GAMESPEED AND TIME METHODS ////
 
     setGameSpeed = (value: string) => {
         this.gameOn = true;     // Always start by assuming the game is on
@@ -446,6 +461,78 @@ export default class Engine extends View {
                 break;
         }
     }
+
+    // Sets the Smartian time
+    setClock = (gameTime: GameTime) => {
+        this._gameTime = gameTime;
+    }
+
+    // In-game clock control and general event scheduler
+    advanceClock = () => {
+        if (this.gameOn) {
+            this._tick++;
+            if (this._tick >= this.ticksPerMinute) {
+                this._tick = 0;     // Advance minutes
+                // Update colonists' locations each 'minute', and all of their other stats every hour
+                this._population.updateColonists(this._map._data._mapData, this._gameTime.minute === 0);
+                if (this._gameTime.minute < this._minutesPerHour - 1) {  // Minus one tells the minutes counter to reset to zero after 59
+                    this._gameTime.minute ++;
+                } else {
+                    this._gameTime.minute = 0;   // Advance hours (anything on an hourly schedule should go here)
+                    // this.handleLandingSequence();
+                    this.handleResourceConsumption();
+                    this.updateEarthData();     // Advance Earth date every game hour
+                    if (this._gameTime.hour < this._hoursPerClockCycle) {
+                        this._gameTime.hour ++;
+                        if (this._gameTime.hour === this._hoursPerClockCycle) {  // Advance day/night cycle when hour hits twelve
+                            if (this._gameTime.cycle === "AM") {
+                                this._gameTime.cycle = "PM"
+                            } else {
+                                this.generateEvent();           // Modal popup appears every time it's a new day.
+                                this._gameTime.cycle = "AM";        // Advance date (anything on a daily schedule should go here)
+                                if (this._gameTime.sol < this._solsPerYear) {
+                                    this._gameTime.sol ++;
+                                } else {
+                                    this._gameTime.sol = 1;
+                                    this._gameTime.year ++;      // Advance year (anything on an yearly schedule should go here)
+                                }
+                                this._sidebar.setDate(this._gameTime.sol, this._gameTime.year);   // Update sidebar date display
+                            }  
+                        }
+                    } else {
+                        this._gameTime.hour = 1;     // Hour never resets to zero
+                    }
+                } 
+            }
+        }
+    }
+
+    // Methods for controlling wait times
+    setWaitTime = (time: number) => {
+        this._waitTime = time;  // Time is given in number of frames, so a value of ~ 50 equals 1 second in real time
+    }
+
+    advanceWaitTime = () => {
+        if (this._waitTime > 0) {
+            this._waitTime--;
+        }
+        if (this._waitTime <= 0) {
+            // Resolve wait by resetting mouse context and possibly calling additional functions
+            console.log(`Wait period over at ${new Date()}`);
+            this.setMouseContext("select");
+            this.resolveWaitPeriod();
+        }
+    }
+
+    // Check if additional functions should be called at the end of a wait period
+    resolveWaitPeriod = () => {
+        console.log("Resolving wait period.")
+        if (!this._hasLanded) {
+            this.completeLandingSequence();
+        }
+    }
+
+    //// MODAL CONTROL METHODS ////
 
     // Prints a welcome-to-the-game message the first time a player begins a game. Explains about the landing sequence (in a cryptic way)
     createNewGameModal = () => {
@@ -537,74 +624,7 @@ export default class Engine extends View {
         this.gameOn = true;
     }
 
-    // Sets the Smartian time
-    setClock = (gameTime: GameTime) => {
-        this._gameTime = gameTime;
-    }
-
-    advanceClock = () => {
-        if (this.gameOn) {
-            this._tick++;
-            if (this._tick >= this.ticksPerMinute) {
-                this._tick = 0;     // Advance minutes
-                // Update colonists' locations each 'minute', and all of their other stats every hour
-                this._population.updateColonists(this._map._data._mapData, this._gameTime.minute === 0);
-                if (this._gameTime.minute < this._minutesPerHour - 1) {  // Minus one tells the minutes counter to reset to zero after 59
-                    this._gameTime.minute ++;
-                } else {
-                    this._gameTime.minute = 0;   // Advance hours (anything on an hourly schedule should go here)
-                    // this.handleLandingSequence();
-                    this.handleResourceConsumption();
-                    this.updateEarthData();     // Advance Earth date every game hour
-                    if (this._gameTime.hour < this._hoursPerClockCycle) {
-                        this._gameTime.hour ++;
-                        if (this._gameTime.hour === this._hoursPerClockCycle) {  // Advance day/night cycle when hour hits twelve
-                            if (this._gameTime.cycle === "AM") {
-                                this._gameTime.cycle = "PM"
-                            } else {
-                                this.generateEvent();           // Modal popup appears every time it's a new day.
-                                this._gameTime.cycle = "AM";        // Advance date (anything on a daily schedule should go here)
-                                if (this._gameTime.sol < this._solsPerYear) {
-                                    this._gameTime.sol ++;
-                                } else {
-                                    this._gameTime.sol = 1;
-                                    this._gameTime.year ++;      // Advance year (anything on an yearly schedule should go here)
-                                }
-                                this._sidebar.setDate(this._gameTime.sol, this._gameTime.year);   // Update sidebar date display
-                            }  
-                        }
-                    } else {
-                        this._gameTime.hour = 1;     // Hour never resets to zero
-                    }
-                } 
-            }
-        }
-    }
-
-    // Methods for controlling wait times
-    setWaitTime = (time: number) => {
-        this._waitTime = time;  // Time is given in number of frames, so a value of ~ 50 equals 1 second in real time
-    }
-
-    advanceWaitTime = () => {
-        if (this._waitTime > 0) {
-            this._waitTime--;
-        }
-        if (this._waitTime <= 0) {
-            // Resolve wait by resetting mouse context and possibly calling additional functions
-            console.log(`Wait period over at ${new Date()}`);
-            this.setMouseContext("select");
-            this.resolveWaitPeriod();
-        }
-    }
-
-    // Check if additional functions should be called at the end of a wait period
-    resolveWaitPeriod = () => {
-        console.log("Resolving wait period.")
-        if (!this._hasLanded) {
-            this.completeLandingSequence();
-        }
-    }
+    //// RENDER METHODS ////
 
     // The general-purpose mouse-shadow rendering method
     renderMouseShadow = () => {

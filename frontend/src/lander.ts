@@ -15,13 +15,13 @@ export default class Lander {
     _duration: number;      // How many frames to animate for just the landing (clouds will linger longer)
     _elapsed: number;       // How many frames have been shown
 
-    constructor(p5: P5, x: number, y: number, start: number, destination: number, duration: number) {
+    constructor(p5: P5, x: number, y: number, destination: number, duration: number) {
         this._p5 = p5;
         this._x = x;                                    // All values (x, y, w, h) are in terms of PIXELS
         this._y = y;
         this._width = 8 * constants.BLOCK_WIDTH;
         this._height = 6 * constants.BLOCK_WIDTH;       // Rough guesstimate... these values are only temporary in any case
-        this._start = start;
+        this._start = y;
         this._destination = destination;
         this._distance = this._destination - this._start - this._height * 1.6;
         this._duration = duration;  
