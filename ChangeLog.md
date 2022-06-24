@@ -1129,7 +1129,7 @@ Exit Criteria:
 - [DONE] When the mouse context is 'wait', the click responder is deactivated, and the sidebar is not shown!
 - [DONE] When the player selects 'Sure I'm sure', they are shown an animation of a spaceship landing on the spot they chose
 - [DONE] When the landing animation is finished, the game emerges from 'wait mode'
-- When the landing animation is finished, the initial base structures are created. These should not be test structures anymore!
+- [DONE] When the landing animation is finished, the initial base structures are created. No test structures this time!
 - [DONE] When the landing animation is finished, the initial colonists appear, and the game begins!
 
 Features Added:
@@ -1140,6 +1140,7 @@ Features Added:
 - Mouse shadow can be rendered under a variety of circumstances including landing and building placement, based on mouse context.
 - New mouse context added: landing (for handling the selection of the initial landing site, in expanded map view mode)
 - New mouse context added: wait (for temporarily suspending gameplay while still in map mode - to play an animation, say)
+- Engine can have animations
 
 1. Add the creation of a new modal to the Engine's setupNewGame method, displaying a message welcoming the player to SMARS, and instructing them to pick their landing site.
 
@@ -1215,17 +1216,13 @@ Features Added:
 
 37. Using comments, organize all of the various Engine methods to better indicate where future methods should go (Major categories are setup functions, structure placement functions, modal functions, landing functions and time keeping functions).
 
-### 21. Remove scrolling functionality from the render method into its own method, handleScrolling, and call that from the render method. Have the handleScrolling method itself check the mouse context to see what parameter/s affect scrolling. This will be helpful for customizing scroll behaviour based on mouse context, to allow for faster scrolling, etc (see below).
+38. Remove scrolling functionality from the render method into its own method, handleScrolling, and call that from the render method. Have the handleScrolling method itself check the mouse context to see what parameter/s affect scrolling. This will be helpful for customizing scroll behaviour based on mouse context, to allow for faster scrolling, etc (see below).
 
-### 17. While the player is in landing selection mode, expand the mouse scroll area to be much larger than usual, so that the landing site tends to sit right in the middle of the screen.
+39. If the player has the cursor in the scroll area for more than a second, higher threshold value, scroll at double speed.
 
-### 18. Ensure the screen doesn't scroll to the left if the mouse is beyond the edge of the screen in that direction.
+40. Add a switch to the backend's getStructureTypes function so that it doesn't send structures with the type 'test.'
 
-### 19. If the player has the cursor in the scroll area for more than a second, higher threshold value, scroll at double speed.
-
-### 31. Update the ModuleData type to include a new field, 'purchasable' which will later be used to prevent certain structures from appearing in the build menu (such as the empty tanks on the landing vehicle).
-
-### 21. Do not allow scrolling while mouse context is 'landing' - OR only allow scrolling in the direction of the landing zone?
+41. Comment-out all remaining console logs that occur outside of an error context (e.g. when the player attempts to place a structure in an invalid location). Then it's time to make a commitment.
 
 ## Chapter X: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 5)
 
@@ -1239,6 +1236,10 @@ Exit Criteria:
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
+
+## Chapter Z: Environments (Difficulty Estimate: ???)
+
+As the game matures, it will be more and more desirable to separate features that are used in development - console logs, test structures, in-game information displays, etc - from the production version of the game. We've already got an environment variable that the game's code can detect, so it would be possible to enable certain features only in a development environment, and then in a separate 'staging' environment it would be possible to preview the actual game experience.
 
 ### Bug List (Severity in square brackets):
 

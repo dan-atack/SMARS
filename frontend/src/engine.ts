@@ -235,7 +235,7 @@ export default class Engine extends View {
     handleClicks = (mouseX: number, mouseY: number) => {
         // Click is in sidebar (unless modal is open or the player has not chosen a landing site, or mouse context is wait):
         if (mouseX > constants.SCREEN_WIDTH - this._sidebar._width && !this._modal && this._hasLanded && this.mouseContext != "wait") {
-            console.log("Click in sidebar");
+            // console.log("Click in sidebar");
             this._sidebar.handleClicks(mouseX, mouseY);
         } else {
             // Click is not outside of the map
@@ -258,7 +258,8 @@ export default class Engine extends View {
                         this.confirmLandingSequence(mouseX, mouseY);
                         break;
                     case "wait":
-                        console.log("Mouse click response suppressed. Reason: 'In wait mode'");
+                        // TODO: Add UI explanation (or sound effect!) indicating that the player can't click during 'wait' mode
+                        // console.log("Mouse click response suppressed. Reason: 'In wait mode'");
                         break;
                 }
                 this.getMouseGridPosition(mouseX, mouseY);
@@ -389,7 +390,7 @@ export default class Engine extends View {
             this.createModal(false, modalData[0]);
             this._landingSiteCoords[0] = gridX - 4; // Set landing site location to the left edge of the landing area
             this._landingSiteCoords[1] = (constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH) - this._map._data._columns[gridX].length;
-            console.log(`Setting landing site X value to ${this._landingSiteCoords[0]}, ${this._landingSiteCoords[1]}`);
+            // console.log(`Setting landing site X value to ${this._landingSiteCoords[0]}, ${this._landingSiteCoords[1]}`);
         }    
     }
 
@@ -402,7 +403,7 @@ export default class Engine extends View {
         this.setWaitTime(wait);
         // Setup landing animation with 
         this._animation = new Lander(this._p5, x, -120, destination, wait - 120);
-        console.log(`Setting wait time to ${this._waitTime} frames at ${new Date()}`);
+        // console.log(`Setting wait time to ${this._waitTime} frames at ${new Date()}`);
     }
 
     // This method sets up the UI after the landing animation has finished
@@ -411,7 +412,6 @@ export default class Engine extends View {
         this._map.setExpanded(false);
         this._hasLanded = true;
         this.placeInitialStructures();
-        console.log("Landing sequence complete");
         this.createModal(false, modalData[1]);
         // Add two new colonists, one at each end of the landing zone (Y value is -2 since it is the Colonist's head level)
         this._population.addColonist(this._landingSiteCoords[0], this._landingSiteCoords[1] - 2);
@@ -528,7 +528,7 @@ export default class Engine extends View {
         }
         if (this._waitTime <= 0) {
             // Resolve wait by resetting mouse context and possibly calling additional functions
-            console.log(`Wait period over at ${new Date()}`);
+            // console.log(`Wait period over at ${new Date()}`);
             this.setMouseContext("select");
             this.resolveWaitPeriod();
         }
@@ -536,7 +536,7 @@ export default class Engine extends View {
 
     // Check if additional functions should be called at the end of a wait period
     resolveWaitPeriod = () => {
-        console.log("Resolving wait period.")
+        // console.log("Resolving wait period.")
         if (!this._hasLanded) {
             this.completeLandingSequence();
         }
@@ -612,15 +612,16 @@ export default class Engine extends View {
             this._modal._resolutions[resolution].outcomes.forEach((outcome) => {
                 switch (outcome[0]) {
                     case "start-landing-sequence":
-                        console.log('Landing sequence initiated.');
+                        // TODO: Add in-game message in place of console log
+                        // console.log('Landing sequence initiated.');
                         this.startLandingSequence();
                         break;
                     case "set-mouse-context":
-                        console.log(`Setting mouse context: ${outcome[1]}`);
+                        // console.log(`Setting mouse context: ${outcome[1]}`);
                         this.setMouseContext(outcome[1].toString());
                         break;
                     case "add-money":
-                        console.log(`Adding money: ${outcome[1]}`);
+                        // console.log(`Adding money: ${outcome[1]}`);
                         if (typeof outcome[1] === "number") this._economy.addMoney(outcome[1]);
                         break;
                         // TODO: Add other cases as they are invented
