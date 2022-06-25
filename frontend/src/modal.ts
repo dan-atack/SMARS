@@ -3,11 +3,16 @@ import P5 from "p5";
 import Button from "./button";
 import { constants } from "./constants";
 
+export type Resolution = {
+    text: string,                   // Words on the button
+    outcomes: [string, number | string][]    // A tuple consisting of a type (the the Engine's switch case) and a value (which can be either a string or a number)
+}
+
 export type EventData = {
     id: number,
     title: string,
     text: string,
-    resolutions: string[]
+    resolutions: Resolution[]
  }
 
 export default class Modal {
@@ -16,7 +21,7 @@ export default class Modal {
     _eventData: EventData;      // All event data is now passed directly to the constructor; no lookups to the constants file
     _title: string;
     _text: string;
-    _resolutions: string[];
+    _resolutions: Resolution[];
     _width: number;
     _height: number;
     _xPosition: number;
@@ -25,11 +30,11 @@ export default class Modal {
     _buttonX: number;
     _buttonY: number;
     _buttons: Button[];
-    _resume: () => void;
+    _closeModal: (resolution: number) => void;        // Engine-level closer function - also resolves the modals various outcomes
 
-    constructor(p5: P5, resume: () => void, random: boolean, eventData: EventData) {
+    constructor(p5: P5, closeModal: (resolution: number) => void, random: boolean, eventData: EventData) {
         this._p5 = p5;
-        this._resume = resume;
+        this._closeModal = closeModal;
         this._random = random;
         this._eventData = eventData;
         this._title = this._eventData.title;
@@ -39,18 +44,26 @@ export default class Modal {
         this._height = constants.SCREEN_HEIGHT / 2;
         this._xPosition = constants.SCREEN_WIDTH / 4;
         this._yPosition = constants.SCREEN_HEIGHT / 4;
-        eventData.resolutions[0].length < 9 ? this._buttonWidth = 128 : this._buttonWidth = 256; // Button width is conditional
-        this._buttonX = this._xPosition + (this._width / 2) - (this._buttonWidth / 2);
+        this._resolutions[0].text.length <= 13 ? this._buttonWidth = 128 : this._buttonWidth = 256; // Button width is conditional
+        this._buttonX = this._xPosition + (this._width / (1 + this._resolutions.length)) - (this._buttonWidth / (1 + this._resolutions.length));
         this._buttonY = this._yPosition + this._height * 3 / 4;
         this._buttons = [];
-        const button = new Button(this._p5, this._resolutions[0], this._buttonX, this._buttonY, this._resume, this._buttonWidth, 48, constants.GREEN_TERMINAL, constants.GREEN_DARK, 22);
-        this._buttons.push(button);
+        // Create one button per resolution and have the handler pass the index number of the button to the resolveModal method
+        this._resolutions.forEach((res, idx) => {
+            const handler = () => this.resolveModal(idx);
+            const b = new Button(this._p5, res.text, this._buttonX + idx * (this._buttonWidth + 16), this._buttonY, handler, this._buttonWidth, 48, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
+            this._buttons.push(b);
+        })
     }
 
     handleClicks = (mouseX: number, mouseY: number) => {
         this._buttons.forEach((button) => {
             button.handleClick(mouseX, mouseY);
         })
+    }
+
+    resolveModal = (idx: number) => {
+        this._closeModal(idx);
     }
 
     render = () => {

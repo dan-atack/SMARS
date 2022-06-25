@@ -20,7 +20,7 @@ const getStructures = async (req: Request, res: Response) => {
                     // If building category exists, filter the result by type before returning to the front-end:
                     console.log(`Found ${result.length} structures in ${category} collection. Filtering results by type ${type}`);
                     const resultsByType = result.filter((structure) => {
-                        return structure.type.toLowerCase() === type
+                        return structure.type.toLowerCase() === type.toLowerCase();
                     })
                     console.log(`Returning ${resultsByType.length} results for ${category}/${type} structures`)
                     res.status(200).json({ status: 200, data: resultsByType });
@@ -71,6 +71,8 @@ const getOneStructure = async (req: Request, res: Response) => {
 const getStructureTypes = async (req: Request, res: Response) => {
     const { category } = req.params;
     const client = new MongoClient("mongodb://localhost:27017", {});
+    // Toggle switch to allow or exclude structures with the 'test' type
+    const includeTests = false;
     try {
         await client.connect();
         console.log("Database connection established.");
@@ -86,9 +88,15 @@ const getStructureTypes = async (req: Request, res: Response) => {
                     // If a structure's type is not already listed, add it to the list of unique types:
                     result.forEach((structure) => {
                         if (!types.includes(structure.type)) {
-                            types.push(structure.type);
+                            // Only include test structures if toggle switch is set to true
+                            if (structure.type == "test") {
+                                if (includeTests) types.push(structure.type);
+                            } else {
+                                types.push(structure.type);
+                            }
                         }
                     })
+                    console.log(`Returning ${types.length} ${category} types`);
                     res.status(200).json({
                         status: 200,
                         data: types

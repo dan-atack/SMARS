@@ -152,7 +152,7 @@ export default class Game extends Screen {
             difficulty: this._gameData.difficulty,
             map_type: this._gameData.mapType,
             random_events: this._gameData.randomEvents,
-            terrain: this._engine._map._mapData,
+            terrain: this._engine._map._data._mapData,
             modules: moduleData,
             connectors: connectorData,
             resources: this._engine._economy._resources,

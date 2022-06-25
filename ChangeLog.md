@@ -1087,7 +1087,7 @@ Exit Criteria:
 
 29. Add the population count to the LoadOption pseudo-button, so players can see their colonies' population from the Load Game screen.
 
-## Chapter Twenty-Four: BACKDOOR UNIT TESTS (Difficulty Estimate: 7 For Refactoring and Familiarization with Jest Mocks)
+## Chapter Twenty-Four: BACKDOOR UNIT TESTS (Difficulty Estimate: 7 For Refactoring and Familiarization with Jest)
 
 ### May 6, 2022
 
@@ -1116,19 +1116,113 @@ Exit Criteria:
 
 ### May 23, 2022
 
-The game's story needs a beginning, and since it takes place on planet SMARS, it starts with the landing sequence. This chapter will see the improvement of three existing Engine features, and the creation of two new ones, as well as the creation of the Lander class, which will handle the on-screen animation for the landing sequence which begins the game. First, new options will be added to the mouse context system, which will see the addition of a 'landing' context for when the player selects their starting location, as well as a 'wait' context, which will be used to disable mouse-clicks during the landing sequence animation. Secondly, a Modal popup will be created with two possible resolutions, requiring the implementation of a system to use the data in the Modal class's "resolutions" array to activate different responses from the Engine depending on which option is chosen. The third Engine system to be upgraded will be the mouse shadow renderer, which will display in different colours depending on a landing site's feasibility. As for new functions, the Engine will need one function to begin the landing sequence, attached to the click handler for when the mouse context is 'landing', and another function to handle the placement of the colony's first structures when the animation ends. Finally, a new Lander class will be created to handle the visual effects for the landing sequence animation. Plus it would be fun to add/improve a few starting modules, like a cantina, a sleeping quarters, a storeroom and an oxygen recycler, maybe? Maybe even make them non-test types this time!? It's getting real, man!
+The game's story needs a beginning, and since it takes place on planet SMARS, it starts with the landing sequence. This chapter will see the improvement of three existing Engine features, and the creation of two new ones, as well as the creation of the Lander class, which will handle the on-screen animation for the landing sequence which begins the game. First, new options will be added to the mouse context system, which will see the addition of a 'landing' context for when the player selects their starting location, as well as a 'wait' context, which will be used to disable mouse-clicks and scrolling during the landing sequence animation. Secondly, a Modal popup will be created with two possible resolutions, requiring the implementation of a system to use the data in the Modal class's "resolutions" array to activate different responses from the Engine depending on which option is chosen. The third Engine system to be upgraded will be the mouse shadow renderer, which will display in different colours depending on a landing site's feasibility. As for new functions, the Engine will need one function to begin the landing sequence, attached to the click handler for when the mouse context is 'landing', and another function to handle the placement of the colony's first structures when the animation ends. Finally, a new Lander class will be created to handle the visual effects for the landing sequence animation. Plus it would be fun to add/improve a few starting modules, like a cantina, a sleeping quarters, a storeroom and an oxygen recycler, maybe? Maybe even make them non-test types this time!? It's getting real, man!
 
 Exit Criteria:
 
-- An introductory modal is shown immediately when the game starts, inviting the player to choose their landing site
-- When the mouse context is 'landing', the cursor shadow is shown in green or red depending on a site's feasibility
-- When the mouse context is 'landing', the sidebar should not be shown
-- When the mouse is clicked with the 'landing' context, a confirmation modal is shown
-- When the player selects 'No, Wait a second...' option, the modal is closed and the mouse context remains 'landing'
-- When the player selects 'Sure I'm sure!' option, the modal is closed and the mouse context becomes 'wait'
-- When the mouse context is 'wait', the click responder is deactivated, and the sidebar is not shown!
-- When the player selects 'Sure I'm sure', they are shown an animation of a spaceship landing on the spot they chose
-- When the landing animation is finished, the initial base structures are created, and the game begins!
+- [DONE] An introductory modal is shown immediately when the game starts, inviting the player to choose their landing site
+- [DONE] When the mouse context is 'landing', the cursor shadow is shown in green or red depending on a site's feasibility
+- [DONE] When the mouse context is 'landing', the sidebar should not be shown
+- [DONE] When the mouse is clicked with the 'landing' context, a confirmation modal is shown
+- [DONE] When the player selects 'No, Wait a second...' option, the modal is closed and the mouse context remains 'landing'
+- [DONE] When the player selects 'Sure I'm sure!' option, the modal is closed and the mouse context becomes 'wait'
+- [DONE] When the mouse context is 'wait', the click responder is deactivated, and the sidebar is not shown!
+- [DONE] When the player selects 'Sure I'm sure', they are shown an animation of a spaceship landing on the spot they chose
+- [DONE] When the landing animation is finished, the game emerges from 'wait mode'
+- [DONE] When the landing animation is finished, the initial base structures are created. No test structures this time!
+- [DONE] When the landing animation is finished, the initial colonists appear, and the game begins!
+
+Features Added:
+
+- Modals can have more than one possible resolution, depending on which option the player chooses.
+- Modal resolutions can themselves have can have multiple outcomes in the game (changing mouse context, altering resource values, etc) so that selecting a single resolution can have a number of consequences.
+- Engine scroll system now uses mouse hover instead of click-and-hold near the map's edges.
+- Mouse shadow can be rendered under a variety of circumstances including landing and building placement, based on mouse context.
+- New mouse context added: landing (for handling the selection of the initial landing site, in expanded map view mode)
+- New mouse context added: wait (for temporarily suspending gameplay while still in map mode - to play an animation, say)
+- Engine can have animations
+
+1. Add the creation of a new modal to the Engine's setupNewGame method, displaying a message welcoming the player to SMARS, and instructing them to pick their landing site.
+
+2. Add a new mouse context, 'landing', to the Engine's mouse context switcher. Have it simply console log when the mouse is pressed while in 'landing' mode at first.
+
+3. Update the Modal class's EventData type to convert the 'resolutions' field to a list of tuples, each of which has the structure (buttonText: string, engineMethod: string, value: number) where buttonText would be the writing on the button in the modal, the engineMethod would correspond to a switch case in the Engine's resolveModal method (which we'll take this opportunity to rename, from the closeModal method), and the value will be a number that provides additional data for the Engine's resolve function (such as a quantity of a resource to be added or removed, or an Enum to correspond to a particular mouse context!) Fix all existing Modal data objects to adhere to this new system.
+
+4. Upgrade the closeModal Engine method to resolveModal, with the ability to process different outcome type strings and adjust various values when a modal is resolved. Have it default to the first item in the Modal's resolutions list for now (the ability to choose among different resolutions will be added later).
+
+5. When the mouse context is 'landing', or any other context for that matter, ignore any clicks outside of the play area, to prevent the player from entering the in-game menu before they select their landing site.
+
+6. In fact, can we just not even show the menu until the player has landed?? Implement that by first adding a new Engine property, hasLanded, which is set to true upon the player's selection of a landing site. Pass this value to both the Map and Sidebar classes at render time, in the first case to tell it to render a wider area, and for the Sidebar to tell it to not render at all.
+
+7. Ensure the Engine doesn't accept mouse clicks for the Sidebar as long as hasLanded is false.
+
+8. Ensure the mouse click handler is able to register clicks on the expanded map area while hasLanded is false.
+
+9. Add a new Engine method that is the top-level mouse-shadow renderer, and have it be responsible for rendering not only the building shadow, but also the landing path shadow as well, which it will call as sub-methods. Create this distinction with the existing building shadow rendered, and ensure it still works properly.
+
+10. Alter the scrolling system so that scrolling occurs when the mouse holds the same position for more than 5 frames inside the scroll area, instead of the current system with the mouse click handler and the isScrolling variables. It should be simpler this way, really. New system: two new engine variables needed: mouseInScrollArea (which is the number of frames the mouse has spent near to either side of the map) and scrollThreshold, which is the amount of frames that need to pass for scrolling to start.
+
+11. Add a new Engine method that renders a green rectangle that extends 4 grid places to the left and right of the cursor, and goes all the way from the bottom of the map to the top, but rendered behind the map terrain (the mouse shadow rendered must be called before the map in the Engine render sequence).
+
+12. Extend all maps from the database that are less than 50 columns wide, as they will cause problems with the map when it is in extended mode. Update the Map Editor README file to remind users to make all new maps at least 64 columns wide in the future.
+
+13. Make the Map follow in the footsteps of the Colonist class, by refactoring its non-rendering attributes and methods into a MapData class. Test that this doesn't break anything.
+
+14. Add a new method to the MapData class, which looks at a range of 8 columns and tells if they're all the same height. It should return true if they are all the same height, and false if they aren't.
+
+15. Add a set of unit tests for this new Map method, to verify that it returns true and false under the appropriate circumstances.
+
+16. Have the Engine's mouse shadow renderer change the color of the rectangle it draws based on the outcome of this new Map method.
+
+17. Add a new Engine method, confirmLandingSequence, which will run when the mouse is clicked with the landing context. This method will take care of evaluating whether a valid landing site has been selected, and if so, create a new Modal popup to request confirmation. This modal will be the first to have more than one possible resolution, so the next thing we'll need to do is figure out how to manage multiple outcomes.
+
+18. Update the Modal class to be able to render, and handle more than one possible resolution, depending on the length of the Resolutions property. This will require the addition of a new method to the Modal class, in order to be able to pass the resolution index value to the Engine's closeModal function (which is passed down, via props drilling, into the Modal's soon-to-be many close buttons).
+
+19. Setup the constants file to export modal data, and start using this method immediately to avoid further cluttering the Engine with hard-coded data. Modal data should really come from the backend, ultimately.
+
+20. Create a new Engine method, startLandingSequence, which will take care of setting the mouse context to 'wait', setting a wait time for the landing animation to play. Initially though, just have it call the handleLandingSequence method (which we will soon rename to completeLandingSequence, or something else that implies its role as the end of that process, rather than the entire thing).
+
+21. Add new mouse context instructions for when the context is 'wait', telling the Engine to ignore all clicks when in this mode.
+
+22. Add a new switch block case to the Engine's closeModal method, to allow the confirm button to trigger the startLandingSequence method.
+
+23. Add new Engine data field for waitTime, to tell the Engine how long to remain in wait mode before reverting to normal behavior. When mouse context is in 'wait' mode, no mouse responses should occur (clicks or even scrolling should be disabled).
+
+24. When the Engine's mouse context is 'wait', have the renderer call a new method, advanceWaitTime, which decrements the waitTime value and resets then calls another new method called resolveWaitPeriod, which can call different scenario-specific methods (in this case, the now-renamed completeLandingSequence - formerly handleLandingSequence - method that sets the hasLanded variable to true, and finally begins the game).
+
+25. Create the Lander class, which will be a fairly simple entity with parameters for x, y, width, height, start (which will be zero), destination (which will be a y value representing the altitude at which the animated spaceship will 'touch down' on the Smartian surface) and duration (amount of renders the animation will last). Give this class a render method that draws a large circle, as well as a smaller circle and a triangle, which overlap to form a teardrop shape. It will need to accept offset values.
+
+26. Give the Engine a new property, animation, which will be an instance of the Lander class, or null. When the landing sequence is initiated, have the Engine create an instance of the Lander class. In the render method, add a check for the animation property, and if there is an animation, render it.
+
+27. Give the Lander class a new method, advanceAnimation, which updates the lander's position to move it 1/duration pixels closer to the destination height. Have the Lander's render function call this to advance the animation.
+
+28. Change the new game setup sequence so that colonists are not created the instant the game starts.
+
+29. Make the two colonists spawn by the completeLandingSequence method instead - place them at the left and right edges of the landing zone (add new Engine field to record the altitude and position of the designated landing zone - this info will also be used by the constructor function for the Lander, to position it and tell it where the surface is).
+
+30. Design the new structures that will be created after the landing sequence is completed. Focus on the function that Modules will play in the near future: providing resources and services for individual Colonists. Therefore, resource capacities/limits and number of Colonists that can be served should be prominently considered.
+
+31. Add the new Module, 'Cantina' to the game's database, including its shapes.
+
+32. Add the Module 'Crew Quarters' to the database, including shapes.
+
+33. Add Module 'Storage Module' to the database, including shapes.
+
+34. Add Oxygen and Water Tank modules, with their shapes.
+
+35. Have the Engine place each of these modules, in a stack, at the landing zone when the landing animation is complete.
+
+36. Revisit the render rules for the Lander, and spruce up that animation, just a little bit.
+
+37. Using comments, organize all of the various Engine methods to better indicate where future methods should go (Major categories are setup functions, structure placement functions, modal functions, landing functions and time keeping functions).
+
+38. Remove scrolling functionality from the render method into its own method, handleScrolling, and call that from the render method. Have the handleScrolling method itself check the mouse context to see what parameter/s affect scrolling. This will be helpful for customizing scroll behaviour based on mouse context, to allow for faster scrolling, etc (see below).
+
+39. If the player has the cursor in the scroll area for more than a second, higher threshold value, scroll at double speed.
+
+40. Add a switch to the backend's getStructureTypes function so that it doesn't send structures with the type 'test.'
+
+41. Comment-out all remaining console logs that occur outside of an error context (e.g. when the player attempts to place a structure in an invalid location). Then it's time to make a commitment.
 
 ## Chapter X: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 5)
 
@@ -1139,11 +1233,19 @@ Exit Criteria:
 - Placing a connector is constrained by:
   -- Must be placed within a module (later connectors might be partially external to the base, i.e. spanning the gap between two modules, but should follow the precedent of always originating/terminating at a module. Else what exactly are they connecting, right?)
 
+## Chapter Y: Tools (Difficulty Estimate: ???)
+
+Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
+
+## Chapter Z: Environments (Difficulty Estimate: ???)
+
+As the game matures, it will be more and more desirable to separate features that are used in development - console logs, test structures, in-game information displays, etc - from the production version of the game. We've already got an environment variable that the game's code can detect, so it would be possible to enable certain features only in a development environment, and then in a separate 'staging' environment it would be possible to preview the actual game experience.
+
 ### Bug List (Severity in square brackets):
 
 ### 1. [2: UX] When the in-game menu is opened then closed, it resets the engine's offset to be back in the middle of the map. The offset value should persist between menu openings.
 
-### 2. [8: Major gameplay issue] Ensure buildings cannot be placed BELOW the game's screen area (and by extension, that no map actions are permitted outside the map area).
+2. [8: Major gameplay issue] Ensure buildings cannot be placed BELOW the game's screen area (and by extension, that no map actions are permitted outside the map area).
 
 ### 3. [5: UX / Minor gameplay issue] At some, but not all x-offset values, the building shadow (and subsequent placement) pulls to the left, to the point that the cursor is outside the designated build area by what appears to be up to a full grid space.
 
@@ -1154,6 +1256,10 @@ Exit Criteria:
 ### 6. [1: UX / Animation glitch] When the game speed is adjusted, it can cause moving colonists' animations to fly apart for a moment. Add a command for the Engine when the time speed is changed to immediately halt all colonist animations (the Engine should call a Population-level function that tells the individual colonists to reset their animation frame counts). Bonus if they can switch to the new animation speed on the fly rather than simply showing nothing until the next movement.
 
 ### 7. [1: Coding Convention] Colonist class should have a unique ID field, to individuate the colony's population.
+
+### 8. [1: UX / Aesthetic] When a modal popup has more than one possible resolution, the buttons for the different resolutions aren't symmetrically aligned on the horizontal axis (they are pulled slightly to the right it seems).
+
+### 9. [2: IX / Inaccurate info display] The game speed indicator should always be visible, including at the game start, and when the player returns to the game from the menu.
 
 ### Exit Criteria for backend save/load game chapter:
 

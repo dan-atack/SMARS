@@ -2,7 +2,6 @@
 import { ColonistSaveData, ColonistNeeds } from "./colonist";
 import { constants } from "./constants";
 
-
 export default class ColonistData {
     // Colonist data types
     _x: number;         // Colonists' x and y positions will be in terms of grid locations

@@ -69,6 +69,12 @@ export default class Economy {
         }
     }
 
+    // Processes positive financial transactions
+    addMoney = (amount: number) => {
+        this._resources.money[1] += amount;
+        this._resourceChangeRates.money += amount;
+    }
+
     // Processes a resource reduction transaction for a building
     subtractMoney = (cost: { money: number }) => {
         const money = this._resources.money[1] - cost.money;

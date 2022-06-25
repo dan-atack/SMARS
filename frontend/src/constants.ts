@@ -1,4 +1,5 @@
 // Global variables for the front-end:
+import { EventData } from "./modal";
 import { Resources } from "./economy";
 
 const basicResources: Resources = {
@@ -22,10 +23,12 @@ export const constants = {
     ALMOST_BLACK: "#010101",
     APP_BACKGROUND: "#03090A",
     SIDEBAR_BG: "#4B4446",
+    GRAY_DRY_ICE: "#BCC4C1",
     GRAY_LIGHT: "#7D7D7D",
+    GRAY_MEDIUM: "#626378",
+    GRAY_DARKER: "#595A6B",
     GRAY_METEOR: "#353837",
     GRAY_IRON_ORE: "#2E1409",
-    GRAY_DRY_ICE: "#BCC4C1",
     EGGSHELL: "#F6F7E9",
     RED_ERROR: "#D10000",
     RED_CONTRAST: "#FF4230",
@@ -45,10 +48,42 @@ export const constants = {
     BLUEGREEN_CRYSTAL: "#00F2BA",
     BLUEGREEN_DARK: "#052E26",
     BLUE_BG: "#00004F",
+    PURPLE_LIGHT: "#A67ACF",
     BASIC_RESOURCES: basicResources
 }
 
- // BLOCKTIONARY!!!!
+// Modal Data (for now - eventually it should come from the backend!)
+
+export const modalData: EventData[] = [
+   {
+      id: 0,
+      title: "Confirm Landing Selection",
+      text: "Really? Are you sure this is a good\nlanding site? I mean, it's your call obviously...",
+      resolutions: [
+          {
+              text: "Yes I'm sure!",
+              outcomes: [["set-mouse-context", "select"], ["start-landing-sequence", 1]]
+          },
+          {
+            text: "No, go back!",
+            outcomes: [["set-mouse-context", "landing"]]
+         }
+      ]
+  },
+  {
+   id: 1,
+   title: "Touchdown!",
+   text: "The colonists have arrived at the planet's surface,\nmiraculously unharmed!",
+   resolutions: [
+       {
+           text: "Hallelujah!",
+           outcomes: [["set-mouse-context", "select"]]
+       }
+   ]
+}
+]
+
+// BLOCKTIONARY!!!!
 export type BlockData = {
     type: number,
     name: string,
