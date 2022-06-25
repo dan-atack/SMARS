@@ -1224,14 +1224,45 @@ Features Added:
 
 41. Comment-out all remaining console logs that occur outside of an error context (e.g. when the player attempts to place a structure in an invalid location). Then it's time to make a commitment.
 
-## Chapter X: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 5)
+## Chapter 26: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 7 - Tweaking the existing Connector a fair bit, plus adding new unit tests for connectors and infra classes, plus adding the structure shadow class)
 
-We need to do the Connectors separately, as their placement logic is quite different from the logic for the Modules.
+### June 25, 2022
+
+Adding Connectors to the game will allow the player to connect different modules for colonists to move between them, and to allow certain types of resources to be transfered between modules. Although the actual uses for these abilities will be addressed in subsequent chapters, it will be the goal of this chapter to set up all of the systems needed for placing connectors on the map, and keeping track of them with the Infrastructure class. This includes, of course, ensuring that Connector data is added to the save/load game system and thoroughly tested for proper integration and backwards compatibility. It will also be the goal of this chapter to upgrade the Infrastructure class to begin keeping track of the base's interior structure and systems (such as where all of the modules' floors are, where there are connection points, etc). Actually using this information practically (i.e. having the colonists begin to be able to walk on floors and use ladders, or pass resources between modules through pipes and ducts) is, again, out of the scope of this chapter. We will also be making heavy use of unit testing here, creating testable data classes for both the Infra and Connector classes, as well as creating the new mouseShadow class using the same type of architecture.
 
 Exit Criteria:
 
-- Placing a connector is constrained by:
-  -- Must be placed within a module (later connectors might be partially external to the base, i.e. spanning the gap between two modules, but should follow the precedent of always originating/terminating at a module. Else what exactly are they connecting, right?)
+- The player can select a Connector from the sidebar and click once on the map to create a shadow representing its start point
+- The player can click on another point on the map to specify the Connector's endpoint; the Connector is placed when this happens
+- The player can cancel placement at any time by pressing the sidebar's 'back' button, or by hitting Escape
+- When placing a Connector's terminus, the mouse shadow shows a preview of the segment/s that will be created
+- When placing any Connector or Module, the mouse cursor will change colour based on whether or not a location is valid
+- Some Connectors are only horizontal or only vertical, and have only one segment when placed
+- Some Connectors are horizontal AND vertical, and can be placed as two segments, forming an L-shape.
+- The Connectors component data is its own class, and has at least 1 meaningful unit test
+- The Infrastructore component data is its own class, and has at least 1 meaningful unit test
+- The MouseShadow component's data is its own class, and has at least 1 meaningful unit test
+- The Infrastructure class will contain a list of 'floors', representing the surfaces within the base on which colonists can walk
+- The Infrastructure class will contain another list of 'connections', representing links between different floors or modules
+- Ensure all backwards compatibility with older saves (saves with obsolete connector data should simply disregard it)
+
+Features Added:
+
+-
+
+### 1. In the same manner as was done for the Module and Map classes, decouple the Connectors class data from its render methods, and test thoroughly that nothing is broken by this (make and load a new save file).
+
+### 2. Alter the ConnectorInfo class to contain just a few shapes to be rendered by the Connector class's (newly isolated) rendering methods.
+
+### 3. Update the ConnectorInfo class's cost field to stipulate that the cost is now in terms of 'per unit of length'.
+
+### 4. Update both of the existing Connectors to reflect this new way of doing things.
+
+### 5. In the Engine's loadSavedGame method, tell it to ignore any Connectors that don't have a 'shapes' property.
+
+### 6. Create a new Engine Mouse Context: ConnectorStart, which simply console logs its name when a click is registered with that context.
+
+### 7. In the BuildingChip component, add some logic to its handleClick method to set the mouse context differently for Connectors than for Modules placement (might be necessary to slightly alter the existing 'place' context name to make it more explicitly about modules).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
