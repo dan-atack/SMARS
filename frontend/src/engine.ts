@@ -11,7 +11,7 @@ import Modal, { EventData } from "./modal";
 import Lander from "./lander";
 import { ModuleInfo, ConnectorInfo, getOneModule, getOneConnector } from "./server_functions";
 import { constants, modalData } from "./constants";
-import { SaveInfo, GameTime } from "./saveGame";
+import { ConnectorSaveInfo, ModuleSaveInfo, SaveInfo, GameTime } from "./saveGame";
 import { GameData } from "./newGameSetup";
 
 // TODO: Load Environment variables
@@ -132,6 +132,7 @@ export default class Engine extends View {
         this._infrastructure.setup(this._horizontalOffset);
         this._population.loadColonistData(saveInfo.colonists);
         this.loadModulesFromSave(saveInfo.modules);
+        // TODO: Reactivate Connector loading functionality
         this.loadConnectorsFromSave(saveInfo.connectors);
         this._hasLanded = true; // Landing sequence has to take place before saving is possible
         // Check if game has colonist data and if it doesn't, render an alternate welcome back message
@@ -154,7 +155,7 @@ export default class Engine extends View {
     }
 
     // Top-level saved module importer
-    loadModulesFromSave = (modules: {name: string, type?: string, x: number, y: number}[]) => {
+    loadModulesFromSave = (modules: ModuleSaveInfo[]) => {
         // Only operate if there actually are modules to load:
         if (modules.length > 0) {
             // Sort the list by name to avoid over-calling the backend to get module data
@@ -193,7 +194,7 @@ export default class Engine extends View {
     }
 
     // Top-level saved module importer
-    loadConnectorsFromSave = (connectors: {name: string, type?: string, x: number, y: number}[]) => {
+    loadConnectorsFromSave = (connectors: ConnectorSaveInfo[]) => {
         // Only operate if there actually are modules to load:
         if (connectors.length > 0) {
             // Sort the list by name to avoid over-calling the backend to get module data
@@ -205,6 +206,9 @@ export default class Engine extends View {
             // Separate modules by name
             let conTypes: string[] = [];
             connectors.forEach((con) => {
+                if (!con.segments) {
+                    console.log("Deprecated Warning: A Connector with no 'segments' data has been loaded.");
+                }
                 if (!conTypes.includes(con.name)) {
                     conTypes.push(con.name)
                 }
@@ -213,6 +217,7 @@ export default class Engine extends View {
             conTypes.forEach((cT) => {
                 const cons = connectors.filter((con) => con.name === cT);
                 const conType = cons[0].type != undefined ? cons[0].type : "test";
+                // TODO: Use a series of start, stop points instead of coordinates
                 let coords: number[][] = [];
                 cons.forEach((con) => {
                     coords.push([con.x, con.y]);
@@ -244,9 +249,12 @@ export default class Engine extends View {
                     case "select":
                         console.log("Select");
                         break;
-                    case "place":
-                        console.log("Place");
+                    case "placeModule":
+                        console.log("Place Module.");
                         this.handleStructurePlacement(mouseX, mouseY);
+                        break;
+                    case "connectorStart":
+                        console.log("Connector Start.");
                         break;
                     case "resource":
                         console.log("Resource");

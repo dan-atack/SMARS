@@ -36,11 +36,11 @@ export type ConnectorInfo = {
     type: string            // Feed this into Engine switch case  - again, ALL IN LOWERCASE!!!
     resourcesCarried: string[]    // Which kinds of things can flow through this connector
     maxFlowRate: number     // Maximum amount of transferrable resource (including people) that can pass per unit of time
-    buildCosts: { money: number }         // Just a simple object for now, but more keys can be added in future
+    buildCosts: { money: number }         // For connectors, this is the price for one unit of length
     maintenanceCosts: Object[]  // Ditto
     vertical: boolean       // Can this go up/down? Ladders can, rails cannot.
-    horizontal: boolean     // Can this go from side to side? Air ducts can, elevators cannot.
-    // TODO: WIDTH!
+    horizontal: boolean     // Can this go from side to side? Rails can, but elevators cannot (some things can do both)
+    width: number           // We'll keep this at 1 for most of the basic connectors, but later ones may need to be thicker
 }
 
 // Send login request with req body consisting of a username and password to the game's server

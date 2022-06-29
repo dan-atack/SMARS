@@ -245,7 +245,7 @@ export default class Infrastructure {
             }
         });
         this._connectors.forEach((connector) => {
-            if (connector._x >= leftEdge && connector._y < rightEdge) {
+            if (connector._data._x >= leftEdge && connector._data._y < rightEdge) {
                 connector.render(this._horizontalOffset);
             }
         });

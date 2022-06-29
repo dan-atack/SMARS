@@ -1240,7 +1240,7 @@ Exit Criteria:
 - Some Connectors are only horizontal or only vertical, and have only one segment when placed
 - Some Connectors are horizontal AND vertical, and can be placed as two segments, forming an L-shape.
 - The Connectors component data is its own class, and has at least 1 meaningful unit test
-- The Infrastructore component data is its own class, and has at least 1 meaningful unit test
+- The Infrastructure component data is its own class, and has at least 1 meaningful unit test
 - The MouseShadow component's data is its own class, and has at least 1 meaningful unit test
 - The Infrastructure class will contain a list of 'floors', representing the surfaces within the base on which colonists can walk
 - The Infrastructure class will contain another list of 'connections', representing links between different floors or modules
@@ -1250,19 +1250,43 @@ Features Added:
 
 -
 
-### 1. In the same manner as was done for the Module and Map classes, decouple the Connectors class data from its render methods, and test thoroughly that nothing is broken by this (make and load a new save file).
+1. In the same manner as was done for the Module and Map classes, decouple the Connectors class data from its render methods, and test thoroughly that nothing is broken by this (make and load a new save file, and ensure that old saved games can load). Leave everything else the same (don't start upgrading the data types yet).
 
-### 2. Alter the ConnectorInfo class to contain just a few shapes to be rendered by the Connector class's (newly isolated) rendering methods.
+2. Update the Engine to ignore the Connectors in existing save files.
 
-### 3. Update the ConnectorInfo class's cost field to stipulate that the cost is now in terms of 'per unit of length'.
+3. Add a comment to the ConnectorInfo class's cost field to stipulate that the cost is now in terms of 'per unit of length.'
 
-### 4. Update both of the existing Connectors to reflect this new way of doing things.
+4. Then update the ConnectorInfo type (in server_functions.ts) to include a 'width' property, then individually update both Connectors in the database (ladder and air duct) to include this property.
 
-### 5. In the Engine's loadSavedGame method, tell it to ignore any Connectors that don't have a 'shapes' property.
+5. Add a new field to the Connector Data class: segments, which will be a list of up to two objects with this shape: {start: {x: number, y: number}, stop: {x: number, y: number}}. Better yet, make both start and stop equal a Coords type, for maximum efficiency.
 
-### 6. Create a new Engine Mouse Context: ConnectorStart, which simply console logs its name when a click is registered with that context.
+6. Next, add the Coords type {x: number, y: number} to the Backend's saveFunctions, and use it to update the shape of the SaveInfo object's connectors field. Simultaneously, update the SaveInfo object in the SaveGame.ts file so that the two are in sync. See if this breaks anything.
 
-### 7. In the BuildingChip component, add some logic to its handleClick method to set the mouse context differently for Connectors than for Modules placement (might be necessary to slightly alter the existing 'place' context name to make it more explicitly about modules).
+7. Update the Game.ts file to ensure that new Save games include Connectors' segments data, if it exists. Keep the x and y data for now as well, but prepare to deprecate in the future (code is at line 144 in game.ts).
+
+8. Prepare to deprecate the older Connectors: Have the Engine log a warning text whenever a Connector that has NO segments property is loaded.
+
+9. Validate that new Connectors will save, and contain the segment property, by loading a saved game that already has connectors, then seeing the deprecation message, then creating at least one new connector, then saving that file, then loading it. There should be no deprecation messages, as ideally all of the old connectors as well as the new ones will now be saved with the 'segments' field.
+
+10. Create a new Engine Mouse Context: ConnectorStart, which simply console logs its name when a click is registered with that context.
+
+11. In the BuildingChip component, add some logic to its handleClick method to set the mouse context differently for Connectors than for Modules placement (might be necessary to slightly alter the existing 'place' context name to make it more explicitly about modules).
+
+### 12. Create a new class of game entity called MouseShadow, which will render a rectangle (for now) at a coordinate point. It should also have a color property. Do this in the form of a dual class creation, one for MouseShadow and another for MouseShadowData, so that we can add unit tests a few steps from now.
+
+### 13. Import the MouseShadow class to the Engine, and create a new Engine property, mouseShadow, to be either null, or an instance of the mouseShadow class.
+
+### 14. Update the mouseContext switch function to create a new mouseShadow instance when the mouse context is set to either placeModule, or connectorStart. It should be possible to pass the parameters (height and width) of the building in question to the mouseShadow's constructor.
+
+### 15. Update the Engine's renderBuildingShadow method to call the MouseShadow's render function, passing it the horizontal offset in the process.
+
+### 16. In the Infrastructure class, isolate the logic for testing a site's validity into a dedicated checkTerrain method (if this is not already available, that is). It should return a two-part tuple containing a boolean (success status) and a string (message, e.g. reasons for a rejection).
+
+### 17. Use this moment to detach the Infrastructure's Data component into its own separate class
+
+### 98. Alter the ConnectorInfo class to contain just a few shapes to be rendered by the Connector class's (newly isolated) rendering methods.
+
+### 99. Fix the BuildingChip component's cost calculation (found in the render block, of all places) to ensure it is workings are transparent and its readout correct (neither is currently the case).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
