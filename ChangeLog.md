@@ -1272,9 +1272,9 @@ Features Added:
 
 11. In the BuildingChip component, add some logic to its handleClick method to set the mouse context differently for Connectors than for Modules placement (might be necessary to slightly alter the existing 'place' context name to make it more explicitly about modules).
 
-### 12. Create a new class of game entity called MouseShadow, which will render a rectangle (for now) at a coordinate point. It should also have a color property. Do this in the form of a dual class creation, one for MouseShadow and another for MouseShadowData, so that we can add unit tests a few steps from now.
+12. Create a new class of game entity called MouseShadow, which will render a rectangle (for now) at a coordinate point. It should also have a color property. Do this in the form of a dual class creation, one for MouseShadow and another for MouseShadowData, so that we can add unit tests a few steps from now.
 
-### 13. Import the MouseShadow class to the Engine, and create a new Engine property, mouseShadow, to be either null, or an instance of the mouseShadow class.
+13. Import the MouseShadow class to the Engine, and create a new Engine property, mouseShadow, to be either null, or an instance of the mouseShadow class.
 
 ### 14. Update the mouseContext switch function to create a new mouseShadow instance when the mouse context is set to either placeModule, or connectorStart. It should be possible to pass the parameters (height and width) of the building in question to the mouseShadow's constructor.
 

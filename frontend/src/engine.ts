@@ -9,6 +9,7 @@ import Economy, { Resources } from "./economy";
 import Population from "./population";
 import Modal, { EventData } from "./modal";
 import Lander from "./lander";
+import MouseShadow from "./mouseShadow";
 import { ModuleInfo, ConnectorInfo, getOneModule, getOneConnector } from "./server_functions";
 import { constants, modalData } from "./constants";
 import { ConnectorSaveInfo, ModuleSaveInfo, SaveInfo, GameTime } from "./saveGame";
@@ -29,6 +30,7 @@ export default class Engine extends View {
     _population: Population;
     _modal: Modal | null;
     _animation: Lander | null;  // This field holds the current entity being used to control animations, if there is one
+    _mouseShadow: MouseShadow | null;   // This field will hold a mouse shadow entity if a building is being placed
     // Map scrolling control
     _horizontalOffset: number;  // This will be used to offset all elements in the game's world, starting with the map
     _scrollDistance: number;    // Pixels from the edge of the world area in which scrolling occurs
@@ -74,6 +76,7 @@ export default class Engine extends View {
         this._population = new Population(p5);
         this._modal = null;
         this._animation = null;
+        this._mouseShadow = null;
         this._horizontalOffset = 0;
         this._scrollDistance = 50;
         this._scrollingLeft = false;
