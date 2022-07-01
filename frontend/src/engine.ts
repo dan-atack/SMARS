@@ -348,7 +348,7 @@ export default class Engine extends View {
         const w = this.selectedBuilding?.width || constants.BLOCK_WIDTH;
         let h = this.selectedBuilding?.width || constants.BLOCK_WIDTH;
         // If structure is a module, find its height parameter; otherwise just use its height twice
-        if (this.selectedBuilding != null && this._infrastructure.isModule(this.selectedBuilding)) {
+        if (this.selectedBuilding != null && this._infrastructure._data.isModule(this.selectedBuilding)) {
             h = this.selectedBuilding.height;
         }
         this._mouseShadow = new MouseShadow(this._p5, w, h);
@@ -361,7 +361,7 @@ export default class Engine extends View {
     // Evaluates whether the current mouse position is at an acceptable building site or not
     validateMouseLocationForPlacement = (x: number, y: number) => {
         if (this.selectedBuilding && this._mouseShadow) {   // Only check if a building is selected and a mouse shadow exists
-            if (this._infrastructure.isModule(this.selectedBuilding)) {    // If we have a module, check its placement
+            if (this._infrastructure._data.isModule(this.selectedBuilding)) {    // If we have a module, check its placement
                 const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._data._mapData);
                 if (clear) {
                     this._mouseShadow._color = constants.GREEN_MODULE;
@@ -408,7 +408,7 @@ export default class Engine extends View {
         const [x, y] = this.getMouseGridPosition(mouseX, mouseY);
         if (this.selectedBuilding != null) {
             const affordable = this._economy.checkResources(this.selectedBuilding.buildCosts);
-            if (this._infrastructure.isModule(this.selectedBuilding)) {
+            if (this._infrastructure._data.isModule(this.selectedBuilding)) {
                 const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._data._mapData);
                 if (clear && affordable) {
                     this._infrastructure.addModule(x, y, this.selectedBuilding);
@@ -722,7 +722,7 @@ export default class Engine extends View {
             x = x * constants.BLOCK_WIDTH - this._horizontalOffset;
             y = y * constants.BLOCK_WIDTH;
             if (this.selectedBuilding !== null) {
-                if (this._infrastructure.isModule(this.selectedBuilding)) {
+                if (this._infrastructure._data.isModule(this.selectedBuilding)) {
                     this._mouseShadow.render(x, y);
                 } else {
                     this._mouseShadow.render(x, y);
@@ -745,7 +745,7 @@ export default class Engine extends View {
         }
         this._map.render(this._horizontalOffset);               // Render map third
         this._infrastructure.render(this._horizontalOffset);    // Render infrastructure fourth
-        if (this.selectedBuilding && !this._infrastructure.isModule(this.selectedBuilding)) {
+        if (this.selectedBuilding && !this._infrastructure._data.isModule(this.selectedBuilding)) {
             this.renderMouseShadow(); // If placing a connector, render mouse shadow above the infra layer
         }
         this._economy.render();

@@ -1286,7 +1286,21 @@ Features Added:
 
 18. In the Infrastructure class, find the method for determining a building site's suitability. Integrate that with the new Engine method, ValidateMouseLocationForPlacement, which will call it whenever the mouse shadow is rendered to determine the suitability of the present mouse location for placing the currently selected building. Turn the mouse shadow red for unacceptable locations, and green for acceptable ones.
 
-### 17. Use this moment to detach the Infrastructure's Data component into its own separate class
+19. Use this moment to detach the Infrastructure's Data component into its own separate class. Unlike with other data classes, it will not be possible to bring everything over since the Modules and Connectors lists themselves contain entities with require the P5 component, so the Infra Data class will only be able to take the basic location suitability tests for itself, while leaving much of the Infra class's core functionality in the original class.
+
+### 18. Make a very simple unit test for the Infrastructure Data class, that establishes that a method exists and can be called.
+
+### 19. Add another test that validates one of the existing methods, such as calculateModuleArea, with some dummy data.
+
+### 19. Now add a new Infrastructure method, which will determine whether a Connector can be placed when given the map's terrain data. It should initially allow placement anywhere that doesn't overlap with a part of the terrain.
+
+### 20. Make a unit test that validates this new method, before testing it in the game.
+
+### 21. Call the Infrastructure's new checkConnectorPlacement function in the Engine when it's validating a Connector's potential location, and use it to color the mouse shadow for a new connector appropriately.
+
+### 22. Elaborate on the checkConnectorPlacement method to have it detect whether a potential location is inside (overlapping) an existing Module.
+
+### 23. Elaborate on the checkConnectorPlacement method to not allow placement of a new Connector if it is above the terrain's surface (see how the Module placement check achieves this) - UNLESS its location is inside a Module, in which case allow it.
 
 ### 98. Alter the ConnectorInfo class to contain just a few shapes to be rendered by the Connector class's (newly isolated) rendering methods.
 
