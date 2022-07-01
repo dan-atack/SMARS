@@ -358,6 +358,22 @@ export default class Engine extends View {
         this._mouseShadow = null;
     }
 
+    // Evaluates whether the current mouse position is at an acceptable building site or not
+    validateMouseLocationForPlacement = (x: number, y: number) => {
+        if (this.selectedBuilding && this._mouseShadow) {   // Only check if a building is selected and a mouse shadow exists
+            if (this._infrastructure.isModule(this.selectedBuilding)) {    // If we have a module, check its placement
+                const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._data._mapData);
+                if (clear) {
+                    this._mouseShadow._color = constants.GREEN_MODULE;
+                } else {
+                    this._mouseShadow._color = constants.RED_ERROR;
+                }
+            } else if (this.selectedBuilding) { // If we have a Connector just make it green for now
+                this._mouseShadow._color = constants.GREEN_TERMINAL;
+            }
+        }
+    }
+
     // Given to various sub-components, this dictates how the mouse will behave when clicked in different situations
     setMouseContext = (value: string) => {
         this.mouseContext = value;
@@ -701,6 +717,8 @@ export default class Engine extends View {
         // Only render the building shadow if mouse is over the map area (not the sidebar) and there is no modal
         if (p5.mouseX < constants.SCREEN_WIDTH - this._sidebar._width && !this._modal && this._mouseShadow) {
             let [x, y] = this.getMouseGridPosition(p5.mouseX, p5.mouseY);
+            // Set mouse shadow color based on current position's validity, and render it:
+            this.validateMouseLocationForPlacement(x, y);
             x = x * constants.BLOCK_WIDTH - this._horizontalOffset;
             y = y * constants.BLOCK_WIDTH;
             if (this.selectedBuilding !== null) {
@@ -721,12 +739,15 @@ export default class Engine extends View {
         }
         const p5 = this._p5;
         p5.background(constants.APP_BACKGROUND);
-        this.renderMouseShadow();                           // Render mouse shadow first
+        this.renderMouseShadow();                               // Render mouse shadow first
         if (this._animation) {
-            this._animation.render(this._horizontalOffset); // Render animation second
+            this._animation.render(this._horizontalOffset);     // Render animation second
         }
-        this._map.render(this._horizontalOffset);           // Render map third
-        this._infrastructure.render(this._horizontalOffset);
+        this._map.render(this._horizontalOffset);               // Render map third
+        this._infrastructure.render(this._horizontalOffset);    // Render infrastructure fourth
+        if (this.selectedBuilding && !this._infrastructure.isModule(this.selectedBuilding)) {
+            this.renderMouseShadow(); // If placing a connector, render mouse shadow above the infra layer
+        }
         this._economy.render();
         this._population.render(this._horizontalOffset, this.ticksPerMinute, this.gameOn);
         this.handleMouseScroll();   // Every frame, check for mouse scrolling

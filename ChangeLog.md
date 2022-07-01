@@ -1284,7 +1284,7 @@ Features Added:
 
 17. Make the setMouseContext method call the Engine's new destroyMouseShadow method whenever the mouse context is changed and the selectedBuilding field is null - indicating that no building is selected for placement.
 
-### 16. In the Infrastructure class, isolate the logic for testing a site's validity into a dedicated checkTerrain method (if this is not already available, that is). It should return a two-part tuple containing a boolean (success status) and a string (message, e.g. reasons for a rejection).
+18. In the Infrastructure class, find the method for determining a building site's suitability. Integrate that with the new Engine method, ValidateMouseLocationForPlacement, which will call it whenever the mouse shadow is rendered to determine the suitability of the present mouse location for placing the currently selected building. Turn the mouse shadow red for unacceptable locations, and green for acceptable ones.
 
 ### 17. Use this moment to detach the Infrastructure's Data component into its own separate class
 

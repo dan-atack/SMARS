@@ -7,18 +7,20 @@ export default class MouseShadow {
     // Mouse Shadow types:
     _p5: P5;
     _data: MouseShadowData;
+    _color: string;
 
     // W and H are both given in terms of columns, not pixels
     constructor(p5: P5, w: number, h: number) {
         this._p5 = p5;
         this._data = new MouseShadowData(w, h);
+        this._color = constants.BLUEGREEN_CRYSTAL;
     }
 
     // Takes up to 4 parameters: x and y (mouse coords) and optionally w and h (in case of a connector being stretched)
     render = (x: number, y: number, w?: number, h?: number) => {
         const p5 = this._p5;
         // TODO: Make color dependent on placement viability calculation
-        p5.fill(constants.BLUEGREEN_CRYSTAL);
+        p5.fill(this._color);
         // Allow the shadow to follow the mouse if it is not locked
         if (!this._data._locked) {
             this._data._x = x;
