@@ -36,7 +36,7 @@ export default class BuildingChip extends Button {
             } else {        // Otherwise set this building as the selection and set mouse context
                 this.setBuildingSelection(this.buildingData);
                 this.setSelected(true);
-                // Set mouse context based on whether building is a module or connector
+                // LAST - Set mouse context based on whether building is a module or connector
                 if (this.isModule(this.buildingData)) {
                     this.setMouseContext("placeModule");
                 } else {

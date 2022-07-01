@@ -9,11 +9,12 @@ export default class MouseShadowData {
     _h: number;
     _locked: boolean;   // Used to anchor the shadow in place, for connector placement
 
-    constructor(x: number, y: number, w: number, h: number) {
-        this._x = x;
-        this._y = y;
-        this._w = w;
-        this._h = w;
+    // W and H are both given in terms of columns, not pixels
+    constructor(w: number, h: number) {
+        this._x = 0;    // No inputs are needed to construct a mouse shadow; only needed for rendering
+        this._y = 0;
+        this._w = w * constants.BLOCK_WIDTH;       // All values are in terms of pixels
+        this._h = h * constants.BLOCK_WIDTH;
         this._locked = false;       // By default the shadow is free-floating
     }
 }

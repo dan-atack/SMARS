@@ -272,6 +272,8 @@ export default class Engine extends View {
                         // TODO: Add UI explanation (or sound effect!) indicating that the player can't click during 'wait' mode
                         // console.log("Mouse click response suppressed. Reason: 'In wait mode'");
                         break;
+                    default:
+                        console.log(`Unknown mouse context used: ${this.mouseContext}`);
                 }
                 this.getMouseGridPosition(mouseX, mouseY);
             } 
@@ -342,10 +344,28 @@ export default class Engine extends View {
         this._scrollingRight = false;
     }
 
+    createMouseShadow = () => {
+        const w = this.selectedBuilding?.width || constants.BLOCK_WIDTH;
+        let h = this.selectedBuilding?.width || constants.BLOCK_WIDTH;
+        // If structure is a module, find its height parameter; otherwise just use its height twice
+        if (this.selectedBuilding != null && this._infrastructure.isModule(this.selectedBuilding)) {
+            h = this.selectedBuilding.height;
+        }
+        this._mouseShadow = new MouseShadow(this._p5, w, h);
+    }
+
+    destroyMouseShadow = () => {
+        this._mouseShadow = null;
+    }
+
     // Given to various sub-components, this dictates how the mouse will behave when clicked in different situations
     setMouseContext = (value: string) => {
         this.mouseContext = value;
         this.setSelectedBuilding(this._sidebar._detailsArea._buildingSelection);
+        // Ensure there is no mouse shadow if no structure is selected
+        if (this.selectedBuilding === null) {
+            this.destroyMouseShadow();
+        }
     }
 
     // Used for placing buildings and anything else that needs to 'snap to' the grid (returns values in grid locations)
@@ -364,6 +384,8 @@ export default class Engine extends View {
 
     setSelectedBuilding = (selectedBuilding: ModuleInfo | ConnectorInfo | null) => {
         this.selectedBuilding = selectedBuilding;
+        // Mouse shadow is created when a structure is selected
+        this.createMouseShadow();
     }
 
     handleStructurePlacement = (mouseX: number, mouseY: number) => {
@@ -676,18 +698,16 @@ export default class Engine extends View {
     // For building placement
     renderBuildingShadow = () => {
         const p5 = this._p5;
-        // Only render the building shadow if mouse is over the map area (not the sidebar)
-        if (p5.mouseX < constants.SCREEN_WIDTH - this._sidebar._width && !this._modal) {
+        // Only render the building shadow if mouse is over the map area (not the sidebar) and there is no modal
+        if (p5.mouseX < constants.SCREEN_WIDTH - this._sidebar._width && !this._modal && this._mouseShadow) {
             let [x, y] = this.getMouseGridPosition(p5.mouseX, p5.mouseY);
             x = x * constants.BLOCK_WIDTH - this._horizontalOffset;
             y = y * constants.BLOCK_WIDTH;
             if (this.selectedBuilding !== null) {
                 if (this._infrastructure.isModule(this.selectedBuilding)) {
-                    const w = this.selectedBuilding.width * constants.BLOCK_WIDTH;
-                    const h = this.selectedBuilding.height * constants.BLOCK_WIDTH;
-                    p5.rect(x, y, w, h);
+                    this._mouseShadow.render(x, y);
                 } else {
-                    p5.rect(x, y, constants.BLOCK_WIDTH, constants.BLOCK_WIDTH);
+                    this._mouseShadow.render(x, y);
                 }
             }
         }    

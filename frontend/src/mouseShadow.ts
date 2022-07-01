@@ -8,9 +8,10 @@ export default class MouseShadow {
     _p5: P5;
     _data: MouseShadowData;
 
-    constructor(p5: P5, x: number, y: number, w: number, h: number) {
+    // W and H are both given in terms of columns, not pixels
+    constructor(p5: P5, w: number, h: number) {
         this._p5 = p5;
-        this._data = new MouseShadowData(x, y, w, h);
+        this._data = new MouseShadowData(w, h);
     }
 
     // Takes up to 4 parameters: x and y (mouse coords) and optionally w and h (in case of a connector being stretched)

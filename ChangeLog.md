@@ -1276,9 +1276,13 @@ Features Added:
 
 13. Import the MouseShadow class to the Engine, and create a new Engine property, mouseShadow, to be either null, or an instance of the mouseShadow class.
 
-### 14. Update the mouseContext switch function to create a new mouseShadow instance when the mouse context is set to either placeModule, or connectorStart. It should be possible to pass the parameters (height and width) of the building in question to the mouseShadow's constructor.
+14. Update the mouseContext switch function to create a new mouseShadow instance when the mouse context is set to either placeModule, or connectorStart. It should be possible to pass the parameters (height and width) of the building in question to the mouseShadow's constructor.
 
-### 15. Update the Engine's renderBuildingShadow method to call the MouseShadow's render function, passing it the horizontal offset in the process.
+15. Update the Engine's renderBuildingShadow method to call the MouseShadow's render function, passing it just the x and y coordinates of the mouse.
+
+16. Have the setSelectedBuilding method call a new Engine method, createMouseShadow, and pass it the module/connector's width/height data there, as appropriate. This will be passed to the new MouseShadow's constructor, but won't necessarily cause the mouse shadow to be rendered right away (the renderBuildingShadow method still governs that).
+
+17. Make the setMouseContext method call the Engine's new destroyMouseShadow method whenever the mouse context is changed and the selectedBuilding field is null - indicating that no building is selected for placement.
 
 ### 16. In the Infrastructure class, isolate the logic for testing a site's validity into a dedicated checkTerrain method (if this is not already available, that is). It should return a two-part tuple containing a boolean (success status) and a string (message, e.g. reasons for a rejection).
 
