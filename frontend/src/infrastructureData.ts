@@ -7,10 +7,52 @@ import { constants } from "./constants";
 export default class InfrastructureData {
     // Infra Data class is mostly a calculator for the Infra class to pass values to, so it stores very few of them itself
     _justBuilt: ModuleInfo | ConnectorInfo | null;
+    _baseVolume: number[][];    // Works the same as the terrain map, but to keep track of the base's inner area
 
     constructor() {
         this._justBuilt = null; // When a building has just been added, set this to the building's data
+        this._baseVolume = [];  // Wait for buildings to be placed
     }
+
+    // GENERIC CHECKS - CAN BE USED BY MODULES OR CONNECTORS
+
+    // Takes in data for a new module OR CONNECTOR's location and the game's terrain data and looks for any overlaps
+    checkTerrainForObstructions (area: {x: number, y: number}[], terrain: number[][], ) {
+        let clear = true;               // Set to false if there is any overlap between the map and the proposed new module
+        let collisions: number[][] = [];  // Keep track of the coordinates of any collisions (obstructions) that are detected
+        const rightEdge = area[0].x;  // Get x coordinates of the right and left edges of the module
+        const leftEdge = area[area.length - 1].x;
+        // Check only the map columns that match the module area's x coordinates:
+        const cols: number[][] = [];
+        for (let i = 0; i < terrain.length; i++) {
+            if (i >= rightEdge && i <= leftEdge) {
+                cols.push(terrain[i]);
+            }
+        }
+        cols.forEach((column, idx) => {
+            area.forEach((coordPair) => {
+                // Match each module column with each terrain column
+                if (coordPair.x === rightEdge + idx) {
+                    // Invert y value from the mouse click
+                    const y = constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH - coordPair.y - 1;
+                    column.forEach((block, jdx) => {
+                        if (block && jdx === y) {
+                            collisions.push([rightEdge + idx, coordPair.y])
+                            clear = false;
+                        }
+                    })
+                }
+            })
+        })
+        // If there is no obstruction we get a 'true' here; otherwise return the coordinates that overlap.
+        if (clear) {
+            return true;
+        } else {
+            return collisions;
+        }
+    }
+
+    // MODULE CHECKS
 
     // Determines if the new building is a module or a connector:
     isModule (building: ModuleInfo | ConnectorInfo): building is ModuleInfo {
@@ -50,42 +92,6 @@ export default class InfrastructureData {
         }
     }
 
-    // Takes in data for a new module's location and the game's terrain data and looks for any overlaps
-    checkTerrainForObstructions (moduleArea: {x: number, y: number}[], terrain: number[][], ) {
-        let clear = true;               // Set to false if there is any overlap between the map and the proposed new module
-        let collisions: number[][] = [];  // Keep track of the coordinates of any collisions (obstructions) that are detected
-        const rightEdge = moduleArea[0].x;  // Get x coordinates of the right and left edges of the module
-        const leftEdge = moduleArea[moduleArea.length - 1].x;
-        // Check only the map columns that match the module area's x coordinates:
-        const cols: number[][] = [];
-        for (let i = 0; i < terrain.length; i++) {
-            if (i >= rightEdge && i <= leftEdge) {
-                cols.push(terrain[i]);
-            }
-        }
-        cols.forEach((column, idx) => {
-            moduleArea.forEach((coordPair) => {
-                // Match each module column with each terrain column
-                if (coordPair.x === rightEdge + idx) {
-                    // Invert y value from the mouse click
-                    const y = constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH - coordPair.y - 1;
-                    column.forEach((block, jdx) => {
-                        if (block && jdx === y) {
-                            collisions.push([rightEdge + idx, coordPair.y])
-                            clear = false;
-                        }
-                    })
-                }
-            })
-        })
-        // If there is no obstruction we get a 'true' here; otherwise return the coordinates that overlap.
-        if (clear) {
-            return true;
-        } else {
-            return collisions;
-        }
-    }
-
     checkModuleFootprintWithTerrain (floor: number, footprint: number[], terrain: number[][]) {
         let okay = true;            // Like the other checks, set this to false if there are any gaps under the requested location
         let gaps: number[] = [];  // If there are any gaps, keep track of their locations
@@ -108,5 +114,25 @@ export default class InfrastructureData {
         } else {
             return gaps;
         }
+    }
+
+    // CONNECTOR CHECKS
+
+    // Top-level Connector INITIAL placement validation function - x and y are grid locations
+    checkConnectorInitialPlacement (x: number, y: number, terrain: number[][]) {
+        const coords = [{x: x, y: y}];  // Make a list of coordinate pairs, containing the selected location
+        const unobstructed = this.checkTerrainForObstructions(coords, terrain);
+        if (unobstructed === true) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    // BASE MAPPING METHODS
+
+    // Updates the 'volume map' of the base's structures
+    updateBaseVolume () {
+        
     }
 }

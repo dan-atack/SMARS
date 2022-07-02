@@ -369,7 +369,12 @@ export default class Engine extends View {
                     this._mouseShadow._color = constants.RED_ERROR;
                 }
             } else if (this.selectedBuilding) { // If we have a Connector just make it green for now
-                this._mouseShadow._color = constants.GREEN_TERMINAL;
+                const clear = this._infrastructure._data.checkConnectorInitialPlacement(x, y, this._map._data._mapData);
+                if (clear) {
+                    this._mouseShadow._color = constants.GREEN_TERMINAL;
+                } else {
+                    this._mouseShadow._color = constants.RED_ERROR;
+                }
             }
         }
     }

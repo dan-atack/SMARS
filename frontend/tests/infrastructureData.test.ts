@@ -117,4 +117,9 @@ describe("Infrastructure Data", () => {
         expect(infraData.checkModuleFootprintWithTerrain(28, [2, 3, 4, 5], map1)).toStrictEqual([4]);
     })
 
+    test("Can call top-level connector initial placement check", () => {
+        expect(infraData.checkConnectorInitialPlacement(4, 29, map1)).toBe(true);   // Nestled in the little 'gap'
+        expect(infraData.checkConnectorInitialPlacement(4, 30, map1)).toBe(false);  // One too low
+    })
+
 })

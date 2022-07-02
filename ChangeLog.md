@@ -1295,15 +1295,17 @@ Features Added:
 
 22. Make unit tests for all the other Infra Data methods, then get rid of the original Infra tests file (it doesn't actually test anything so after it's been used up for inspiration it will have served its purpose).
 
-### 19. Now add a new Infrastructure method, which will determine whether a Connector can be placed when given the map's terrain data. It should initially allow placement anywhere that doesn't overlap with a part of the terrain.
+23. Have the Engine's validateMouseLocationForPlacement method call the Infra Data class's checkTerrainForObstructions function and set the Connector initial placement mouse shadow to red or green accordingly.
 
-### 20. Make a unit test that validates this new method, before testing it in the game.
+24. Give the Infrastructure DATA class a new checkConnectorPlacement function, for the Engine to call when it's validating a Connector's potential location, and use it to color the mouse shadow for a new connector appropriately. First, have this method call the existing checkTerrainForObstructions function and reporting the result to the Engine. Validate this function with a unit test.
 
-### 21. Call the Infrastructure's new checkConnectorPlacement function in the Engine when it's validating a Connector's potential location, and use it to color the mouse shadow for a new connector appropriately.
+25. Add a new Infra Data class property: baseVolume. It will essentially serve as a second map, but for the base structures. It should be updated every time a new module is constructed, and will be used to allow the placement of Connectors inside the base.
 
-### 22. Elaborate on the checkConnectorPlacement method to have it detect whether a potential location is inside (overlapping) an existing Module.
+### 26. Add a new Infra Data class method, updateBaseVolume, to be called by the Infra base class's AddModule method, that will create/update a map-like list of coordinates that contain modules. Add a unit test for this method that simulates calling the function multiple times, and also find a way to validate that the base volume is calculated when a game is loaded.
 
 ### 23. Elaborate on the checkConnectorPlacement method to not allow placement of a new Connector if it is above the terrain's surface (see how the Module placement check achieves this) - UNLESS its location is inside a Module, in which case allow it.
+
+### 22. Elaborate on the checkConnectorPlacement method to have it detect whether a potential location is inside (overlapping) an existing Module.
 
 ### 98. Alter the ConnectorInfo class to contain just a few shapes to be rendered by the Connector class's (newly isolated) rendering methods.
 
