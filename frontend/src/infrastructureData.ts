@@ -1,7 +1,6 @@
 // The InfrastructureData class handles all of the data processing and structure placement determination tasks for the infrastructure class, without any rendering tasks
-import Module from "./module";
-import Connector from "./connector";
 import { ConnectorInfo, ModuleInfo } from "./server_functions";
+import { Coords } from "./connectorData";
 import { constants } from "./constants";
 
 export default class InfrastructureData {
@@ -11,7 +10,17 @@ export default class InfrastructureData {
 
     constructor() {
         this._justBuilt = null; // When a building has just been added, set this to the building's data
-        this._baseVolume = [];  // Wait for buildings to be placed
+        this._baseVolume = [];  // Starts with just an array - setup sets its length
+    }
+
+    setup (mapWidth: number) {
+        if (this._baseVolume.length === 0) {
+            for(let i = 0; i < mapWidth; i++) {
+                this._baseVolume.push([]);
+            }
+        } else {
+            console.log("WARNING: An attempt has been made to set the base volume but it already has a value.");
+        }
     }
 
     // GENERIC CHECKS - CAN BE USED BY MODULES OR CONNECTORS
@@ -132,7 +141,17 @@ export default class InfrastructureData {
     // BASE MAPPING METHODS
 
     // Updates the 'volume map' of the base's structures
-    updateBaseVolume () {
-        
+    updateBaseVolume (moduleArea: Coords[]) {
+        // For each set of coordinates, add the y coordinate to the xth list in the base's volume. Re-sort columns as needed
+        moduleArea.forEach((coords) => {
+            // Check if coordinate is already present
+            if (!(this._baseVolume[coords.x].includes(coords.y))) {
+                this._baseVolume[coords.x].push(coords.y);
+                this._baseVolume[coords.x].sort((a: number, b: number) => a - b);
+            } else {
+                console.log(`WARNING: Not adding coords ${coords.x}, ${coords.y} due to overlap with existing volume.`);
+            }
+        })
+        // console.log(this._baseVolume);
     }
 }

@@ -14,6 +14,7 @@ export default class Infrastructure {
     _connectors: Connector[];
     _horizontalOffset: number;  // Value is in pixels
 
+    // Map width is passed to the data class at construction to help with base volume calculations
     constructor(p5: P5) {
         this._p5 = p5;
         this._data = new InfrastructureData();
@@ -22,8 +23,8 @@ export default class Infrastructure {
         this._horizontalOffset = 0;
     }
 
-    setup(center: number) {
-        const x = center / constants.BLOCK_WIDTH;
+    setup(mapWidth: number) {
+        this._data.setup(mapWidth)
     }
 
     // Top level module placement checker: Calls sub-routines from the data class
@@ -54,6 +55,9 @@ export default class Infrastructure {
 
     addModule (x: number, y: number, moduleInfo: ModuleInfo) {
         this._modules.push(new Module(this._p5, x, y, moduleInfo));
+        // Update base volume data
+        const area = this._data.calculateModuleArea(moduleInfo, x, y);
+        this._data.updateBaseVolume(area);
     }
 
     addConnector (x: number, y: number, connectorInfo: ConnectorInfo) {

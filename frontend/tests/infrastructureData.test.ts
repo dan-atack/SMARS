@@ -29,6 +29,14 @@ const justRightCoords = [
     {x: 2, y: 27},
     {x: 2, y: 28}
 ];
+const onTopOfJustRightCoords = [
+    {x: 0, y: 25},
+    {x: 0, y: 26},
+    {x: 1, y: 25},
+    {x: 1, y: 26},
+    {x: 2, y: 25},
+    {x: 2, y: 26}
+]
 const tooLowCoords = [
     {x: 0, y: 28},
     {x: 0, y: 29},
@@ -58,6 +66,8 @@ const map1 = [
 
 describe("Infrastructure Data", () => {
     const infraData = new InfrastructureData();
+
+    infraData.setup(map1.length);
 
     test("Defines calculateModuleArea", () => {
         expect(typeof infraData.calculateModuleArea).toBe("function");
@@ -120,6 +130,40 @@ describe("Infrastructure Data", () => {
     test("Can call top-level connector initial placement check", () => {
         expect(infraData.checkConnectorInitialPlacement(4, 29, map1)).toBe(true);   // Nestled in the little 'gap'
         expect(infraData.checkConnectorInitialPlacement(4, 30, map1)).toBe(false);  // One too low
+    })
+
+    test("Can calculate base volume", () => {
+        // Test setup
+        expect(infraData._baseVolume).toStrictEqual([
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            []
+        ]);
+        infraData.updateBaseVolume(justRightCoords);    // Test adding just one structure
+        expect(infraData._baseVolume).toStrictEqual([
+            [27, 28],
+            [27, 28],
+            [27, 28],
+            [],
+            [],
+            [],
+            []
+        ]);
+        // Test adding a second structure and sorting the list
+        infraData.updateBaseVolume(onTopOfJustRightCoords);
+        expect(infraData._baseVolume).toStrictEqual([
+            [25, 26, 27, 28],
+            [25, 26, 27, 28],
+            [25, 26, 27, 28],
+            [],
+            [],
+            [],
+            []
+        ]);
     })
 
 })

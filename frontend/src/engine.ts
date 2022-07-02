@@ -122,7 +122,7 @@ export default class Engine extends View {
         this._map.setup(this._gameData.mapTerrain);
         this._economy.setResources(this._gameData.startingResources);
         this._horizontalOffset = this._map._data._maxOffset / 2;   // Put player in the middle of the map to start out
-        this._infrastructure.setup(this._horizontalOffset);
+        this._infrastructure.setup(this._map._data._mapData.length);
         this.createNewGameModal();
     }
 
@@ -132,7 +132,7 @@ export default class Engine extends View {
         this._map.setup(this._saveInfo.terrain);
         this._economy.setResources(saveInfo.resources);
         this._horizontalOffset = this._map._data._maxOffset / 2;
-        this._infrastructure.setup(this._horizontalOffset);
+        this._infrastructure.setup(this._map._data._mapData.length);
         this._population.loadColonistData(saveInfo.colonists);
         this.loadModulesFromSave(saveInfo.modules);
         // TODO: Reactivate Connector loading functionality
