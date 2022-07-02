@@ -1288,9 +1288,11 @@ Features Added:
 
 19. Use this moment to detach the Infrastructure's Data component into its own separate class. Unlike with other data classes, it will not be possible to bring everything over since the Modules and Connectors lists themselves contain entities with require the P5 component, so the Infra Data class will only be able to take the basic location suitability tests for itself, while leaving much of the Infra class's core functionality in the original class.
 
-### 18. Make a very simple unit test for the Infrastructure Data class, that establishes that a method exists and can be called.
+20. Make a very simple unit test for the Infrastructure Data class, that establishes that a method exists and can be called.
 
-### 19. Add another test that validates one of the existing methods, such as calculateModuleArea, with some dummy data.
+21. Add another test that validates one of the existing methods, such as calculateModuleArea, with some dummy data.
+
+### 22. Make unit tests for all the other Infra Data methods, then get rid of the original Infra tests file (it doesn't actually test anything so after it's been used up for inspiration it will have served its purpose).
 
 ### 19. Now add a new Infrastructure method, which will determine whether a Connector can be placed when given the map's terrain data. It should initially allow placement anywhere that doesn't overlap with a part of the terrain.
 
@@ -1304,7 +1306,7 @@ Features Added:
 
 ### 98. Alter the ConnectorInfo class to contain just a few shapes to be rendered by the Connector class's (newly isolated) rendering methods.
 
-### 99. Fix the BuildingChip component's cost calculation (found in the render block, of all places) to ensure it is workings are transparent and its readout correct (neither is currently the case).
+### 99. Fix the BuildingChip component's cost calculation (located in the render block, of all places) to ensure it is workings are transparent and its readout correct (neither is currently the case).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
