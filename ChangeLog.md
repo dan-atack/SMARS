@@ -1232,15 +1232,15 @@ Adding Connectors to the game will allow the player to connect different modules
 
 Exit Criteria:
 
-- The player can select a Connector from the sidebar and click once on the map to create a shadow representing its start point
+- [DONE] The player can select a Connector from the sidebar and click on the map to create a shadow representing its start point
 - The player can click on another point on the map to specify the Connector's endpoint; the Connector is placed when this happens
 - The player can cancel placement at any time by pressing the sidebar's 'back' button, or by hitting Escape
 - When placing a Connector's terminus, the mouse shadow shows a preview of the segment/s that will be created
-- When placing any Connector or Module, the mouse cursor will change colour based on whether or not a location is valid
+- [DONE] When placing any Connector or Module, the mouse cursor will change colour based on whether or not a location is valid
 - Some Connectors are only horizontal or only vertical, and have only one segment when placed
 - Some Connectors are horizontal AND vertical, and can be placed as two segments, forming an L-shape.
 - The Connectors component data is its own class, and has at least 1 meaningful unit test
-- The Infrastructure component data is its own class, and has at least 1 meaningful unit test
+- [DONE] The Infrastructure component data is its own class, and has at least 1 meaningful unit test
 - The MouseShadow component's data is its own class, and has at least 1 meaningful unit test
 - The Infrastructure class will contain a list of 'floors', representing the surfaces within the base on which colonists can walk
 - The Infrastructure class will contain another list of 'connections', representing links between different floors or modules
@@ -1248,7 +1248,8 @@ Exit Criteria:
 
 Features Added:
 
--
+- Infrastructure class has several of its methods in a unit-testable InfrastructureData class.
+- Mouse Shadow class calculates building placement validity and changes colour accordingly.
 
 1. In the same manner as was done for the Module and Map classes, decouple the Connectors class data from its render methods, and test thoroughly that nothing is broken by this (make and load a new save file, and ensure that old saved games can load). Leave everything else the same (don't start upgrading the data types yet).
 
@@ -1292,7 +1293,7 @@ Features Added:
 
 21. Add another test that validates one of the existing methods, such as calculateModuleArea, with some dummy data.
 
-### 22. Make unit tests for all the other Infra Data methods, then get rid of the original Infra tests file (it doesn't actually test anything so after it's been used up for inspiration it will have served its purpose).
+22. Make unit tests for all the other Infra Data methods, then get rid of the original Infra tests file (it doesn't actually test anything so after it's been used up for inspiration it will have served its purpose).
 
 ### 19. Now add a new Infrastructure method, which will determine whether a Connector can be placed when given the map's terrain data. It should initially allow placement anywhere that doesn't overlap with a part of the terrain.
 
