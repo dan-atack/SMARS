@@ -39,7 +39,7 @@ export default class Infrastructure {
         let mapFloor: number[] | boolean = [];
         if (modFloor !== true) {
             // If modFloor comes back as anything other than 'true', it will be a list of the columns that aren't supported by an existing module, and we run THAT through the terrain support detector:
-            mapFloor = this._data.checkModuleFootprintWithTerrain(floor, modFloor, terrain);
+            mapFloor = this._data.checkFootprintWithTerrain(floor, modFloor, terrain);
         }
         if (mapClear === true && modClear === true && (modFloor === true || mapFloor === true)) {
             return true;
@@ -54,6 +54,7 @@ export default class Infrastructure {
     }
 
     addModule (x: number, y: number, moduleInfo: ModuleInfo) {
+
         this._modules.push(new Module(this._p5, x, y, moduleInfo));
         // Update base volume data
         const area = this._data.calculateModuleArea(moduleInfo, x, y);

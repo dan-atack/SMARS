@@ -118,13 +118,13 @@ describe("Infrastructure Data", () => {
 
     test("Can check module footprint versus terrain for gaps", () => {
         // Floor is at ground level, with no gaps
-        expect(infraData.checkModuleFootprintWithTerrain(28, [0, 1, 2, 3], map1)).toBe(true);
+        expect(infraData.checkFootprintWithTerrain(28, [0, 1, 2, 3], map1)).toBe(true);
         // Floor is above ground level (all gaps) (Lower "floor" value = higher elevation, of course)
-        expect(infraData.checkModuleFootprintWithTerrain(27, [0, 1, 2, 3], map1)).toStrictEqual([
+        expect(infraData.checkFootprintWithTerrain(27, [0, 1, 2, 3], map1)).toStrictEqual([
             0, 1, 2, 3
         ]);
         // Floor is at ground level, with one gap
-        expect(infraData.checkModuleFootprintWithTerrain(28, [2, 3, 4, 5], map1)).toStrictEqual([4]);
+        expect(infraData.checkFootprintWithTerrain(28, [2, 3, 4, 5], map1)).toStrictEqual([4]);
     })
 
     test("Can call top-level connector initial placement check", () => {

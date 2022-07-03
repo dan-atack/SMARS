@@ -61,6 +61,30 @@ export default class InfrastructureData {
         }
     }
 
+    checkFootprintWithTerrain (floor: number, footprint: number[], terrain: number[][]) {
+        let okay = true;            // Like the other checks, set this to false if there are any gaps under the requested location
+        let gaps: number[] = [];  // If there are any gaps, keep track of their locations
+        // Compare footprint to map - don't forget to invert the y-value!
+        const y = constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH - floor - 1;
+        terrain.forEach((col, idx) => {
+            // Set okay to false and add a gap if the last non-zero number in the list is not exactly y - 1
+            if (footprint.includes(idx)) {
+                // To make sure you only say there's terrain if there is a block, make sure it's a number and that it's non-zero
+                if (typeof col[y - 1] == "number" && col[y - 1] != 0) {
+                } else {
+                    okay = false;
+                    gaps.push(idx);
+                }
+            } 
+        })
+        // If there are no gaps we get a 'true' here; otherwise return the coordinates where there is no floor:
+        if (okay) {
+            return true;
+        } else {
+            return gaps;
+        }
+    }
+
     // MODULE CHECKS
 
     // Determines if the new building is a module or a connector:
@@ -101,37 +125,15 @@ export default class InfrastructureData {
         }
     }
 
-    checkModuleFootprintWithTerrain (floor: number, footprint: number[], terrain: number[][]) {
-        let okay = true;            // Like the other checks, set this to false if there are any gaps under the requested location
-        let gaps: number[] = [];  // If there are any gaps, keep track of their locations
-        // Compare footprint to map - don't forget to invert the y-value!
-        const y = constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH - floor - 1;
-        terrain.forEach((col, idx) => {
-            // Set okay to false and add a gap if the last non-zero number in the list is not exactly y - 1
-            if (footprint.includes(idx)) {
-                // To make sure you only say there's terrain if there is a block, make sure it's a number and that it's non-zero
-                if (typeof col[y - 1] == "number" && col[y - 1] != 0) {
-                } else {
-                    okay = false;
-                    gaps.push(idx);
-                }
-            } 
-        })
-        // If there are no gaps we get a 'true' here; otherwise return the coordinates where there is no floor:
-        if (okay) {
-            return true;
-        } else {
-            return gaps;
-        }
-    }
-
     // CONNECTOR CHECKS
 
     // Top-level Connector INITIAL placement validation function - x and y are grid locations
     checkConnectorInitialPlacement (x: number, y: number, terrain: number[][]) {
         const coords = [{x: x, y: y}];  // Make a list of coordinate pairs, containing the selected location
         const unobstructed = this.checkTerrainForObstructions(coords, terrain);
-        if (unobstructed === true) {
+        const grounded = this.checkFootprintWithTerrain(y, [x], terrain);
+        // If grounded is a list, the Connector is not grounded
+        if (unobstructed === true && grounded === true) {
             return true;
         } else {
             return false;
@@ -152,6 +154,5 @@ export default class InfrastructureData {
                 console.log(`WARNING: Not adding coords ${coords.x}, ${coords.y} due to overlap with existing volume.`);
             }
         })
-        // console.log(this._baseVolume);
     }
 }

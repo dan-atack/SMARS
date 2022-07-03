@@ -1303,7 +1303,7 @@ Features Added:
 
 26. Add a new Infra Data class method, updateBaseVolume, to be called by the Infra base class's AddModule method, that will create/update a map-like list of coordinates that contain modules. Add a unit test for this method that simulates calling the function multiple times, and also find a way to validate that the base volume is calculated when a game is loaded.
 
-### 23. Elaborate on the checkConnectorPlacement method to not allow placement of a new Connector if it is above the terrain's surface (see how the Module placement check achieves this).
+27. Elaborate on the checkConnectorPlacement method to not allow placement of a new Connector if it is above the terrain's surface (see how the Module placement check achieves this).
 
 ### 24. Make yet another function that checks if a set of coordinates matches a position in the baseVolume map, and use the outcome of this check to potentially override a fail from the check described on the previous line. So now the rule is, you can't build a Connector above the terrain's surface - UNLESS its location is inside the baseVolume, in which case allow it.
 
