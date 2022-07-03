@@ -132,8 +132,19 @@ export default class InfrastructureData {
         const coords = [{x: x, y: y}];  // Make a list of coordinate pairs, containing the selected location
         const unobstructed = this.checkTerrainForObstructions(coords, terrain);
         const grounded = this.checkFootprintWithTerrain(y, [x], terrain);
+        const inside = this.checkIsInsideBase(x, y);
         // If grounded is a list, the Connector is not grounded
-        if (unobstructed === true && grounded === true) {
+        if (unobstructed === true && grounded === true || inside === true) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    // Checks if a pair of coordinates is inside the base volume
+    checkIsInsideBase (x: number, y: number) {
+        const col = this._baseVolume[x];
+        if (col.includes(y)) {
             return true;
         } else {
             return false;

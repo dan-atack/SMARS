@@ -1305,9 +1305,9 @@ Features Added:
 
 27. Elaborate on the checkConnectorPlacement method to not allow placement of a new Connector if it is above the terrain's surface (see how the Module placement check achieves this).
 
-### 24. Make yet another function that checks if a set of coordinates matches a position in the baseVolume map, and use the outcome of this check to potentially override a fail from the check described on the previous line. So now the rule is, you can't build a Connector above the terrain's surface - UNLESS its location is inside the baseVolume, in which case allow it.
+28. Make yet another function that checks if a set of coordinates matches a position in the baseVolume map, and use the outcome of this check to potentially override a fail from the check described on the previous line. So now the rule is, you can't build a Connector above the terrain's surface - UNLESS its location is inside the baseVolume, in which case allow it.
 
-### 22. Elaborate on the checkConnectorPlacement method to have it detect whether a potential location is inside (overlapping) an existing Module.
+### 25. Make a unit test for the Connector master placement test function.
 
 ### 98. Alter the ConnectorInfo class to contain just a few shapes to be rendered by the Connector class's (newly isolated) rendering methods.
 
@@ -1339,7 +1339,9 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ### 8. [1: UX / Aesthetic] When a modal popup has more than one possible resolution, the buttons for the different resolutions aren't symmetrically aligned on the horizontal axis (they are pulled slightly to the right it seems).
 
-### 9. [2: IX / Inaccurate info display] The game speed indicator should always be visible, including at the game start, and when the player returns to the game from the menu.
+### 9. [2: UX / Inaccurate info display] The game speed indicator should always be visible, including at the game start, and when the player returns to the game from the menu.
+
+### 10. [1: UX / Gameplay] Restrict the base's baseVolume area to only include modules that have the pressurized trait set to true. This would limit the ability to build certain connectors starting or ending in such modules (and potentially have other cool consequences too).
 
 ### Exit Criteria for backend save/load game chapter:
 

@@ -132,7 +132,7 @@ describe("Infrastructure Data", () => {
         expect(infraData.checkConnectorInitialPlacement(4, 30, map1)).toBe(false);  // One too low
     })
 
-    test("Can calculate base volume", () => {
+    test("Can calculate base volume and use it for connector placement", () => {
         // Test setup
         expect(infraData._baseVolume).toStrictEqual([
             [],
@@ -143,6 +143,8 @@ describe("Infrastructure Data", () => {
             [],
             []
         ]);
+        // Test Connector placement with base volume BEFORE structures are added
+        expect(infraData.checkConnectorInitialPlacement(0, 25, map1)).toBe(false);   // Above the plain
         infraData.updateBaseVolume(justRightCoords);    // Test adding just one structure
         expect(infraData._baseVolume).toStrictEqual([
             [27, 28],
@@ -164,6 +166,9 @@ describe("Infrastructure Data", () => {
             [],
             []
         ]);
+        // Test Connector placement AFTER adding structures (base volume)
+        expect(infraData.checkConnectorInitialPlacement(0, 25, map1)).toBe(true);   // Inside the base
+        expect(infraData.checkConnectorInitialPlacement(0, 24, map1)).toBe(false);  // Too high (above the roof)
     })
 
 })
