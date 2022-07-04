@@ -127,8 +127,8 @@ export default class InfrastructureData {
 
     // CONNECTOR CHECKS
 
-    // Top-level Connector INITIAL placement validation function - x and y are grid locations
-    checkConnectorInitialPlacement (x: number, y: number, terrain: number[][]) {
+    // Top-level Connector endpoint placement validation function - x and y are grid locations
+    checkConnectorEndpointPlacement (x: number, y: number, terrain: number[][]) {
         const coords = [{x: x, y: y}];  // Make a list of coordinate pairs, containing the selected location
         const unobstructed = this.checkTerrainForObstructions(coords, terrain);
         const grounded = this.checkFootprintWithTerrain(y, [x], terrain);
@@ -140,6 +140,8 @@ export default class InfrastructureData {
             return false;
         }
     }
+
+    // TODO (?) Make a function that performs a more limited feasibility test on connector in-between sections??
 
     // Checks if a pair of coordinates is inside the base volume
     checkIsInsideBase (x: number, y: number) {

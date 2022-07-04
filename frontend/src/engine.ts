@@ -14,6 +14,7 @@ import { ModuleInfo, ConnectorInfo, getOneModule, getOneConnector } from "./serv
 import { constants, modalData } from "./constants";
 import { ConnectorSaveInfo, ModuleSaveInfo, SaveInfo, GameTime } from "./saveGame";
 import { GameData } from "./newGameSetup";
+import { Coords } from "./connectorData";
 
 // TODO: Load Environment variables
 if (process.env.ENVIRONMENT) console.log(process.env.ENVIRONMENT);
@@ -233,7 +234,9 @@ export default class Engine extends View {
     loadConnectorFromSave = (selectedConnector: ConnectorInfo, locations: number[][]) => {
         if (selectedConnector != null) {
             locations.forEach((space) => {
-                this._infrastructure.addConnector(space[0], space[1], selectedConnector);
+                // TODO: Fix this to use both ends of a segment
+                const coords = {x: space[0], y: space[1]};
+                this._infrastructure.addConnector(coords, coords, selectedConnector);
             })
         }
     }
@@ -246,18 +249,25 @@ export default class Engine extends View {
             // console.log("Click in sidebar");
             this._sidebar.handleClicks(mouseX, mouseY);
         } else {
-            // Click is not outside of the map
+            // Click is over the map
             if (mouseX > 0 && mouseX < constants.SCREEN_WIDTH && mouseY > 0 && mouseY < constants.SCREEN_HEIGHT) {
+                const [gridX, gridY] = this.getMouseGridPosition(mouseX, mouseY);
                 switch (this.mouseContext) {
                     case "select":
                         console.log("Select");
                         break;
+                    // NOTE: To add new building placement contexts, ensure case name is also added to setMouseContext method
                     case "placeModule":
                         console.log("Place Module.");
-                        this.handleStructurePlacement(mouseX, mouseY);
+                        this.handleModulePlacement(gridX, gridY);
                         break;
                     case "connectorStart":
                         console.log("Connector Start.");
+                        this.handleConnectorStartPlacement(gridX, gridY)
+                        break;
+                    case "connectorStop":
+                        console.log("Connector Stop.");
+                        this.handleConnectorStopPlacement();
                         break;
                     case "resource":
                         console.log("Resource");
@@ -360,21 +370,20 @@ export default class Engine extends View {
 
     // Evaluates whether the current mouse position is at an acceptable building site or not
     validateMouseLocationForPlacement = (x: number, y: number) => {
-        if (this.selectedBuilding && this._mouseShadow) {   // Only check if a building is selected and a mouse shadow exists
+        // TODO: Improve the way this prevents out-of-bounds exceptions
+        if (this.selectedBuilding && this._mouseShadow && x >= 0) {   // Only check if a building is selected and a mouse shadow exists
             if (this._infrastructure._data.isModule(this.selectedBuilding)) {    // If we have a module, check its placement
                 const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._data._mapData);
-                if (clear) {
-                    this._mouseShadow._color = constants.GREEN_MODULE;
-                } else {
-                    this._mouseShadow._color = constants.RED_ERROR;
-                }
-            } else if (this.selectedBuilding) { // If we have a Connector just make it green for now
-                const clear = this._infrastructure._data.checkConnectorInitialPlacement(x, y, this._map._data._mapData);
-                if (clear) {
-                    this._mouseShadow._color = constants.GREEN_TERMINAL;
-                } else {
-                    this._mouseShadow._color = constants.RED_ERROR;
-                }
+                this._mouseShadow._data.setColor(clear);
+            } else if (!this._mouseShadow._data._connectorStartCoords) { // If we have a Connector with NO start coords
+                // If no start coords exist, this is the start placement
+                const clear = this._infrastructure._data.checkConnectorEndpointPlacement(x, y, this._map._data._mapData);
+                this._mouseShadow._data.setColor(clear);
+            } else if (this._mouseShadow._data._connectorStopCoords) {
+                const xStop = this._mouseShadow._data._connectorStopCoords.x;
+                const yStop = this._mouseShadow._data._connectorStopCoords.y;
+                const clear = this._infrastructure._data.checkConnectorEndpointPlacement(xStop, yStop, this._map._data._mapData);
+                this._mouseShadow._data.setColor(clear);
             }
         }
     }
@@ -382,7 +391,10 @@ export default class Engine extends View {
     // Given to various sub-components, this dictates how the mouse will behave when clicked in different situations
     setMouseContext = (value: string) => {
         this.mouseContext = value;
-        this.setSelectedBuilding(this._sidebar._detailsArea._buildingSelection);
+        // Only update the selected building if the mouse context is 'placeModule' or 'connectorStart'
+        if (this.mouseContext === "placeModule" || this.mouseContext === "connectorStart") {
+            this.setSelectedBuilding(this._sidebar._detailsArea._buildingSelection);
+        }
         // Ensure there is no mouse shadow if no structure is selected
         if (this.selectedBuilding === null) {
             this.destroyMouseShadow();
@@ -391,10 +403,11 @@ export default class Engine extends View {
 
     // Used for placing buildings and anything else that needs to 'snap to' the grid (returns values in grid locations)
     getMouseGridPosition(mouseX: number, mouseY: number) {
-        const mouseGridX = Math.floor(mouseX / constants.BLOCK_WIDTH)
+        // Calculate X position with the offset included to prevent wonkiness
+        const mouseGridX = Math.floor((mouseX + this._horizontalOffset) / constants.BLOCK_WIDTH)
         const mouseGridY = Math.floor(mouseY / constants.BLOCK_WIDTH)
-        const horizontalOffGridValue = Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH);
-        const gridX = mouseGridX + horizontalOffGridValue;
+        // const horizontalOffGridValue = Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH);
+        const gridX = mouseGridX;
         const gridY = mouseGridY;
         // TODO: ADD vertical offset calculation
         // Return coordinates as a tuple:
@@ -405,15 +418,16 @@ export default class Engine extends View {
 
     setSelectedBuilding = (selectedBuilding: ModuleInfo | ConnectorInfo | null) => {
         this.selectedBuilding = selectedBuilding;
-        // Mouse shadow is created when a structure is selected
+        // New mouse shadow is created when a structure is selected
         this.createMouseShadow();
     }
 
-    handleStructurePlacement = (mouseX: number, mouseY: number) => {
-        const [x, y] = this.getMouseGridPosition(mouseX, mouseY);
+    // X and Y are already gridified
+    handleModulePlacement = (x: number, y: number) => {
         if (this.selectedBuilding != null) {
-            const affordable = this._economy.checkResources(this.selectedBuilding.buildCosts);
+            // MODULES
             if (this._infrastructure._data.isModule(this.selectedBuilding)) {
+                const affordable = this._economy.checkResources(this.selectedBuilding.buildCosts);
                 const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._data._mapData);
                 if (clear && affordable) {
                     this._infrastructure.addModule(x, y, this.selectedBuilding);
@@ -423,12 +437,41 @@ export default class Engine extends View {
                     console.log(`Clear: ${clear}`);
                     console.log(`Affordable: ${affordable}`);
                 }
-            } else {    // For connector placement
-                if (affordable) {
-                    this._infrastructure.addConnector(x, y, this.selectedBuilding);
-                    this._economy.subtractMoney(this.selectedBuilding.buildCosts);
-                }
             }
+        }
+    }
+
+    // Locks the mouse cursor into place at the start location of a new connector (X and Y are already gridified)
+    handleConnectorStartPlacement = (x: number, y: number) => {
+        // Ensure start location is valid
+        if (this._infrastructure._data.checkConnectorEndpointPlacement(x, y, this._map._data._mapData)) {
+            console.log("Valid connector start location chosen.");
+            this._mouseShadow?._data.setLocked(true, {x: x, y: y});   // Lock the shadow's position when start location is chosen
+            this.setMouseContext("connectorStop");
+        }
+    }
+
+    // Completes the purchase and placement of a new connector
+    handleConnectorStopPlacement = () => {
+        // Ensure there is a building selected, and that it's not a module
+        if (this.selectedBuilding != null && !this._infrastructure._data.isModule(this.selectedBuilding) && this._mouseShadow?._data._connectorStopCoords != null && this._mouseShadow._data._connectorStartCoords) {
+            const cost = { money: this.selectedBuilding.buildCosts.money * 4};
+            const affordable = this._economy.checkResources(cost);
+            const start = this._mouseShadow._data._connectorStartCoords;
+            const stop = this._mouseShadow._data._connectorStopCoords;
+            const clear = this._infrastructure._data.checkConnectorEndpointPlacement(stop.x, stop.y, this._map._data._mapData);
+            if (affordable && clear) {
+                this._infrastructure.addConnector(start, stop, this.selectedBuilding);
+                this._economy.subtractMoney(this.selectedBuilding.buildCosts);
+            } else {
+                // TODO: Display this info to the player with an in-game message of some kind
+                console.log(`Clear: ${clear}`);
+                console.log(`Affordable: ${affordable}`);
+            }
+            // Reset mouse context to connector start so another connector can be placed
+            this.destroyMouseShadow();
+            this.createMouseShadow();
+            this.setMouseContext("connectorStart");
         }
     }
 
@@ -724,13 +767,18 @@ export default class Engine extends View {
             let [x, y] = this.getMouseGridPosition(p5.mouseX, p5.mouseY);
             // Set mouse shadow color based on current position's validity, and render it:
             this.validateMouseLocationForPlacement(x, y);
-            x = x * constants.BLOCK_WIDTH - this._horizontalOffset;
+            x = x * constants.BLOCK_WIDTH;
             y = y * constants.BLOCK_WIDTH;
             if (this.selectedBuilding !== null) {
                 if (this._infrastructure._data.isModule(this.selectedBuilding)) {
-                    this._mouseShadow.render(x, y);
+                    this._mouseShadow.render(x, y, this._horizontalOffset);
                 } else {
-                    this._mouseShadow.render(x, y);
+                    if (this.mouseContext === "connectorStart") {
+                        this._mouseShadow.render(x, y, this._horizontalOffset);
+                    } else if (this.mouseContext === "connectorStop") {
+                        this._mouseShadow.resizeForConnector(x, y, this.selectedBuilding.horizontal, this.selectedBuilding.vertical);
+                        this._mouseShadow.render(x, y, this._horizontalOffset);
+                    }
                 }
             }
         }    
@@ -763,6 +811,7 @@ export default class Engine extends View {
         if (this._modal) {
             this._modal.render();
         }
+        // p5.text(this._mouseShadow?._data._locked, 20, 100);
     }
 
 }

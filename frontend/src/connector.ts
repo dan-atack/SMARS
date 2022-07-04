@@ -1,6 +1,6 @@
 // The Module class represents the basic building block of the colony; roughly speaking, one room or compartment
 import P5 from "p5";
-import ConnectorData from "./connectorData";
+import ConnectorData, { Coords } from "./connectorData";
 import { ConnectorInfo } from "./server_functions";
 import { constants } from "./constants";
 
@@ -17,9 +17,9 @@ export default class Connector {
     // _yOffset: number;
     _color: string;
 
-    constructor(p5: P5, x: number, y: number, connectorInfo: ConnectorInfo) {
+    constructor(p5: P5, start: Coords, stop: Coords, connectorInfo: ConnectorInfo) {
         this._p5 = p5;
-        this._data = new ConnectorData(x, y, connectorInfo);
+        this._data = new ConnectorData(start, stop, connectorInfo);
         // this._x = x;
         // this._y = y;
         // this._connectorInfo = connectorInfo;

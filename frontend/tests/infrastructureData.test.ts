@@ -128,11 +128,11 @@ describe("Infrastructure Data", () => {
     })
 
     test("Can call top-level connector initial placement check", () => {
-        expect(infraData.checkConnectorInitialPlacement(4, 29, map1)).toBe(true);   // Nestled in the little 'gap'
-        expect(infraData.checkConnectorInitialPlacement(4, 30, map1)).toBe(false);  // One too low
+        expect(infraData.checkConnectorEndpointPlacement(4, 29, map1)).toBe(true);   // Nestled in the little 'gap'
+        expect(infraData.checkConnectorEndpointPlacement(4, 30, map1)).toBe(false);  // One too low
     })
 
-    test("Can calculate base volume and use it for connector placement", () => {
+    test("Can calculate base volume and use it for connector placement initial check", () => {
         // Test setup
         expect(infraData._baseVolume).toStrictEqual([
             [],
@@ -144,8 +144,9 @@ describe("Infrastructure Data", () => {
             []
         ]);
         // Test Connector placement with base volume BEFORE structures are added
-        expect(infraData.checkConnectorInitialPlacement(0, 25, map1)).toBe(false);   // Above the plain
-        infraData.updateBaseVolume(justRightCoords);    // Test adding just one structure
+        expect(infraData.checkConnectorEndpointPlacement(0, 25, map1)).toBe(false);   // Too high... for now!
+        infraData.updateBaseVolume(justRightCoords);
+        // Test adding just one structure
         expect(infraData._baseVolume).toStrictEqual([
             [27, 28],
             [27, 28],
@@ -167,8 +168,8 @@ describe("Infrastructure Data", () => {
             []
         ]);
         // Test Connector placement AFTER adding structures (base volume)
-        expect(infraData.checkConnectorInitialPlacement(0, 25, map1)).toBe(true);   // Inside the base
-        expect(infraData.checkConnectorInitialPlacement(0, 24, map1)).toBe(false);  // Too high (above the roof)
+        expect(infraData.checkConnectorEndpointPlacement(0, 25, map1)).toBe(true);   // Same coords as before; now acceptable
+        expect(infraData.checkConnectorEndpointPlacement(0, 24, map1)).toBe(false);  // Still too high (above the roof)
     })
 
 })

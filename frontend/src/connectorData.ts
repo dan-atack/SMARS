@@ -19,10 +19,10 @@ export default class ConnectorData {
     _xOffset: number;   // The offset value, on the other hand, will be in terms of pixels, to allow for smoother scrolling
     _yOffset: number;
 
-    constructor(x: number, y: number, connectorInfo: ConnectorInfo) {
-        this._x = x;
-        this._y = y;
-        this._segments = [{start: {x: x, y: y}, stop: {x: x, y: y}}];   // Just for now, start and stop can overlap
+    constructor(start: Coords, stop: Coords, connectorInfo: ConnectorInfo) {
+        this._x = start.x;
+        this._y = start.y;
+        this._segments = [{start: start, stop: stop}];   // Just for now, start and stop can overlap
         this._connectorInfo = connectorInfo;
         this._thickness = 1;
         this._length = 1;

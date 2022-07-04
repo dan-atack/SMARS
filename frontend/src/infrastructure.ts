@@ -5,6 +5,7 @@ import Module from "./module";
 import Connector from "./connector";
 import { ConnectorInfo, ModuleInfo } from "./server_functions";
 import { constants } from "./constants";
+import { Coords } from "./connectorData";
 
 export default class Infrastructure {
     // Infrastructure class types:
@@ -61,8 +62,8 @@ export default class Infrastructure {
         this._data.updateBaseVolume(area);
     }
 
-    addConnector (x: number, y: number, connectorInfo: ConnectorInfo) {
-        this._connectors.push(new Connector(this._p5, x, y, connectorInfo));
+    addConnector (start: Coords, stop: Coords, connectorInfo: ConnectorInfo) {
+        this._connectors.push(new Connector(this._p5, start, stop, connectorInfo));
     }
 
     //  Takes in data for a new module's location and compares it to all of the other existing modules to look for overlaps
