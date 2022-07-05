@@ -13,9 +13,6 @@ export default class MouseShadowData {
     _locked: boolean;   // Used to anchor the shadow in place, for connector placement
     _connectorStartCoords: Coords | null;   // Both this and the stop coords are in terms of grid locations
     _connectorStopCoords: Coords | null;
-    // _deltaX: number;
-    // _deltaY: number;
-    // _direction: string;
 
     // W and H are both given in terms of columns, not pixels
     constructor(w: number, h: number) {
@@ -28,9 +25,6 @@ export default class MouseShadowData {
         this._locked = false;       // By default the shadow is free-floating
         this._connectorStartCoords = null;          // Confusingly, these are in terms of grid locations
         this._connectorStopCoords = null;
-        // this._deltaX = 0;
-        // this._deltaY = 0;
-        // this._direction = "";
     }
 
     setPosition (x: number, y: number) {
@@ -64,21 +58,18 @@ export default class MouseShadowData {
                 this._w = (Math.abs(deltaX) + 1) * constants.BLOCK_WIDTH;
                 this._h = constants.BLOCK_WIDTH;
                 this._connectorStopCoords = {x: gridX, y: startY};
-                // this._direction = deltaX > 0 ? "LEFT" : "RIGHT";
             } else if (deltaY !== 0) {  // VERTICAL
                 this._x = startX * constants.BLOCK_WIDTH;
                 this._y = Math.min((startY - deltaY), startY) * constants.BLOCK_WIDTH;
                 this._w = constants.BLOCK_WIDTH;
                 this._h = (Math.abs(deltaY) + 1) * constants.BLOCK_WIDTH;
                 this._connectorStopCoords = {x: startX, y: gridY};
-                // this._direction = deltaY > 0 ? "UP" : "DOWN";
             } else {                    // NEITHER
                 this._x = startX * constants.BLOCK_WIDTH;
                 this._y = startY * constants.BLOCK_WIDTH;
                 this._w = constants.BLOCK_WIDTH;
                 this._h = constants.BLOCK_WIDTH;
                 this._connectorStopCoords = {x: startX, y: startY};
-                // this._direction = "N/A";
             }
         }
     }

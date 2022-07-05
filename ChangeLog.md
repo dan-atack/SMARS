@@ -1224,7 +1224,7 @@ Features Added:
 
 41. Comment-out all remaining console logs that occur outside of an error context (e.g. when the player attempts to place a structure in an invalid location). Then it's time to make a commitment.
 
-## Chapter 26: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 7 - Tweaking the existing Connector a fair bit, plus adding new unit tests for connectors and infra classes, plus adding the mouse shadow class)
+## Chapter 26: Buildings in the Frontend, Part III - Connector Placement (Difficulty Estimate: 7 - Tweaking the existing Connector a fair bit, plus adding new unit tests for connectors and infra classes, plus adding the mouse shadow class)
 
 ### June 25, 2022
 
@@ -1233,18 +1233,18 @@ Adding Connectors to the game will allow the player to connect different modules
 Exit Criteria:
 
 - [DONE] The player can select a Connector from the sidebar and click on the map to create a shadow representing its start point
-- The player can click on another point on the map to specify the Connector's endpoint; the Connector is placed when this happens
-- The player can cancel placement at any time by pressing the sidebar's 'back' button, or by hitting Escape
+- [DONE] The player can click on another point on the map to specify the Connector's endpoint; if the location is good, this places the new Connector
+- [DONE] The player can cancel placement at any time by pressing the sidebar's 'back' button, or by clicking an invalid placement location
 - [DONE] When placing a Connector's terminus, the mouse shadow shows a preview of the segment that will be created
 - [DONE] When placing any Connector or Module, the mouse cursor will change colour based on whether or not a location is valid
-- [DONE] Some Connectors are only horizontal or only vertical
-- [DONE] Some Connectors are horizontal OR vertical, and can be placed in either direction (but not both, for now)
+- [DONE] Some Connectors can only be either horizontal or vertical
+- [DONE] Some Connectors can be either horizontal OR vertical, and can be placed in either direction (but not both, for now)
 - The Connectors component data is its own class, and has at least 1 meaningful unit test
 - [DONE] The Infrastructure component data is its own class, and has at least 1 meaningful unit test
 - The MouseShadow component's data is its own class, and has at least 1 meaningful unit test
 - [DONE] The Infrastructure class contains a map of the base's volume - basically all of the coordinates that are inside a module
-- The Infrastructure class will contain a list of 'floors', representing the surfaces within the base on which colonists can walk
-- The Infrastructure class will contain another list of 'connections', representing links between different floors or modules
+- [STRETCH] Add a simple image for the two basic connector CATEGORIES (transport and conduit)
+
 - Ensure all backwards compatibility with older saves (saves with obsolete connector data should simply disregard it)
 
 Features Added:
@@ -1336,11 +1336,26 @@ Features Added:
 
 41. Now we can finally go ahead and remove the x and y values from the ConnectorSaveInfo type, and all references to these values in the Connector class itself. Test that this has not broken anything by loading a saved game that contains (old-fashioned) connectors, as well as saving and loading a new game from the post-x-and-y era.
 
-### 97. Add a new Infra Data class method to calculate a list of coordinate pairs for each individual section of a proposed Connector. This will be used to detect collisions with the terrain - the one possible obstacle to creating a new Connector (gravity/indoors criteria don't apply to in-between segments). We'll need a getConnectorSegments method that is updated by the Engine's validateMouseLocationForPlacement method (which will also need to be upgraded to note the difference between a new connector's start/stop phases).
+42. To aid with rendering, have the Connector Data class determine if it's a horizontal, or a vertical connector.
 
-### 98. Alter the ConnectorInfo class to contain just a few shapes to be rendered by the Connector class's (newly isolated) rendering methods.
+43. Give the render method for the Connector class a basic formula for filling in the gap between a connector's start and stop points.
+
+### 45. Add a unit test for each of the Mouse Shadow class's many methods, and be thorough.
+
+### 46. Add a unit test for the Connector Data class's constructor function, to test its ability to evaluate its orientation under a number of different circumstances (including for a single-point connector).
 
 ### 99. Fix the BuildingChip component's cost calculation (located in the render block, of all places) to ensure it is workings are transparent and its readout correct (neither is currently the case).
+
+## Chapter 27: Buildings in the Frontend, Part IV - Connector Logic (Difficulty Estimate: TBD)
+
+Exit criteria:
+
+- The Infrastructure class will contain a list of 'floors', representing the surfaces within the base on which colonists can walk
+- The Infrastructure class will contain another list of 'connections', representing links between different floors or modules
+
+### 98. Add a new Infra Data class method to calculate a list of coordinate pairs for each individual section of a proposed Connector. This will be used to detect collisions with the terrain - the one possible obstacle to creating a new Connector (gravity/indoors criteria don't apply to in-between segments). We'll need a getConnectorSegments method that is updated by the Engine's validateMouseLocationForPlacement method (which will also need to be upgraded to note the difference between a new connector's start/stop phases).
+
+### 99. Alter the ConnectorInfo class to contain just a few shapes to be rendered by the Connector class's (newly upgraded) rendering methods (borrow heavily from the Module class's render system).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
