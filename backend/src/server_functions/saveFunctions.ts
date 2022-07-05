@@ -68,8 +68,8 @@ export type SaveInfo = {
         name: string,
         type: string,
         segments: {start: Coords, stop: Coords}[],  // Connectors all consist of pairs of start/stop coordinates
-        x: number,      // Deprecated - remove after implementing coordinate-based system
-        y: number       // Deprecated - remove after implementing coordinate-based system
+        // x: number,      // Deprecated - remove after implementing coordinate-based system
+        // y: number       // Deprecated - remove after implementing coordinate-based system
     }[]
     resources: Resources;
     colonists: ColonistSaveData[];

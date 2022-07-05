@@ -8,40 +8,29 @@ export default class Connector {
     // Block types:
     _p5: P5;
     _data: ConnectorData;
-    // _x: number;     // Buildings' x and y positions will be in terms of grid locations to act as fixed reference points
-    // _y: number;
-    // _connectorInfo: ConnectorInfo;
-    // _thickness: number;     // Width and height for connectors will vary based on length, which will be determined when the connector is placed, and thickness (which will be added soon to the connectorInfo's object shape in the backend).
-    // _length: number;
-    // _xOffset: number;   // The offset value, on the other hand, will be in terms of pixels, to allow for smoother scrolling
-    // _yOffset: number;
     _color: string;
 
     constructor(p5: P5, start: Coords, stop: Coords, connectorInfo: ConnectorInfo) {
         this._p5 = p5;
         this._data = new ConnectorData(start, stop, connectorInfo);
-        // this._x = x;
-        // this._y = y;
-        // this._connectorInfo = connectorInfo;
-        // this._thickness = 1     // TODO: Replace width with 'thickness' in the backend...
-        // this._length = 1        // ...so that either value here can be horizontal/vertical
-        // this._xOffset = 0;
-        // this._yOffset = 0;
-        // Determined by matching block type to entry in the blocktionary:
         this._color = constants.EGGSHELL    // Default value for now; in the future modules will be of no specific color: ;
     }
 
     render = (xOffset: number) => {    // TODO: Block gets y offset values as arguments to renderer
+        const p5 = this._p5;
         this._data._xOffset = xOffset;    // Offset is in terms of pixels
-        // HERE IS WHERE X AND Y COORDINATES AND THICKNESS AND LENGTH ARE CONVERTED TO PIXEL VALUES:
-        const x = this._data._x * constants.BLOCK_WIDTH - this._data._xOffset;
-        const y = this._data._y * constants.BLOCK_WIDTH - this._data._yOffset;
+        // HERE IS WHERE START AND STOP COORDINATES (AND THICKNESS AND LENGTH ARE CONVERTED TO PIXEL VALUES:
+        const startX = this._data._segments[0].start.x * constants.BLOCK_WIDTH - this._data._xOffset;
+        const startY = this._data._segments[0].start.y * constants.BLOCK_WIDTH - this._data._yOffset;
+        const stopX = this._data._segments[0].stop.x * constants.BLOCK_WIDTH - this._data._xOffset;
+        const stopY = this._data._segments[0].stop.y * constants.BLOCK_WIDTH - this._data._yOffset;
         const w = this._data._thickness * constants.BLOCK_WIDTH;
         const h = this._data._length * constants.BLOCK_WIDTH;
-        this._p5.fill(this._color);
-        this._p5.strokeWeight(2);
-        this._p5.stroke(constants.ALMOST_BLACK);
-        this._p5.rect(x, y, w, h);
+        p5.fill(this._color);
+        p5.strokeWeight(2);
+        p5.stroke(constants.ALMOST_BLACK);
+        p5.rect(startX, startY, w, h);
+        p5.rect(stopX, stopY, w, h);
     }
 
 }

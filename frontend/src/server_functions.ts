@@ -10,6 +10,11 @@ type LoginObject = {
     password: string
 }
 
+type Coords = {
+    x: number,
+    y: number
+}
+
 // Standardize expectations for fetches to building options database collections (for a good time, sync with World Editor files)
 export type ModuleInfo = {
     name: string            // Unique name of the module; First Letters Capitalized
@@ -147,7 +152,7 @@ export const getOneModule = (setter: (selectedBuilding: ModuleInfo, locations: n
     })
 }
 
-export const getOneConnector = (setter: (selectedConnector: ConnectorInfo, locations: number[][]) => void, category: string, type: string, name: string, locations: number[][]) => {
+export const getOneConnector = (setter: (selectedConnector: ConnectorInfo, locations: {start: Coords, stop: Coords}[][]) => void, category: string, type: string, name: string, locations: {start: Coords, stop: Coords}[][]) => {
 
     const url = `${constants.URL_PREFIX}/${category}/${type}/${name}`;
 

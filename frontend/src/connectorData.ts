@@ -10,8 +10,8 @@ export type Coords = {
 
 export default class ConnectorData {
     // Connector data types:
-    _x: number;     // Buildings' x and y positions will be in terms of grid locations to act as fixed reference points
-    _y: number;
+    // _x: number;     // Buildings' x and y positions will be in terms of grid locations to act as fixed reference points
+    // _y: number;
     _segments: {start: Coords, stop: Coords}[];    // New way of positioning Connectors will involve a list of segments, each with start/stop coords.
     _connectorInfo: ConnectorInfo;
     _thickness: number;     // Width and height for connectors will vary based on length, which will be determined when the connector is placed, and thickness (which will be added soon to the connectorInfo's object shape in the backend).
@@ -20,8 +20,8 @@ export default class ConnectorData {
     _yOffset: number;
 
     constructor(start: Coords, stop: Coords, connectorInfo: ConnectorInfo) {
-        this._x = start.x;
-        this._y = start.y;
+        // this._x = start.x;
+        // this._y = start.y;
         this._segments = [{start: start, stop: stop}];   // Just for now, start and stop can overlap
         this._connectorInfo = connectorInfo;
         this._thickness = 1;

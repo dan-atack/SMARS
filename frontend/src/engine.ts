@@ -59,7 +59,7 @@ export default class Engine extends View {
     switchScreen: (switchTo: string) => void;   // App-level SCREEN switcher (passed down via drill from the app)
     updateEarthData: () => void;    // Updater for the date on Earth (for starters)
     getModuleInfo: (setter: (selectedBuilding: ModuleInfo, locations: number[][]) => void, category: string, type: string, name: string, locations: number[][]) => void;        // Getter function for loading individual structure data from the backend
-    getConnectorInfo: (setter: (selectedConnector: ConnectorInfo, locations: number[][]) => void, category: string, type: string, name: string, locations: number[][]) => void;
+    getConnectorInfo: (setter: (selectedConnector: ConnectorInfo, locations: {start: Coords, stop: Coords}[][]) => void, category: string, type: string, name: string, locations: {start: Coords, stop: Coords}[][]) => void;
 
     constructor(p5: P5, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, updateEarthData: () => void) {
         super(p5, changeView);
@@ -199,44 +199,46 @@ export default class Engine extends View {
 
     // Top-level saved module importer
     loadConnectorsFromSave = (connectors: ConnectorSaveInfo[]) => {
-        // Only operate if there actually are modules to load:
+        // Only operate if there actually are connectors to load:
         if (connectors.length > 0) {
-            // Sort the list by name to avoid over-calling the backend to get module data
+            // Sort the list by name to avoid over-calling the backend to get connector data
             connectors.sort(function(a, b){
                 if (a.name < b.name) { return -1; }
                 if (a.name > b.name) { return 1; }
                 return 0;
             })
-            // Separate modules by name
+            // Separate connectors by name
             let conTypes: string[] = [];
             connectors.forEach((con) => {
                 if (!con.segments) {
-                    console.log("Deprecated Warning: A Connector with no 'segments' data has been loaded.");
+                    console.log("Deprecated Warning: A Connector with no 'segments' data has been loaded. Ignoring the affected elements.");
                 }
-                if (!conTypes.includes(con.name)) {
+                // Only include connectors that have the segments property
+                if ((!conTypes.includes(con.name)) && (con.segments != undefined)) {
                     conTypes.push(con.name)
                 }
             });
-            // For each name (type) of module, get all the coordinates for all instances of that module, then re-populate them
+            // For each name (type) of connector, get all the segment data for the instances of that type, and create them
             conTypes.forEach((cT) => {
                 const cons = connectors.filter((con) => con.name === cT);
                 const conType = cons[0].type != undefined ? cons[0].type : "test";
-                // TODO: Use a series of start, stop points instead of coordinates
-                let coords: number[][] = [];
+                // Each set of 'coords' in this list is an array containing a single object with start/stop coordinates
+                let coords: {start: Coords, stop: Coords}[][] = [];
                 cons.forEach((con) => {
-                    coords.push([con.x, con.y]);
+                    coords.push(con.segments);
                 })
                 this.getConnectorInfo(this.loadConnectorFromSave, "connectors", conType, cT, coords);
             })
         }  
     }
 
-    loadConnectorFromSave = (selectedConnector: ConnectorInfo, locations: number[][]) => {
+    loadConnectorFromSave = (selectedConnector: ConnectorInfo, locations: {start: Coords, stop: Coords}[][]) => {
         if (selectedConnector != null) {
             locations.forEach((space) => {
                 // TODO: Fix this to use both ends of a segment
-                const coords = {x: space[0], y: space[1]};
-                this._infrastructure.addConnector(coords, coords, selectedConnector);
+                const start: Coords = space[0].start;
+                const stop: Coords = space[0].stop;
+                this._infrastructure.addConnector(start, stop, selectedConnector);
             })
         }
     }

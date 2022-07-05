@@ -1224,7 +1224,7 @@ Features Added:
 
 41. Comment-out all remaining console logs that occur outside of an error context (e.g. when the player attempts to place a structure in an invalid location). Then it's time to make a commitment.
 
-## Chapter 26: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 7 - Tweaking the existing Connector a fair bit, plus adding new unit tests for connectors and infra classes, plus adding the structure shadow class)
+## Chapter 26: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 7 - Tweaking the existing Connector a fair bit, plus adding new unit tests for connectors and infra classes, plus adding the mouse shadow class)
 
 ### June 25, 2022
 
@@ -1324,13 +1324,17 @@ Features Added:
 
 35. Have the Engine's validateMouseLocationForPlacement method check the MouseShadow's connectorStopCoords instead of the mouseX and mouseY position when evaluating the color of a prospective Connector.
 
-### 36. Create a new Engine method, called placeConnector, which will take two coordinate pairs (Start and stop) as its parameters. When clicked, this function should console log the result of a double run of the Infra Data class's checkConnectorEndpointPlacement (to be renamed 'checkConnectorEndPlacement' since it's ambidextrous) - one test for each set of coordinates. If both are good, we can get ready to finally add a new Connector!
+36. Create a new Engine method, called handleConnectorStopPlacement, which will not take any arguments, but instead will grab both the start and stop coordinates for a soon-to-be connector from the MouseShadow (before deleting it). When called, this function will do a final run of the Infra Data class's checkConnectorEndpointPlacement (to be renamed 'checkConnectorEndpointPlacement' since it's ambidextrous) for the stop coordinates. There will be no need to validate the start since that will already have taken place when the handleConnectorStartPlacement method was called. If the Stop location passes the test, add a new Connector! (It will still be just a single point for now, but this will change soon).
 
-### 37. Update the Infra base class's addConnector logic to make a new segment-based Connector using the data from the MouseShadow class. Have the method described in the line above call this, and see if we can finally lay us down a new Connector!
+37. Make a copy of the Engine's handleModulePlacement method for connectors. Call it handleConnectorPlacement, and have it call the Connector start validation check as well as the Economy's cost check (using the full length of a Connector to calculate its total cost) before placing a Connector.
 
-### 36. If a Connector has a valid stop point (using the coords from the Mouse Shadow),
+38. Update the Infra base class's addConnector logic to make a new segment-based Connector using the data from the MouseShadow class. Have the method described in the line above call this, and see if we can finally lay us down a new Connector!
 
-### 30. Make a copy of the Engine's handleModulePlacement method for connectors. Call it handleConnectorPlacement, and have it call the Connector start validation check as well as the Economy's cost check (using the full length of a Connector to calculate its total cost) before placing a Connector.
+39. Update the Connector's base class to check for the segments property's start/stop coordinates and render both of them as a grey square (these are the terminuses and their appearance will be upgraded in the near future).
+
+40. Have the Engine exclude Connectors that don't have the segments property when loading connectors from a saved game. Add a console log that this is happening, and don't just not render them - purge them from the Connectors list when loading a saved game file. Console log the number of connectors that are ignored when this happens.
+
+41. Now we can finally go ahead and remove the x and y values from the ConnectorSaveInfo type, and all references to these values in the Connector class itself. Test that this has not broken anything by loading a saved game that contains (old-fashioned) connectors, as well as saving and loading a new game from the post-x-and-y era.
 
 ### 97. Add a new Infra Data class method to calculate a list of coordinate pairs for each individual section of a proposed Connector. This will be used to detect collisions with the terrain - the one possible obstacle to creating a new Connector (gravity/indoors criteria don't apply to in-between segments). We'll need a getConnectorSegments method that is updated by the Engine's validateMouseLocationForPlacement method (which will also need to be upgraded to note the difference between a new connector's start/stop phases).
 
