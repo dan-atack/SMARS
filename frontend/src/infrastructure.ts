@@ -155,7 +155,7 @@ export default class Infrastructure {
         });
         this._connectors.forEach((connector) => {
             // TODO: Check which side is nearest to the left/right sides, using a Connector Data method
-            if (connector._data._segments[0].start.x >= leftEdge && connector._data._segments[0].stop.x < rightEdge) {
+            if (connector._data._rightEdge >= leftEdge && connector._data._leftEdge < rightEdge) {
                 connector.render(this._horizontalOffset);
             }
         });

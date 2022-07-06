@@ -1243,7 +1243,7 @@ Exit Criteria:
 - [DONE] The Infrastructure component data is its own class, and has at least 1 meaningful unit test
 - The MouseShadow component's data is its own class, and has at least 1 meaningful unit test
 - [DONE] The Infrastructure class contains a map of the base's volume - basically all of the coordinates that are inside a module
-- [STRETCH] Add a simple image for the two basic connector CATEGORIES (transport and conduit)
+- [DONE] [STRETCH] Add a simple image for the two basic connector CATEGORIES (transport and conduit)
 
 - Ensure all backwards compatibility with older saves (saves with obsolete connector data should simply disregard it)
 
@@ -1343,6 +1343,10 @@ Features Added:
 ### 45. Add a unit test for each of the Mouse Shadow class's many methods, and be thorough.
 
 ### 46. Add a unit test for the Connector Data class's constructor function, to test its ability to evaluate its orientation under a number of different circumstances (including for a single-point connector).
+
+### 47. Add a method to the Connector base class that helps it make a few little shapes if the connector is a ladder.
+
+### 48. Add a simple calculation to reduce the x value and width of a conduit-type connector's in-between shape by about 20% each, so the connector is like a skinny pipe. And add a small circle to each of the endpoints.
 
 ### 99. Fix the BuildingChip component's cost calculation (located in the render block, of all places) to ensure it is workings are transparent and its readout correct (neither is currently the case).
 
