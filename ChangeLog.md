@@ -1224,14 +1224,142 @@ Features Added:
 
 41. Comment-out all remaining console logs that occur outside of an error context (e.g. when the player attempts to place a structure in an invalid location). Then it's time to make a commitment.
 
-## Chapter X: Buildings in the Frontend, Part III - Connectors (Difficulty Estimate: 5)
+## Chapter 26: Buildings in the Frontend, Part III - Connector Placement (Difficulty Estimate: 7 - Tweaking the existing Connector a fair bit, plus adding new unit tests for connectors and infra classes, plus adding the mouse shadow class)
 
-We need to do the Connectors separately, as their placement logic is quite different from the logic for the Modules.
+### June 25, 2022
+
+Adding Connectors to the game will allow the player to connect different modules for colonists to move between them, and to allow certain types of resources to be transfered between modules. Although the actual uses for these abilities will be addressed in subsequent chapters, it will be the goal of this chapter to set up all of the systems needed for placing connectors on the map, and keeping track of them with the Infrastructure class. This includes, of course, ensuring that Connector data is added to the save/load game system and thoroughly tested for proper integration and backwards compatibility. It will also be the goal of this chapter to upgrade the Infrastructure class to begin keeping track of the base's interior structure and systems (such as where all of the modules' floors are, where there are connection points, etc). Actually using this information practically (i.e. having the colonists begin to be able to walk on floors and use ladders, or pass resources between modules through pipes and ducts) is, again, out of the scope of this chapter. We will also be making heavy use of unit testing here, creating testable data classes for both the Infra and Connector classes, as well as creating the new mouseShadow class using the same type of architecture.
 
 Exit Criteria:
 
-- Placing a connector is constrained by:
-  -- Must be placed within a module (later connectors might be partially external to the base, i.e. spanning the gap between two modules, but should follow the precedent of always originating/terminating at a module. Else what exactly are they connecting, right?)
+- [DONE] The player can select a Connector from the sidebar and click on the map to create a shadow representing its start point
+- [DONE] The player can click on a second (stop) point on the map; if the location is good, this places the new Connector
+- [DONE] The player can cancel placement by pressing the sidebar's 'back' button, or by clicking an invalid placement location
+- [DONE] When placing a Connector's terminus, the mouse shadow shows a preview of the segment that will be created
+- [DONE] When placing any Connector or Module, the mouse cursor will change colour based on whether or not a location is valid
+- [DONE] Some Connectors can only be either horizontal or vertical
+- [DONE] Some Connectors can be either horizontal OR vertical, and can be placed in either direction (but not both, for now)
+- [DONE] The Connectors component data is its own class, and has at least 1 meaningful unit test
+- [DONE] The Infrastructure component data is its own class, and has at least 1 meaningful unit test
+- [DONE] The MouseShadow component's data is its own class, and has at least 1 meaningful unit test
+- [DONE] The Infrastructure class contains a map of the base's volume - basically all of the coordinates that are inside a module
+- [DONE] [STRETCH] Add a simple image for the two basic connector CATEGORIES (transport and conduit)
+
+- Ensure all backwards compatibility with older saves (saves with obsolete connector data should simply disregard it)
+
+Features Added:
+
+- Infrastructure class has several of its methods in a unit-testable InfrastructureData class.
+- Infrastructure data class keeps track of base volume as modules are added.
+- Mouse Shadow class calculates module placement validity and changes colour accordingly.
+- Mouse Shadow class can also calculate connector start/stop placement validity and provides a preview of the full connector prior to placement.
+
+1. In the same manner as was done for the Module and Map classes, decouple the Connectors class data from its render methods, and test thoroughly that nothing is broken by this (make and load a new save file, and ensure that old saved games can load). Leave everything else the same (don't start upgrading the data types yet).
+
+2. Update the Engine to ignore the Connectors in existing save files.
+
+3. Add a comment to the ConnectorInfo class's cost field to stipulate that the cost is now in terms of 'per unit of length.'
+
+4. Then update the ConnectorInfo type (in server_functions.ts) to include a 'width' property, then individually update both Connectors in the database (ladder and air duct) to include this property.
+
+5. Add a new field to the Connector Data class: segments, which will be a list of up to two objects with this shape: {start: {x: number, y: number}, stop: {x: number, y: number}}. Better yet, make both start and stop equal a Coords type, for maximum efficiency.
+
+6. Next, add the Coords type {x: number, y: number} to the Backend's saveFunctions, and use it to update the shape of the SaveInfo object's connectors field. Simultaneously, update the SaveInfo object in the SaveGame.ts file so that the two are in sync. See if this breaks anything.
+
+7. Update the Game.ts file to ensure that new Save games include Connectors' segments data, if it exists. Keep the x and y data for now as well, but prepare to deprecate in the future (code is at line 144 in game.ts).
+
+8. Prepare to deprecate the older Connectors: Have the Engine log a warning text whenever a Connector that has NO segments property is loaded.
+
+9. Validate that new Connectors will save, and contain the segment property, by loading a saved game that already has connectors, then seeing the deprecation message, then creating at least one new connector, then saving that file, then loading it. There should be no deprecation messages, as ideally all of the old connectors as well as the new ones will now be saved with the 'segments' field.
+
+10. Create a new Engine Mouse Context: ConnectorStart, which simply console logs its name when a click is registered with that context.
+
+11. In the BuildingChip component, add some logic to its handleClick method to set the mouse context differently for Connectors than for Modules placement (might be necessary to slightly alter the existing 'place' context name to make it more explicitly about modules).
+
+12. Create a new class of game entity called MouseShadow, which will render a rectangle (for now) at a coordinate point. It should also have a color property. Do this in the form of a dual class creation, one for MouseShadow and another for MouseShadowData, so that we can add unit tests a few steps from now.
+
+13. Import the MouseShadow class to the Engine, and create a new Engine property, mouseShadow, to be either null, or an instance of the mouseShadow class.
+
+14. Update the mouseContext switch function to create a new mouseShadow instance when the mouse context is set to either placeModule, or connectorStart. It should be possible to pass the parameters (height and width) of the building in question to the mouseShadow's constructor.
+
+15. Update the Engine's renderBuildingShadow method to call the MouseShadow's render function, passing it just the x and y coordinates of the mouse.
+
+16. Have the setSelectedBuilding method call a new Engine method, createMouseShadow, and pass it the module/connector's width/height data there, as appropriate. This will be passed to the new MouseShadow's constructor, but won't necessarily cause the mouse shadow to be rendered right away (the renderBuildingShadow method still governs that).
+
+17. Make the setMouseContext method call the Engine's new destroyMouseShadow method whenever the mouse context is changed and the selectedBuilding field is null - indicating that no building is selected for placement.
+
+18. In the Infrastructure class, find the method for determining a building site's suitability. Integrate that with the new Engine method, ValidateMouseLocationForPlacement, which will call it whenever the mouse shadow is rendered to determine the suitability of the present mouse location for placing the currently selected building. Turn the mouse shadow red for unacceptable locations, and green for acceptable ones.
+
+19. Use this moment to detach the Infrastructure's Data component into its own separate class. Unlike with other data classes, it will not be possible to bring everything over since the Modules and Connectors lists themselves contain entities with require the P5 component, so the Infra Data class will only be able to take the basic location suitability tests for itself, while leaving much of the Infra class's core functionality in the original class.
+
+20. Make a very simple unit test for the Infrastructure Data class, that establishes that a method exists and can be called.
+
+21. Add another test that validates one of the existing methods, such as calculateModuleArea, with some dummy data.
+
+22. Make unit tests for all the other Infra Data methods, then get rid of the original Infra tests file (it doesn't actually test anything so after it's been used up for inspiration it will have served its purpose).
+
+23. Have the Engine's validateMouseLocationForPlacement method call the Infra Data class's checkTerrainForObstructions function and set the Connector initial placement mouse shadow to red or green accordingly.
+
+24. Give the Infrastructure DATA class a new checkConnectorPlacement function, for the Engine to call when it's validating a Connector's potential location, and use it to color the mouse shadow for a new connector appropriately. First, have this method call the existing checkTerrainForObstructions function and reporting the result to the Engine. Validate this function with a unit test.
+
+25. Add a new Infra Data class property: baseVolume. It will essentially serve as a second map, but for the base structures. It should be updated every time a new module is constructed, and will be used to allow the placement of Connectors inside the base.
+
+26. Add a new Infra Data class method, updateBaseVolume, to be called by the Infra base class's AddModule method, that will create/update a map-like list of coordinates that contain modules. Add a unit test for this method that simulates calling the function multiple times, and also find a way to validate that the base volume is calculated when a game is loaded.
+
+27. Elaborate on the checkConnectorPlacement method to not allow placement of a new Connector if it is above the terrain's surface (see how the Module placement check achieves this).
+
+28. Make yet another function that checks if a set of coordinates matches a position in the baseVolume map, and use the outcome of this check to potentially override a fail from the check described on the previous line. So now the rule is, you can't build a Connector above the terrain's surface - UNLESS its location is inside the baseVolume, in which case allow it.
+
+29. Make a unit test for the Connector master placement test function.
+
+30. Add a new MouseShadow method lockShadowPosition, to be called by the Engine when the mouse is clicked with the "connectorStart" context. This should have the effect of freezing the mouse shadow in its current grid location by setting its locked property to true. Validate this, in the game and with a unit test!
+
+31. Create a new Engine method, handleConnectorStart, that takes care of everything that happens when the mouse is clicked with the start connector context. This includes ensuring the click was at a valid location, setting the mouse context to "connectorStop", and locking the mouse shadow's location.
+
+32. Add a new Engine mouse context, "connectorStop", and have it console log when a click is registered.
+
+33. In the Engine's renderBuildingShadow method, add new logic to distinguish between the start/stop phase of the Connector's placement, and in the case of a stop placement, have the ShadowData class update its shape based on the location of the start coordinates. Add a new Mouse Shadow data field for the start coordinates, so they can be kept track of when the lock is set.
+
+34. Have the MouseShadow component store the prospective grid location of the Connector stop point in a new variable, connectorStopCoords.
+
+35. Have the Engine's validateMouseLocationForPlacement method check the MouseShadow's connectorStopCoords instead of the mouseX and mouseY position when evaluating the color of a prospective Connector.
+
+36. Create a new Engine method, called handleConnectorStopPlacement, which will not take any arguments, but instead will grab both the start and stop coordinates for a soon-to-be connector from the MouseShadow (before deleting it). When called, this function will do a final run of the Infra Data class's checkConnectorEndpointPlacement (to be renamed 'checkConnectorEndpointPlacement' since it's ambidextrous) for the stop coordinates. There will be no need to validate the start since that will already have taken place when the handleConnectorStartPlacement method was called. If the Stop location passes the test, add a new Connector! (It will still be just a single point for now, but this will change soon).
+
+37. Make a copy of the Engine's handleModulePlacement method for connectors. Call it handleConnectorPlacement, and have it call the Connector start validation check as well as the Economy's cost check (using the full length of a Connector to calculate its total cost) before placing a Connector.
+
+38. Update the Infra base class's addConnector logic to make a new segment-based Connector using the data from the MouseShadow class. Have the method described in the line above call this, and see if we can finally lay us down a new Connector!
+
+39. Update the Connector's base class to check for the segments property's start/stop coordinates and render both of them as a grey square (these are the terminuses and their appearance will be upgraded in the near future).
+
+40. Have the Engine exclude Connectors that don't have the segments property when loading connectors from a saved game. Add a console log that this is happening, and don't just not render them - purge them from the Connectors list when loading a saved game file. Console log the number of connectors that are ignored when this happens.
+
+41. Now we can finally go ahead and remove the x and y values from the ConnectorSaveInfo type, and all references to these values in the Connector class itself. Test that this has not broken anything by loading a saved game that contains (old-fashioned) connectors, as well as saving and loading a new game from the post-x-and-y era.
+
+42. To aid with rendering, have the Connector Data class determine if it's a horizontal, or a vertical connector.
+
+43. Give the render method for the Connector class a basic formula for filling in the gap between a connector's start and stop points.
+
+44. Add a unit test for each of the Mouse Shadow class's many methods, and be thorough.
+
+45. Add a unit test for the Connector Data class's constructor function, to test its ability to evaluate its orientation under a number of different circumstances (including for a single-point connector).
+
+46. Add a method to the Connector base class that helps it make two vertical poles and a number of rungs if the connector is a ladder.
+
+47. Add a simple calculation to reduce the x value and width of a conduit-type connector's in-between shape by about 20% each, so the connector is like a skinny pipe. And add a small circle to each of the endpoints.
+
+## Chapter 27: Buildings in the Frontend, Part IV - Connector Logic (Difficulty Estimate: TBD)
+
+Exit criteria:
+
+- The Infrastructure class will contain a list of 'floors', representing the surfaces within the base on which colonists can walk
+- The Infrastructure class will contain another list of 'connections', representing links between different floors or modules
+
+### 97. Add a new Infra Data class method to calculate a list of coordinate pairs for each individual section of a proposed Connector. This will be used to detect collisions with the terrain - the one possible obstacle to creating a new Connector (gravity/indoors criteria don't apply to in-between segments). We'll need a getConnectorSegments method that is updated by the Engine's validateMouseLocationForPlacement method (which will also need to be upgraded to note the difference between a new connector's start/stop phases).
+
+### 98. Alter the ConnectorInfo class to contain just a few shapes to be rendered by the Connector class's (newly upgraded) rendering methods (borrow heavily from the Module class's render system).
+
+### 99. Fix the BuildingChip component's cost calculation (located in the render block, of all places) to ensure it is workings are transparent and its readout correct (neither is currently the case).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
@@ -1259,7 +1387,9 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ### 8. [1: UX / Aesthetic] When a modal popup has more than one possible resolution, the buttons for the different resolutions aren't symmetrically aligned on the horizontal axis (they are pulled slightly to the right it seems).
 
-### 9. [2: IX / Inaccurate info display] The game speed indicator should always be visible, including at the game start, and when the player returns to the game from the menu.
+### 9. [2: UX / Inaccurate info display] The game speed indicator should always be visible, including at the game start, and when the player returns to the game from the menu.
+
+### 10. [1: UX / Gameplay] Restrict the base's baseVolume area to only include modules that have the pressurized trait set to true. This would limit the ability to build certain connectors starting or ending in such modules (and potentially have other cool consequences too).
 
 ### Exit Criteria for backend save/load game chapter:
 

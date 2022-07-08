@@ -17,6 +17,11 @@ export default class BuildingChip extends Button {
         this.setBuildingSelection = setBuildingSelection;
     }
 
+    // Determines if the new building is a module or a connector:
+    isModule (building: ModuleInfo | ConnectorInfo): building is ModuleInfo {
+        return (building as ModuleInfo).pressurized !== undefined
+    }
+
     // Based on the ancestral button class, but with a twist: 
     handleClick = (mouseX: number, mouseY: number) => {
         // Establish that click is within button's borders:
@@ -30,8 +35,13 @@ export default class BuildingChip extends Button {
                 this.setSelected(false);
             } else {        // Otherwise set this building as the selection and set mouse context
                 this.setBuildingSelection(this.buildingData);
-                this.setMouseContext("place");
                 this.setSelected(true);
+                // LAST - Set mouse context based on whether building is a module or connector
+                if (this.isModule(this.buildingData)) {
+                    this.setMouseContext("placeModule");
+                } else {
+                    this.setMouseContext("connectorStart")
+                }
             }
         }
     }

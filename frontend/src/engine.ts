@@ -9,10 +9,12 @@ import Economy, { Resources } from "./economy";
 import Population from "./population";
 import Modal, { EventData } from "./modal";
 import Lander from "./lander";
+import MouseShadow from "./mouseShadow";
 import { ModuleInfo, ConnectorInfo, getOneModule, getOneConnector } from "./server_functions";
 import { constants, modalData } from "./constants";
-import { SaveInfo, GameTime } from "./saveGame";
+import { ConnectorSaveInfo, ModuleSaveInfo, SaveInfo, GameTime } from "./saveGame";
 import { GameData } from "./newGameSetup";
+import { Coords } from "./connectorData";
 
 // TODO: Load Environment variables
 if (process.env.ENVIRONMENT) console.log(process.env.ENVIRONMENT);
@@ -29,6 +31,7 @@ export default class Engine extends View {
     _population: Population;
     _modal: Modal | null;
     _animation: Lander | null;  // This field holds the current entity being used to control animations, if there is one
+    _mouseShadow: MouseShadow | null;   // This field will hold a mouse shadow entity if a building is being placed
     // Map scrolling control
     _horizontalOffset: number;  // This will be used to offset all elements in the game's world, starting with the map
     _scrollDistance: number;    // Pixels from the edge of the world area in which scrolling occurs
@@ -56,7 +59,7 @@ export default class Engine extends View {
     switchScreen: (switchTo: string) => void;   // App-level SCREEN switcher (passed down via drill from the app)
     updateEarthData: () => void;    // Updater for the date on Earth (for starters)
     getModuleInfo: (setter: (selectedBuilding: ModuleInfo, locations: number[][]) => void, category: string, type: string, name: string, locations: number[][]) => void;        // Getter function for loading individual structure data from the backend
-    getConnectorInfo: (setter: (selectedConnector: ConnectorInfo, locations: number[][]) => void, category: string, type: string, name: string, locations: number[][]) => void;
+    getConnectorInfo: (setter: (selectedConnector: ConnectorInfo, locations: {start: Coords, stop: Coords}[][]) => void, category: string, type: string, name: string, locations: {start: Coords, stop: Coords}[][]) => void;
 
     constructor(p5: P5, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, updateEarthData: () => void) {
         super(p5, changeView);
@@ -74,6 +77,7 @@ export default class Engine extends View {
         this._population = new Population(p5);
         this._modal = null;
         this._animation = null;
+        this._mouseShadow = null;
         this._horizontalOffset = 0;
         this._scrollDistance = 50;
         this._scrollingLeft = false;
@@ -119,7 +123,7 @@ export default class Engine extends View {
         this._map.setup(this._gameData.mapTerrain);
         this._economy.setResources(this._gameData.startingResources);
         this._horizontalOffset = this._map._data._maxOffset / 2;   // Put player in the middle of the map to start out
-        this._infrastructure.setup(this._horizontalOffset);
+        this._infrastructure.setup(this._map._data._mapData.length);
         this.createNewGameModal();
     }
 
@@ -129,9 +133,10 @@ export default class Engine extends View {
         this._map.setup(this._saveInfo.terrain);
         this._economy.setResources(saveInfo.resources);
         this._horizontalOffset = this._map._data._maxOffset / 2;
-        this._infrastructure.setup(this._horizontalOffset);
+        this._infrastructure.setup(this._map._data._mapData.length);
         this._population.loadColonistData(saveInfo.colonists);
         this.loadModulesFromSave(saveInfo.modules);
+        // TODO: Reactivate Connector loading functionality
         this.loadConnectorsFromSave(saveInfo.connectors);
         this._hasLanded = true; // Landing sequence has to take place before saving is possible
         // Check if game has colonist data and if it doesn't, render an alternate welcome back message
@@ -154,7 +159,7 @@ export default class Engine extends View {
     }
 
     // Top-level saved module importer
-    loadModulesFromSave = (modules: {name: string, type?: string, x: number, y: number}[]) => {
+    loadModulesFromSave = (modules: ModuleSaveInfo[]) => {
         // Only operate if there actually are modules to load:
         if (modules.length > 0) {
             // Sort the list by name to avoid over-calling the backend to get module data
@@ -193,39 +198,47 @@ export default class Engine extends View {
     }
 
     // Top-level saved module importer
-    loadConnectorsFromSave = (connectors: {name: string, type?: string, x: number, y: number}[]) => {
-        // Only operate if there actually are modules to load:
+    loadConnectorsFromSave = (connectors: ConnectorSaveInfo[]) => {
+        // Only operate if there actually are connectors to load:
         if (connectors.length > 0) {
-            // Sort the list by name to avoid over-calling the backend to get module data
+            // Sort the list by name to avoid over-calling the backend to get connector data
             connectors.sort(function(a, b){
                 if (a.name < b.name) { return -1; }
                 if (a.name > b.name) { return 1; }
                 return 0;
             })
-            // Separate modules by name
+            // Separate connectors by name
             let conTypes: string[] = [];
             connectors.forEach((con) => {
-                if (!conTypes.includes(con.name)) {
+                if (!con.segments) {
+                    console.log("Deprecated Warning: A Connector with no 'segments' data has been loaded. Ignoring the affected elements.");
+                }
+                // Only include connectors that have the segments property
+                if ((!conTypes.includes(con.name)) && (con.segments != undefined)) {
                     conTypes.push(con.name)
                 }
             });
-            // For each name (type) of module, get all the coordinates for all instances of that module, then re-populate them
+            // For each name (type) of connector, get all the segment data for the instances of that type, and create them
             conTypes.forEach((cT) => {
                 const cons = connectors.filter((con) => con.name === cT);
                 const conType = cons[0].type != undefined ? cons[0].type : "test";
-                let coords: number[][] = [];
+                // Each set of 'coords' in this list is an array containing a single object with start/stop coordinates
+                let coords: {start: Coords, stop: Coords}[][] = [];
                 cons.forEach((con) => {
-                    coords.push([con.x, con.y]);
+                    coords.push(con.segments);
                 })
                 this.getConnectorInfo(this.loadConnectorFromSave, "connectors", conType, cT, coords);
             })
         }  
     }
 
-    loadConnectorFromSave = (selectedConnector: ConnectorInfo, locations: number[][]) => {
+    loadConnectorFromSave = (selectedConnector: ConnectorInfo, locations: {start: Coords, stop: Coords}[][]) => {
         if (selectedConnector != null) {
             locations.forEach((space) => {
-                this._infrastructure.addConnector(space[0], space[1], selectedConnector);
+                // TODO: Fix this to use both ends of a segment
+                const start: Coords = space[0].start;
+                const stop: Coords = space[0].stop;
+                this._infrastructure.addConnector(start, stop, selectedConnector);
             })
         }
     }
@@ -238,15 +251,25 @@ export default class Engine extends View {
             // console.log("Click in sidebar");
             this._sidebar.handleClicks(mouseX, mouseY);
         } else {
-            // Click is not outside of the map
+            // Click is over the map
             if (mouseX > 0 && mouseX < constants.SCREEN_WIDTH && mouseY > 0 && mouseY < constants.SCREEN_HEIGHT) {
+                const [gridX, gridY] = this.getMouseGridPosition(mouseX, mouseY);
                 switch (this.mouseContext) {
                     case "select":
                         console.log("Select");
                         break;
-                    case "place":
-                        console.log("Place");
-                        this.handleStructurePlacement(mouseX, mouseY);
+                    // NOTE: To add new building placement contexts, ensure case name is also added to setMouseContext method
+                    case "placeModule":
+                        console.log("Place Module.");
+                        this.handleModulePlacement(gridX, gridY);
+                        break;
+                    case "connectorStart":
+                        console.log("Connector Start.");
+                        this.handleConnectorStartPlacement(gridX, gridY)
+                        break;
+                    case "connectorStop":
+                        console.log("Connector Stop.");
+                        this.handleConnectorStopPlacement();
                         break;
                     case "resource":
                         console.log("Resource");
@@ -261,6 +284,8 @@ export default class Engine extends View {
                         // TODO: Add UI explanation (or sound effect!) indicating that the player can't click during 'wait' mode
                         // console.log("Mouse click response suppressed. Reason: 'In wait mode'");
                         break;
+                    default:
+                        console.log(`Unknown mouse context used: ${this.mouseContext}`);
                 }
                 this.getMouseGridPosition(mouseX, mouseY);
             } 
@@ -331,18 +356,60 @@ export default class Engine extends View {
         this._scrollingRight = false;
     }
 
+    createMouseShadow = () => {
+        const w = this.selectedBuilding?.width || constants.BLOCK_WIDTH;
+        let h = this.selectedBuilding?.width || constants.BLOCK_WIDTH;
+        // If structure is a module, find its height parameter; otherwise just use its height twice
+        if (this.selectedBuilding != null && this._infrastructure._data.isModule(this.selectedBuilding)) {
+            h = this.selectedBuilding.height;
+        }
+        this._mouseShadow = new MouseShadow(this._p5, w, h);
+    }
+
+    destroyMouseShadow = () => {
+        this._mouseShadow = null;
+    }
+
+    // Evaluates whether the current mouse position is at an acceptable building site or not
+    validateMouseLocationForPlacement = (x: number, y: number) => {
+        // TODO: Improve the way this prevents out-of-bounds exceptions
+        if (this.selectedBuilding && this._mouseShadow && x >= 0) {   // Only check if a building is selected and a mouse shadow exists
+            if (this._infrastructure._data.isModule(this.selectedBuilding)) {    // If we have a module, check its placement
+                const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._data._mapData);
+                this._mouseShadow._data.setColor(clear);
+            } else if (!this._mouseShadow._data._connectorStartCoords) { // If we have a Connector with NO start coords
+                // If no start coords exist, this is the start placement
+                const clear = this._infrastructure._data.checkConnectorEndpointPlacement(x, y, this._map._data._mapData);
+                this._mouseShadow._data.setColor(clear);
+            } else if (this._mouseShadow._data._connectorStopCoords) {
+                const xStop = this._mouseShadow._data._connectorStopCoords.x;
+                const yStop = this._mouseShadow._data._connectorStopCoords.y;
+                const clear = this._infrastructure._data.checkConnectorEndpointPlacement(xStop, yStop, this._map._data._mapData);
+                this._mouseShadow._data.setColor(clear);
+            }
+        }
+    }
+
     // Given to various sub-components, this dictates how the mouse will behave when clicked in different situations
     setMouseContext = (value: string) => {
         this.mouseContext = value;
-        this.setSelectedBuilding(this._sidebar._detailsArea._buildingSelection);
+        // Only update the selected building if the mouse context is 'placeModule' or 'connectorStart'
+        if (this.mouseContext === "placeModule" || this.mouseContext === "connectorStart") {
+            this.setSelectedBuilding(this._sidebar._detailsArea._buildingSelection);
+        }
+        // Ensure there is no mouse shadow if no structure is selected
+        if (this.selectedBuilding === null) {
+            this.destroyMouseShadow();
+        }
     }
 
     // Used for placing buildings and anything else that needs to 'snap to' the grid (returns values in grid locations)
     getMouseGridPosition(mouseX: number, mouseY: number) {
-        const mouseGridX = Math.floor(mouseX / constants.BLOCK_WIDTH)
+        // Calculate X position with the offset included to prevent wonkiness
+        const mouseGridX = Math.floor((mouseX + this._horizontalOffset) / constants.BLOCK_WIDTH)
         const mouseGridY = Math.floor(mouseY / constants.BLOCK_WIDTH)
-        const horizontalOffGridValue = Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH);
-        const gridX = mouseGridX + horizontalOffGridValue;
+        // const horizontalOffGridValue = Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH);
+        const gridX = mouseGridX;
         const gridY = mouseGridY;
         // TODO: ADD vertical offset calculation
         // Return coordinates as a tuple:
@@ -353,13 +420,16 @@ export default class Engine extends View {
 
     setSelectedBuilding = (selectedBuilding: ModuleInfo | ConnectorInfo | null) => {
         this.selectedBuilding = selectedBuilding;
+        // New mouse shadow is created when a structure is selected
+        this.createMouseShadow();
     }
 
-    handleStructurePlacement = (mouseX: number, mouseY: number) => {
-        const [x, y] = this.getMouseGridPosition(mouseX, mouseY);
+    // X and Y are already gridified
+    handleModulePlacement = (x: number, y: number) => {
         if (this.selectedBuilding != null) {
-            const affordable = this._economy.checkResources(this.selectedBuilding.buildCosts);
-            if (this._infrastructure.isModule(this.selectedBuilding)) {
+            // MODULES
+            if (this._infrastructure._data.isModule(this.selectedBuilding)) {
+                const affordable = this._economy.checkResources(this.selectedBuilding.buildCosts);
                 const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._data._mapData);
                 if (clear && affordable) {
                     this._infrastructure.addModule(x, y, this.selectedBuilding);
@@ -369,12 +439,41 @@ export default class Engine extends View {
                     console.log(`Clear: ${clear}`);
                     console.log(`Affordable: ${affordable}`);
                 }
-            } else {    // For connector placement
-                if (affordable) {
-                    this._infrastructure.addConnector(x, y, this.selectedBuilding);
-                    this._economy.subtractMoney(this.selectedBuilding.buildCosts);
-                }
             }
+        }
+    }
+
+    // Locks the mouse cursor into place at the start location of a new connector (X and Y are already gridified)
+    handleConnectorStartPlacement = (x: number, y: number) => {
+        // Ensure start location is valid
+        if (this._infrastructure._data.checkConnectorEndpointPlacement(x, y, this._map._data._mapData)) {
+            console.log("Valid connector start location chosen.");
+            this._mouseShadow?._data.setLocked(true, {x: x, y: y});   // Lock the shadow's position when start location is chosen
+            this.setMouseContext("connectorStop");
+        }
+    }
+
+    // Completes the purchase and placement of a new connector
+    handleConnectorStopPlacement = () => {
+        // Ensure there is a building selected, and that it's not a module
+        if (this.selectedBuilding != null && !this._infrastructure._data.isModule(this.selectedBuilding) && this._mouseShadow?._data._connectorStopCoords != null && this._mouseShadow._data._connectorStartCoords) {
+            const cost = { money: this.selectedBuilding.buildCosts.money * 4};
+            const affordable = this._economy.checkResources(cost);
+            const start = this._mouseShadow._data._connectorStartCoords;
+            const stop = this._mouseShadow._data._connectorStopCoords;
+            const clear = this._infrastructure._data.checkConnectorEndpointPlacement(stop.x, stop.y, this._map._data._mapData);
+            if (affordable && clear) {
+                this._infrastructure.addConnector(start, stop, this.selectedBuilding);
+                this._economy.subtractMoney(this.selectedBuilding.buildCosts);
+            } else {
+                // TODO: Display this info to the player with an in-game message of some kind
+                console.log(`Clear: ${clear}`);
+                console.log(`Affordable: ${affordable}`);
+            }
+            // Reset mouse context to connector start so another connector can be placed
+            this.destroyMouseShadow();
+            this.createMouseShadow();
+            this.setMouseContext("connectorStart");
         }
     }
 
@@ -665,18 +764,23 @@ export default class Engine extends View {
     // For building placement
     renderBuildingShadow = () => {
         const p5 = this._p5;
-        // Only render the building shadow if mouse is over the map area (not the sidebar)
-        if (p5.mouseX < constants.SCREEN_WIDTH - this._sidebar._width && !this._modal) {
+        // Only render the building shadow if mouse is over the map area (not the sidebar) and there is no modal
+        if (p5.mouseX < constants.SCREEN_WIDTH - this._sidebar._width && !this._modal && this._mouseShadow) {
             let [x, y] = this.getMouseGridPosition(p5.mouseX, p5.mouseY);
-            x = x * constants.BLOCK_WIDTH - this._horizontalOffset;
+            // Set mouse shadow color based on current position's validity, and render it:
+            this.validateMouseLocationForPlacement(x, y);
+            x = x * constants.BLOCK_WIDTH;
             y = y * constants.BLOCK_WIDTH;
             if (this.selectedBuilding !== null) {
-                if (this._infrastructure.isModule(this.selectedBuilding)) {
-                    const w = this.selectedBuilding.width * constants.BLOCK_WIDTH;
-                    const h = this.selectedBuilding.height * constants.BLOCK_WIDTH;
-                    p5.rect(x, y, w, h);
+                if (this._infrastructure._data.isModule(this.selectedBuilding)) {
+                    this._mouseShadow.render(x, y, this._horizontalOffset);
                 } else {
-                    p5.rect(x, y, constants.BLOCK_WIDTH, constants.BLOCK_WIDTH);
+                    if (this.mouseContext === "connectorStart") {
+                        this._mouseShadow.render(x, y, this._horizontalOffset);
+                    } else if (this.mouseContext === "connectorStop") {
+                        this._mouseShadow.resizeForConnector(x, y, this.selectedBuilding.horizontal, this.selectedBuilding.vertical);
+                        this._mouseShadow.render(x, y, this._horizontalOffset);
+                    }
                 }
             }
         }    
@@ -690,12 +794,15 @@ export default class Engine extends View {
         }
         const p5 = this._p5;
         p5.background(constants.APP_BACKGROUND);
-        this.renderMouseShadow();                           // Render mouse shadow first
+        this.renderMouseShadow();                               // Render mouse shadow first
         if (this._animation) {
-            this._animation.render(this._horizontalOffset); // Render animation second
+            this._animation.render(this._horizontalOffset);     // Render animation second
         }
-        this._map.render(this._horizontalOffset);           // Render map third
-        this._infrastructure.render(this._horizontalOffset);
+        this._map.render(this._horizontalOffset);               // Render map third
+        this._infrastructure.render(this._horizontalOffset);    // Render infrastructure fourth
+        if (this.selectedBuilding && !this._infrastructure._data.isModule(this.selectedBuilding)) {
+            this.renderMouseShadow(); // If placing a connector, render mouse shadow above the infra layer
+        }
         this._economy.render();
         this._population.render(this._horizontalOffset, this.ticksPerMinute, this.gameOn);
         this.handleMouseScroll();   // Every frame, check for mouse scrolling
@@ -706,6 +813,7 @@ export default class Engine extends View {
         if (this._modal) {
             this._modal.render();
         }
+        // p5.text(this._mouseShadow?._data._locked, 20, 100);
     }
 
 }

@@ -11,7 +11,7 @@ import Industry from "./industry";
 import Logbook from "./logbook";
 // Game constants:
 import { constants } from "./constants";
-import { SaveInfo } from "./saveGame";
+import { ModuleSaveInfo, ConnectorSaveInfo, SaveInfo } from "./saveGame";
 import { GameData } from "./newGameSetup";
 
 
@@ -124,8 +124,9 @@ export default class Game extends Screen {
 
     // Prepares a SaveInfo object to be passed to the game's backend via the Save Game screen:
     prepareSaveData = () => {
-        const moduleData: {name: string, type: string, x: number, y: number}[] = [];
-        const connectorData: {name: string, type: string, x: number, y: number}[] = [];
+        const moduleData: ModuleSaveInfo[] = [];
+        // TODO: Update to use newer connector data
+        const connectorData: ConnectorSaveInfo[] = [];
         this._engine._infrastructure._modules.forEach((mod) => {
             const stats = {
                 name: mod._moduleInfo.name,
@@ -137,10 +138,12 @@ export default class Game extends Screen {
         });
         this._engine._infrastructure._connectors.forEach((con) => {
             const stats = {
-                name: con._connectorInfo.name,
-                type: con._connectorInfo.type,
-                x: con._x,
-                y: con._y
+                name: con._data._connectorInfo.name,
+                type: con._data._connectorInfo.type,
+                segments: con._data._segments,
+                // TODO: Remove X and Y save data once segment placement is in place
+                x: con._data._x,
+                y: con._data._y
             }
             connectorData.push(stats);
         })

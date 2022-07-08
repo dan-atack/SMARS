@@ -7,6 +7,7 @@ import { constants } from "./constants";
 import { sendSaveGame } from "./server_functions";
 import { Resources } from "./economy";
 import { ColonistSaveData } from "./colonist";
+import { Coords } from "./connectorData";
 
 // Save Game type info
 export type GameTime = {
@@ -17,29 +18,34 @@ export type GameTime = {
     year: number    // Smartian year (AKA mission year) is the amount of times SMARS has orbited the sun since mission start (Lasts approximately twice as long as a Terrestrial year).
 }
 
+export type ModuleSaveInfo = {
+    name: string,
+    type: string,           // Module type info is needed to complete search parameters when re-fetching full data object
+    x: number,
+    y: number
+}
+
+export type ConnectorSaveInfo = {
+    name: string,
+    type: string,
+    segments: {start: Coords, stop: Coords}[],  // Connectors all consist of pairs of start/stop coordinates
+    // x: number,      // Deprecated - remove after implementing coordinate-based system
+    // y: number       // Deprecated - remove after implementing coordinate-based system
+}
+
 export type SaveInfo = {
-    game_name: string           // Save game name
-    username: string            // Name of the username associated with this save
-    time: Date                  // Timestamp for the save file
-    game_time: GameTime
-    difficulty: string          // Easy, medium or hard - values will be inserted into switch cases throughout the game
-    map_type: string            // From the game's initial settings
-    terrain: number[][]         // The 'map' consists of terrain plus structures plus sprites
-    random_events: boolean      // From the game's initial settings
-    modules: {                  // Store only a minimal amount of data on the individual modules
-        name: string,
-        type: string,           // Module type info is needed to complete search parameters when re-fetching full data object
-        x: number,
-        y: number
-    }[]
-    connectors: {               // Connector data's shape will eventually change, but for now it's basically the same as a module
-        name: string,
-        type: string,
-        x: number,
-        y: number
-    }[]
-    resources: Resources;
-    colonists: ColonistSaveData[];
+    game_name: string,           // Save game name
+    username: string,            // Name of the username associated with this save
+    time: Date,                  // Timestamp for the save file
+    game_time: GameTime,
+    difficulty: string,          // Easy, medium or hard - values will be inserted into switch cases throughout the game
+    map_type: string,            // From the game's initial settings
+    terrain: number[][],         // The 'map' consists of terrain plus structures plus sprites
+    random_events: boolean,      // From the game's initial settings
+    modules: ModuleSaveInfo[],
+    connectors: ConnectorSaveInfo[],
+    resources: Resources,
+    colonists: ColonistSaveData[]
 }
 
 export default class SaveGame extends Screen {

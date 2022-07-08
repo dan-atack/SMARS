@@ -6,6 +6,21 @@ import assert from "assert";
 const dbName = 'smars'
 const collectionName = 'saved_games'
 
+// Mini-type for convenience:
+
+type Coords = {
+    x: number,
+    y: number
+}
+
+// Template for Resources type (copy from Economy.ts):
+
+export type Resources = {
+    money: [string, number],    // Each value is a tuple, representing the display symbol, and the quantity
+    oxygen: [string, number],
+    water: [string, number],
+    food: [string, number],
+}
 
 // Template for Colonist Save Info (copy from Colonist.ts):
 
@@ -45,18 +60,21 @@ export type SaveInfo = {
     random_events: boolean      // From the game's initial settings
     modules: {                  // Store only a minimal amount of data on the individual modules
         name: string,
+        type: string,           // Module type info is needed to complete search parameters when re-fetching full data object
         x: number,
         y: number
     }[]
     connectors: {               // Connector data's shape will eventually change, but for now it's basically the same as a module
         name: string,
-        x: number,
-        y: number
+        type: string,
+        segments: {start: Coords, stop: Coords}[],  // Connectors all consist of pairs of start/stop coordinates
+        // x: number,      // Deprecated - remove after implementing coordinate-based system
+        // y: number       // Deprecated - remove after implementing coordinate-based system
     }[]
+    resources: Resources;
     colonists: ColonistSaveData[];
-    // resources: any      // TODO: Ditto; probably need a sub-object which is a dictionary of resource names to numbers.
-    // techs: any          // TODO: Again, a list of some kind of object that requires a well thought-out sub-type
-};
+    // TODO: Add Technology, Storyline Event Choices, etc.
+}
 
 const handleSave = async (req: Request, res: Response) => {
     const saveInfo: SaveInfo = req.body;
