@@ -48,28 +48,32 @@ export default class Connector {
         const w = this._data._thickness * constants.BLOCK_WIDTH;
         const h = this._data._thickness * constants.BLOCK_WIDTH;
         // Determine 'In-between' coordinates - top left corner is the same regardless of orientation
-        const bX = Math.min(startX, stopX);
-        const bY = Math.min(startY, stopY);
+        let bX = Math.min(startX, stopX);
+        let bY = Math.min(startY, stopY);
         let bW = 0;
         let bH = 0;
         // Height and width depend on orientation
         if (this._data._orientation === "vertical") {
-            bW = this._data._thickness * constants.BLOCK_WIDTH;
+            bX += 4;                        //  Make the pipe slightly less than a whole grid space in width
+            bW = this._data._thickness * constants.BLOCK_WIDTH - 8;
             bH = Math.abs(startY - stopY);
         } else {
+            bY += 4;                        //  Make the pipe slightly less than a whole grid space in width
             bW = Math.abs(startX - stopX);
-            bH = this._data._thickness * constants.BLOCK_WIDTH;
+            bH = this._data._thickness * constants.BLOCK_WIDTH - 8;
         }
+        // In-between segment
         p5.fill(constants.GRAY_MEDIUM);
         p5.strokeWeight(1);
         p5.stroke(constants.ALMOST_BLACK);
         p5.rect(bX, bY, bW, bH);
+        // Endpoints
         p5.fill(this._color);
         p5.strokeWeight(2);
         p5.stroke(constants.ALMOST_BLACK);
-        // Endpoints
         p5.rect(startX, startY, w, h);
         p5.rect(stopX, stopY, w, h);
+        p5.fill(constants.GREEN_DARK);
         p5.ellipse(startX + constants.BLOCK_WIDTH / 2, startY + constants.BLOCK_WIDTH / 2, this._data._thickness * constants.BLOCK_WIDTH / 2);
         p5.ellipse(stopX + constants.BLOCK_WIDTH / 2, stopY + constants.BLOCK_WIDTH / 2, this._data._thickness * constants.BLOCK_WIDTH / 2);
     }

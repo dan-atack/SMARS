@@ -4,14 +4,14 @@ import { constants } from "./constants";
 
 export default class MouseShadowData {
     // Mouse Shadow Data types:
-    _x: number;
+    _x: number;                 // All values are in terms of PIXELS, not grid spaces
     _y: number;
     _w: number;
     _h: number;
     _color: string;
     _xOffset: number;   // Needed only if the shadow is locked in place
     _locked: boolean;   // Used to anchor the shadow in place, for connector placement
-    _connectorStartCoords: Coords | null;   // Both this and the stop coords are in terms of grid locations
+    _connectorStartCoords: Coords | null;   // Both this and the stop coords are in terms of GRID LOCATIONS
     _connectorStopCoords: Coords | null;
 
     // W and H are both given in terms of columns, not pixels

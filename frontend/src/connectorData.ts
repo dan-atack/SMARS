@@ -31,6 +31,9 @@ export default class ConnectorData {
             if (start.x === stop.x) {
                 this._orientation = "vertical"   // Connector is vertical if start x and stop x are the same
                 this._length = Math.abs(start.y - stop.y);
+            } else {
+                this._orientation = "horizontal";
+                this._length = Math.abs(start.x - stop.x);
             }
         } else if (this._connectorInfo.vertical) {
             this._orientation = "vertical";     // Connector is vertical if only that property is true

@@ -1233,15 +1233,15 @@ Adding Connectors to the game will allow the player to connect different modules
 Exit Criteria:
 
 - [DONE] The player can select a Connector from the sidebar and click on the map to create a shadow representing its start point
-- [DONE] The player can click on another point on the map to specify the Connector's endpoint; if the location is good, this places the new Connector
-- [DONE] The player can cancel placement at any time by pressing the sidebar's 'back' button, or by clicking an invalid placement location
+- [DONE] The player can click on a second (stop) point on the map; if the location is good, this places the new Connector
+- [DONE] The player can cancel placement by pressing the sidebar's 'back' button, or by clicking an invalid placement location
 - [DONE] When placing a Connector's terminus, the mouse shadow shows a preview of the segment that will be created
 - [DONE] When placing any Connector or Module, the mouse cursor will change colour based on whether or not a location is valid
 - [DONE] Some Connectors can only be either horizontal or vertical
 - [DONE] Some Connectors can be either horizontal OR vertical, and can be placed in either direction (but not both, for now)
-- The Connectors component data is its own class, and has at least 1 meaningful unit test
+- [DONE] The Connectors component data is its own class, and has at least 1 meaningful unit test
 - [DONE] The Infrastructure component data is its own class, and has at least 1 meaningful unit test
-- The MouseShadow component's data is its own class, and has at least 1 meaningful unit test
+- [DONE] The MouseShadow component's data is its own class, and has at least 1 meaningful unit test
 - [DONE] The Infrastructure class contains a map of the base's volume - basically all of the coordinates that are inside a module
 - [DONE] [STRETCH] Add a simple image for the two basic connector CATEGORIES (transport and conduit)
 
@@ -1340,15 +1340,13 @@ Features Added:
 
 43. Give the render method for the Connector class a basic formula for filling in the gap between a connector's start and stop points.
 
-### 45. Add a unit test for each of the Mouse Shadow class's many methods, and be thorough.
+44. Add a unit test for each of the Mouse Shadow class's many methods, and be thorough.
 
-### 46. Add a unit test for the Connector Data class's constructor function, to test its ability to evaluate its orientation under a number of different circumstances (including for a single-point connector).
+45. Add a unit test for the Connector Data class's constructor function, to test its ability to evaluate its orientation under a number of different circumstances (including for a single-point connector).
 
-### 47. Add a method to the Connector base class that helps it make a few little shapes if the connector is a ladder.
+46. Add a method to the Connector base class that helps it make two vertical poles and a number of rungs if the connector is a ladder.
 
-### 48. Add a simple calculation to reduce the x value and width of a conduit-type connector's in-between shape by about 20% each, so the connector is like a skinny pipe. And add a small circle to each of the endpoints.
-
-### 99. Fix the BuildingChip component's cost calculation (located in the render block, of all places) to ensure it is workings are transparent and its readout correct (neither is currently the case).
+47. Add a simple calculation to reduce the x value and width of a conduit-type connector's in-between shape by about 20% each, so the connector is like a skinny pipe. And add a small circle to each of the endpoints.
 
 ## Chapter 27: Buildings in the Frontend, Part IV - Connector Logic (Difficulty Estimate: TBD)
 
@@ -1357,9 +1355,11 @@ Exit criteria:
 - The Infrastructure class will contain a list of 'floors', representing the surfaces within the base on which colonists can walk
 - The Infrastructure class will contain another list of 'connections', representing links between different floors or modules
 
-### 98. Add a new Infra Data class method to calculate a list of coordinate pairs for each individual section of a proposed Connector. This will be used to detect collisions with the terrain - the one possible obstacle to creating a new Connector (gravity/indoors criteria don't apply to in-between segments). We'll need a getConnectorSegments method that is updated by the Engine's validateMouseLocationForPlacement method (which will also need to be upgraded to note the difference between a new connector's start/stop phases).
+### 97. Add a new Infra Data class method to calculate a list of coordinate pairs for each individual section of a proposed Connector. This will be used to detect collisions with the terrain - the one possible obstacle to creating a new Connector (gravity/indoors criteria don't apply to in-between segments). We'll need a getConnectorSegments method that is updated by the Engine's validateMouseLocationForPlacement method (which will also need to be upgraded to note the difference between a new connector's start/stop phases).
 
-### 99. Alter the ConnectorInfo class to contain just a few shapes to be rendered by the Connector class's (newly upgraded) rendering methods (borrow heavily from the Module class's render system).
+### 98. Alter the ConnectorInfo class to contain just a few shapes to be rendered by the Connector class's (newly upgraded) rendering methods (borrow heavily from the Module class's render system).
+
+### 99. Fix the BuildingChip component's cost calculation (located in the render block, of all places) to ensure it is workings are transparent and its readout correct (neither is currently the case).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

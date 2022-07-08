@@ -1,7 +1,6 @@
 // The MouseShadow class will be used to help with the placement of new base structures
 import P5 from "p5";
 import MouseShadowData from "./mouseShadowData";
-import { constants } from "./constants";
 
 export default class MouseShadow {
     // Mouse Shadow types:
@@ -21,7 +20,7 @@ export default class MouseShadow {
 
     // Takes up to 5 parameters: x and y (mouse coords) + offset are mandatory
     // Vertical and Horizontal are optional booleans to help with stretching a connector shadow
-    render = (x: number, y: number, xOffset: number, horizontal?: boolean, vertical?: boolean) => {
+    render = (x: number, y: number, xOffset: number) => {
         const p5 = this._p5;
         this._data._xOffset = xOffset;
         p5.fill(this._data._color);
@@ -30,12 +29,10 @@ export default class MouseShadow {
             this._data.setPosition(x, y);       // If the shadow is not locked, allow it to move
         }
         p5.rect(this._data._x - this._data._xOffset, this._data._y, this._data._w, this._data._h);
-        if (this._data._connectorStartCoords) p5.text(this._data._connectorStartCoords.x, 20, 120);
-        if (this._data._connectorStartCoords) p5.text(this._data._connectorStartCoords.y, 20, 140);
-        // if (this._data._connectorStopCoords) p5.text(this._data._deltaX, 20, 160);
-        // if (this._data._connectorStopCoords) p5.text(this._data._deltaY, 20, 180);
-        if (this._data._connectorStopCoords) p5.text(this._data._connectorStopCoords.x, 20, 200);
-        if (this._data._connectorStopCoords) p5.text(this._data._connectorStopCoords.y, 20, 220);
+        // if (this._data._connectorStartCoords) p5.text(this._data._connectorStartCoords.x, 20, 120);
+        // if (this._data._connectorStartCoords) p5.text(this._data._connectorStartCoords.y, 20, 140);
+        // if (this._data._connectorStopCoords) p5.text(this._data._connectorStopCoords.x, 20, 200);
+        // if (this._data._connectorStopCoords) p5.text(this._data._connectorStopCoords.y, 20, 220);
         // p5.text(this._data._direction, 20, 200);
     }
 }
