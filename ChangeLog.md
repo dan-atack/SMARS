@@ -1244,8 +1244,7 @@ Exit Criteria:
 - [DONE] The MouseShadow component's data is its own class, and has at least 1 meaningful unit test
 - [DONE] The Infrastructure class contains a map of the base's volume - basically all of the coordinates that are inside a module
 - [DONE] [STRETCH] Add a simple image for the two basic connector CATEGORIES (transport and conduit)
-
-- Ensure all backwards compatibility with older saves (saves with obsolete connector data should simply disregard it)
+- [DONE] Ensure all backwards compatibility with older saves (saves with obsolete connector data should simply disregard it)
 
 Features Added:
 
@@ -1348,12 +1347,28 @@ Features Added:
 
 47. Add a simple calculation to reduce the x value and width of a conduit-type connector's in-between shape by about 20% each, so the connector is like a skinny pipe. And add a small circle to each of the endpoints.
 
-## Chapter 27: Buildings in the Frontend, Part IV - Connector Logic (Difficulty Estimate: TBD)
+## Chapter 27: Buildings in the Frontend, Part IV - Floor Logic (Difficulty Estimate: 5 for Intro to TDD!)
+
+### July 8, 2022
+
+Having now established how Connectors are placed on the map, it is time to take care of some of the behind-the-scenes logic that will govern their eventual role in the game. The focus of this chapter will be to establish how the base's interior will be structured in terms of floors that the colonists can traverse, and how members of the new Connectors class will link different levels of the base's interior for transit, and link different modules for resource distribution. The work here will have no visible output in the game's UI right away, but it will be possible to test most of the new logic, particularly if we use this opportunity to practice using a test-driven approach to development!
 
 Exit criteria:
 
 - The Infrastructure class will contain a list of 'floors', representing the surfaces within the base on which colonists can walk
-- The Infrastructure class will contain another list of 'connections', representing links between different floors or modules
+- Each new Floor is given a unique serial number
+- Floor information includes an up-to-date list of transit connectors that intersect it
+- Floor information includes an up-to-date list of the modules that comprise it
+- Floor information is updated whenever a new Module or Connector is placed
+- If placing a new Module causes two Floors to merge, their module and connector lists are combined and the Floor with the lower serial number is discarded
+- All new floor-related logic is tested extensively
+- [STRETCH] Unit tests for the new logic are written BEFORE the code itself!
+
+1. Create a new class, Floor, to keep track of all of the above-mentioned data, and also house the various methods that will operate on it. This will make it even simpler to create unit tests, as this will be a non-rendering class and thus no need for a separate 'floorData' class.
+
+### 2. Make dummy methods for the floorData class, and leave them with just a console log / comment for now.
+
+### 3. Head on over to the tests folder and add a new file for Floor class unit tests!
 
 ### 97. Add a new Infra Data class method to calculate a list of coordinate pairs for each individual section of a proposed Connector. This will be used to detect collisions with the terrain - the one possible obstacle to creating a new Connector (gravity/indoors criteria don't apply to in-between segments). We'll need a getConnectorSegments method that is updated by the Engine's validateMouseLocationForPlacement method (which will also need to be upgraded to note the difference between a new connector's start/stop phases).
 
