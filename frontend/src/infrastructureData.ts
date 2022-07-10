@@ -1,16 +1,21 @@
 // The InfrastructureData class handles all of the data processing and structure placement determination tasks for the infrastructure class, without any rendering tasks
+import Connector from "./connector";
+import Module from "./module";
 import { ConnectorInfo, ModuleInfo } from "./server_functions";
 import { Coords } from "./connectorData";
+import Floor from "./floor";
 import { constants } from "./constants";
 
 export default class InfrastructureData {
     // Infra Data class is mostly a calculator for the Infra class to pass values to, so it stores very few of them itself
     _justBuilt: ModuleInfo | ConnectorInfo | null;
     _baseVolume: number[][];    // Works the same as the terrain map, but to keep track of the base's inner area
+    _floors: Floor[];           // Floors are a formation of one or more modules, representing walkable surfaces within the base
 
     constructor() {
         this._justBuilt = null; // When a building has just been added, set this to the building's data
         this._baseVolume = [];  // Starts with just an array - setup sets its length
+        this._floors = [];
     }
 
     setup (mapWidth: number) {
@@ -155,7 +160,7 @@ export default class InfrastructureData {
 
     // BASE MAPPING METHODS
 
-    // Updates the 'volume map' of the base's structures
+    // Updates the 'volume map' of the base's structures with a set of coordinates (could be updated to add/remove said coords)
     updateBaseVolume (moduleArea: Coords[]) {
         // For each set of coordinates, add the y coordinate to the xth list in the base's volume. Re-sort columns as needed
         moduleArea.forEach((coords) => {
@@ -167,5 +172,48 @@ export default class InfrastructureData {
                 console.log(`WARNING: Not adding coords ${coords.x}, ${coords.y} due to overlap with existing volume.`);
             }
         })
+    }
+
+    // FLOOR-RELATED METHODS
+
+    // Multi-floor meta methods
+
+    checkForFloor (elevation: number) {
+        // Returns a list of all floors with a given elevation
+    }
+
+    addNewFloor (elevation: number, footprint: number[]) {
+        // Create a new floor, initially comprised of a single module
+    }
+
+    // Top-level update method for adding new modules
+    addModuleToFloors (module: Module, footprint: {floor: number, footprint: number[]}) {
+        // const floor: Floor | undefined = this._floors.find(floor => floor._id === floorId);
+        // if (floor) {
+        //     floor.addModule(moduleInfo);
+        //     const footprint = this.calculateModuleFootprint
+        // }
+    }
+
+    addConnectorToFloors (connectorInfo: ConnectorInfo) {
+
+    } 
+
+    // Calling methods on individual floors
+
+    checkIfAdjacentToFloor (floorId: number, footprint: number[]) {
+        // Check if a new module's footprint is right next to a particular floor's edges
+    }
+
+    updateFloorFootprint (footprint: number[]) {
+        // Pass a list of columns to an existing floor
+    }
+
+    updateFloorModules (moduleInfo: ModuleInfo) {
+        // Adds a module to the floor
+    }
+
+    updateFloorConnectors (connectorInfo: ConnectorInfo) {
+        // Adds a connector to the floor
     }
 }

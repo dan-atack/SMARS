@@ -7,11 +7,13 @@ import { constants } from "./constants";
 export default class Connector {
     // Block types:
     _p5: P5;
+    _id: number;                // Unique ID from the Infra class
     _data: ConnectorData;
     _color: string;
 
-    constructor(p5: P5, start: Coords, stop: Coords, connectorInfo: ConnectorInfo) {
+    constructor(p5: P5, id: number, start: Coords, stop: Coords, connectorInfo: ConnectorInfo) {
         this._p5 = p5;
+        this._id = id;
         this._data = new ConnectorData(start, stop, connectorInfo);
         this._color = constants.EGGSHELL    // Default value for now; in the future modules will be of no specific color: ;
     }

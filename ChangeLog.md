@@ -1362,13 +1362,21 @@ Exit criteria:
 - Floor information is updated whenever a new Module or Connector is placed
 - If placing a new Module causes two Floors to merge, their module and connector lists are combined and the Floor with the lower serial number is discarded
 - All new floor-related logic is tested extensively
+- Modules and Connectors have a serial ID property that's given to them at creation by the Infrastructure class.
+- Infra class updates its serial number index each time a module/connector is created, including by loading
 - [STRETCH] Unit tests for the new logic are written BEFORE the code itself!
 
 1. Create a new class, Floor, to keep track of all of the above-mentioned data, and also house the various methods that will operate on it. This will make it even simpler to create unit tests, as this will be a non-rendering class and thus no need for a separate 'floorData' class.
 
-### 2. Make dummy methods for the floorData class, and leave them with just a console log / comment for now.
+2. Make dummy methods for the floorData class, and leave them with just a console log / comment for now.
 
-### 3. Head on over to the tests folder and add a new file for Floor class unit tests!
+3. Briefly, do the same thing for the Infra Data class, just to get an idea of what we're going to be working with here.
+
+4. Add a floors list to the Infra Data class as well. Like the base's volume, this is a data-driven system with no need to render anything.
+
+### 5. Add n ID field to the Connector and Module classes, and have their constructors take an argument for this value.
+
+### 5. Head on over to the tests folder and add a new file for Floor class unit tests!
 
 ### 97. Add a new Infra Data class method to calculate a list of coordinate pairs for each individual section of a proposed Connector. This will be used to detect collisions with the terrain - the one possible obstacle to creating a new Connector (gravity/indoors criteria don't apply to in-between segments). We'll need a getConnectorSegments method that is updated by the Engine's validateMouseLocationForPlacement method (which will also need to be upgraded to note the difference between a new connector's start/stop phases).
 

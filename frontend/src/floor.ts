@@ -1,6 +1,5 @@
 // The Floor represents a single walkable surface within the base, and accompanying information about the modules that comprise it
-import Module from "./module";
-import Connector from "./connector";
+import { ModuleInfo, ConnectorInfo } from "./server_functions";
 import { constants } from "./constants";
 
 export default class Floor {
@@ -9,8 +8,9 @@ export default class Floor {
     _leftSide: number;          // Grid location of the floor's left-most column
     _rightSide: number;         // Grid location of the floor's right-most column
     _elevation: number;         // Grid location of the floor's altitude, on the y-axis
-    _modules: Module[];         // List of pointers to all the modules that form this floor
-    _connectors: Connector[];   // List of all the connectors that intersect with this floor
+    _modules: ModuleInfo[];         // List of pointers to all the modules that form this floor
+    _connectors: ConnectorInfo[];   // List of all the TRANSIT connectors that intersect with this floor
+    _groundFloor: boolean;      // Set to true if this is the ground floor; if so, no connectors are needed to access this floor
 
     constructor(id: number, leftSide: number, rightSide: number, elevation: number) {
         this._id = id;
@@ -19,5 +19,27 @@ export default class Floor {
         this._elevation = elevation;
         this._modules = [];
         this._connectors = [];
+        this._groundFloor = false;
     }
+
+    // Take a list of columns' indices and uses them to redetermine the edges
+    updateFootprint = (footprint: number[]) => {
+        // Recalculates the left/right side when given the footprint for a new module
+    }
+
+    // Take a list of columns' indices and see if they are positioned to the immediate right or left of the floor's current edges
+    checkIfAdjacent = (footprint: number[]) => {
+        console.log(footprint);
+        // TODO: Write the code after coming up with unit tests for it!
+    }
+
+    addModule = (module: ModuleInfo) => {
+        this._modules.push(module);
+    }
+
+    addConnector = (connector: ConnectorInfo) => {
+        this._connectors.push(connector);
+    }
+
+    // TODO: Add removal functions for Modules and Connectors
 }
