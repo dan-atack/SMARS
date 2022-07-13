@@ -1,5 +1,4 @@
 // The Floor represents a single walkable surface within the base, and accompanying information about the modules that comprise it
-import { ModuleInfo, ConnectorInfo } from "./server_functions";
 import { constants } from "./constants";
 
 export default class Floor {
@@ -8,8 +7,8 @@ export default class Floor {
     _leftSide: number;          // Grid location of the floor's left-most column
     _rightSide: number;         // Grid location of the floor's right-most column
     _elevation: number;         // Grid location of the floor's altitude, on the y-axis
-    _modules: ModuleInfo[];         // List of pointers to all the modules that form this floor
-    _connectors: ConnectorInfo[];   // List of all the TRANSIT connectors that intersect with this floor
+    _modules: number[];         // List of UIDs all the modules that form this floor
+    _connectors: number[];      // List of UIDs of all the transit connectors that intersect with this floor
     _groundFloor: boolean;      // Set to true if this is the ground floor; if so, no connectors are needed to access this floor
 
     constructor(id: number, leftSide: number, rightSide: number, elevation: number) {
@@ -29,16 +28,22 @@ export default class Floor {
 
     // Take a list of columns' indices and see if they are positioned to the immediate right or left of the floor's current edges
     checkIfAdjacent = (footprint: number[]) => {
+        let adjacent = false;
+        // Given a footprint (list of column indices), should first sort them and then if they are close enough to either side, adjust the left/right edge values as needed.
+        // Should return true if the operation is a success, and false if not possible (including if the footprint of the proposed new module overlaps with the floor's current footprint (indicating an error))
         console.log(footprint);
         // TODO: Write the code after coming up with unit tests for it!
+        return adjacent;
     }
 
-    addModule = (module: ModuleInfo) => {
-        this._modules.push(module);
+    // Top level expander function: Updates the footprint and adds the new module ID to the list
+    addModule = (moduleId: number, footprint: number[]) => {
+        this._modules.push(moduleId);
+        this.updateFootprint(footprint);
     }
 
-    addConnector = (connector: ConnectorInfo) => {
-        this._connectors.push(connector);
+    addConnector = (connectorId: number) => {
+        this._connectors.push(connectorId);
     }
 
     // TODO: Add removal functions for Modules and Connectors

@@ -1,4 +1,5 @@
 import InfrastructureData from "../src/infrastructureData";
+import Floor from "../src/floor";
 import { constants } from "../src/constants";
 
 // DUMMY DATA:
@@ -170,6 +171,27 @@ describe("Infrastructure Data", () => {
         // Test Connector placement AFTER adding structures (base volume)
         expect(infraData.checkConnectorEndpointPlacement(0, 25, map1)).toBe(true);   // Same coords as before; now acceptable
         expect(infraData.checkConnectorEndpointPlacement(0, 24, map1)).toBe(false);  // Still too high (above the roof)
+    })
+
+    test("Can find floors at a certain elevation", () => {
+
+    })
+
+    test("Can create a new floor", () => {
+
+    })
+
+    test("Can delete a floor", () => {
+
+    })
+
+    test("Can combine two floors", ()  => {
+
+    })
+
+    // Top-level floor management method
+    test("Can decide whether to create, merge or expand floors when a new module is placed", () => {
+
     })
 
 })

@@ -176,44 +176,56 @@ export default class InfrastructureData {
 
     // FLOOR-RELATED METHODS
 
-    // Multi-floor meta methods
-
-    checkForFloor (elevation: number) {
-        // Returns a list of all floors with a given elevation
+    // Top-level update method for adding new modules
+    addModuleToFloors (moduleId: number, footprint: {floor: number, footprint: number[]}) {
+        const fp = footprint.footprint;
+        const elev = footprint.floor;
+        // Check if an existing floor can be added to; if not, create a new one
+        const existingFloors = this.findFloorsAtElevation(elev);
+        if (existingFloors.length === 0) {
+            // Add a new floor
+            this.addNewFloor(elev, fp);
+        } else {
+            // Keep a list of how many floors the new module footprint is adjacent to
+            let adjacents = [];
+            // Check if new module is adjacent to existing floor edges (for each floor if there are several)
+            existingFloors.forEach((floor) => {
+                if (floor.checkIfAdjacent(fp)) {
+                    adjacents.push(floor);
+                }
+            })
+            if (adjacents.length === 0) {
+                this.addNewFloor(elev, fp);
+            } else if (existingFloors.length === 1) {
+                // Add module ID to the existing floor
+            }
+            // If there are no adjacencies, create a new floor; if there are two adjacencies, merge both into a single floor
+        }
     }
 
+    // Top-level method for adding new connectors
+    addConnectorToFloors (connectorId: number, start: Coords, stop: Coords) {
+        // Check for floors intersected by a new connector; the new connector to their list if so
+    }
+
+    // Intermediate-level Floor management methods
+
+    findFloorsAtElevation (elevation: number) {
+        return this._floors.filter((floor) => floor._elevation === elevation);
+    }
+
+    // Adds a new floor if a module is placed at a new elevation/not adjacent to an existing floor
     addNewFloor (elevation: number, footprint: number[]) {
         // Create a new floor, initially comprised of a single module
     }
 
-    // Top-level update method for adding new modules
-    addModuleToFloors (module: Module, footprint: {floor: number, footprint: number[]}) {
-        // const floor: Floor | undefined = this._floors.find(floor => floor._id === floorId);
-        // if (floor) {
-        //     floor.addModule(moduleInfo);
-        //     const footprint = this.calculateModuleFootprint
-        // }
+    // Deletes the second of two floors involved in a merger to avoid data duplication
+    deleteFloor (floorId: number) {
+        // Delete a specific floor, using its ID to look it up
     }
 
-    addConnectorToFloors (connectorInfo: ConnectorInfo) {
-
-    } 
-
-    // Calling methods on individual floors
-
-    checkIfAdjacentToFloor (floorId: number, footprint: number[]) {
-        // Check if a new module's footprint is right next to a particular floor's edges
-    }
-
-    updateFloorFootprint (footprint: number[]) {
-        // Pass a list of columns to an existing floor
-    }
-
-    updateFloorModules (moduleInfo: ModuleInfo) {
-        // Adds a module to the floor
-    }
-
-    updateFloorConnectors (connectorInfo: ConnectorInfo) {
-        // Adds a connector to the floor
+    // If two previously separate floors with the same elevation are linked by a new module, combine them into a single entity
+    combineFloors (floorId1: number, floorId2: number) {
+        // Add all modules and connectors from floor 2 to floor 1 and update left/right edge values, then delete floor 2
     }
 }

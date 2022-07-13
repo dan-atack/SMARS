@@ -39,13 +39,17 @@ export default class Infrastructure {
         this._data.updateBaseVolume(area);
         // Update base floor data
         const footprint = this._data.calculateModuleFootprint(area);
-        // this._data.addModuleToFloors(moduleInfo, footprint);
+        this._data.addModuleToFloors(m._id, footprint);
     }
 
     addConnector (start: Coords, stop: Coords, connectorInfo: ConnectorInfo) {
         const c = new Connector(this._p5, this._currentSerial, start, stop, connectorInfo)
         this._connectors.push(c);
         this.increaseSerialNumber();
+        // Update base floor data if connector is of the transport type
+        if (connectorInfo.type === "transport") {
+            this._data.addConnectorToFloors(c._id, start, stop);
+        }
     }
 
     increaseSerialNumber () {

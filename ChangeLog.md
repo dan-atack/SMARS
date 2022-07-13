@@ -1374,9 +1374,17 @@ Exit criteria:
 
 4. Add a floors list to the Infra Data class as well. Like the base's volume, this is a data-driven system with no need to render anything.
 
-### 5. Add n ID field to the Connector and Module classes, and have their constructors take an argument for this value.
+5. Add an ID field to the Connector and Module classes, and have their constructors take an argument for this value.
 
-### 5. Head on over to the tests folder and add a new file for Floor class unit tests!
+6. Head on over to the tests folder and add a new file for Floor class unit tests. Start with the basics (check if a property exists) then add tests for both of the calculation methods in the Floor class: Check if adjacent, and update footprint. Leave tests empty for now, or make them so they auto-pass. Green power, dude.
+
+7. Add tests for the new Infra Data class methods as well: Find floors at elevation; create new floor; delete existing floor; add module to existing floor; merge two existing floors (by placing a module in between them to form a single surface).
+
+### 8. Add a unit test for the Infra Data class's FindFloorsAtElevation method, since we've already created that method.
+
+### 9. Next, add a unit test for the Floor class's updateFootprint and checkIfAdjacent methods BEFORE writing the code for said methods! See how it influences the coding process.
+
+### 96. The Mouse Shadow persists even when a new module is de-selected. Make it stop.
 
 ### 97. Add a new Infra Data class method to calculate a list of coordinate pairs for each individual section of a proposed Connector. This will be used to detect collisions with the terrain - the one possible obstacle to creating a new Connector (gravity/indoors criteria don't apply to in-between segments). We'll need a getConnectorSegments method that is updated by the Engine's validateMouseLocationForPlacement method (which will also need to be upgraded to note the difference between a new connector's start/stop phases).
 
