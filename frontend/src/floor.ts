@@ -11,29 +11,51 @@ export default class Floor {
     _connectors: number[];      // List of UIDs of all the transit connectors that intersect with this floor
     _groundFloor: boolean;      // Set to true if this is the ground floor; if so, no connectors are needed to access this floor
 
-    constructor(id: number, leftSide: number, rightSide: number, elevation: number) {
+    // To create a floor we need the floor's ID and elevation only; we can add its first module after construction by calling the add module method
+    constructor(id: number, elevation: number) {
         this._id = id;
-        this._leftSide = leftSide;
-        this._rightSide = rightSide;
+        this._leftSide = 0;
+        this._rightSide = 0;
         this._elevation = elevation;
         this._modules = [];
         this._connectors = [];
         this._groundFloor = false;
     }
 
-    // Take a list of columns' indices and uses them to redetermine the edges
+    // Take a list of columns' indices and uses them to redetermine the position of the right/left edges
     updateFootprint = (footprint: number[]) => {
-        // Recalculates the left/right side when given the footprint for a new module
+        // Ensure the footprint is well ordered:
+        footprint.sort((a, b) => a - b);
+        // Update left side if the footprint is further left, or if it has not been set yet (value = 0)
+        if (footprint[0] < this._leftSide || this._leftSide === 0) {
+            this._leftSide = footprint[0];
+        }
+        if (footprint[footprint.length - 1] > this._rightSide) {
+            this._rightSide = footprint[footprint.length - 1];  // Update right side if the footprint's last index is greater
+        }
     }
 
     // Take a list of columns' indices and see if they are positioned to the immediate right or left of the floor's current edges
     checkIfAdjacent = (footprint: number[]) => {
         let adjacent = false;
-        // Given a footprint (list of column indices), should first sort them and then if they are close enough to either side, adjust the left/right edge values as needed.
-        // Should return true if the operation is a success, and false if not possible (including if the footprint of the proposed new module overlaps with the floor's current footprint (indicating an error))
-        console.log(footprint);
-        // TODO: Write the code after coming up with unit tests for it!
-        return adjacent;
+        let message = "";     // To display error/non-compatibility issues, or 'left' or 'right' if adjacency is detected
+        // Sort footprint first
+        footprint.sort((a, b) => a - b);
+        if (footprint[0] - this._rightSide === 1) {
+            adjacent = true;    // Footprint is adjacent to the right edge
+            message = "Adjacent: Right";
+        } else if(footprint[0] - this._rightSide > 1) {
+            message = "Too far right";
+        } else if (this._leftSide - footprint[footprint.length - 1] === 1) {
+            adjacent = true;    // Footprint is adjacent to the left side
+            message = "Adjacent: Left";
+        } else if (this._leftSide - footprint[footprint.length - 1] > 1) {
+            message = "Too far left";
+        } else {
+            message = "ERROR: Overlap detected";
+        }
+        
+        return [adjacent, message];
     }
 
     // Top level expander function: Updates the footprint and adds the new module ID to the list

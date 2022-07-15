@@ -54,7 +54,7 @@ const partlyBlockedCoords = [
     {x: 6, y: 27},
     {x: 6, y: 28}
 ];
-// Dummy terrain data
+// Terrain test data
 const map1 = [
     [1, 1, 1, 1, 1, 1, 1],
     [1, 1, 1, 1, 1, 1, 1],
@@ -64,6 +64,7 @@ const map1 = [
     [1, 1, 1, 1, 1, 1, 1],
     [1, 1, 1, 1, 1, 1, 1, 3],
 ]
+// Floor test data
 
 describe("Infrastructure Data", () => {
     const infraData = new InfrastructureData();
@@ -133,6 +134,8 @@ describe("Infrastructure Data", () => {
         expect(infraData.checkConnectorEndpointPlacement(4, 30, map1)).toBe(false);  // One too low
     })
 
+    // BASE VOLUME TESTS
+
     test("Can calculate base volume and use it for connector placement initial check", () => {
         // Test setup
         expect(infraData._baseVolume).toStrictEqual([
@@ -173,13 +176,25 @@ describe("Infrastructure Data", () => {
         expect(infraData.checkConnectorEndpointPlacement(0, 24, map1)).toBe(false);  // Still too high (above the roof)
     })
 
-    test("Can find floors at a certain elevation", () => {
+    // FLOOR MANAGEMENT TESTS
+
+    // Top-level floor management method
+    test("Can decide whether to create, merge or expand floors when a new module is placed", () => {
 
     })
 
     test("Can create a new floor", () => {
-
+        infraData.addNewFloor(5, [0, 1, 2, 3], infraData._currentSerial);
+        expect(infraData._floors.length).toBe(1);
     })
+
+    test("Can find floors at a certain elevation", () => {
+        // Note: Floors created by the previous test persist here, so be sure the two tests are kept in sync
+        expect(infraData.findFloorsAtElevation(5).length).toBe(1);  // Floor exists here
+        expect(infraData.findFloorsAtElevation(6).length).toBe(0);  // Not here
+    })
+
+    
 
     test("Can delete a floor", () => {
 
@@ -189,9 +204,6 @@ describe("Infrastructure Data", () => {
 
     })
 
-    // Top-level floor management method
-    test("Can decide whether to create, merge or expand floors when a new module is placed", () => {
-
-    })
+    
 
 })

@@ -13,7 +13,6 @@ export default class Infrastructure {
     _data: InfrastructureData;  // Unlike other data classes, Infra data will not hold the modules/connectors lists themselves, but will be passed data about their coordinates, etc so that it can perform checks on potential locations' validity
     _modules: Module[]; 
     _connectors: Connector[];
-    _currentSerial: number;     // A crude but hopefully effective method of ID-ing structures as they're created
     _horizontalOffset: number;  // Value is in pixels
 
     // Map width is passed to the data class at construction to help with base volume calculations
@@ -22,7 +21,6 @@ export default class Infrastructure {
         this._data = new InfrastructureData();
         this._modules = [];
         this._connectors = [];
-        this._currentSerial = 1000;     // If changing, change the value in the reset method too
         this._horizontalOffset = 0;
     }
 
@@ -31,9 +29,10 @@ export default class Infrastructure {
     }
 
     addModule (x: number, y: number, moduleInfo: ModuleInfo) {
-        const m = new Module(this._p5, this._currentSerial, x, y, moduleInfo);
+        // Whenever a serial number is to be used, update it BEFORE passing it to a constructor:
+        this._data.increaseSerialNumber();
+        const m = new Module(this._p5, this._data._currentSerial, x, y, moduleInfo);
         this._modules.push(m);
-        this.increaseSerialNumber();
         // Update base volume data
         const area = this._data.calculateModuleArea(moduleInfo, x, y);
         this._data.updateBaseVolume(area);
@@ -43,21 +42,13 @@ export default class Infrastructure {
     }
 
     addConnector (start: Coords, stop: Coords, connectorInfo: ConnectorInfo) {
-        const c = new Connector(this._p5, this._currentSerial, start, stop, connectorInfo)
+        this._data.increaseSerialNumber();
+        const c = new Connector(this._p5, this._data._currentSerial, start, stop, connectorInfo)
         this._connectors.push(c);
-        this.increaseSerialNumber();
         // Update base floor data if connector is of the transport type
         if (connectorInfo.type === "transport") {
             this._data.addConnectorToFloors(c._id, start, stop);
         }
-    }
-
-    increaseSerialNumber () {
-        this._currentSerial++;
-    }
-
-    resetSerialNumber () {
-        this._currentSerial = 1000;
     }
 
     // Top level module placement checker: Calls sub-routines from the data class

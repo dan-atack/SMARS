@@ -1380,9 +1380,21 @@ Exit criteria:
 
 7. Add tests for the new Infra Data class methods as well: Find floors at elevation; create new floor; delete existing floor; add module to existing floor; merge two existing floors (by placing a module in between them to form a single surface).
 
-### 8. Add a unit test for the Infra Data class's FindFloorsAtElevation method, since we've already created that method.
+8. Add a unit test for the Infra Data class's FindFloorsAtElevation method, since we've already created that method.
 
-### 9. Next, add a unit test for the Floor class's updateFootprint and checkIfAdjacent methods BEFORE writing the code for said methods! See how it influences the coding process.
+9. Next, add a unit test for the Floor class's updateFootprint and checkIfAdjacent methods BEFORE writing the code for said methods! See how it influences the coding process.
+
+10. Write the code for the Floor class's updateFootprint method so that it correctly updates the leftEdge and rightEdge values when provided a new module's footprint. Be sure that it can deal with a disordered list of column indices.
+
+11. Write the code for the Floor class's checkIfAdjacent method so that it sets the adjacent value of its return tuple correctly under all circumstances. Once it passes its unit tests you can add additional code to update the message text field in the return tuple.
+
+### 12. Write test cases for the Infra Data class's remaining methods (deleteFloor and combineFloors) before writing their code.
+
+### 13. Elaborate slightly on the test case for the Infra Data's AddFloor method, to add another floor at elevation 5 that is separate from the first one (not that this function on its own has the capacity to merge the two). Also add another floor at a different elevation and test that that one shows up too.
+
+### 15. Update the Infra Data's findFloorsAtElevation test to check if it can find 2 floors at elevation level 5 after the changes on the previous step are implemented.
+
+### 14. Test the Infra Data's serialization method by checking the serial number of each new floor as it's added.
 
 ### 96. The Mouse Shadow persists even when a new module is de-selected. Make it stop.
 

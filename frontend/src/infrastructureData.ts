@@ -9,12 +9,14 @@ import { constants } from "./constants";
 export default class InfrastructureData {
     // Infra Data class is mostly a calculator for the Infra class to pass values to, so it stores very few of them itself
     _justBuilt: ModuleInfo | ConnectorInfo | null;
+    _currentSerial: number;     // A crude but hopefully effective method of ID-ing structures as they're created
     _baseVolume: number[][];    // Works the same as the terrain map, but to keep track of the base's inner area
     _floors: Floor[];           // Floors are a formation of one or more modules, representing walkable surfaces within the base
 
     constructor() {
-        this._justBuilt = null; // When a building has just been added, set this to the building's data
-        this._baseVolume = [];  // Starts with just an array - setup sets its length
+        this._justBuilt = null;         // When a building has just been added, set this to the building's data
+        this._currentSerial = 1000;     // If changing, change the value in the reset method too
+        this._baseVolume = [];          // Starts with just an array - setup sets its length
         this._floors = [];
     }
 
@@ -26,6 +28,16 @@ export default class InfrastructureData {
         } else {
             console.log("WARNING: An attempt has been made to set the base volume but it already has a value.");
         }
+    }
+
+    // SERIAL NUMBER UPDATERS
+
+    increaseSerialNumber () {
+        this._currentSerial++;
+    }
+
+    resetSerialNumber () {
+        this._currentSerial = 1000;
     }
 
     // GENERIC CHECKS - CAN BE USED BY MODULES OR CONNECTORS
@@ -184,18 +196,20 @@ export default class InfrastructureData {
         const existingFloors = this.findFloorsAtElevation(elev);
         if (existingFloors.length === 0) {
             // Add a new floor
-            this.addNewFloor(elev, fp);
+            this.addNewFloor(elev, fp, moduleId);
         } else {
             // Keep a list of how many floors the new module footprint is adjacent to
             let adjacents = [];
             // Check if new module is adjacent to existing floor edges (for each floor if there are several)
             existingFloors.forEach((floor) => {
-                if (floor.checkIfAdjacent(fp)) {
+                if (floor.checkIfAdjacent(fp)[0]) {
                     adjacents.push(floor);
+                } else {
+                    console.log(floor.checkIfAdjacent(fp)[1]);
                 }
             })
             if (adjacents.length === 0) {
-                this.addNewFloor(elev, fp);
+                this.addNewFloor(elev, fp, moduleId);
             } else if (existingFloors.length === 1) {
                 // Add module ID to the existing floor
             }
@@ -205,7 +219,7 @@ export default class InfrastructureData {
 
     // Top-level method for adding new connectors
     addConnectorToFloors (connectorId: number, start: Coords, stop: Coords) {
-        // Check for floors intersected by a new connector; the new connector to their list if so
+        // Check for floors intersected by a new connector; add the new connector to their list if so
     }
 
     // Intermediate-level Floor management methods
@@ -214,9 +228,15 @@ export default class InfrastructureData {
         return this._floors.filter((floor) => floor._elevation === elevation);
     }
 
-    // Adds a new floor if a module is placed at a new elevation/not adjacent to an existing floor
-    addNewFloor (elevation: number, footprint: number[]) {
-        // Create a new floor, initially comprised of a single module
+    // Creates a new floor, initially comprised of a single module
+    addNewFloor (elevation: number, footprint: number[], moduleId: number) {
+        // Always update serial number first
+        this.increaseSerialNumber();
+        // Sort the footprint to ensure it goes from left to right
+        footprint.sort((a,b) => a - b);
+        const f = new Floor(this._currentSerial, elevation);
+        f.addModule(moduleId, footprint);
+        this._floors.push(f);
     }
 
     // Deletes the second of two floors involved in a merger to avoid data duplication
