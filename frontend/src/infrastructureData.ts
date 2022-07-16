@@ -241,11 +241,37 @@ export default class InfrastructureData {
 
     // Deletes the second of two floors involved in a merger to avoid data duplication
     deleteFloor (floorId: number) {
-        // Delete a specific floor, using its ID to look it up
+        const len = this._floors.length;
+        // Filter out a specific ID
+        this._floors = this._floors.filter(floor => floor._id != floorId);
+        // Log a warning if no floor was found for the given ID, or if multiple floors were deleted
+        if (len - this._floors.length > 1) {
+            console.log(`Removed ${len - this._floors.length} floors!`);
+        } else if (len - this._floors.length < 1) {
+            console.log(`Warning: No floor with ID ${floorId} was found for deletion.`)
+        }
     }
 
-    // If two previously separate floors with the same elevation are linked by a new module, combine them into a single entity
-    combineFloors (floorId1: number, floorId2: number) {
-        // Add all modules and connectors from floor 2 to floor 1 and update left/right edge values, then delete floor 2
+    // Add all modules and connectors from floor 2 to floor 1 and update left/right edge values, then delete floor 2
+    combineFloors (floorId1: number, floorId2: number, moduleId: number) {
+        // Find the two floors that will be merged
+        const floorA = this._floors.find(floor => floor._id === floorId1);
+        const floorB = this._floors.find(floor => floor._id === floorId2);
+        if (floorA != undefined && floorB != undefined) {
+            floorB._modules.forEach((mod) => {
+                floorA._modules.push(mod);  // Add all of floor B's modules to floor A first
+            })
+            floorA._modules.push(moduleId); // Add the new module's ID to floor A
+            if (floorA._leftSide > floorB._leftSide) {  // Recalculate Footprint:
+                floorA._leftSide = floorB._leftSide;    // If B has a smaller value, its left side is further left
+            }
+            if (floorA._rightSide < floorB._rightSide) {
+                floorA._rightSide = floorB._rightSide;  // If B has a greater value, its right side is further right
+            }
+            this.deleteFloor(floorId2);
+        } else {
+            console.log(`Warning: Floor ${floorA === undefined ? floorId1 : floorId2} could not be found for merger.`);
+        }
+        
     }
 }

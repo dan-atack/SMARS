@@ -1388,7 +1388,7 @@ Exit criteria:
 
 11. Write the code for the Floor class's checkIfAdjacent method so that it sets the adjacent value of its return tuple correctly under all circumstances. Once it passes its unit tests you can add additional code to update the message text field in the return tuple.
 
-### 12. Write test cases for the Infra Data class's remaining methods (deleteFloor and combineFloors) before writing their code.
+12. Write test cases for the Infra Data class's remaining methods (deleteFloor and combineFloors) before writing their code.
 
 ### 13. Elaborate slightly on the test case for the Infra Data's AddFloor method, to add another floor at elevation 5 that is separate from the first one (not that this function on its own has the capacity to merge the two). Also add another floor at a different elevation and test that that one shows up too.
 
