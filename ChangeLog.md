@@ -1355,16 +1355,20 @@ Having now established how Connectors are placed on the map, it is time to take 
 
 Exit criteria:
 
-- The Infrastructure class will contain a list of 'floors', representing the surfaces within the base on which colonists can walk
-- Each new Floor is given a unique serial number
+- [DONE] The Infrastructure class will contain a list of 'floors', representing the surfaces within the base on which colonists can walk
+- [DONE] Each new Floor is given a unique serial number
 - Floor information includes an up-to-date list of transit connectors that intersect it
-- Floor information includes an up-to-date list of the modules that comprise it
+- [DONE] Floor information includes an up-to-date list of the IDs of the modules that comprise it
 - Floor information is updated whenever a new Module or Connector is placed
 - If placing a new Module causes two Floors to merge, their module and connector lists are combined and the Floor with the lower serial number is discarded
 - All new floor-related logic is tested extensively
-- Modules and Connectors have a serial ID property that's given to them at creation by the Infrastructure class.
-- Infra class updates its serial number index each time a module/connector is created, including by loading
+- [DONE] Modules and Connectors have a serial ID property that's given to them at creation by the Infrastructure class.
+- [DONE] Infra class updates its serial number each time a module/connector is created, including by loading a saved game
 - [STRETCH] Unit tests for the new logic are written BEFORE the code itself!
+
+Not doing:
+
+- Module 'ground floor' detection and logic
 
 1. Create a new class, Floor, to keep track of all of the above-mentioned data, and also house the various methods that will operate on it. This will make it even simpler to create unit tests, as this will be a non-rendering class and thus no need for a separate 'floorData' class.
 
@@ -1390,17 +1394,29 @@ Exit criteria:
 
 12. Write test cases for the Infra Data class's remaining methods (deleteFloor and combineFloors) before writing their code.
 
-### 13. Elaborate slightly on the test case for the Infra Data's AddFloor method, to add another floor at elevation 5 that is separate from the first one (not that this function on its own has the capacity to merge the two). Also add another floor at a different elevation and test that that one shows up too.
+13. Elaborate slightly on the test case for the Infra Data's AddFloor method, to add another floor at elevation 5 that is separate from the first one (not that this function on its own has the capacity to merge the two). Also add another floor at a different elevation and test that that one shows up on the floors list too.
 
-### 15. Update the Infra Data's findFloorsAtElevation test to check if it can find 2 floors at elevation level 5 after the changes on the previous step are implemented.
+14. Update the Infra Data's findFloorsAtElevation test to check if it can find 2 floors at elevation level 5 after the changes on the previous step are implemented.
 
-### 14. Test the Infra Data's serialization method by checking the serial number of each new floor as it's added.
+15. Test the Infra Data's serialization method by checking the serial number of each new floor as it's added.
+
+16. Complete the code for the Infra Data's delete floor method and include with it a console warning if it deletes any number of floors other than 1 (it will still execute such an erroneous deletion, but at least it lets you know after the fact).
+
+17. Complete the code for the Infra Data class's merge floor method, and validate with its lovely pre-made unit tests.
+
+18. Add the unit tests for the Infra Data class's top level floor method, addModuleToFloors, before completings its code. Make sure that each of the following situations is tested: the first module is placed, creating a new floor; a second module is placed at the same level as the first one, but too far away to be added to it; a third module is placed beside the second one, such that the second floor is widened in the direction opposite the first module; a fourth module is placed between the first and second floors, such that they are all combined into a single floor consisting of 4 modules; a final fifth module is placed on a different elevation, forming a new floor. There should be 2 floors in total at the end of this exercise.
+
+19. Now finish writing the code in the Infra Data class to make this a reality.
+
+### 20. Add the test logic for the addConnectorsToModules method.
+
+### 21. Create the actual addConnectorsToFloor method. Hopefully it all fits into one method; if not break it up in a way that makes sense.
+
+### 23. Add a few temporary text outputs to the Engine's renderer, to evaluate how well this system actually works in practice. Add outputs for: number of floors; modules in the SECOND floor; left and right edges of SECOND floor.
 
 ### 96. The Mouse Shadow persists even when a new module is de-selected. Make it stop.
 
 ### 97. Add a new Infra Data class method to calculate a list of coordinate pairs for each individual section of a proposed Connector. This will be used to detect collisions with the terrain - the one possible obstacle to creating a new Connector (gravity/indoors criteria don't apply to in-between segments). We'll need a getConnectorSegments method that is updated by the Engine's validateMouseLocationForPlacement method (which will also need to be upgraded to note the difference between a new connector's start/stop phases).
-
-### 98. Alter the ConnectorInfo class to contain just a few shapes to be rendered by the Connector class's (newly upgraded) rendering methods (borrow heavily from the Module class's render system).
 
 ### 99. Fix the BuildingChip component's cost calculation (located in the render block, of all places) to ensure it is workings are transparent and its readout correct (neither is currently the case).
 
@@ -1444,7 +1460,5 @@ As the game matures, it will be more and more desirable to separate features tha
 ## Chapter XX: DevOps Interlude and First Deployment! (Aim to complete deployment by June of 2022)
 
 - Dev mode environment variable enables some information displays in the world screen area
-- Unit tests for in-game functionality (challenge yourself to think of and implement a unit test that's actually useful!)
 - Build/test pipeline update
-- Directory structure for frontend components before they get totally out of hand
-- Deploy the backend to Heroku??
+- Deploy the backend to Heroku?? AWS???!

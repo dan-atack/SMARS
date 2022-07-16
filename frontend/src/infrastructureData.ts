@@ -199,21 +199,23 @@ export default class InfrastructureData {
             this.addNewFloor(elev, fp, moduleId);
         } else {
             // Keep a list of how many floors the new module footprint is adjacent to
-            let adjacents = [];
+            let adjacents: Floor[] = [];
             // Check if new module is adjacent to existing floor edges (for each floor if there are several)
             existingFloors.forEach((floor) => {
                 if (floor.checkIfAdjacent(fp)[0]) {
                     adjacents.push(floor);
-                } else {
-                    console.log(floor.checkIfAdjacent(fp)[1]);
                 }
             })
             if (adjacents.length === 0) {
+                // Create a new floor if no existing floor is adjacent
                 this.addNewFloor(elev, fp, moduleId);
-            } else if (existingFloors.length === 1) {
-                // Add module ID to the existing floor
+            } else if (adjacents.length === 1) {
+                // Add module ID to existing floor is one is adjacent
+                adjacents[0].addModule(moduleId, fp);
+            } else if (adjacents.length === 2) {
+                // Merge two existing floors if they are both adjacent to the new one (in which case it's right between them)
+                this.combineFloors(existingFloors[0]._id, existingFloors[1]._id, moduleId);
             }
-            // If there are no adjacencies, create a new floor; if there are two adjacencies, merge both into a single floor
         }
     }
 
