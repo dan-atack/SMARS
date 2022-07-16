@@ -13,6 +13,8 @@ export default class MouseShadowData {
     _locked: boolean;   // Used to anchor the shadow in place, for connector placement
     _connectorStartCoords: Coords | null;   // Both this and the stop coords are in terms of GRID LOCATIONS
     _connectorStopCoords: Coords | null;
+    _deltaX: number;    // Used to help quickly determine a connector's length
+    _deltaY: number;
 
     // W and H are both given in terms of columns, not pixels
     constructor(w: number, h: number) {
@@ -25,6 +27,8 @@ export default class MouseShadowData {
         this._locked = false;       // By default the shadow is free-floating
         this._connectorStartCoords = null;          // Confusingly, these are in terms of grid locations
         this._connectorStopCoords = null;
+        this._deltaX = 0;
+        this._deltaY = 0;
     }
 
     setPosition (x: number, y: number) {
@@ -38,31 +42,31 @@ export default class MouseShadowData {
             // Convert x and y back to grid values here:
             const gridX = x / constants.BLOCK_WIDTH;
             const gridY = y / constants.BLOCK_WIDTH;
-            let deltaX = this._connectorStartCoords.x - gridX;
-            let deltaY = this._connectorStartCoords.y - gridY;
+            this._deltaX = this._connectorStartCoords.x - gridX;
+            this._deltaY = this._connectorStartCoords.y - gridY;
             // For convenience
             const startX = this._connectorStartCoords.x;
             const startY = this._connectorStartCoords.y;
             // Choose which vector to use and then cancel the other one
             if (h && v) {
-                Math.abs(deltaX) > Math.abs(deltaY) ? deltaY = 0 : deltaX = 0; // If connector can be either vertical or horizontal, take the greater of the two vectors (default to picking y) and set the other vector to zero for this round
+                Math.abs(this._deltaX) > Math.abs(this._deltaY) ? this._deltaY = 0 : this._deltaX = 0; // If connector can be either vertical or horizontal, take the greater of the two vectors (default to picking y) and set the other vector to zero for this round
             } else if (h) {
-                deltaY = 0
+                this._deltaY = 0
             } else {
-                deltaX = 0
+                this._deltaX = 0
             };
             // Update position and/or width/height using the selected vector
-            if (deltaX !== 0) {         // HORIZONTAL
-                this._x = Math.min((startX - deltaX), startX) * constants.BLOCK_WIDTH;
+            if (this._deltaX !== 0) {         // HORIZONTAL
+                this._x = Math.min((startX - this._deltaX), startX) * constants.BLOCK_WIDTH;
                 this._y = startY * constants.BLOCK_WIDTH;
-                this._w = (Math.abs(deltaX) + 1) * constants.BLOCK_WIDTH;
+                this._w = (Math.abs(this._deltaX) + 1) * constants.BLOCK_WIDTH;
                 this._h = constants.BLOCK_WIDTH;
                 this._connectorStopCoords = {x: gridX, y: startY};
-            } else if (deltaY !== 0) {  // VERTICAL
+            } else if (this._deltaY !== 0) {  // VERTICAL
                 this._x = startX * constants.BLOCK_WIDTH;
-                this._y = Math.min((startY - deltaY), startY) * constants.BLOCK_WIDTH;
+                this._y = Math.min((startY - this._deltaY), startY) * constants.BLOCK_WIDTH;
                 this._w = constants.BLOCK_WIDTH;
-                this._h = (Math.abs(deltaY) + 1) * constants.BLOCK_WIDTH;
+                this._h = (Math.abs(this._deltaY) + 1) * constants.BLOCK_WIDTH;
                 this._connectorStopCoords = {x: startX, y: gridY};
             } else {                    // NEITHER
                 this._x = startX * constants.BLOCK_WIDTH;

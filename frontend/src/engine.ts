@@ -450,7 +450,6 @@ export default class Engine extends View {
     handleConnectorStartPlacement = (x: number, y: number) => {
         // Ensure start location is valid
         if (this._infrastructure._data.checkConnectorEndpointPlacement(x, y, this._map._data._mapData)) {
-            console.log("Valid connector start location chosen.");
             this._mouseShadow?._data.setLocked(true, {x: x, y: y});   // Lock the shadow's position when start location is chosen
             this.setMouseContext("connectorStop");
         }
@@ -460,14 +459,16 @@ export default class Engine extends View {
     handleConnectorStopPlacement = () => {
         // Ensure there is a building selected, and that it's not a module
         if (this.selectedBuilding != null && !this._infrastructure._data.isModule(this.selectedBuilding) && this._mouseShadow?._data._connectorStopCoords != null && this._mouseShadow._data._connectorStartCoords) {
-            const cost = { money: this.selectedBuilding.buildCosts.money * 4};
+            const baseCost = { money: this.selectedBuilding.buildCosts.money};
+            const len = Math.max(this._mouseShadow._data._deltaX, this._mouseShadow._data._deltaY) + 1;
+            const cost = { money: baseCost.money * len };
             const affordable = this._economy.checkResources(cost);
             const start = this._mouseShadow._data._connectorStartCoords;
             const stop = this._mouseShadow._data._connectorStopCoords;
             const clear = this._infrastructure._data.checkConnectorEndpointPlacement(stop.x, stop.y, this._map._data._mapData);
             if (affordable && clear) {
                 this._infrastructure.addConnector(start, stop, this.selectedBuilding);
-                this._economy.subtractMoney(this.selectedBuilding.buildCosts);
+                this._economy.subtractMoney(cost);
             } else {
                 // TODO: Display this info to the player with an in-game message of some kind
                 console.log(`Clear: ${clear}`);

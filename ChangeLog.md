@@ -1418,7 +1418,9 @@ Not doing:
 
 24. The Mouse Shadow persists even when a new module is de-selected. Make it stop.
 
-### 99. Fix the BuildingChip component's cost calculation (located in the render block, of all places) to ensure it is workings are transparent and its readout correct (neither is currently the case).
+25. Fix the BuildingChip component's cost calculation (located in the render block, of all places) to ensure it is workings are transparent and its readout correct (neither is currently the case). Also add the words 'per meter' to the advertised price for connectors.
+
+26. Make connectors actually cost the amount they state when placed by taking their length property and multiplying that by the price that gets passed to the Economy class.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
