@@ -28,6 +28,29 @@ export default class Infrastructure {
         this._data.setup(mapWidth)
     }
 
+    addModule (x: number, y: number, moduleInfo: ModuleInfo) {
+        // Whenever a serial number is to be used, update it BEFORE passing it to a constructor:
+        this._data.increaseSerialNumber();
+        const m = new Module(this._p5, this._data._currentSerial, x, y, moduleInfo);
+        this._modules.push(m);
+        // Update base volume data
+        const area = this._data.calculateModuleArea(moduleInfo, x, y);
+        this._data.updateBaseVolume(area);
+        // Update base floor data
+        const footprint = this._data.calculateModuleFootprint(area);
+        this._data.addModuleToFloors(m._id, footprint);
+    }
+
+    addConnector (start: Coords, stop: Coords, connectorInfo: ConnectorInfo) {
+        this._data.increaseSerialNumber();
+        const c = new Connector(this._p5, this._data._currentSerial, start, stop, connectorInfo)
+        this._connectors.push(c);
+        // Update base floor data only if connector is of the transport type
+        if (connectorInfo.type === "transport") {
+            this._data.addConnectorToFloors(c._id, start, stop);
+        }
+    }
+
     // Top level module placement checker: Calls sub-routines from the data class
     checkModulePlacement (x: number, y: number, moduleInfo: ModuleInfo, terrain: number[][]) {
         const moduleArea = this._data.calculateModuleArea(moduleInfo, x, y);
@@ -52,18 +75,6 @@ export default class Infrastructure {
             // console.log(`Module gaps underneath module: ${modFloor}`);
             return false;
         }
-    }
-
-    addModule (x: number, y: number, moduleInfo: ModuleInfo) {
-
-        this._modules.push(new Module(this._p5, x, y, moduleInfo));
-        // Update base volume data
-        const area = this._data.calculateModuleArea(moduleInfo, x, y);
-        this._data.updateBaseVolume(area);
-    }
-
-    addConnector (start: Coords, stop: Coords, connectorInfo: ConnectorInfo) {
-        this._connectors.push(new Connector(this._p5, start, stop, connectorInfo));
     }
 
     //  Takes in data for a new module's location and compares it to all of the other existing modules to look for overlaps

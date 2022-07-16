@@ -1244,8 +1244,7 @@ Exit Criteria:
 - [DONE] The MouseShadow component's data is its own class, and has at least 1 meaningful unit test
 - [DONE] The Infrastructure class contains a map of the base's volume - basically all of the coordinates that are inside a module
 - [DONE] [STRETCH] Add a simple image for the two basic connector CATEGORIES (transport and conduit)
-
-- Ensure all backwards compatibility with older saves (saves with obsolete connector data should simply disregard it)
+- [DONE] Ensure all backwards compatibility with older saves (saves with obsolete connector data should simply disregard it)
 
 Features Added:
 
@@ -1348,18 +1347,80 @@ Features Added:
 
 47. Add a simple calculation to reduce the x value and width of a conduit-type connector's in-between shape by about 20% each, so the connector is like a skinny pipe. And add a small circle to each of the endpoints.
 
-## Chapter 27: Buildings in the Frontend, Part IV - Connector Logic (Difficulty Estimate: TBD)
+## Chapter 27: Buildings in the Frontend, Part IV - Floor Logic (Difficulty Estimate: 5 for Intro to TDD!)
+
+### July 8, 2022
+
+Having now established how Connectors are placed on the map, it is time to take care of some of the behind-the-scenes logic that will govern their eventual role in the game. The focus of this chapter will be to establish how the base's interior will be structured in terms of floors that the colonists can traverse, and how members of the new Connectors class will link different levels of the base's interior for transit, and link different modules for resource distribution. The work here will have no visible output in the game's UI right away, but it will be possible to test most of the new logic, particularly if we use this opportunity to practice using a test-driven approach to development!
 
 Exit criteria:
 
-- The Infrastructure class will contain a list of 'floors', representing the surfaces within the base on which colonists can walk
-- The Infrastructure class will contain another list of 'connections', representing links between different floors or modules
+- [DONE] The Infrastructure class will contain a list of 'floors', representing the surfaces within the base on which colonists can walk
+- [DONE] Each new Floor is given a unique serial number
+- Floor information includes an up-to-date list of transit connectors that intersect it
+- [DONE] Floor information includes an up-to-date list of the IDs of the modules that comprise it
+- Floor information is updated whenever a new Module or Connector is placed
+- If placing a new Module causes two Floors to merge, their module and connector lists are combined and the Floor with the lower serial number is discarded
+- All new floor-related logic is tested extensively
+- [DONE] Modules and Connectors have a serial ID property that's given to them at creation by the Infrastructure class.
+- [DONE] Infra class updates its serial number each time a module/connector is created, including by loading a saved game
+- [STRETCH] Unit tests for the new logic are written BEFORE the code itself!
 
-### 97. Add a new Infra Data class method to calculate a list of coordinate pairs for each individual section of a proposed Connector. This will be used to detect collisions with the terrain - the one possible obstacle to creating a new Connector (gravity/indoors criteria don't apply to in-between segments). We'll need a getConnectorSegments method that is updated by the Engine's validateMouseLocationForPlacement method (which will also need to be upgraded to note the difference between a new connector's start/stop phases).
+Not doing:
 
-### 98. Alter the ConnectorInfo class to contain just a few shapes to be rendered by the Connector class's (newly upgraded) rendering methods (borrow heavily from the Module class's render system).
+- Module 'ground floor' detection and logic
 
-### 99. Fix the BuildingChip component's cost calculation (located in the render block, of all places) to ensure it is workings are transparent and its readout correct (neither is currently the case).
+1. Create a new class, Floor, to keep track of all of the above-mentioned data, and also house the various methods that will operate on it. This will make it even simpler to create unit tests, as this will be a non-rendering class and thus no need for a separate 'floorData' class.
+
+2. Make dummy methods for the floorData class, and leave them with just a console log / comment for now.
+
+3. Briefly, do the same thing for the Infra Data class, just to get an idea of what we're going to be working with here.
+
+4. Add a floors list to the Infra Data class as well. Like the base's volume, this is a data-driven system with no need to render anything.
+
+5. Add an ID field to the Connector and Module classes, and have their constructors take an argument for this value.
+
+6. Head on over to the tests folder and add a new file for Floor class unit tests. Start with the basics (check if a property exists) then add tests for both of the calculation methods in the Floor class: Check if adjacent, and update footprint. Leave tests empty for now, or make them so they auto-pass. Green power, dude.
+
+7. Add tests for the new Infra Data class methods as well: Find floors at elevation; create new floor; delete existing floor; add module to existing floor; merge two existing floors (by placing a module in between them to form a single surface).
+
+8. Add a unit test for the Infra Data class's FindFloorsAtElevation method, since we've already created that method.
+
+9. Next, add a unit test for the Floor class's updateFootprint and checkIfAdjacent methods BEFORE writing the code for said methods! See how it influences the coding process.
+
+10. Write the code for the Floor class's updateFootprint method so that it correctly updates the leftEdge and rightEdge values when provided a new module's footprint. Be sure that it can deal with a disordered list of column indices.
+
+11. Write the code for the Floor class's checkIfAdjacent method so that it sets the adjacent value of its return tuple correctly under all circumstances. Once it passes its unit tests you can add additional code to update the message text field in the return tuple.
+
+12. Write test cases for the Infra Data class's remaining methods (deleteFloor and combineFloors) before writing their code.
+
+13. Elaborate slightly on the test case for the Infra Data's AddFloor method, to add another floor at elevation 5 that is separate from the first one (not that this function on its own has the capacity to merge the two). Also add another floor at a different elevation and test that that one shows up on the floors list too.
+
+14. Update the Infra Data's findFloorsAtElevation test to check if it can find 2 floors at elevation level 5 after the changes on the previous step are implemented.
+
+15. Test the Infra Data's serialization method by checking the serial number of each new floor as it's added.
+
+16. Complete the code for the Infra Data's delete floor method and include with it a console warning if it deletes any number of floors other than 1 (it will still execute such an erroneous deletion, but at least it lets you know after the fact).
+
+17. Complete the code for the Infra Data class's merge floor method, and validate with its lovely pre-made unit tests.
+
+18. Add the unit tests for the Infra Data class's top level floor method, addModuleToFloors, before completings its code. Make sure that each of the following situations is tested: the first module is placed, creating a new floor; a second module is placed at the same level as the first one, but too far away to be added to it; a third module is placed beside the second one, such that the second floor is widened in the direction opposite the first module; a fourth module is placed between the first and second floors, such that they are all combined into a single floor consisting of 4 modules; a final fifth module is placed on a different elevation, forming a new floor. There should be 2 floors in total at the end of this exercise.
+
+19. Now finish writing the code in the Infra Data class to make this a reality.
+
+20. Add the test logic for the addConnectorsToModules method.
+
+21. Create the actual addConnectorsToFloor method. Hopefully it all fits into one method; if not break it up in a way that makes sense (see next item)
+
+22. Make it so that when a new floor is added, all existing connectors check to see if they should be added to it. Add an 'elevators' property to the Infra Data class to allow it to keep track of the essential details for each transport connector: its id, x position, top and bottom.
+
+23. Add a few temporary text outputs to the Engine's renderer, to evaluate how well this system actually works in practice. Add outputs for: number of floors; modules in the SECOND floor; left and right edges of SECOND floor; number of 'elevators' in the base, and which elevators (ladders) connect with the THIRD floor.
+
+24. The Mouse Shadow persists even when a new module is de-selected. Make it stop.
+
+25. Fix the BuildingChip component's cost calculation (located in the render block, of all places) to ensure it is workings are transparent and its readout correct (neither is currently the case). Also add the words 'per meter' to the advertised price for connectors.
+
+26. Make connectors actually cost the amount they state when placed by taking their length property and multiplying that by the price that gets passed to the Economy class.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
@@ -1369,7 +1430,7 @@ Creating assets with P5 is very difficult right now; create an interface that wi
 
 As the game matures, it will be more and more desirable to separate features that are used in development - console logs, test structures, in-game information displays, etc - from the production version of the game. We've already got an environment variable that the game's code can detect, so it would be possible to enable certain features only in a development environment, and then in a separate 'staging' environment it would be possible to preview the actual game experience.
 
-### Bug List (Severity in square brackets):
+## Bug List (Severity in square brackets):
 
 ### 1. [2: UX] When the in-game menu is opened then closed, it resets the engine's offset to be back in the middle of the map. The offset value should persist between menu openings.
 
@@ -1391,6 +1452,16 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ### 10. [1: UX / Gameplay] Restrict the base's baseVolume area to only include modules that have the pressurized trait set to true. This would limit the ability to build certain connectors starting or ending in such modules (and potentially have other cool consequences too).
 
+# Annex A: Advanced Concepts
+
+## Section A.1: Advanced Connector Features
+
+### 1. Add a new Infra Data class method to calculate a list of coordinate pairs for each individual section of a proposed Connector. This will be used to detect collisions with the terrain - the one possible obstacle to creating a new Connector (gravity/indoors criteria don't apply to in-between segments). We'll need a getConnectorSegments method that is updated by the Engine's validateMouseLocationForPlacement method (which will also need to be upgraded to note the difference between a new connector's start/stop phases).
+
+### 2. Add ability to merge overlapping connectors (analogous to how floors are combined, only vertically).
+
+### 3. Add ability for Connector renderer to operate like module renderer (using shapes data).
+
 ### Exit Criteria for backend save/load game chapter:
 
 - [DONE]It is possible to create a new saved game file for a given user.
@@ -1401,7 +1472,5 @@ As the game matures, it will be more and more desirable to separate features tha
 ## Chapter XX: DevOps Interlude and First Deployment! (Aim to complete deployment by June of 2022)
 
 - Dev mode environment variable enables some information displays in the world screen area
-- Unit tests for in-game functionality (challenge yourself to think of and implement a unit test that's actually useful!)
 - Build/test pipeline update
-- Directory structure for frontend components before they get totally out of hand
-- Deploy the backend to Heroku??
+- Deploy the backend to Heroku?? AWS???!

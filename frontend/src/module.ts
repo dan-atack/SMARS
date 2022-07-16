@@ -6,6 +6,7 @@ import { constants } from "./constants";
 export default class Module {
     // Block types:
     _p5: P5;
+    _id: number;    // A unique serial number assigned by the Infra class at the object's creation
     _x: number;     // Buildings' x and y positions will be in terms of grid locations to act as fixed reference points
     _y: number;
     _moduleInfo: ModuleInfo;
@@ -16,8 +17,9 @@ export default class Module {
     _color: string;
     _isRendered: boolean;
 
-    constructor(p5: P5, x: number, y: number, moduleInfo: ModuleInfo) {
+    constructor(p5: P5, id: number, x: number, y: number, moduleInfo: ModuleInfo) {
         this._p5 = p5;
+        this._id = id;
         this._x = x;
         this._y = y;
         this._moduleInfo = moduleInfo;

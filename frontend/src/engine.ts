@@ -396,6 +396,9 @@ export default class Engine extends View {
         // Only update the selected building if the mouse context is 'placeModule' or 'connectorStart'
         if (this.mouseContext === "placeModule" || this.mouseContext === "connectorStart") {
             this.setSelectedBuilding(this._sidebar._detailsArea._buildingSelection);
+        } else if (this.mouseContext !== "connectorStop") {
+            // If mouse context is neither placeModule nor connectorStart nor connectorStop, no building should be selected
+            this.setSelectedBuilding(null);
         }
         // Ensure there is no mouse shadow if no structure is selected
         if (this.selectedBuilding === null) {
@@ -447,7 +450,6 @@ export default class Engine extends View {
     handleConnectorStartPlacement = (x: number, y: number) => {
         // Ensure start location is valid
         if (this._infrastructure._data.checkConnectorEndpointPlacement(x, y, this._map._data._mapData)) {
-            console.log("Valid connector start location chosen.");
             this._mouseShadow?._data.setLocked(true, {x: x, y: y});   // Lock the shadow's position when start location is chosen
             this.setMouseContext("connectorStop");
         }
@@ -457,14 +459,16 @@ export default class Engine extends View {
     handleConnectorStopPlacement = () => {
         // Ensure there is a building selected, and that it's not a module
         if (this.selectedBuilding != null && !this._infrastructure._data.isModule(this.selectedBuilding) && this._mouseShadow?._data._connectorStopCoords != null && this._mouseShadow._data._connectorStartCoords) {
-            const cost = { money: this.selectedBuilding.buildCosts.money * 4};
+            const baseCost = { money: this.selectedBuilding.buildCosts.money};
+            const len = Math.max(this._mouseShadow._data._deltaX, this._mouseShadow._data._deltaY) + 1;
+            const cost = { money: baseCost.money * len };
             const affordable = this._economy.checkResources(cost);
             const start = this._mouseShadow._data._connectorStartCoords;
             const stop = this._mouseShadow._data._connectorStopCoords;
             const clear = this._infrastructure._data.checkConnectorEndpointPlacement(stop.x, stop.y, this._map._data._mapData);
             if (affordable && clear) {
                 this._infrastructure.addConnector(start, stop, this.selectedBuilding);
-                this._economy.subtractMoney(this.selectedBuilding.buildCosts);
+                this._economy.subtractMoney(cost);
             } else {
                 // TODO: Display this info to the player with an in-game message of some kind
                 console.log(`Clear: ${clear}`);
@@ -813,7 +817,17 @@ export default class Engine extends View {
         if (this._modal) {
             this._modal.render();
         }
-        // p5.text(this._mouseShadow?._data._locked, 20, 100);
+        if (this.selectedBuilding) p5.text(this.selectedBuilding.name, 60, 100);
+        // if (this._infrastructure._data._floors.length > 3) {
+        //     p5.text(this._infrastructure._data._floors[2]._modules, 60, 120);
+        //     p5.text(`ROOF ACCESS: ${this._infrastructure._data._floors[2]._connectors.length}`, 60, 180);
+        // }
+        // if (this._infrastructure._data._elevators.length > 1) {
+        //     p5.text(`TOP: ${this._infrastructure._data._elevators[1].top}`, 60, 140);
+        //     p5.text(`BOTTOM: ${this._infrastructure._data._elevators[1].bottom}`, 60, 160);
+        //     p5.text(`ROOF ACCESS: ${this._infrastructure._data._floors[2]._connectors.length}`, 60, 180);
+        // }
+        
     }
 
 }

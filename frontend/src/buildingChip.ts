@@ -46,6 +46,18 @@ export default class BuildingChip extends Button {
         }
     }
 
+    // Converts the cost into a string with dollar sign and decimal place
+    getCostString = () => {
+        let cost = this.buildingData.buildCosts.money.toString();
+        cost = cost.slice(0, cost.length - 2) + "." + cost.slice(cost.length - 2, cost.length);
+        if (this.buildingData.type === "conduit" || this.buildingData.type === "transport") {
+            cost = `$${cost} per meter`;
+        } else {
+            cost = `$${cost}`;
+        }
+        return cost;
+    }
+
     render = () => {
         const p5 = this._p5;
         p5.strokeWeight(4);
@@ -66,9 +78,8 @@ export default class BuildingChip extends Button {
         p5.text(this.buildingData.name, this._x + 12, this._y + this._height / 4);
         p5.textSize(this._fontSize - 4);
         p5.fill(constants.GREEN_TERMINAL);
-        let cost = this.buildingData.buildCosts.money.toString();
-        cost = cost.slice(0, cost.length - 2) + "." + cost.slice(cost.length - 3, cost.length - 1);
-        p5.text(`$${cost}`, this._x + 12, this._y + this._height * 3 / 4);
+        const cost = this.getCostString();
+        p5.text(cost, this._x + 12, this._y + this._height * 3 / 4);
     }
     
 }
