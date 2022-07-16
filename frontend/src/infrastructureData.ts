@@ -231,7 +231,7 @@ export default class InfrastructureData {
         this._elevators.push({ id: connectorId, x: start.x, top: top, bottom: bottom });
         // Check for floors intersected by a new connector; add the new connector to their list if they overlap
         this._floors.forEach((floor) => {
-            const yMatch = floor._elevation > top && floor._elevation < bottom;
+            const yMatch = floor._elevation >= top && floor._elevation <= bottom;
             const xMatch = floor._leftSide <= left && floor._rightSide >= right;
             if (yMatch && xMatch) {
                 floor._connectors.push(connectorId);

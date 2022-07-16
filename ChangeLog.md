@@ -1414,11 +1414,9 @@ Not doing:
 
 22. Make it so that when a new floor is added, all existing connectors check to see if they should be added to it. Add an 'elevators' property to the Infra Data class to allow it to keep track of the essential details for each transport connector: its id, x position, top and bottom.
 
-### 23. Add a few temporary text outputs to the Engine's renderer, to evaluate how well this system actually works in practice. Add outputs for: number of floors; modules in the SECOND floor; left and right edges of SECOND floor; number of 'elevators' in the base, and which elevators (ladders) connect with the THIRD floor.
+23. Add a few temporary text outputs to the Engine's renderer, to evaluate how well this system actually works in practice. Add outputs for: number of floors; modules in the SECOND floor; left and right edges of SECOND floor; number of 'elevators' in the base, and which elevators (ladders) connect with the THIRD floor.
 
-### 96. The Mouse Shadow persists even when a new module is de-selected. Make it stop.
-
-### 97. Add a new Infra Data class method to calculate a list of coordinate pairs for each individual section of a proposed Connector. This will be used to detect collisions with the terrain - the one possible obstacle to creating a new Connector (gravity/indoors criteria don't apply to in-between segments). We'll need a getConnectorSegments method that is updated by the Engine's validateMouseLocationForPlacement method (which will also need to be upgraded to note the difference between a new connector's start/stop phases).
+24. The Mouse Shadow persists even when a new module is de-selected. Make it stop.
 
 ### 99. Fix the BuildingChip component's cost calculation (located in the render block, of all places) to ensure it is workings are transparent and its readout correct (neither is currently the case).
 
@@ -1452,11 +1450,15 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ### 10. [1: UX / Gameplay] Restrict the base's baseVolume area to only include modules that have the pressurized trait set to true. This would limit the ability to build certain connectors starting or ending in such modules (and potentially have other cool consequences too).
 
-## Annex A: Advanced Concepts
+# Annex A: Advanced Concepts
 
-### 2. Merging overlapping connectors
+## Section A.1: Advanced Connector Features
 
-### 3. Connector render operates like module render (with shapes data)
+### 1. Add a new Infra Data class method to calculate a list of coordinate pairs for each individual section of a proposed Connector. This will be used to detect collisions with the terrain - the one possible obstacle to creating a new Connector (gravity/indoors criteria don't apply to in-between segments). We'll need a getConnectorSegments method that is updated by the Engine's validateMouseLocationForPlacement method (which will also need to be upgraded to note the difference between a new connector's start/stop phases).
+
+### 2. Add ability to merge overlapping connectors (analogous to how floors are combined, only vertically).
+
+### 3. Add ability for Connector renderer to operate like module renderer (using shapes data).
 
 ### Exit Criteria for backend save/load game chapter:
 

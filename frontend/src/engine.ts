@@ -396,6 +396,9 @@ export default class Engine extends View {
         // Only update the selected building if the mouse context is 'placeModule' or 'connectorStart'
         if (this.mouseContext === "placeModule" || this.mouseContext === "connectorStart") {
             this.setSelectedBuilding(this._sidebar._detailsArea._buildingSelection);
+        } else if (this.mouseContext !== "connectorStop") {
+            // If mouse context is neither placeModule nor connectorStart nor connectorStop, no building should be selected
+            this.setSelectedBuilding(null);
         }
         // Ensure there is no mouse shadow if no structure is selected
         if (this.selectedBuilding === null) {
@@ -813,7 +816,17 @@ export default class Engine extends View {
         if (this._modal) {
             this._modal.render();
         }
-        // p5.text(this._mouseShadow?._data._locked, 20, 100);
+        if (this.selectedBuilding) p5.text(this.selectedBuilding.name, 60, 100);
+        // if (this._infrastructure._data._floors.length > 3) {
+        //     p5.text(this._infrastructure._data._floors[2]._modules, 60, 120);
+        //     p5.text(`ROOF ACCESS: ${this._infrastructure._data._floors[2]._connectors.length}`, 60, 180);
+        // }
+        // if (this._infrastructure._data._elevators.length > 1) {
+        //     p5.text(`TOP: ${this._infrastructure._data._elevators[1].top}`, 60, 140);
+        //     p5.text(`BOTTOM: ${this._infrastructure._data._elevators[1].bottom}`, 60, 160);
+        //     p5.text(`ROOF ACCESS: ${this._infrastructure._data._floors[2]._connectors.length}`, 60, 180);
+        // }
+        
     }
 
 }

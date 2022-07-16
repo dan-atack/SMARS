@@ -8,6 +8,10 @@ describe("MouseShadowData", () => {
 
     const mouseShadowData = new MouseShadowData(w, h);
 
+    test("Defines setPosition", () => {
+        expect(typeof mouseShadowData.setPosition).toBe("function");
+    })
+
     test("Defines locked status", () => {
         expect(typeof mouseShadowData._locked).toBe("boolean");
     });
