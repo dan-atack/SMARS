@@ -1408,11 +1408,13 @@ Not doing:
 
 19. Now finish writing the code in the Infra Data class to make this a reality.
 
-### 20. Add the test logic for the addConnectorsToModules method.
+20. Add the test logic for the addConnectorsToModules method.
 
-### 21. Create the actual addConnectorsToFloor method. Hopefully it all fits into one method; if not break it up in a way that makes sense.
+21. Create the actual addConnectorsToFloor method. Hopefully it all fits into one method; if not break it up in a way that makes sense (see next item)
 
-### 23. Add a few temporary text outputs to the Engine's renderer, to evaluate how well this system actually works in practice. Add outputs for: number of floors; modules in the SECOND floor; left and right edges of SECOND floor.
+22. Make it so that when a new floor is added, all existing connectors check to see if they should be added to it. Add an 'elevators' property to the Infra Data class to allow it to keep track of the essential details for each transport connector: its id, x position, top and bottom.
+
+### 23. Add a few temporary text outputs to the Engine's renderer, to evaluate how well this system actually works in practice. Add outputs for: number of floors; modules in the SECOND floor; left and right edges of SECOND floor; number of 'elevators' in the base, and which elevators (ladders) connect with the THIRD floor.
 
 ### 96. The Mouse Shadow persists even when a new module is de-selected. Make it stop.
 
@@ -1428,7 +1430,7 @@ Creating assets with P5 is very difficult right now; create an interface that wi
 
 As the game matures, it will be more and more desirable to separate features that are used in development - console logs, test structures, in-game information displays, etc - from the production version of the game. We've already got an environment variable that the game's code can detect, so it would be possible to enable certain features only in a development environment, and then in a separate 'staging' environment it would be possible to preview the actual game experience.
 
-### Bug List (Severity in square brackets):
+## Bug List (Severity in square brackets):
 
 ### 1. [2: UX] When the in-game menu is opened then closed, it resets the engine's offset to be back in the middle of the map. The offset value should persist between menu openings.
 
@@ -1449,6 +1451,12 @@ As the game matures, it will be more and more desirable to separate features tha
 ### 9. [2: UX / Inaccurate info display] The game speed indicator should always be visible, including at the game start, and when the player returns to the game from the menu.
 
 ### 10. [1: UX / Gameplay] Restrict the base's baseVolume area to only include modules that have the pressurized trait set to true. This would limit the ability to build certain connectors starting or ending in such modules (and potentially have other cool consequences too).
+
+## Annex A: Advanced Concepts
+
+### 2. Merging overlapping connectors
+
+### 3. Connector render operates like module render (with shapes data)
 
 ### Exit Criteria for backend save/load game chapter:
 

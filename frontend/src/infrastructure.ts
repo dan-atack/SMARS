@@ -45,7 +45,7 @@ export default class Infrastructure {
         this._data.increaseSerialNumber();
         const c = new Connector(this._p5, this._data._currentSerial, start, stop, connectorInfo)
         this._connectors.push(c);
-        // Update base floor data if connector is of the transport type
+        // Update base floor data only if connector is of the transport type
         if (connectorInfo.type === "transport") {
             this._data.addConnectorToFloors(c._id, start, stop);
         }

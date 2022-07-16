@@ -259,6 +259,25 @@ describe("Infrastructure Data", () => {
         expect(infraData._floors[0]._rightSide).toBe(11);
     })
 
-    
+    test("Can add connectors to floors", () => {
+        // Connector is added which intersects the existing floor (continuing from the previous test case)
+        infraData.addConnectorToFloors(9000, { x: 1, y: 0 }, { x: 1, y: 20 });
+        expect(infraData._floors[0]._connectors).toStrictEqual([9000]);  // Floor has the connector's ID registered
+        infraData.addNewFloor(2, footprintA, 6000);
+        // TO IMPLEMENT: Every time a new floor is added, all connectors must be checked
+        // expect(infraData._floors[1]._connectors).toStrictEqual([9000]);     // Newly added floor gets existing connectors
+        infraData.addConnectorToFloors(9001, { x: 3, y: 0 }, { x: 3, y: 20 });
+        // New connectors are added to all applicable floors
+        expect(infraData._floors[0]._connectors).toStrictEqual([9000, 9001]);
+        expect(infraData._floors[1]._connectors).toStrictEqual([9000, 9001]);   // Both floors get new connector
+        infraData.addNewFloor(8, footprintA, 6000);
+        // TO IMPLEMENT: All new floors get all applicable connectors
+        // expect(infraData._floors[2]._connectors).toStrictEqual([9000, 9001]);   // New floor gets both existing connectors
+        infraData.addConnectorToFloors(9002, { x: 4, y: 0 }, { x: 4, y: 20 });
+        // Connectors are only added to floors they intersect with
+        expect(infraData._floors[2]._connectors).toStrictEqual([9000, 9001]);
+        expect(infraData._floors[1]._connectors).toStrictEqual([9000, 9001]);
+        expect(infraData._floors[0]._connectors).toStrictEqual([9000, 9001, 9002]); // Only floors that are in-bounds are connected
+    })
 
 })

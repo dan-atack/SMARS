@@ -12,12 +12,14 @@ export default class InfrastructureData {
     _currentSerial: number;     // A crude but hopefully effective method of ID-ing structures as they're created
     _baseVolume: number[][];    // Works the same as the terrain map, but to keep track of the base's inner area
     _floors: Floor[];           // Floors are a formation of one or more modules, representing walkable surfaces within the base
+    _elevators: { id: number, x: number, top: number, bottom: number }[]    // Basic data to keep track of inter-floor connectors
 
     constructor() {
         this._justBuilt = null;         // When a building has just been added, set this to the building's data
         this._currentSerial = 1000;     // If changing, change the value in the reset method too
         this._baseVolume = [];          // Starts with just an array - setup sets its length
         this._floors = [];
+        this._elevators = [];
     }
 
     setup (mapWidth: number) {
@@ -221,7 +223,34 @@ export default class InfrastructureData {
 
     // Top-level method for adding new connectors
     addConnectorToFloors (connectorId: number, start: Coords, stop: Coords) {
-        // Check for floors intersected by a new connector; add the new connector to their list if so
+        // First, register the connector as an 'elevator' (inter-floor connection)
+        const bottom = Math.max(start.y, stop.y);
+        const top = Math.min(start.y, stop.y);
+        const left = Math.min(start.x, stop.x);
+        const right = Math.max(start.x, stop.x);
+        this._elevators.push({ id: connectorId, x: start.x, top: top, bottom: bottom });
+        // Check for floors intersected by a new connector; add the new connector to their list if they overlap
+        this._floors.forEach((floor) => {
+            const yMatch = floor._elevation > top && floor._elevation < bottom;
+            const xMatch = floor._leftSide <= left && floor._rightSide >= right;
+            if (yMatch && xMatch) {
+                floor._connectors.push(connectorId);
+            }
+        })
+    }
+
+    // Check each existing connector and if it overlaps a newly added floor, add its ID to that floor's connectors list
+    addConnectorsToNewFloor (floorId: number, elevation: number, footprint: number[]) {
+        this._elevators.forEach((ladder) => {
+            if (footprint.includes(ladder.x)) {
+                if (ladder.bottom >= elevation && ladder.top <= elevation) {
+                    const floor = this._floors.find(con => con._id === floorId);
+                    if (floor !== undefined) {
+                        floor._connectors.push(ladder.id);
+                    }
+                }
+            }
+        })
     }
 
     // Intermediate-level Floor management methods
@@ -239,6 +268,7 @@ export default class InfrastructureData {
         const f = new Floor(this._currentSerial, elevation);
         f.addModule(moduleId, footprint);
         this._floors.push(f);
+        this.addConnectorsToNewFloor(this._currentSerial, elevation, footprint);
     }
 
     // Deletes the second of two floors involved in a merger to avoid data duplication
