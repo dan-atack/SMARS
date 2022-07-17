@@ -1443,9 +1443,32 @@ Exit Criteria:
 - Module resource data is added to the game's save files
 - ModuleData class is created to allow unit testing of module methods
 - EconomyData class is created to allow unit testing of economy methods
+- All new functionality has unit tests developed prior to the actual code
 - [STRETCH] Clicking a module in 'select' mode prints a list of its current resource quantities to the screen
 - [STRETCH] Module Information is kept in the Infra class and module instances point to it, to save on memory!
 - Backwards compatibility is fully verified for older save files
+
+1. From the Module class, abstract out its data fields and methods into a new Module Data class. As always, test this refactoring extensively before proceeding, including loading saves from long ago, and creating/loading a new save file.
+
+2. Once the Module class has been refactored, do the same for the Economy class, abstracting out as many of its methods and data fields as possible. Again, test thoroughly with old saves, and new ones before proceeding.
+
+### 3. Update the Module class to add a currentResources property. This can use the Resources type, which is exported from the Economy class.
+
+### 4. Update the Resources type to include 'power' and 'equipment' and 'minerals'. Don't add any kind of display for now, just get ready.
+
+### 4. Update the type template for the ModuleSaveInfo next (in the SaveGame file) to include a Resources attribute as well.
+
+### 5. Update the ModuleSaveInfo and ConnectorSaveInfo types to include ID's as well.
+
+### 5. Update the Game module's logic for gathering data from Modules before saving, so that it includes their Resource data as well as their ID number in the save data.
+
+### 6. Take this opportunity to have the Game save Connectors' ID's as well.
+
+### 7. Try loading a vintage game now and see if it works. If it does, add a statement to the Engine's load sequence to print out the data for any modules that contain resources of any kind. Legacy modules that are re-loaded should have no resources, but should have the a field containing the data for them. The same should be true of modules created in newer saves as well (resource property is present but no actual resources).
+
+### 8. Determine the unit tests for the new methods that will be added to the Module Data class to permit it to deal with resources: setResources (for setting a value from a load game or at the game's start) and dispenseResources (to be called by colonists when they consume stuff). Be sure that the setResources method doesn't allow any quantities to be set that are not permitted by the module's type settings, and that it respects maximum capacity. Similarly, the withdrawResources method must know which resource types are available, and not allow withdrawals to proceed into negative territory.
+
+### 9. Determine the methods that will be needed for the Infra class next...
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

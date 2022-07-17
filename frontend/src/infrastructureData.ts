@@ -1,6 +1,4 @@
 // The InfrastructureData class handles all of the data processing and structure placement determination tasks for the infrastructure class, without any rendering tasks
-import Connector from "./connector";
-import Module from "./module";
 import { ConnectorInfo, ModuleInfo } from "./server_functions";
 import { Coords } from "./connectorData";
 import Floor from "./floor";

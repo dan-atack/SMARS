@@ -5,7 +5,7 @@ import Screen from "./screen";
 import Button from "./button";
 import { constants } from "./constants";
 import { sendSaveGame } from "./server_functions";
-import { Resources } from "./economy";
+import { Resources } from "./economyData";
 import { ColonistSaveData } from "./colonist";
 import { Coords } from "./connectorData";
 

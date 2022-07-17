@@ -3,7 +3,7 @@ import P5 from "p5";
 import Screen from "./screen";
 import Button from "./button";
 import Minimap from "./minimap";
-import { Resources } from "./economy";
+import { Resources } from "./economyData";
 import { constants } from "./constants";
 import { getMap } from "./server_functions";
 

@@ -129,10 +129,10 @@ export default class Game extends Screen {
         const connectorData: ConnectorSaveInfo[] = [];
         this._engine._infrastructure._modules.forEach((mod) => {
             const stats = {
-                name: mod._moduleInfo.name,
-                type: mod._moduleInfo.type,
-                x: mod._x,
-                y: mod._y
+                name: mod._data._moduleInfo.name,
+                type: mod._data._moduleInfo.type,
+                x: mod._data._x,
+                y: mod._data._y
             }
             moduleData.push(stats);
         });
@@ -141,9 +141,6 @@ export default class Game extends Screen {
                 name: con._data._connectorInfo.name,
                 type: con._data._connectorInfo.type,
                 segments: con._data._segments,
-                // TODO: Remove X and Y save data once segment placement is in place
-                x: con._data._x,
-                y: con._data._y
             }
             connectorData.push(stats);
         })
@@ -158,7 +155,7 @@ export default class Game extends Screen {
             terrain: this._engine._map._data._mapData,
             modules: moduleData,
             connectors: connectorData,
-            resources: this._engine._economy._resources,
+            resources: this._engine._economy._data._resources,
             colonists: this._engine._population.prepareColonistSaveData(),
         }
         return saveData;

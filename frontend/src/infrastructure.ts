@@ -83,7 +83,7 @@ export default class Infrastructure {
         let collisions: number[][] = [];
         this._modules.forEach((mod) => {
             // TODO: Improve efficiency by only checking modules with the same X coordinates?
-            const modArea = this._data.calculateModuleArea(mod._moduleInfo, mod._x, mod._y);
+            const modArea = this._data.calculateModuleArea(mod._data._moduleInfo, mod._data._x, mod._data._y);
             modArea.forEach((coordPair) => {
                 moduleArea.forEach((coords) => {
                     if (coordPair.x === coords.x && coordPair.y === coords.y) {
@@ -109,7 +109,7 @@ export default class Infrastructure {
         const {floor, footprint} = this._data.calculateModuleFootprint(moduleArea);
         // Check each column of each existing module to see if its 'roof' (y-value) is one level below the 'floor' of the proposed new module
         this._modules.forEach((mod) => {
-            const modArea = this._data.calculateModuleArea(mod._moduleInfo, mod._x, mod._y);
+            const modArea = this._data.calculateModuleArea(mod._data._moduleInfo, mod._data._x, mod._data._y);
             const fp: number[] = [];
             modArea.forEach((pair) => {
                 if (!fp.includes(pair.x)) {
@@ -119,8 +119,8 @@ export default class Infrastructure {
             fp.forEach((column) => {
                 footprint.forEach((col) => {
                     // Basic column strength check
-                    const canSupport = mod._moduleInfo.columnStrength > 0;
-                    if (column === col && mod._y - floor === 1 && canSupport) {
+                    const canSupport = mod._data._moduleInfo.columnStrength > 0;
+                    if (column === col && mod._data._y - floor === 1 && canSupport) {
                         supportedColumns.push(col);
                     }
                 })
@@ -157,11 +157,11 @@ export default class Infrastructure {
         const leftEdge = Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH);    // Edges are in terms of columns
         const rightEdge = Math.floor(this._horizontalOffset + constants.WORLD_VIEW_WIDTH) / constants.BLOCK_WIDTH;
         this._modules.forEach((module) => {
-            if (module._x + module._width >= leftEdge && module._x < rightEdge) {
+            if (module._data._x + module._data._width >= leftEdge && module._data._x < rightEdge) {
                 module.render(this._horizontalOffset);
-                module._isRendered = true;
+                module._data._isRendered = true;
             } else {
-                module._isRendered = false;
+                module._data._isRendered = false;
             }
         });
         this._connectors.forEach((connector) => {

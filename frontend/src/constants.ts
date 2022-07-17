@@ -1,6 +1,6 @@
 // Global variables for the front-end:
 import { EventData } from "./modal";
-import { Resources } from "./economy";
+import { Resources } from "./economyData";
 
 const basicResources: Resources = {
    money: ["$", 10000000],

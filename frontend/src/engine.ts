@@ -5,7 +5,7 @@ import View from "./view";
 import Sidebar from "./sidebar";
 import Map from "./map";
 import Infrastructure from "./infrastructure";
-import Economy, { Resources } from "./economy";
+import Economy from "./economy";
 import Population from "./population";
 import Modal, { EventData } from "./modal";
 import Lander from "./lander";
@@ -121,7 +121,7 @@ export default class Engine extends View {
     setupNewGame = (gameData: GameData) => {
         this._gameData = gameData;  // gameData object only needs to be set for new games
         this._map.setup(this._gameData.mapTerrain);
-        this._economy.setResources(this._gameData.startingResources);
+        this._economy._data.setResources(this._gameData.startingResources);
         this._horizontalOffset = this._map._data._maxOffset / 2;   // Put player in the middle of the map to start out
         this._infrastructure.setup(this._map._data._mapData.length);
         this.createNewGameModal();
@@ -131,7 +131,7 @@ export default class Engine extends View {
         this._saveInfo = saveInfo;
         this.setClock(saveInfo.game_time);
         this._map.setup(this._saveInfo.terrain);
-        this._economy.setResources(saveInfo.resources);
+        this._economy._data.setResources(saveInfo.resources);
         this._horizontalOffset = this._map._data._maxOffset / 2;
         this._infrastructure.setup(this._map._data._mapData.length);
         this._population.loadColonistData(saveInfo.colonists);
@@ -432,11 +432,11 @@ export default class Engine extends View {
         if (this.selectedBuilding != null) {
             // MODULES
             if (this._infrastructure._data.isModule(this.selectedBuilding)) {
-                const affordable = this._economy.checkResources(this.selectedBuilding.buildCosts);
+                const affordable = this._economy._data.checkResources(this.selectedBuilding.buildCosts);
                 const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._data._mapData);
                 if (clear && affordable) {
                     this._infrastructure.addModule(x, y, this.selectedBuilding);
-                    this._economy.subtractMoney(this.selectedBuilding.buildCosts);
+                    this._economy._data.subtractMoney(this.selectedBuilding.buildCosts);
                 } else {
                     // TODO: Display this info to the player with an in-game message of some kind
                     console.log(`Clear: ${clear}`);
@@ -462,13 +462,13 @@ export default class Engine extends View {
             const baseCost = { money: this.selectedBuilding.buildCosts.money};
             const len = Math.max(this._mouseShadow._data._deltaX, this._mouseShadow._data._deltaY) + 1;
             const cost = { money: baseCost.money * len };
-            const affordable = this._economy.checkResources(cost);
+            const affordable = this._economy._data.checkResources(cost);
             const start = this._mouseShadow._data._connectorStartCoords;
             const stop = this._mouseShadow._data._connectorStopCoords;
             const clear = this._infrastructure._data.checkConnectorEndpointPlacement(stop.x, stop.y, this._map._data._mapData);
             if (affordable && clear) {
                 this._infrastructure.addConnector(start, stop, this.selectedBuilding);
-                this._economy.subtractMoney(cost);
+                this._economy._data.subtractMoney(cost);
             } else {
                 // TODO: Display this info to the player with an in-game message of some kind
                 console.log(`Clear: ${clear}`);
@@ -550,9 +550,9 @@ export default class Engine extends View {
     handleResourceConsumption = () => {
         const leakage = this._infrastructure.calculateModulesOxygenLoss();
         const { air, water, food } = this._population.calculatePopulationResourceConsumption(this._gameTime.hour);
-        this._economy.updateResource("oxygen", air + leakage);
-        this._economy.updateResource("water", water);
-        this._economy.updateResource("food", food);
+        this._economy._data.updateResource("oxygen", air + leakage);
+        this._economy._data.updateResource("water", water);
+        this._economy._data.updateResource("food", food);
     }
 
     //// GAMESPEED AND TIME METHODS ////
@@ -725,7 +725,7 @@ export default class Engine extends View {
                         break;
                     case "add-money":
                         // console.log(`Adding money: ${outcome[1]}`);
-                        if (typeof outcome[1] === "number") this._economy.addMoney(outcome[1]);
+                        if (typeof outcome[1] === "number") this._economy._data.addMoney(outcome[1]);
                         break;
                         // TODO: Add other cases as they are invented
                     default:
