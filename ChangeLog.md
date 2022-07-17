@@ -1353,22 +1353,29 @@ Features Added:
 
 Having now established how Connectors are placed on the map, it is time to take care of some of the behind-the-scenes logic that will govern their eventual role in the game. The focus of this chapter will be to establish how the base's interior will be structured in terms of floors that the colonists can traverse, and how members of the new Connectors class will link different levels of the base's interior for transit, and link different modules for resource distribution. The work here will have no visible output in the game's UI right away, but it will be possible to test most of the new logic, particularly if we use this opportunity to practice using a test-driven approach to development!
 
-Exit criteria:
+Exit Criteria:
 
 - [DONE] The Infrastructure class will contain a list of 'floors', representing the surfaces within the base on which colonists can walk
 - [DONE] Each new Floor is given a unique serial number
-- Floor information includes an up-to-date list of transit connectors that intersect it
+- [DONE] Floor information includes an up-to-date list of transit connectors that intersect it
 - [DONE] Floor information includes an up-to-date list of the IDs of the modules that comprise it
-- Floor information is updated whenever a new Module or Connector is placed
-- If placing a new Module causes two Floors to merge, their module and connector lists are combined and the Floor with the lower serial number is discarded
-- All new floor-related logic is tested extensively
+- [DONE] Floor information is updated whenever a new Module or Connector is placed
+- [DONE] If placing a new Module causes two Floors to merge, their module and connector lists are combined and the Floor with the lower serial number is discarded
+- [DONE] All new floor-related logic is tested extensively
 - [DONE] Modules and Connectors have a serial ID property that's given to them at creation by the Infrastructure class.
 - [DONE] Infra class updates its serial number each time a module/connector is created, including by loading a saved game
-- [STRETCH] Unit tests for the new logic are written BEFORE the code itself!
+- [DONE] [STRETCH] Unit tests for the new logic are written BEFORE the code itself!
 
 Not doing:
 
 - Module 'ground floor' detection and logic
+
+Features Added:
+
+- An invisible Floor class was created to manage information about the internal structure of the base, specifically the walkable surfaces that colonists will be able to traverse as they do with the map terrain.
+- The Infra Data class keeps track of the transport connector segments and the floors they intersect with.
+- The price for a new Connector is now determined by its length.
+- Fixed a small regression bug that caused the mouse shadow to persist when the player was no longer in structure placement mode.
 
 1. Create a new class, Floor, to keep track of all of the above-mentioned data, and also house the various methods that will operate on it. This will make it even simpler to create unit tests, as this will be a non-rendering class and thus no need for a separate 'floorData' class.
 
@@ -1422,6 +1429,24 @@ Not doing:
 
 26. Make connectors actually cost the amount they state when placed by taking their length property and multiplying that by the price that gets passed to the Economy class.
 
+## Chapter Twenty-Eight: Resources In the Modules (Difficulty Estimate: 5 For refactoring the Module and Economy classes and ensuring compatibility with game save/load system)
+
+### July 16, 2022
+
+Now that the base's Connector infrastructure is in place, it is time to implement the next key step towards a functioning simulator game: locating resources within the game's world. At the moment, resources are completely abstract quantities that exist in the game's Economy class. This chapter will rework that system so that instead of being represented as a global stockpile, the game's resources will now be 'stored' inside individual modules, so that colonists will need to visit specific locations to get the resources they need to survive. To implement this new system it will be necessary to update the module class to have a field for its current supply of a given resource, and have the Economy class routinely read each module's resource quantity value/s and populate the display at the top of the screen using that information instead. We can also take this opportunity to rework the Economy class's rate-of-change indicators, and add those values to the game's save file system, so that players reloading a game can immediately see all of their economic indicators. Once again we will be taking a test-driven approach to development, so we'll need to start by abstracting out the data and methods for both the Module and Economy classes.
+
+Exit Criteria:
+
+- Modules have the capacity to store the game's various resources
+- The Economy class displays the sum total of the resources contained in all the modules
+- The Economy class's rate-of-change data is included in save files so it can be displayed as soon as a game is loaded
+- Module resource data is added to the game's save files
+- ModuleData class is created to allow unit testing of module methods
+- EconomyData class is created to allow unit testing of economy methods
+- [STRETCH] Clicking a module in 'select' mode prints a list of its current resource quantities to the screen
+- [STRETCH] Module Information is kept in the Infra class and module instances point to it, to save on memory!
+- Backwards compatibility is fully verified for older save files
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
@@ -1432,11 +1457,11 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ## Bug List (Severity in square brackets):
 
-### 1. [2: UX] When the in-game menu is opened then closed, it resets the engine's offset to be back in the middle of the map. The offset value should persist between menu openings.
+1. [2: UX] When the in-game menu is opened then closed, it resets the engine's offset to be back in the middle of the map. The offset value should persist between menu openings.
 
 2. [8: Major gameplay issue] Ensure buildings cannot be placed BELOW the game's screen area (and by extension, that no map actions are permitted outside the map area).
 
-### 3. [5: UX / Minor gameplay issue] At some, but not all x-offset values, the building shadow (and subsequent placement) pulls to the left, to the point that the cursor is outside the designated build area by what appears to be up to a full grid space.
+3. [5: UX / Minor gameplay issue] At some, but not all x-offset values, the building shadow (and subsequent placement) pulls to the left, to the point that the cursor is outside the designated build area by what appears to be up to a full grid space.
 
 ### 4. [1: UX / Inaccurate info display] Save game dates seem to be from a different time zone?!
 
@@ -1451,6 +1476,8 @@ As the game matures, it will be more and more desirable to separate features tha
 ### 9. [2: UX / Inaccurate info display] The game speed indicator should always be visible, including at the game start, and when the player returns to the game from the menu.
 
 ### 10. [1: UX / Gameplay] Restrict the base's baseVolume area to only include modules that have the pressurized trait set to true. This would limit the ability to build certain connectors starting or ending in such modules (and potentially have other cool consequences too).
+
+### 11. [8: Major Gameplay issue] Loaded games do not allow the player to scroll all the way to the far right of the map; the section underneath the sidebar becomes unreachable when the player saves and then subsequently reloads the game.
 
 # Annex A: Advanced Concepts
 
