@@ -23,6 +23,7 @@ export type ModuleSaveInfo = {
     type: string,           // Module type info is needed to complete search parameters when re-fetching full data object
     x: number,
     y: number
+    resources: Resources
 }
 
 export type ConnectorSaveInfo = {

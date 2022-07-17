@@ -818,6 +818,7 @@ export default class Engine extends View {
             this._modal.render();
         }
         if (this.selectedBuilding) p5.text(this.selectedBuilding.name, 60, 100);
+        if (this._infrastructure._modules[0] != undefined) p5.text(this._infrastructure._modules[0]._data._resources.food, 60, 120);
         // if (this._infrastructure._data._floors.length > 3) {
         //     p5.text(this._infrastructure._data._floors[2]._modules, 60, 120);
         //     p5.text(`ROOF ACCESS: ${this._infrastructure._data._floors[2]._connectors.length}`, 60, 180);

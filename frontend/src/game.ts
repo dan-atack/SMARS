@@ -49,10 +49,13 @@ export default class Game extends Screen {
             randomEvents: true,
             mapTerrain: [],
             startingResources: {
-                money: ["$", 0],
-                oxygen: ["Air", 0],
-                water: ["H20", 0],
-                food: ["Food", 0],
+                money: ["$", 10000000],
+                oxygen: ["Air", 10000],
+                water: ["H20", 10000],
+                food: ["Food", 10000],
+                power: ["Power", 50000],
+                equipment: ["Equip.", 10000],
+                minerals: ["Minerals", 0],
             }
         };
         this._loadGameData = null;  // By default there is no loaded game data
@@ -132,7 +135,8 @@ export default class Game extends Screen {
                 name: mod._data._moduleInfo.name,
                 type: mod._data._moduleInfo.type,
                 x: mod._data._x,
-                y: mod._data._y
+                y: mod._data._y,
+                resources: mod._data._resources
             }
             moduleData.push(stats);
         });

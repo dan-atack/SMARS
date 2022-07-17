@@ -70,6 +70,9 @@ export default class NewGameSetup extends Screen {
                 oxygen: ["Air", 0],
                 water: ["H20", 0],
                 food: ["Food", 0],
+                power: ["Power", 0],
+                equipment: ["Equip.", 0],
+                minerals: ["Minerals", 0]
             }
         }
     }
@@ -272,12 +275,18 @@ export default class NewGameSetup extends Screen {
             oxygen: ["Air", 10000],
             water: ["H20", 10000],
             food: ["Food", 10000],
+            power: ["Power", 50000],
+            equipment: ["Equip.", 10000],
+            minerals: ["Minerals", 0],
         };
         const austere: Resources = {
             money: ["$", 5000000],
             oxygen: ["Air", 7500],
             water: ["H20", 7500],
-            food: ["Food", 5000],
+            food: ["Food", 7500],
+            power: ["Power", 25000],
+            equipment: ["Equip.", 5000],
+            minerals: ["Minerals", 0],
         }
         switch (difficulty) {
             case "easy":

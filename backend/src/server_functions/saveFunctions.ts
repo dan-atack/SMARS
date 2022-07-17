@@ -15,11 +15,14 @@ type Coords = {
 
 // Template for Resources type (copy from Economy.ts):
 
-export type Resources = {
+export type Resources = {       // ENSURE THJS IS KEPT IN SYNC WITH THE FRONTEND'S ECONOMY DATA FILE
     money: [string, number],    // Each value is a tuple, representing the display symbol, and the quantity
     oxygen: [string, number],
     water: [string, number],
     food: [string, number],
+    power: [string, number],
+    equipment: [string, number],
+    minerals: [string, number]
 }
 
 // Template for Colonist Save Info (copy from Colonist.ts):

@@ -1,11 +1,14 @@
 // The EconomyData class handles all of the data processing for the economy class, without any of the rendering tasks
 import { constants } from "./constants";
 
-export type Resources = {
+export type Resources = {       // ENSURE THJS IS KEPT IN SYNC WITH THE BACKEND'S SAVE FUNCTIONS FILE
     money: [string, number],    // Each value is a tuple, representing the display symbol, and the quantity
     oxygen: [string, number],
     water: [string, number],
     food: [string, number],
+    power: [string, number],
+    equipment: [string, number],
+    minerals: [string, number]
 }
 
 export default class EconomyData {
@@ -31,6 +34,9 @@ export default class EconomyData {
             oxygen: ["Air", 10000],
             water: ["H20", 10000],
             food: ["Food", 10000],
+            power: ["Power", 50000],
+            equipment: ["Equip.", 10000],
+            minerals: ["Minerals", 0],
         };
         this._resourceChangeRates = {
             money: 0,
@@ -121,12 +127,23 @@ export default class EconomyData {
                 oxygen: ["Air", 10000],
                 water: ["H20", 10000],
                 food: ["Food", 10000],
-              })
+                power: ["Power", 50000],
+                equipment: ["Equip.", 10000],
+                minerals: ["Minerals", 0],
+            })
         }
     }
 
     reset = () => {
-        const empty: Resources = { money: ["$", 0], oxygen: ["Air", 0], water: ["H20", 0], food: ["Food", 0] };
+        const empty: Resources = {
+            money: ["$", 10000000],
+            oxygen: ["Air", 10000],
+            water: ["H20", 10000],
+            food: ["Food", 10000],
+            power: ["Power", 50000],
+            equipment: ["Equip.", 10000],
+            minerals: ["Minerals", 0],
+        };
         this.setResources(empty);
     }
 

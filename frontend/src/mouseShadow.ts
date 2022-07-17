@@ -29,10 +29,5 @@ export default class MouseShadow {
             this._data.setPosition(x, y);       // If the shadow is not locked, allow it to move
         }
         p5.rect(this._data._x - this._data._xOffset, this._data._y, this._data._w, this._data._h);
-        // if (this._data._connectorStartCoords) p5.text(this._data._connectorStartCoords.x, 20, 120);
-        // if (this._data._connectorStartCoords) p5.text(this._data._connectorStartCoords.y, 20, 140);
-        // if (this._data._connectorStopCoords) p5.text(this._data._connectorStopCoords.x, 20, 200);
-        // if (this._data._connectorStopCoords) p5.text(this._data._connectorStopCoords.y, 20, 220);
-        // p5.text(this._data._direction, 20, 200);
     }
 }

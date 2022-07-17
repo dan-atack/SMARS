@@ -1452,11 +1452,11 @@ Exit Criteria:
 
 2. Once the Module class has been refactored, do the same for the Economy class, abstracting out as many of its methods and data fields as possible. Again, test thoroughly with old saves, and new ones before proceeding.
 
-### 3. Update the Module class to add a currentResources property. This can use the Resources type, which is exported from the Economy class.
+3. Update the Module Data class to add a currentResources property. This can use the Resources type, which is exported from the Economy Data class.
 
-### 4. Update the Resources type to include 'power' and 'equipment' and 'minerals'. Don't add any kind of display for now, just get ready.
+4. Update the Resources type to include 'power' and 'equipment' and 'minerals'. Don't add any kind of display for now, just get ready.
 
-### 4. Update the type template for the ModuleSaveInfo next (in the SaveGame file) to include a Resources attribute as well.
+5. Update the type template for the ModuleSaveInfo next (in the SaveGame file) to include a Resources attribute as well.
 
 ### 5. Update the ModuleSaveInfo and ConnectorSaveInfo types to include ID's as well.
 
@@ -1469,6 +1469,8 @@ Exit Criteria:
 ### 8. Determine the unit tests for the new methods that will be added to the Module Data class to permit it to deal with resources: setResources (for setting a value from a load game or at the game's start) and dispenseResources (to be called by colonists when they consume stuff). Be sure that the setResources method doesn't allow any quantities to be set that are not permitted by the module's type settings, and that it respects maximum capacity. Similarly, the withdrawResources method must know which resource types are available, and not allow withdrawals to proceed into negative territory.
 
 ### 9. Determine the methods that will be needed for the Infra class next...
+
+### 99. Remove money from the resources list, as it should be its own category of thing (not requiring storage in modules and thus strictly a property of the Economy Data class, like the other resources used to be).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

@@ -1,12 +1,14 @@
 // The ModuleData class handles all of the data processing for the module class, without any of the rendering tasks
 import { ModuleInfo } from "./server_functions";
 import { constants } from "./constants";
+import { Resources } from "./economyData";
 
 export default class ModuleData {
     // Module Data types
     _x: number;     // Buildings' x and y positions will be in terms of grid locations to act as fixed reference points
     _y: number;
     _moduleInfo: ModuleInfo;
+    _resources : Resources; // Represents the current tallies of each type of resource stored in this module
     _width: number;     // Width and height are in terms of blocks (grid spaces), not pixels
     _height: number;
     _xOffset: number;   // The offset value, on the other hand, will be in terms of pixels, to allow for smoother scrolling
@@ -18,6 +20,15 @@ export default class ModuleData {
         this._x = x;
         this._y = y;
         this._moduleInfo = moduleInfo;
+        this._resources = {
+            money: ["$", 0],
+            oxygen: ["Air", 0],
+            water: ["H20", 0],
+            food: ["Food", 0],
+            power: ["Power", 0],
+            equipment: ["Equip.", 0],
+            minerals: ["Minerals", 0],
+        };
         this._width = this._moduleInfo.width;       // Width and height are in terms of grid spaces, not pixels!
         this._height = this._moduleInfo.height;
         this._xOffset = 0;

@@ -4,10 +4,13 @@ import { Resources } from "./economyData";
 
 const basicResources: Resources = {
    money: ["$", 10000000],
-   oxygen: ["Air", 100],
+   oxygen: ["Air", 10000],
    water: ["H20", 10000],
    food: ["Food", 10000],
- }
+   power: ["Power", 50000],
+   equipment: ["Equip.", 10000],
+   minerals: ["Minerals", 0],
+}
 
 export const constants = {
     // Backend connection
