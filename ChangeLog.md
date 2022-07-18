@@ -1437,12 +1437,13 @@ Now that the base's Connector infrastructure is in place, it is time to implemen
 
 Exit Criteria:
 
-- Modules have the capacity to store the game's various resources
+- [DONE] Modules have the capacity to store the game's various resources
+- The Modules created during the landing sequence start with some resources in them
 - The Economy class displays the sum total of the resources contained in all the modules
 - The Economy class's rate-of-change data is included in save files so it can be displayed as soon as a game is loaded
-- Module resource data is added to the game's save files
-- ModuleData class is created to allow unit testing of module methods
-- EconomyData class is created to allow unit testing of economy methods
+- [DONE] Module resource data is added to the game's save files
+- [DONE] ModuleData class is created to allow unit testing of module methods
+- [DONE] EconomyData class is created to allow unit testing of economy methods
 - All new functionality has unit tests developed prior to the actual code
 - [STRETCH] Clicking a module in 'select' mode prints a list of its current resource quantities to the screen
 - [STRETCH] Module Information is kept in the Infra class and module instances point to it, to save on memory!
@@ -1458,17 +1459,21 @@ Exit Criteria:
 
 5. Update the type template for the ModuleSaveInfo next (in the SaveGame file) to include a Resources attribute as well.
 
-### 5. Update the ModuleSaveInfo and ConnectorSaveInfo types to include ID's as well.
+6. Update the ModuleSaveInfo and ConnectorSaveInfo types to include ID's as well.
 
-### 5. Update the Game module's logic for gathering data from Modules before saving, so that it includes their Resource data as well as their ID number in the save data.
+7. Update the Game module's logic for gathering data from Modules before saving, so that it includes their Resource data as well as their ID number in the save data.
 
-### 6. Take this opportunity to have the Game save Connectors' ID's as well.
+8. Take this opportunity to have the Game save Connectors' ID's as well.
 
-### 7. Try loading a vintage game now and see if it works. If it does, add a statement to the Engine's load sequence to print out the data for any modules that contain resources of any kind. Legacy modules that are re-loaded should have no resources, but should have the a field containing the data for them. The same should be true of modules created in newer saves as well (resource property is present but no actual resources).
+### 7. Try loading a vintage game now and see if it works. If it does, add a statement to the Engine's load sequence to print out the data for any modules that contain resources of any kind. Legacy modules that are re-loaded should have no resources, but should have the a field containing the data for them, and thus still be registered this way. The same should be true of modules created in newer saves as well (resource property is present but no actual resources).
+
+### 8. When modules and connectors are loaded by the Engine's loadConnectorFromSave and loadModuleFromSave methods, make sure to give each structure its proper ID from the save file (overriding whatever one the Infra Data class may have assigned). Check that the serial generator for Infra Data is updated sufficiently by the loading process so that there will be no duplicate serial numbers assigned when new structures are added.
 
 ### 8. Determine the unit tests for the new methods that will be added to the Module Data class to permit it to deal with resources: setResources (for setting a value from a load game or at the game's start) and dispenseResources (to be called by colonists when they consume stuff). Be sure that the setResources method doesn't allow any quantities to be set that are not permitted by the module's type settings, and that it respects maximum capacity. Similarly, the withdrawResources method must know which resource types are available, and not allow withdrawals to proceed into negative territory.
 
 ### 9. Determine the methods that will be needed for the Infra class next...
+
+### 98. Alter the Resources interface to have just a value for each resource type; leave out the symbol to avoid saving redundant data. This is a pretty big refactor but it will be worth it in the long run.
 
 ### 99. Remove money from the resources list, as it should be its own category of thing (not requiring storage in modules and thus strictly a property of the Economy Data class, like the other resources used to be).
 

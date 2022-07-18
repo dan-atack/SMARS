@@ -19,6 +19,7 @@ export type GameTime = {
 }
 
 export type ModuleSaveInfo = {
+    id: number,
     name: string,
     type: string,           // Module type info is needed to complete search parameters when re-fetching full data object
     x: number,
@@ -27,11 +28,10 @@ export type ModuleSaveInfo = {
 }
 
 export type ConnectorSaveInfo = {
+    id: number,
     name: string,
     type: string,
     segments: {start: Coords, stop: Coords}[],  // Connectors all consist of pairs of start/stop coordinates
-    // x: number,      // Deprecated - remove after implementing coordinate-based system
-    // y: number       // Deprecated - remove after implementing coordinate-based system
 }
 
 export type SaveInfo = {
