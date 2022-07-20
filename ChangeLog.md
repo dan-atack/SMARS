@@ -1477,15 +1477,31 @@ Exit Criteria:
 
 14. Use some strategic console logs and/or engine text readouts to verify that Modules' resource data is correctly formatted now. Add one to log each module's capacity when placed, and another one to log each module's current resources (again, when placed).
 
-### 8. When modules and connectors are loaded by the Engine's loadConnectorFromSave and loadModuleFromSave methods, make sure to give each structure its proper ID from the save file (overriding whatever one the Infra Data class may have assigned). Check that the serial generator for Infra Data is updated sufficiently by the loading process so that there will be no duplicate serial numbers assigned when new structures are added. Finally, modify the Infra Data class's resetSerialNumber method to just be 'setSerialNumber', and allow it to take an argument (number) that will be used to set the new value. Test extensively with old and new files to make sure this doesn't introduce any regressions.
+15. When modules and connectors are loaded by the Engine's loadConnectorFromSave and loadModuleFromSave methods, make sure to give each structure its proper ID from the save file (overriding whatever one the Infra Data class may have assigned). Check that the serial generator for Infra Data is updated sufficiently by the loading process so that there will be no duplicate serial numbers assigned when new structures are added. Finally, modify the Infra Data class's resetSerialNumber method to just be 'setSerialNumber', and allow it to take an argument (number) that will be used to set the new value. Test extensively with old and new files to make sure this doesn't introduce any regressions.
 
-### 8. Determine the unit tests for the new methods that will be added to the Module Data class to permit it to deal with resources: setResources (for setting a value from a load game or at the game's start) and dispenseResources (to be called by colonists when they consume stuff). Be sure that the setResources method doesn't allow any quantities to be set that are not permitted by the module's type settings, and that it respects maximum capacity. Similarly, the withdrawResources method must know which resource types are available, and not allow withdrawals to proceed into negative territory.
+16. Add a dictionary to the Economy Data class that matches symbols to each resource type. Have the Economy base class access these symbols for its resource count displays, and also have it ignore (not display) the 3 new resources (equipment, power and minerals) for the moment.
 
-### 9. Determine the methods that will be needed for the Infra class next...
+### 17. Create the empty shells of the new Infra Data class methods that will be used to calculate resource tallies from the modules instead of the current grand-total system. 2 Methods to add: calculateBaseResources (for grand total calculation; returns a list of all resources present in all modules) and addResourcesToModule (for the game start and various other occasions).
 
-### 98. Alter the Resources interface to have just a value for each resource type; leave out the symbol to avoid saving redundant data. This is a pretty big refactor but it will be worth it in the long run.
+### 18. Create empty shells for the new Module Data methods: addResources (takes one resource at a time and attempts to add it if the module has the capacity for it); reduceResources (reduces the quantity of a resource in a module if, say, a colonist consumes from it - and if the resource is available).
 
-### 99. Remove money from the resources list, as it should be its own category of thing (not requiring storage in modules and thus strictly a property of the Economy Data class, like the other resources used to be).
+### 19. Create the unit tests for the new Infra Data class methods before writing their code.
+
+### 20. Create the unit tests for the new Module Data class methods before writing their code.
+
+### 21. Now start by writing the code for the Module Data methods first. As always, be imaginative in trying to imaging 'edge cases' that might break the system.
+
+### 22. Develop the code for the new Infra Data methods, considering how they will be integrated with the Module methods written for the previous step.
+
+### 23. Now, Update the Economy Data class to include a new method called updateResourceReport. This should be passed data from the Engine (which it will take from the Infra Data class) to display directly. Given that the Economy class is now mostly a display panel, the updateResources method can be simplified from its current state so that it just updates the rate of change data and then simply displays whatever value it is given for each resource. Do unit tests for this feature and create a new method before getting rid of any of the existing code.
+
+### 23. Now update the Engine's handleResourceConsumption method (start by renaming it) to call the Infra Data's calculateBaseResources method every hour and then for each item in that function's return, pass the new value to the Economy.
+
+### 24. Finally, update the SaveInfo data type's resources field to be a 'rates of change' record instead of a resources total calculation. That way, freshly loaded games can instantly have access to the rate of change data from the previous session without having to wait an hour. Also, make the Engine's loadGameFromSave sequence and startNewGame sequence both call the Infra Data's total resource calculator so that the resource totals information is also (still) visible from the get-go.
+
+### 25. One last thing to do here: Add a final Infra Data class method (unit test first) called findModulesWithResource. This will take a single string (the resource name) as its argument, and should return a list of the IDs of any module that contains a non-zero supply of that resource.
+
+### 26. Final, final thing to do: Create one more Infra Data class method for finding the location of a module given its ID. Test first, blah blah blah. In tandem with the function from the previous step, we will have a good start towards telling the Colonists which module to go to when they need a particular resource.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

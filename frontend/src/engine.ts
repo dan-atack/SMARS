@@ -585,7 +585,7 @@ export default class Engine extends View {
                 this.gameOn = false;
                 break;
             case "slow":
-                this.ticksPerMinute = 60;
+                this.ticksPerMinute = 40;
                 break;
             case "fast":
                 this.ticksPerMinute = 20;
