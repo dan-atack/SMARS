@@ -27,7 +27,6 @@ export default class Economy {
         resource[0].length < 2 ? p5.textSize(24) : p5.textSize(22);
         p5.fill(constants.YELLOW_TEXT);
         p5.text(resource[0], x, y);
-        // @ts-ignore
         if (shortage) {
             p5.fill(constants.RED_CONTRAST);
         } else {
@@ -35,6 +34,7 @@ export default class Economy {
         }
         p5.textSize(18);
         // Display resource quantity as decimal value:
+        // TODO: Replace resource name string with symbol, to be defined in dictionary in econo data class
         const offset = Math.max(Math.log10(resource[1]) * 4 + resource[0].length * 5, 16);
         const val = Math.round(resource[1]/this._data._resourceDisplayFraction);
         p5.text(val, x + offset + 24, y);
@@ -56,8 +56,13 @@ export default class Economy {
     render = () => {
         const p5 = this._p5;
         p5.textSize(16);
-        const deltas = Object.values(this._data._resourceChangeRates);
-        Object.values(this._data._resources).forEach((resource, idx) => {
+        let deltas: number[] = [];
+        this._data._resourceChangeRates.forEach((rate) => {
+            deltas.push(rate[1]);
+        })
+        // TODO : Come back when the resource data has been updated elsewhere to update this display
+        this._data._resources.forEach((resource, idx) => {
+            // This is ugly and brittle - if indices for resources/shortages ever get out of sync, display will be wrong
             const shortage = Object.values(this._data._resourceShortages)[idx];
             this.displayResource(resource, this._displayX + idx * this._xInterval, this._displayY, shortage);
             this.displayResourceChangeRate(deltas[idx], this._displayX + 32 + idx * this._xInterval, this._displayY + 24, shortage);

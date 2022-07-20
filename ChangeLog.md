@@ -1465,7 +1465,17 @@ Exit Criteria:
 
 8. Take this opportunity to have the Game save Connectors' ID's as well.
 
-### 7. Try loading a vintage game now and see if it works. If it does, add a statement to the Engine's load sequence to print out the data for any modules that contain resources of any kind. Legacy modules that are re-loaded should have no resources, but should have the a field containing the data for them, and thus still be registered this way. The same should be true of modules created in newer saves as well (resource property is present but no actual resources).
+9. Just when you thought there wasn't enough pain in the world: Revise the Resource type system that's currently in place to change it from Resources (which then contains a dictionary which matches all of the game's resource types to TUPLES containing their quantity and display symbols) to a singular Resource, which will still consist of a tuple, only this time it will represent the ["name", quantity] for a single resource.
+
+10. Update the module data for the backend next, so that each module's storageCapacity field now expresses a list of the Resource(s) [names and quantities] that a module can store in terms of these new tuples, instead of the dictionary-like data storage currently used. Then, update each module in the database to reflect this new system. Save backups in the older_buildings file also.
+
+11. Update the Economy class next so that its resources field contains an array of these tuples; one for each resource type (currently there are seven - money, oxygen, water, food, power, equipment and minerals). You can keep money as a resource this way, and only the Economy class will need to handle it. Tidy up the rest of the Economy class's code so that it can still handle its resource quantity displays for the first four of its resources (money, oxygen, water and food).
+
+12. Do a find-all to update any remaining instances of the Resource type, and then load an old saved game to make sure nothing is broken. Test as well with a new game - save and reload it to validate that everything is still working with no regressions.
+
+13. Make an Engine helper function that can be inserted into the Engine's Load Game sequence to help convert older, dictionary-based Economy data into the new format on the fly when legacy files are loaded. Also, maybe dump the saved games eventually too?
+
+### 9. Use some strategic console logs and/or engine text readouts to verify that Modules' resource data is correctly formatted now.
 
 ### 8. When modules and connectors are loaded by the Engine's loadConnectorFromSave and loadModuleFromSave methods, make sure to give each structure its proper ID from the save file (overriding whatever one the Infra Data class may have assigned). Check that the serial generator for Infra Data is updated sufficiently by the loading process so that there will be no duplicate serial numbers assigned when new structures are added.
 

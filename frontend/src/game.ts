@@ -48,15 +48,15 @@ export default class Game extends Screen {
             mapType: "",
             randomEvents: true,
             mapTerrain: [],
-            startingResources: {
-                money: ["$", 10000000],
-                oxygen: ["Air", 10000],
-                water: ["H20", 10000],
-                food: ["Food", 10000],
-                power: ["Power", 50000],
-                equipment: ["Equip.", 10000],
-                minerals: ["Minerals", 0],
-            }
+            startingResources: [
+                ["money", 10000000],
+                ["oxygen", 10000],
+                ["water", 10000],
+                ["food", 10000],
+                ["power", 50000],
+                ["equipment", 10000],
+                ["minerals", 0]
+            ]
         };
         this._loadGameData = null;  // By default there is no loaded game data
         this._gameLoaded = false;   // Initially no game data is loaded

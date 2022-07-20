@@ -1,6 +1,7 @@
 // Top-level component for the game environment (as opposed to game interface, which is in game.ts)
 import P5 from "p5";
 import * as dotenv from "dotenv";
+// Components
 import View from "./view";
 import Sidebar from "./sidebar";
 import Map from "./map";
@@ -10,8 +11,11 @@ import Population from "./population";
 import Modal, { EventData } from "./modal";
 import Lander from "./lander";
 import MouseShadow from "./mouseShadow";
+// Helper/server functions
+import { convertResourceData } from "./engineHelpers";
 import { ModuleInfo, ConnectorInfo, getOneModule, getOneConnector } from "./server_functions";
 import { constants, modalData } from "./constants";
+// Types
 import { ConnectorSaveInfo, ModuleSaveInfo, SaveInfo, GameTime } from "./saveGame";
 import { GameData } from "./newGameSetup";
 import { Coords } from "./connectorData";
@@ -131,12 +135,16 @@ export default class Engine extends View {
         this._saveInfo = saveInfo;
         this.setClock(saveInfo.game_time);
         this._map.setup(this._saveInfo.terrain);
+        // TEMPORARY: CONVERT OLD RESOURCE DATA TO NEW FORMAT:
+        if (!(Array.isArray(saveInfo.resources))) {
+            console.log("Legacy resource format detected. Converting resource data.")
+            saveInfo.resources = convertResourceData(saveInfo.resources);
+        }
         this._economy._data.setResources(saveInfo.resources);
         this._horizontalOffset = this._map._data._maxOffset / 2;
         this._infrastructure.setup(this._map._data._mapData.length);
         this._population.loadColonistData(saveInfo.colonists);
         this.loadModulesFromSave(saveInfo.modules);
-        // TODO: Reactivate Connector loading functionality
         this.loadConnectorsFromSave(saveInfo.connectors);
         this._hasLanded = true; // Landing sequence has to take place before saving is possible
         // Check if game has colonist data and if it doesn't, render an alternate welcome back message
@@ -432,11 +440,12 @@ export default class Engine extends View {
         if (this.selectedBuilding != null) {
             // MODULES
             if (this._infrastructure._data.isModule(this.selectedBuilding)) {
-                const affordable = this._economy._data.checkResources(this.selectedBuilding.buildCosts);
+                // ASSUMES CASH IS THE ONLY KIND OF COST
+                const affordable = this._economy._data.checkResources(this.selectedBuilding.buildCosts[0][1]);
                 const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._data._mapData);
                 if (clear && affordable) {
                     this._infrastructure.addModule(x, y, this.selectedBuilding);
-                    this._economy._data.subtractMoney(this.selectedBuilding.buildCosts);
+                    this._economy._data.subtractMoney(this.selectedBuilding.buildCosts[0][1]);
                 } else {
                     // TODO: Display this info to the player with an in-game message of some kind
                     console.log(`Clear: ${clear}`);
@@ -459,10 +468,10 @@ export default class Engine extends View {
     handleConnectorStopPlacement = () => {
         // Ensure there is a building selected, and that it's not a module
         if (this.selectedBuilding != null && !this._infrastructure._data.isModule(this.selectedBuilding) && this._mouseShadow?._data._connectorStopCoords != null && this._mouseShadow._data._connectorStartCoords) {
-            const baseCost = { money: this.selectedBuilding.buildCosts.money};
+            const baseCost = this.selectedBuilding.buildCosts[0][1];    // Get just the number
             const len = Math.max(this._mouseShadow._data._deltaX, this._mouseShadow._data._deltaY) + 1;
-            const cost = { money: baseCost.money * len };
-            const affordable = this._economy._data.checkResources(cost);
+            const cost = baseCost * len;  // Multiply cost by units of length
+            const affordable = this._economy._data.checkResources(cost); // NOTE: THIS ASSUMES COST IS ONLY EVER IN TERMS OF MONEY
             const start = this._mouseShadow._data._connectorStartCoords;
             const stop = this._mouseShadow._data._connectorStopCoords;
             const clear = this._infrastructure._data.checkConnectorEndpointPlacement(stop.x, stop.y, this._map._data._mapData);
@@ -818,7 +827,6 @@ export default class Engine extends View {
             this._modal.render();
         }
         if (this.selectedBuilding) p5.text(this.selectedBuilding.name, 60, 100);
-        if (this._infrastructure._modules[0] != undefined) p5.text(this._infrastructure._modules[0]._data._resources.food, 60, 120);
         // if (this._infrastructure._data._floors.length > 3) {
         //     p5.text(this._infrastructure._data._floors[2]._modules, 60, 120);
         //     p5.text(`ROOF ACCESS: ${this._infrastructure._data._floors[2]._connectors.length}`, 60, 180);

@@ -1,16 +1,6 @@
 // Global variables for the front-end:
 import { EventData } from "./modal";
-import { Resources } from "./economyData";
-
-const basicResources: Resources = {
-   money: ["$", 10000000],
-   oxygen: ["Air", 10000],
-   water: ["H20", 10000],
-   food: ["Food", 10000],
-   power: ["Power", 50000],
-   equipment: ["Equip.", 10000],
-   minerals: ["Minerals", 0],
-}
+import { Resource } from "./economyData";
 
 export const constants = {
     // Backend connection
@@ -52,7 +42,6 @@ export const constants = {
     BLUEGREEN_DARK: "#052E26",
     BLUE_BG: "#00004F",
     PURPLE_LIGHT: "#A67ACF",
-    BASIC_RESOURCES: basicResources
 }
 
 // Modal Data (for now - eventually it should come from the backend!)

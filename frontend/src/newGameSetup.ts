@@ -3,7 +3,7 @@ import P5 from "p5";
 import Screen from "./screen";
 import Button from "./button";
 import Minimap from "./minimap";
-import { Resources } from "./economyData";
+import { Resource } from "./economyData";
 import { constants } from "./constants";
 import { getMap } from "./server_functions";
 
@@ -12,7 +12,7 @@ export type GameData = {
     mapType: string,
     randomEvents: boolean,
     mapTerrain: number[][];
-    startingResources: Resources;
+    startingResources: Resource[];
 }
 
 export default class NewGameSetup extends Screen {
@@ -65,15 +65,15 @@ export default class NewGameSetup extends Screen {
             mapType: "",
             randomEvents: true,
             mapTerrain: [],
-            startingResources: {
-                money: ["$", 0],
-                oxygen: ["Air", 0],
-                water: ["H20", 0],
-                food: ["Food", 0],
-                power: ["Power", 0],
-                equipment: ["Equip.", 0],
-                minerals: ["Minerals", 0]
-            }
+            startingResources: [
+                ["money", 10000000],
+                ["oxygen", 10000],
+                ["water", 10000],
+                ["food", 10000],
+                ["power", 50000],
+                ["equipment", 10000],
+                ["minerals", 0]
+             ]
         }
     }
 
@@ -270,24 +270,24 @@ export default class NewGameSetup extends Screen {
     }
 
     setStartingResources = (difficulty: string) => {
-        const basic: Resources = {
-            money: ["$", 10000000],
-            oxygen: ["Air", 10000],
-            water: ["H20", 10000],
-            food: ["Food", 10000],
-            power: ["Power", 50000],
-            equipment: ["Equip.", 10000],
-            minerals: ["Minerals", 0],
-        };
-        const austere: Resources = {
-            money: ["$", 5000000],
-            oxygen: ["Air", 7500],
-            water: ["H20", 7500],
-            food: ["Food", 7500],
-            power: ["Power", 25000],
-            equipment: ["Equip.", 5000],
-            minerals: ["Minerals", 0],
-        }
+        const basic: Resource[] = [
+            ["money", 10000000],
+            ["oxygen", 10000],
+            ["water", 10000],
+            ["food", 10000],
+            ["power", 50000],
+            ["equipment", 10000],
+            ["minerals", 0]
+         ];
+        const austere: Resource[] = [
+            ["money", 5000000],
+            ["oxygen", 7500],
+            ["water", 7500],
+            ["food", 7500],
+            ["power", 25000],
+            ["equipment", 5000],
+            ["minerals", 0]
+         ]
         switch (difficulty) {
             case "easy":
                 return basic;

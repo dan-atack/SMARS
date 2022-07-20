@@ -48,7 +48,7 @@ export default class BuildingChip extends Button {
 
     // Converts the cost into a string with dollar sign and decimal place
     getCostString = () => {
-        let cost = this.buildingData.buildCosts.money.toString();
+        let cost = this.buildingData.buildCosts[0][1].toString();   // Money always has to be the first type of cost!
         cost = cost.slice(0, cost.length - 2) + "." + cost.slice(cost.length - 2, cost.length);
         if (this.buildingData.type === "conduit" || this.buildingData.type === "transport") {
             cost = `$${cost} per meter`;

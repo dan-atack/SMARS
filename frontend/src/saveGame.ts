@@ -5,7 +5,7 @@ import Screen from "./screen";
 import Button from "./button";
 import { constants } from "./constants";
 import { sendSaveGame } from "./server_functions";
-import { Resources } from "./economyData";
+import { Resource } from "./economyData";
 import { ColonistSaveData } from "./colonist";
 import { Coords } from "./connectorData";
 
@@ -23,8 +23,8 @@ export type ModuleSaveInfo = {
     name: string,
     type: string,           // Module type info is needed to complete search parameters when re-fetching full data object
     x: number,
-    y: number
-    resources: Resources
+    y: number,
+    resources: Resource[],
 }
 
 export type ConnectorSaveInfo = {
@@ -45,7 +45,7 @@ export type SaveInfo = {
     random_events: boolean,      // From the game's initial settings
     modules: ModuleSaveInfo[],
     connectors: ConnectorSaveInfo[],
-    resources: Resources,
+    resources: Resource[],
     colonists: ColonistSaveData[]
 }
 
