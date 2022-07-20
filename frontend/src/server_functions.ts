@@ -134,7 +134,7 @@ export const getStructures = (setter: (options: ModuleInfo[] | ConnectorInfo[]) 
 }
 
 // Returns an individual structure, based on the category, type and name... And the list of coordinates, since this will be passed directly to the Infrastructure function that will actually re-produce the buildings. It's weird, but it works!
-export const getOneModule = (setter: (selectedBuilding: ModuleInfo, locations: number[][]) => void, category: string, type: string, name: string, locations: number[][]) => {
+export const getOneModule = (setter: (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[]) => void, category: string, type: string, name: string, locations: number[][], ids?: number[]) => {
 
     const url = `${constants.URL_PREFIX}/${category}/${type}/${name}`;
 
@@ -149,11 +149,11 @@ export const getOneModule = (setter: (selectedBuilding: ModuleInfo, locations: n
         return res.json();
     })
     .then((response) => {
-        setter(response.data, locations);
+        setter(response.data, locations, ids);
     })
 }
 
-export const getOneConnector = (setter: (selectedConnector: ConnectorInfo, locations: {start: Coords, stop: Coords}[][]) => void, category: string, type: string, name: string, locations: {start: Coords, stop: Coords}[][]) => {
+export const getOneConnector = (setter: (selectedConnector: ConnectorInfo, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => void, category: string, type: string, name: string, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => {
 
     const url = `${constants.URL_PREFIX}/${category}/${type}/${name}`;
 
@@ -168,7 +168,7 @@ export const getOneConnector = (setter: (selectedConnector: ConnectorInfo, locat
         return res.json();
     })
     .then((response) => {
-        setter(response.data, locations);
+        setter(response.data, locations, ids);
     })
 }
 

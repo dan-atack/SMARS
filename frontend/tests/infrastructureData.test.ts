@@ -207,7 +207,7 @@ describe("Infrastructure Data", () => {
     test("Can create a new floor", () => {
         // Reset test conditions
         infraData._floors = [];
-        infraData.resetSerialNumber();
+        infraData.setSerialNumber(1000);
         expect(infraData._currentSerial).toBe(1000);
         infraData.addNewFloor(5, footprintA, infraData._currentSerial);
         expect(infraData._floors.length).toBe(1);
@@ -237,7 +237,7 @@ describe("Infrastructure Data", () => {
 
     test("Can combine two floors", ()  => {
         // Reset serial number to target the right floor IDs
-        infraData.resetSerialNumber();
+        infraData.setSerialNumber(1000);
         expect(infraData._currentSerial).toBe(1000);    // Validate serial number reset
         // Ensure no previous floors exist
         infraData._floors = [];

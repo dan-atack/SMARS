@@ -62,8 +62,8 @@ export default class Engine extends View {
     _landingSiteCoords: [number, number];
     switchScreen: (switchTo: string) => void;   // App-level SCREEN switcher (passed down via drill from the app)
     updateEarthData: () => void;    // Updater for the date on Earth (for starters)
-    getModuleInfo: (setter: (selectedBuilding: ModuleInfo, locations: number[][]) => void, category: string, type: string, name: string, locations: number[][]) => void;        // Getter function for loading individual structure data from the backend
-    getConnectorInfo: (setter: (selectedConnector: ConnectorInfo, locations: {start: Coords, stop: Coords}[][]) => void, category: string, type: string, name: string, locations: {start: Coords, stop: Coords}[][]) => void;
+    getModuleInfo: (setter: (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[]) => void, category: string, type: string, name: string, locations: number[][], ids?: number[]) => void;        // Getter function for loading individual structure data from the backend
+    getConnectorInfo: (setter: (selectedConnector: ConnectorInfo, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => void, category: string, type: string, name: string, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => void;
 
     constructor(p5: P5, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, updateEarthData: () => void) {
         super(p5, changeView);
@@ -188,19 +188,25 @@ export default class Engine extends View {
                 const mods = modules.filter((mod) => mod.name === mT);
                 const modType = mods[0].type != undefined ? mods[0].type : "test";
                 let coords: number[][] = [];
+                let serials: number[] = [];
                 mods.forEach((mod) => {
                     coords.push([mod.x, mod.y]);
+                    serials.push(mod.id);   // Get ID in separate list, to be used alongside the coordinates
                 })
-                this.getModuleInfo(this.loadModuleFromSave, "modules", modType, mT, coords);
+                this.getModuleInfo(this.loadModuleFromSave, "modules", modType, mT, coords, serials);
             })
         }  
     }
 
     // Called by the above method, this will actually use the data from the backend to re-create loaded modules
-    loadModuleFromSave = (selectedBuilding: ModuleInfo, locations: number[][]) => {
+    loadModuleFromSave = (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[]) => {
         if (selectedBuilding != null) {
-            locations.forEach((space) => {
-                this._infrastructure.addModule(space[0], space[1], selectedBuilding)
+            locations.forEach((space, idx) => {
+                if (ids) {     // Use saved serial number only if it exists
+                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, ids[idx]);
+                } else {
+                    this._infrastructure.addModule(space[0], space[1], selectedBuilding);
+                }
             })
         }
     }
@@ -232,21 +238,27 @@ export default class Engine extends View {
                 const conType = cons[0].type != undefined ? cons[0].type : "test";
                 // Each set of 'coords' in this list is an array containing a single object with start/stop coordinates
                 let coords: {start: Coords, stop: Coords}[][] = [];
+                let serials: number[] = [];
                 cons.forEach((con) => {
                     coords.push(con.segments);
+                    if (con.id) serials.push(con.id);       // Get ID in a separate list, to be used alongside the coordinates
                 })
-                this.getConnectorInfo(this.loadConnectorFromSave, "connectors", conType, cT, coords);
+                this.getConnectorInfo(this.loadConnectorFromSave, "connectors", conType, cT, coords, serials);
             })
         }  
     }
 
-    loadConnectorFromSave = (selectedConnector: ConnectorInfo, locations: {start: Coords, stop: Coords}[][]) => {
+    loadConnectorFromSave = (selectedConnector: ConnectorInfo, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => {
         if (selectedConnector != null) {
-            locations.forEach((space) => {
-                // TODO: Fix this to use both ends of a segment
+            locations.forEach((space, idx) => {
                 const start: Coords = space[0].start;
                 const stop: Coords = space[0].stop;
-                this._infrastructure.addConnector(start, stop, selectedConnector);
+                if (ids) {     // Use the saved serial number only if it is available
+                    this._infrastructure.addConnector(start, stop, selectedConnector, ids[idx]);
+                } else {
+                    this._infrastructure.addConnector(start, stop, selectedConnector);
+                }
+                
             })
         }
     }

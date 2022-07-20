@@ -1475,9 +1475,9 @@ Exit Criteria:
 
 13. Make an Engine helper function that can be inserted into the Engine's Load Game sequence to help convert older, dictionary-based Economy data into the new format on the fly when legacy files are loaded. Also, maybe dump the saved games eventually too?
 
-### 9. Use some strategic console logs and/or engine text readouts to verify that Modules' resource data is correctly formatted now.
+14. Use some strategic console logs and/or engine text readouts to verify that Modules' resource data is correctly formatted now. Add one to log each module's capacity when placed, and another one to log each module's current resources (again, when placed).
 
-### 8. When modules and connectors are loaded by the Engine's loadConnectorFromSave and loadModuleFromSave methods, make sure to give each structure its proper ID from the save file (overriding whatever one the Infra Data class may have assigned). Check that the serial generator for Infra Data is updated sufficiently by the loading process so that there will be no duplicate serial numbers assigned when new structures are added.
+### 8. When modules and connectors are loaded by the Engine's loadConnectorFromSave and loadModuleFromSave methods, make sure to give each structure its proper ID from the save file (overriding whatever one the Infra Data class may have assigned). Check that the serial generator for Infra Data is updated sufficiently by the loading process so that there will be no duplicate serial numbers assigned when new structures are added. Finally, modify the Infra Data class's resetSerialNumber method to just be 'setSerialNumber', and allow it to take an argument (number) that will be used to set the new value. Test extensively with old and new files to make sure this doesn't introduce any regressions.
 
 ### 8. Determine the unit tests for the new methods that will be added to the Module Data class to permit it to deal with resources: setResources (for setting a value from a load game or at the game's start) and dispenseResources (to be called by colonists when they consume stuff). Be sure that the setResources method doesn't allow any quantities to be set that are not permitted by the module's type settings, and that it respects maximum capacity. Similarly, the withdrawResources method must know which resource types are available, and not allow withdrawals to proceed into negative territory.
 
@@ -1518,6 +1518,8 @@ As the game matures, it will be more and more desirable to separate features tha
 ### 10. [1: UX / Gameplay] Restrict the base's baseVolume area to only include modules that have the pressurized trait set to true. This would limit the ability to build certain connectors starting or ending in such modules (and potentially have other cool consequences too).
 
 ### 11. [8: Major Gameplay issue] Loaded games do not allow the player to scroll all the way to the far right of the map; the section underneath the sidebar becomes unreachable when the player saves and then subsequently reloads the game.
+
+### 12. [5: Save Data Completeness] Although currently not doing much, save game files do not contain the game's map type or difficulty level data - both fields contain a blank string.
 
 # Annex A: Advanced Concepts
 

@@ -14,7 +14,7 @@ export default class InfrastructureData {
 
     constructor() {
         this._justBuilt = null;         // When a building has just been added, set this to the building's data
-        this._currentSerial = 1000;     // If changing, change the value in the reset method too
+        this._currentSerial = 1000;     // We'll start with a 4-digit number just to make ID's stand out a bit
         this._baseVolume = [];          // Starts with just an array - setup sets its length
         this._floors = [];
         this._elevators = [];
@@ -36,8 +36,8 @@ export default class InfrastructureData {
         this._currentSerial++;
     }
 
-    resetSerialNumber () {
-        this._currentSerial = 1000;
+    setSerialNumber (value: number) {
+        this._currentSerial = value;
     }
 
     // GENERIC CHECKS - CAN BE USED BY MODULES OR CONNECTORS

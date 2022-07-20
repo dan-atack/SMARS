@@ -28,11 +28,15 @@ export default class Infrastructure {
         this._data.setup(mapWidth)
     }
 
-    addModule (x: number, y: number, moduleInfo: ModuleInfo) {
+    // Args: x and y coords and the moduleInfo. Serial is optional (used for loading modules from a save file)
+    addModule (x: number, y: number, moduleInfo: ModuleInfo, serial?: number) {
         // Whenever a serial number is to be used, update it BEFORE passing it to a constructor:
-        this._data.increaseSerialNumber();
-        const m = new Module(this._p5, this._data._currentSerial, x, y, moduleInfo);
+        this._data.increaseSerialNumber();  // Use the serial if there is one
+        const m = new Module(this._p5, serial ? serial : this._data._currentSerial, x, y, moduleInfo);
         this._modules.push(m);
+        // console.log(m._data._moduleInfo.name);
+        // console.log(m._data._moduleInfo.storageCapacity);
+        // console.log(m._data._resources);
         // Update base volume data
         const area = this._data.calculateModuleArea(moduleInfo, x, y);
         this._data.updateBaseVolume(area);
@@ -41,13 +45,18 @@ export default class Infrastructure {
         this._data.addModuleToFloors(m._id, footprint);
     }
 
-    addConnector (start: Coords, stop: Coords, connectorInfo: ConnectorInfo) {
-        this._data.increaseSerialNumber();
-        const c = new Connector(this._p5, this._data._currentSerial, start, stop, connectorInfo)
+    // Args: start and stop coords, and the connectorInfo. Serial is optional for loading connectors from a save file
+    addConnector (start: Coords, stop: Coords, connectorInfo: ConnectorInfo, serial?: number) {
+        this._data.increaseSerialNumber();      // Use the serial if there is one
+        const c = new Connector(this._p5, serial ? serial : this._data._currentSerial, start, stop, connectorInfo)
         this._connectors.push(c);
         // Update base floor data only if connector is of the transport type
         if (connectorInfo.type === "transport") {
             this._data.addConnectorToFloors(c._id, start, stop);
+        }
+        // Update Serial number generator if its current serial is lower than the serial being loaded
+        if (serial && serial > this._data._currentSerial) {
+            this._data.setSerialNumber(serial + 1);
         }
     }
 
