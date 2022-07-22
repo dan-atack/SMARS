@@ -87,12 +87,12 @@ export default class ModuleData {
                     this._resources.find(res => res[0] === resource[0])[1] = 0;
                     return currentQty;
                 }
-            } else {
-                console.log(`Cannot find resource ${resource[0]} in module ${this._moduleInfo.name} ${this._id}`);
             }
         }
-        // If the resource is present and in a sufficient quantity, reduce it by the given amount;
-        // Return: amount taken (number)
+        else {
+            console.log(`Cannot find resource ${resource[0]} in module ${this._moduleInfo.name} ${this._id}`);
+            return 0;
+        }
     }
     
 }

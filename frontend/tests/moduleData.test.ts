@@ -1,6 +1,5 @@
 import ModuleData from "../src/moduleData";
 import { ModuleInfo } from "../src/server_functions";
-import { Resource } from "../src/economyData";
 
 // Module Info data
 const storageModuleInfo: ModuleInfo = {
@@ -42,7 +41,7 @@ describe("ModuleData", () => {
     });
 
     test("Can receive resources", () => {
-        expect(moduleData.addResource(["oxygen", 500])).toBe(500);
+        expect(moduleData.addResource(["oxygen", 500])).toBe(500);          // Returns the amount added
         expect(moduleData._resources).toStrictEqual([
             ["oxygen", 500],
             ["food", 0],
@@ -52,21 +51,32 @@ describe("ModuleData", () => {
     });
 
     test("Can deduct resources that are available", () => {
-        moduleData.deductResource(["oxygen", 250]);
+        expect(moduleData.deductResource(["oxygen", 250])).toBe(250);       // Returns the amount deducted
         expect(moduleData._resources).toStrictEqual([
             ["oxygen", 250],
             ["food", 0],
             ["water", 0],
             ["equipment", 0]
         ]);
-        moduleData.deductResource(["oxygen", 250]);
+        expect(moduleData.deductResource(["oxygen", 240])).toBe(240);
+        expect(moduleData._resources).toStrictEqual([
+            ["oxygen", 10],
+            ["food", 0],
+            ["water", 0],
+            ["equipment", 0]
+        ]);
+    });
+
+    test("Cannot deduct resources that are not present", () => {
+        expect(moduleData.deductResource(["minerals", 1000])).toBe(0);  // No capacity for minerals means none can be deducted
+        expect(moduleData.deductResource(["oxygen", 50])).toBe(10);     // With 10 oxygen leftover from the previous test, we should only get 10
         expect(moduleData._resources).toStrictEqual([
             ["oxygen", 0],
             ["food", 0],
             ["water", 0],
             ["equipment", 0]
         ]);
-    });
+    })
 
     // Resources of the wrong type should not be added
     test("Cannot recieve resources that are not listed in storage capacity", () => {

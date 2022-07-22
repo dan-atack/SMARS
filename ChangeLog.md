@@ -1489,7 +1489,9 @@ Exit Criteria:
 
 20. Create the unit tests for the new Module Data class methods before writing their code. As always, be imaginative in trying to imaging 'edge cases' that might break the system.
 
-### 21. Now start by writing the code for the Module Data methods first.
+21. Now start by writing the code for the Module Data methods first.
+
+### 22. Next, do the code for the Infra base class. Sadly it won't be possible to do unit tests for these methods, but we can evaluate them in-game soon enough.
 
 ### 23. Now, Update the Economy Data class to perform the function described in step 19. Do unit tests for this feature and create a new method before getting rid of any of the existing code.
 
