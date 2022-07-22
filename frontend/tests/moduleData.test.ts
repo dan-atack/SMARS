@@ -26,7 +26,27 @@ const storageModuleInfo: ModuleInfo = {
     shapes: []                  // Shapes data not needed for unit tests
 };
 
+const noStoreModuleInfo: ModuleInfo = {
+    name: "Basic Storage",
+    width: 4,
+    height: 3,
+    type: "Storage",
+    pressurized: true,
+    columnStrength: 10,
+    durability: 100,
+    buildCosts:[
+        ["money", 100000]
+    ],  // money
+    maintenanceCosts: [
+        ["power", 1]
+    ],
+    storageCapacity: [],        // No storage at all
+    crewCapacity: 1,
+    shapes: []                  // Shapes data not needed for unit tests
+};
+
 const moduleData = new ModuleData(9000, 10, 10, storageModuleInfo);
+const emptyModule = new ModuleData(9001, 20, 20, noStoreModuleInfo);
 
 describe("ModuleData", () => {
 
@@ -39,6 +59,10 @@ describe("ModuleData", () => {
             ["equipment", 0]
         ]);
     });
+
+    test("Empty module has no resource slots at the outset", () => {
+        expect(emptyModule._resources).toStrictEqual([]);
+    })
 
     test("Can receive resources", () => {
         expect(moduleData.addResource(["oxygen", 500])).toBe(500);          // Returns the amount added

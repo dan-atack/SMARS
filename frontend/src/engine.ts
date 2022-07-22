@@ -19,6 +19,7 @@ import { constants, modalData } from "./constants";
 import { ConnectorSaveInfo, ModuleSaveInfo, SaveInfo, GameTime } from "./saveGame";
 import { GameData } from "./newGameSetup";
 import { Coords } from "./connectorData";
+import { Resource } from "./economyData";
 
 // TODO: Load Environment variables
 if (process.env.ENVIRONMENT) console.log(process.env.ENVIRONMENT);
@@ -60,9 +61,10 @@ export default class Engine extends View {
     // In-game flag for when the player has chosen their landing site, and grid location of landing site's left edge and altitude
     _hasLanded: boolean;
     _landingSiteCoords: [number, number];
+    _provisioned: boolean;          // Flag to know when to stop trying to fill up the initial structures with resources
     switchScreen: (switchTo: string) => void;   // App-level SCREEN switcher (passed down via drill from the app)
     updateEarthData: () => void;    // Updater for the date on Earth (for starters)
-    getModuleInfo: (setter: (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[]) => void, category: string, type: string, name: string, locations: number[][], ids?: number[]) => void;        // Getter function for loading individual structure data from the backend
+    getModuleInfo: (setter: (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[], resources?: Resource[][]) => void, category: string, type: string, name: string, locations: number[][], ids?: number[], resources?: Resource[][]) => void;        // Getter function for loading individual structure data from the backend
     getConnectorInfo: (setter: (selectedConnector: ConnectorInfo, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => void, category: string, type: string, name: string, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => void;
 
     constructor(p5: P5, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, updateEarthData: () => void) {
@@ -110,6 +112,7 @@ export default class Engine extends View {
         this._solsPerYear = 4;
         this._hasLanded = false;            // At the Engine's creation, the player is presumed not to have landed yet
         this._landingSiteCoords = [-1, -1]; // Default value of -1, -1 indicates landing site has not yet been selected
+        this._provisioned = false;          // Stays negative until all basic modules have been loaded with starting resources
     }
 
     //// SETUP METHODS ////
@@ -125,7 +128,9 @@ export default class Engine extends View {
     setupNewGame = (gameData: GameData) => {
         this._gameData = gameData;  // gameData object only needs to be set for new games
         this._map.setup(this._gameData.mapTerrain);
-        this._economy._data.setResources(this._gameData.startingResources);
+        // TODO: Revisit the economy's setup to see about passing it the starting cash, plus adding resources to the basic modules
+        // NOTE: Resources for the basic modules should be added in a landing function, not at the very beginning of the game
+        // this._economy._data.setResources(this._gameData.startingResources);
         this._horizontalOffset = this._map._data._maxOffset / 2;   // Put player in the middle of the map to start out
         this._infrastructure.setup(this._map._data._mapData.length);
         this.createNewGameModal();
@@ -135,35 +140,16 @@ export default class Engine extends View {
         this._saveInfo = saveInfo;
         this.setClock(saveInfo.game_time);
         this._map.setup(this._saveInfo.terrain);
-        // TEMPORARY: CONVERT OLD RESOURCE DATA TO NEW FORMAT:
-        if (!(Array.isArray(saveInfo.resources))) {
-            console.log("Legacy resource format detected. Converting resource data.")
-            saveInfo.resources = convertResourceData(saveInfo.resources);
-        }
-        this._economy._data.setResources(saveInfo.resources);
+        // TODO: Update the economy's load sequence to re-load rate-of-change data instead of resource quantities
+        // this._economy._data.setResources(saveInfo.resources);
         this._horizontalOffset = this._map._data._maxOffset / 2;
         this._infrastructure.setup(this._map._data._mapData.length);
         this._population.loadColonistData(saveInfo.colonists);
         this.loadModulesFromSave(saveInfo.modules);
         this.loadConnectorsFromSave(saveInfo.connectors);
-        this._hasLanded = true; // Landing sequence has to take place before saving is possible
-        // Check if game has colonist data and if it doesn't, render an alternate welcome back message
-        if (!saveInfo.colonists) {
-            this.createLoadGameModal(saveInfo.username, true);
-            // Add one colonist if the save file has no colonist data
-            console.log("Adding two colonists.");
-            if (this._saveInfo.modules.length > 0) {
-                const { x, y } = this._saveInfo.modules[0];
-                // this._population.addColonist(x - 2, y - 1);
-                this._population.addColonist(x - 2, y - 4);
-                this._population.addColonist(x + 2, y - 4);
-            } else {
-                this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH), 20);
-                this._population.addColonist(Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH + 2), 20);
-            }
-        } else {
-            this.createLoadGameModal(saveInfo.username, false);
-        }
+        this._hasLanded = true;     // Landing sequence has to take place before saving is possible
+        this._provisioned = true;   // Ditto for initial structure provisioning. If you're here already, God help ya.
+        this.createLoadGameModal(saveInfo.username);
     }
 
     // Top-level saved module importer
@@ -187,28 +173,36 @@ export default class Engine extends View {
             modTypes.forEach((mT) => {
                 const mods = modules.filter((mod) => mod.name === mT);
                 const modType = mods[0].type != undefined ? mods[0].type : "test";
-                let coords: number[][] = [];
-                let serials: number[] = [];
+                const coords: number[][] = [];
+                const serials: number[] = [];
+                const resources: Resource[][] = [];
                 mods.forEach((mod) => {
                     coords.push([mod.x, mod.y]);
                     serials.push(mod.id);   // Get ID in separate list, to be used alongside the coordinates
+                    resources.push(mod.resources);  // Ditto resource data
                 })
-                this.getModuleInfo(this.loadModuleFromSave, "modules", modType, mT, coords, serials);
+                this.getModuleInfo(this.loadModuleFromSave, "modules", modType, mT, coords, serials, resources);
             })
         }  
     }
 
     // Called by the above method, this will actually use the data from the backend to re-create loaded modules
-    loadModuleFromSave = (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[]) => {
+    loadModuleFromSave = (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[], resources?: Resource[][]) => {
+        // console.log(resources);
         if (selectedBuilding != null) {
             locations.forEach((space, idx) => {
-                if (ids) {     // Use saved serial number only if it exists
-                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, ids[idx]);
+                if (ids && resources) {     // Use saved serial number and resource data only if they exist
+                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, ids[idx]); // Create module with ID
+                    resources[idx].forEach((resource) => {
+                        this._infrastructure.addResourcesToModule(ids[idx], resource);  // Provision with saved resources
+                    })
                 } else {
                     this._infrastructure.addModule(space[0], space[1], selectedBuilding);
                 }
             })
         }
+        this.updateEconomyDisplay();    // Update economy display after each module is loaded
+        this._economy._data.setResourceChangeRates();
     }
 
     // Top-level saved module importer
@@ -514,7 +508,6 @@ export default class Engine extends View {
             this.createModal(false, modalData[0]);
             this._landingSiteCoords[0] = gridX - 4; // Set landing site location to the left edge of the landing area
             this._landingSiteCoords[1] = (constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH) - this._map._data._columns[gridX].length;
-            // console.log(`Setting landing site X value to ${this._landingSiteCoords[0]}, ${this._landingSiteCoords[1]}`);
         }    
     }
 
@@ -527,7 +520,6 @@ export default class Engine extends View {
         this.setWaitTime(wait);
         // Setup landing animation with 
         this._animation = new Lander(this._p5, x, -120, destination, wait - 120);
-        // console.log(`Setting wait time to ${this._waitTime} frames at ${new Date()}`);
     }
 
     // This method sets up the UI after the landing animation has finished
@@ -544,6 +536,7 @@ export default class Engine extends View {
 
     // Loads the first base structures after the dust clears from the landing sequence
     placeInitialStructures = () => {
+        // NOTE: If altering the amount of initial modules (currently 14), update the provision method's first 'if' statement too
         const x = this._landingSiteCoords[0];       // Far left edge
         const y = this._landingSiteCoords[1] - 4;   // Top
         const rY = this._landingSiteCoords[1] - 1   // Rubble layer
@@ -553,6 +546,7 @@ export default class Engine extends View {
         const crewCoords = [[x, y]];
         const canCoords = [[x + 4, y]];
         const antennaCoords = [[x, y - 8]]
+        // Note: getModuleInfo can print many copies of the same module, hence the double-list for coords at the end there
         this.getModuleInfo(this.loadModuleFromSave, "modules", "Life Support", "Cantina", canCoords);
         this.getModuleInfo(this.loadModuleFromSave, "modules", "Life Support", "Crew Quarters", crewCoords);
         this.getModuleInfo(this.loadModuleFromSave, "modules", "Storage", "Basic Storage", storeCoords);
@@ -566,15 +560,36 @@ export default class Engine extends View {
         this.getModuleInfo(this.loadModuleFromSave, "modules", "test", "Small Node", rubbleCoords);
     }
 
+    // Stocks up the first base structures with resources at the beginning of the game
+    provisionInitialStructures = () => {
+        // Ensure all structures have been generated
+        const startingStructureCount = 14;
+        if (this._infrastructure._modules.length >= startingStructureCount) {
+            this._infrastructure._modules.forEach((mod) => {
+                // Default for now is to just indiscriminately fill 'em all up
+                mod._data._moduleInfo.storageCapacity.forEach((resource) =>  {
+                    mod._data.addResource(resource);
+                })
+            });
+            this.updateEconomyDisplay();    // Update economy display so that the player can see what they have right away
+            this._economy._data.setResourceChangeRates();    // Reset the rate-of-change display afterwards
+            this._provisioned = true;
+        } else {
+            console.log(`ERROR: Failed to provision base initial structures. Found only ${this._infrastructure._modules.length} modules - should be ${startingStructureCount}`);
+        };
+    }
+
     //// RESOURCE CONSUMPTION METHODS ////
 
-    handleResourceConsumption = () => {
-        const leakage = this._infrastructure.calculateModulesOxygenLoss();
-        const { air, water, food } = this._population.calculatePopulationResourceConsumption(this._gameTime.hour);
-        this._economy._data.updateResource("oxygen", air + leakage);
-        this._economy._data.updateResource("water", water);
-        this._economy._data.updateResource("food", food);
-        // console.log(this._infrastructure.calculateBaseTotalResources());
+    updateEconomyDisplay = () => {
+        const rs = this._infrastructure.getAllBaseResources();
+        this._economy._data.updateResources(rs);
+        // RESOURCE CONSUMPTION - TO BE A NEW METHOD, OBVIOUSLY
+        // const leakage = this._infrastructure.calculateModulesOxygenLoss();
+        // const { air, water, food } = this._population.calculatePopulationResourceConsumption(this._gameTime.hour);
+        // this._economy._data.updateResource("oxygen", air + leakage);
+        // this._economy._data.updateResource("water", water);
+        // this._economy._data.updateResource("food", food);
     }
 
     //// GAMESPEED AND TIME METHODS ////
@@ -614,8 +629,7 @@ export default class Engine extends View {
                     this._gameTime.minute ++;
                 } else {
                     this._gameTime.minute = 0;   // Advance hours (anything on an hourly schedule should go here)
-                    // this.handleLandingSequence();
-                    this.handleResourceConsumption();
+                    this.updateEconomyDisplay();
                     this.updateEarthData();     // Advance Earth date every game hour
                     if (this._gameTime.hour < this._hoursPerClockCycle) {
                         this._gameTime.hour ++;
@@ -661,7 +675,6 @@ export default class Engine extends View {
 
     // Check if additional functions should be called at the end of a wait period
     resolveWaitPeriod = () => {
-        // console.log("Resolving wait period.")
         if (!this._hasLanded) {
             this.completeLandingSequence();
         }
@@ -669,7 +682,7 @@ export default class Engine extends View {
 
     //// MODAL CONTROL METHODS ////
 
-    // Prints a welcome-to-the-game message the first time a player begins a game. Explains about the landing sequence (in a cryptic way)
+    // Prints a welcome-to-the-game message the first time a player begins a game
     createNewGameModal = () => {
         const data: EventData = {
             id: 0,
@@ -685,17 +698,15 @@ export default class Engine extends View {
         this.createModal(false, data);
     }
 
-    // Prints a welcome-back modal when the player loads a saved file. Updates means the game has been updated since the save
-    createLoadGameModal = (username: string, updates: boolean) => {
-        const messageUpdates: string = `Welcome back, Commander ${username}! While you\nwere away there may have been a few changes made\nhere and there, but your save data is like, totally safe.\nLike, Nintety... eight percent guaranteed it's all there.`;
-        const messageNoUpdates: string = `Welcome back, Commander ${username}!\n The colonists missed you.\nThey look up to you.`;
+    // Prints a welcome-back modal when the player loads a saved file
+    createLoadGameModal = (username: string) => {
         const data: EventData = {
             id: 1,
             title: "You're back!!!",
-            text: updates ? messageUpdates : messageNoUpdates,
+            text: `Welcome back, Commander ${username}!\n The colonists missed you.\nThey look up to you.`,
             resolutions: [
                 {
-                    text: updates ? "I like those odds!" : "The feeling is mutual.",
+                    text: "The feeling is mutual.",
                     outcomes: [["set-mouse-context", "select"]]
                 } 
             ]
@@ -740,6 +751,9 @@ export default class Engine extends View {
                         // TODO: Add in-game message in place of console log
                         // console.log('Landing sequence initiated.');
                         this.startLandingSequence();
+                        break;
+                    case "provision-base-structures":
+                        this.provisionInitialStructures();
                         break;
                     case "set-mouse-context":
                         // console.log(`Setting mouse context: ${outcome[1]}`);
@@ -813,7 +827,6 @@ export default class Engine extends View {
     }
 
     render = () => {
-        // Scroll over 1 pixel per refresh cycle if mouse is pressed and the game is not yet at the right or left edge of the map:
         this.advanceClock();        // Always try to advance the clock; it will halt itself if the game is paused
         if (this.mouseContext === "wait") {
             this.advanceWaitTime();

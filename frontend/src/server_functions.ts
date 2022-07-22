@@ -134,7 +134,7 @@ export const getStructures = (setter: (options: ModuleInfo[] | ConnectorInfo[]) 
 }
 
 // Returns an individual structure, based on the category, type and name... And the list of coordinates, since this will be passed directly to the Infrastructure function that will actually re-produce the buildings. It's weird, but it works!
-export const getOneModule = (setter: (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[]) => void, category: string, type: string, name: string, locations: number[][], ids?: number[]) => {
+export const getOneModule = (setter: (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[], resources?: Resource[][]) => void, category: string, type: string, name: string, locations: number[][], ids?: number[], resources?: Resource[][]) => {
 
     const url = `${constants.URL_PREFIX}/${category}/${type}/${name}`;
 
@@ -149,7 +149,7 @@ export const getOneModule = (setter: (selectedBuilding: ModuleInfo, locations: n
         return res.json();
     })
     .then((response) => {
-        setter(response.data, locations, ids);
+        setter(response.data, locations, ids, resources);
     })
 }
 

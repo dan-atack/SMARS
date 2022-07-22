@@ -35,7 +35,7 @@ export default class EconomyData {
             equipment: "Equip.",
             minerals: "Minerals"
         };
-        this._resourceChangeRates = [
+        this._resourceChangeRates = [       // Brittleness: Must be kept in the same order as the resources array
             ["money", 0],
             ["oxygen", 0],
             ["water", 0],
@@ -96,7 +96,6 @@ export default class EconomyData {
             } catch {
                 console.log(`Error updating resource quantity for ${resource}`);
             }
-            
         }
     }
 
@@ -125,35 +124,23 @@ export default class EconomyData {
         })
     }
 
-    // Used to load/reset both the current and previous tallies to a fixed amount e.g. at game start/load
-    setResources = (resources: Resource[]) => {
+    // Used to load/reset the rate-of-change values display e.g. at game start/load. If no value is given, it is a reset
+    setResourceChangeRates = (resources?: Resource[]) => {
         if (resources) {
-            this._resources = resources;
+            // Expects the full, ordered list of resources, including money
+            this._resourceChangeRates = resources;
         } else {
-            // If a file that has no resource data is loaded, give the player the regular new game's default starting resources
-            this.setResources([
-                ["money", 10000000],
-                ["oxygen", 10000],
-                ["water", 10000],
-                ["food", 10000],
-                ["power", 50000],
-                ["equipment", 10000],
+            this._resourceChangeRates = [       // Reset if no list is provided
+                ["money", 0],
+                ["oxygen", 0],
+                ["water", 0],
+                ["food", 0],
+                ["power", 0],
+                ["equipment", 0],
                 ["minerals", 0]
-            ])
+            ]
         }
-    }
-
-    reset = () => {
-        const basic: Resource[] = [
-            ["money", 10000000],
-            ["oxygen", 10000],
-            ["water", 10000],
-            ["food", 10000],
-            ["power", 50000],
-            ["equipment", 10000],
-            ["minerals", 0]
-         ];;
-        this.setResources(basic);
+        
     }
 
 }
