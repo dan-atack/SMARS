@@ -5,6 +5,7 @@ import Module from "./module";
 import Connector from "./connector";
 import { ConnectorInfo, ModuleInfo } from "./server_functions";
 import { constants } from "./constants";
+import { Resource } from "./economyData";
 import { Coords } from "./connectorData";
 
 export default class Infrastructure {
@@ -42,7 +43,7 @@ export default class Infrastructure {
         this._data.updateBaseVolume(area);
         // Update base floor data
         const footprint = this._data.calculateModuleFootprint(area);
-        this._data.addModuleToFloors(m._id, footprint);
+        this._data.addModuleToFloors(m._data._id, footprint);
     }
 
     // Args: start and stop coords, and the connectorInfo. Serial is optional for loading connectors from a save file
@@ -52,7 +53,7 @@ export default class Infrastructure {
         this._connectors.push(c);
         // Update base floor data only if connector is of the transport type
         if (connectorInfo.type === "transport") {
-            this._data.addConnectorToFloors(c._id, start, stop);
+            this._data.addConnectorToFloors(c._data._id, start, stop);
         }
         // Update Serial number generator if its current serial is lower than the serial being loaded
         if (serial && serial > this._data._currentSerial) {
@@ -147,6 +148,31 @@ export default class Infrastructure {
             // If there are some 'gaps' then return that list, to pass to the terrain footprint checker
             return gaps;
         }
+    }
+
+    // ECONOMIC / RESOURCE-RELATED METHODS
+
+    addResourcesToModule (moduleId: number, resource: string, amount: number) {
+        // Calls a module's addResources method to attempt to increase its quantity by a given amount
+    }
+
+    findModulesWithResource (resource: string) {
+        // Returns a list of the module IDs for any module that contains a given resource, sorted from most to least quantity
+    }
+
+    findModuleFromID (moduleId: number) {
+        // Returns a module's coordinates when given a unique ID
+    }
+
+    // Top-level module resource calculator - returns all resource data to the Economy class to amalgamate it
+    getAllBaseResources = () => {
+        const resources: Resource[] = [];
+        this._modules.forEach((mod) => {
+            mod._data._resources.forEach((res) => {
+                resources.push(res);
+            })
+        })
+        return resources;
     }
 
     // Basic oxygen loss calculator

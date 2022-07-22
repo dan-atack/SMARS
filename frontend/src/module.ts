@@ -7,13 +7,11 @@ import { constants } from "./constants";
 export default class Module {
     // Block types:
     _p5: P5;
-    _id: number;            // A unique serial number assigned by the Infra class at the object's creation
     _data: ModuleData;      // Separate date class to enable unit tests
 
     constructor(p5: P5, id: number, x: number, y: number, moduleInfo: ModuleInfo) {
         this._p5 = p5;
-        this._id = id;
-        this._data = new ModuleData(x, y, moduleInfo);
+        this._data = new ModuleData(id, x, y, moduleInfo);
     }
 
     render = (xOffset: number) => {    // TODO: Block gets y offset values as arguments to renderer

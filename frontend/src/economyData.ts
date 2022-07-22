@@ -19,11 +19,11 @@ export default class EconomyData {
     constructor() {
         this._resources = [
             ["money", 10000000],
-            ["oxygen", 10000],
-            ["water", 10000],
-            ["food", 10000],
-            ["power", 50000],
-            ["equipment", 10000],
+            ["oxygen", 0],
+            ["water", 0],
+            ["food", 0],
+            ["power", 0],
+            ["equipment", 0],
             ["minerals", 0]
         ];
         this._resourceSymbols = {
@@ -98,6 +98,10 @@ export default class EconomyData {
             }
             
         }
+    }
+
+    updateResources = (resources: Resource[]) => {
+
     }
 
     // Used to load/reset both the current and previous tallies to a fixed amount e.g. at game start/load

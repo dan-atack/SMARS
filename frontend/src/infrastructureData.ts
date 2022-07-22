@@ -1,6 +1,7 @@
 // The InfrastructureData class handles all of the data processing and structure placement determination tasks for the infrastructure class, without any rendering tasks
 import { ConnectorInfo, ModuleInfo } from "./server_functions";
 import { Coords } from "./connectorData";
+import { Resource } from "./economyData";
 import Floor from "./floor";
 import { constants } from "./constants";
 
@@ -11,6 +12,7 @@ export default class InfrastructureData {
     _baseVolume: number[][];    // Works the same as the terrain map, but to keep track of the base's inner area
     _floors: Floor[];           // Floors are a formation of one or more modules, representing walkable surfaces within the base
     _elevators: { id: number, x: number, top: number, bottom: number }[]    // Basic data to keep track of inter-floor connectors
+    _moduleResources: Resource[];   // The data that will be passed to the Economy class
 
     constructor() {
         this._justBuilt = null;         // When a building has just been added, set this to the building's data
@@ -18,6 +20,15 @@ export default class InfrastructureData {
         this._baseVolume = [];          // Starts with just an array - setup sets its length
         this._floors = [];
         this._elevators = [];
+        this._moduleResources = [
+            ["money", 0],
+            ["oxygen", 0],
+            ["water", 0],
+            ["food", 0],
+            ["power", 0],
+            ["equipment", 0],
+            ["minerals", 0]
+        ];
     }
 
     setup (mapWidth: number) {
@@ -242,7 +253,7 @@ export default class InfrastructureData {
         this._elevators.forEach((ladder) => {
             if (footprint.includes(ladder.x)) {
                 if (ladder.bottom >= elevation && ladder.top <= elevation) {
-                    const floor = this._floors.find(con => con._id === floorId);
+                    const floor = this._floors.find(fl => fl._id === floorId);    // Find the floor and ensure it exists
                     if (floor !== undefined) {
                         floor._connectors.push(ladder.id);
                     }
@@ -301,7 +312,7 @@ export default class InfrastructureData {
             this.deleteFloor(floorId2);
         } else {
             console.log(`Warning: Floor ${floorA === undefined ? floorId1 : floorId2} could not be found for merger.`);
-        }
-        
+        }   
     }
+
 }

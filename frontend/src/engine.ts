@@ -574,6 +574,7 @@ export default class Engine extends View {
         this._economy._data.updateResource("oxygen", air + leakage);
         this._economy._data.updateResource("water", water);
         this._economy._data.updateResource("food", food);
+        // console.log(this._infrastructure.calculateBaseTotalResources());
     }
 
     //// GAMESPEED AND TIME METHODS ////

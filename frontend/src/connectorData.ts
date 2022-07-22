@@ -10,8 +10,8 @@ export type Coords = {
 
 export default class ConnectorData {
     // Connector data types:
-    // Connectors' positions are given by a list of segments, each with start/stop coords.
-    _segments: {start: Coords, stop: Coords}[];
+    _id: number;                // Unique ID from the Infra class
+    _segments: {start: Coords, stop: Coords}[]; // Positions are given by a list of segments, each with start/stop coords.
     _length: number;        // Determined, along with orientation, from the start/stop coordinates
     _orientation: string;   // "vertical" or "horizontal"
     _leftEdge: number;      // To help with Infra class's rendering cutoff
@@ -21,7 +21,8 @@ export default class ConnectorData {
     _xOffset: number;   // The offset value, on the other hand, will be in terms of pixels, to allow for smoother scrolling
     _yOffset: number;
 
-    constructor(start: Coords, stop: Coords, connectorInfo: ConnectorInfo) {
+    constructor(id: number, start: Coords, stop: Coords, connectorInfo: ConnectorInfo) {
+        this._id = id;
         this._segments = [{start: start, stop: stop}];      // Two sets of coordinates - possibly overlapping
         this._connectorInfo = connectorInfo;
         // Determine length and orientation, for general use
