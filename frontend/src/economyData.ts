@@ -100,8 +100,29 @@ export default class EconomyData {
         }
     }
 
+    // Gets passed the full list of all module resources once per game hour, and calculates the totals
+    // (Updates rate of change data also)
     updateResources = (resources: Resource[]) => {
-
+        // First, keep track of previous quantities EXCEPT CASH!
+        const prevs: number[] = [];
+        this._resources.forEach((res, idx) =>  {
+            if (idx > 0) prevs.push(res[1]);
+        })
+        // Reset counters next - do for all counters EXCEPT CASH!!
+        this._resources.forEach((res, idx) => {
+            if (idx > 0) res[1] = 0;
+        })
+        // Lookup each resource name and add the value from the update list
+        resources.forEach((resource) => {
+            if (this._resources.find(res => res[0] === resource[0]) !== undefined) {
+                // @ts-ignore
+                this._resources.find(res => res[0] === resource[0])[1] += resource[1]
+            }
+        })
+        // Update rate of change display by comparing previous values to current ones AGAIN, EXCEPT FOR CASH!!!
+        prevs.forEach((val, idx) => {
+            this._resourceChangeRates[idx + 1][1] = this._resources[idx + 1][1] - val;
+        })
     }
 
     // Used to load/reset both the current and previous tallies to a fixed amount e.g. at game start/load
@@ -123,7 +144,7 @@ export default class EconomyData {
     }
 
     reset = () => {
-        const empty: Resource[] = [
+        const basic: Resource[] = [
             ["money", 10000000],
             ["oxygen", 10000],
             ["water", 10000],
@@ -132,7 +153,7 @@ export default class EconomyData {
             ["equipment", 10000],
             ["minerals", 0]
          ];;
-        this.setResources(empty);
+        this.setResources(basic);
     }
 
 }

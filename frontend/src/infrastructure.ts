@@ -152,16 +152,38 @@ export default class Infrastructure {
 
     // ECONOMIC / RESOURCE-RELATED METHODS
 
-    addResourcesToModule (moduleId: number, resource: string, amount: number) {
-        // Calls a module's addResources method to attempt to increase its quantity by a given amount
+    // Looks up a module and passes it the given resource data
+    addResourcesToModule (moduleId: number, resource: Resource) {
+        const m = this._modules.find(mod => mod._data._id === moduleId);
+        if (m !== undefined) {
+            m._data.addResource(resource);
+        } else {
+            console.log(`Unable to add ${resource[1]} ${resource[0]} to module ${moduleId}. Module ID was not found.`);
+        }
     }
 
+    // Returns array of [IDs and quantities], with the IDs stringified to avoid confusion with the quantity value
     findModulesWithResource (resource: string) {
-        // Returns a list of the module IDs for any module that contains a given resource, sorted from most to least quantity
+        let mods: [string, number][] = [];  // Each entry will contain both ID (as string) and quantity of the resource present
+        this._modules.forEach((mod) => {
+            if (mod._data._resourceCapacity().includes(resource)) {
+                const r = mod._data._resources.find(res => res[0] === resource[0]);
+                if (r !== undefined) {
+                    mods.push([mod._data._id.toString(), r[1]]);
+                } else {
+                    console.log(`Error retrieving resource data for ${mod._data._id}`);
+                }
+            }
+        });
+        return mods;
     }
 
-    findModuleFromID (moduleId: number) {
-        // Returns a module's coordinates when given a unique ID
+    // Returns a module's coordinates when given a unique ID
+    findModuleLocationFromID (moduleId: number) {
+        const m = this._modules.find(mod => mod._data._id === moduleId);
+        if (m !== undefined) {
+            return { x: m._data._x, y: m._data._y };
+        }
     }
 
     // Top-level module resource calculator - returns all resource data to the Economy class to amalgamate it

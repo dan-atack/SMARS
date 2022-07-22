@@ -1444,7 +1444,7 @@ Exit Criteria:
 - [DONE] Module resource data is added to the game's save files
 - [DONE] ModuleData class is created to allow unit testing of module methods
 - [DONE] EconomyData class is created to allow unit testing of economy methods
-- All new functionality has unit tests developed prior to the actual code
+- All new functionality has unit tests developed prior to the actual code (as much as possible)
 - [STRETCH] Clicking a module in 'select' mode prints a list of its current resource quantities to the screen
 - [STRETCH] Module Information is kept in the Infra class and module instances point to it, to save on memory!
 - Backwards compatibility is fully verified for older save files
@@ -1481,7 +1481,7 @@ Exit Criteria:
 
 16. Add a dictionary to the Economy Data class that matches symbols to each resource type. Have the Economy base class access these symbols for its resource count displays, and also have it ignore (not display) the 3 new resources (equipment, power and minerals) for the moment.
 
-17. Create the empty shells of the new Infra Data class methods that will be used to manage individual modules' resources and get data for the Economy class. 3 Methods to add: addResourcesToModule (for the game start and various other occasions), findModulesWithResource; which will take a single string (the resource name) as its argument, and should return a list of the IDs of any module that contains a non-zero supply of that resource; and lastly a method for finding the location (coords) of a module given its ID. Test first, blah blah blah. In tandem with the function from the previous step, we will have a good start towards telling the Colonists which module to go to when they need a particular resource.
+17. Create the empty shells of the new Infra base class methods that will be used to manage individual modules' resources and get data for the Economy class. 3 Methods to add: addResourcesToModule, which will take a single Resource and a module ID (for the game start and various other occasions); findModulesWithResource, which will take a single string (the resource name) as its argument, and should return a list of the IDs of any module that contains a non-zero supply of that resource; and lastly a method for finding the location (coords) of a module given its ID. In tandem with the function from the previous step, we will have a good start towards telling the Colonists which module to go to when they need a particular resource.
 
 18. Create empty shells for the new Module Data methods: addResource (takes one resource at a time and attempts to add it if the module has the capacity for it); deductResource (reduces the quantity of a resource in a module if, say, a colonist consumes from it - and if the resource is available).
 
@@ -1491,15 +1491,15 @@ Exit Criteria:
 
 21. Now start by writing the code for the Module Data methods first.
 
-### 22. Next, do the code for the Infra base class. Sadly it won't be possible to do unit tests for these methods, but we can evaluate them in-game soon enough.
+22. Next, do the code for the Infra base class. Sadly it won't be possible to do unit tests for these methods, but we can evaluate them in-game soon enough.
 
-### 23. Now, Update the Economy Data class to perform the function described in step 19. Do unit tests for this feature and create a new method before getting rid of any of the existing code.
+23. Now, update the Economy Data class to perform the function described in step 19. Do unit tests for this feature and create a new method before getting rid of any of the existing code.
 
-### 23. Now update the Engine's handleResourceConsumption method (start by renaming it) to call the Infra Data's calculateBaseResources method every hour and then for each item in that function's return, pass the new value to the Economy.
+### 23. Now integrate the new Economy updater method by adding it to the Engine's handleResourceConsumption method (start by renaming it) to call the Infra Data's calculateBaseResources method every hour and then for each item in that function's return, pass the new value to the Economy.
 
-### 24. Finally, update the SaveInfo data type's resources field to be a 'rates of change' record instead of a resources total calculation. That way, freshly loaded games can instantly have access to the rate of change data from the previous session without having to wait an hour. Also, make the Engine's loadGameFromSave sequence and startNewGame sequence both call the Infra Data's total resource calculator so that the resource totals information is also (still) visible from the get-go.
+### 24. Finally, begin deprecating the 'legacy' resource data in the SaveInfo object template, by telling the Engine to print a statement if a loaded file contains resource data, and not loading it into the Economy class.
 
-### 26. Final, final thing to do: Create one more Infra Data class method for finding the location of a module given its ID. Test first, blah blah blah. In tandem with the function from the previous step, we will have a good start towards telling the Colonists which module to go to when they need a particular resource.
+### 25. Last but not least please consider the following: starting cash based on difficulty level, and loading the initial resources into the starting modules (I smell a new Landing method for the Engine).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
