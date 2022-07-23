@@ -18,7 +18,7 @@ export default class EconomyData {
 
     constructor() {
         this._resources = [
-            ["money", 10000000],
+            ["money", 0],       // Start with nothing and add initial money based on difficulty level
             ["oxygen", 0],
             ["water", 0],
             ["food", 0],
@@ -118,7 +118,6 @@ export default class EconomyData {
                 ["minerals", 0]
             ]
         }
-        
     }
 
 }

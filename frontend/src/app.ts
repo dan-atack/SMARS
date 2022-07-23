@@ -33,9 +33,8 @@ const sketch = (p5:P5) => {
                 // If Load Game screen has game loaded AND the Game screen has not yet loaded, boot it up with Load screen's data
                 if (!game._gameLoaded && loadGame._saveInfo != null) {
                     game.setLoadedGameData(loadGame._saveInfo, username);
-                }
                 // Otherwise, load the game with data from the New Game screen instead
-                if (!game._gameLoaded) {
+                } else if (!game._gameLoaded) {
                     game.setNewGameData(newGame.gameData, username);
                 }
                 game.setup();

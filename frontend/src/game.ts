@@ -43,19 +43,13 @@ export default class Game extends Screen {
         this._industry = new Industry(p5, this.changeView);
         // this._logbook = new Logbook(p5, this.changeView);        // On hold pending investigation into why we need it.
         this._views = [this._engine, this._population, this._techTree, this._earth, this._industry];
-        this._gameData = {
+        this._gameData = {          // Default values will be overridden
             difficulty: "",
             mapType: "",
             randomEvents: true,
             mapTerrain: [],
             startingResources: [
-                ["money", 10000000],
-                ["oxygen", 10000],
-                ["water", 10000],
-                ["food", 10000],
-                ["power", 50000],
-                ["equipment", 10000],
-                ["minerals", 0]
+                ["money", 100],
             ]
         };
         this._loadGameData = null;  // By default there is no loaded game data
@@ -98,9 +92,6 @@ export default class Game extends Screen {
             case "industry":
                 this._industry.setup();
                 break;
-            // case "logbook":              // Due to limited real-estate on the sidebar, logs are on hold for the moment.
-            //     this._logbook.setup();
-            //     break;
             case "population":
                 this._population.setup(this._engine._population._colonists.length);
                 break;

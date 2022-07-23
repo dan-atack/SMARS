@@ -128,9 +128,7 @@ export default class Engine extends View {
     setupNewGame = (gameData: GameData) => {
         this._gameData = gameData;  // gameData object only needs to be set for new games
         this._map.setup(this._gameData.mapTerrain);
-        // TODO: Revisit the economy's setup to see about passing it the starting cash, plus adding resources to the basic modules
-        // NOTE: Resources for the basic modules should be added in a landing function, not at the very beginning of the game
-        // this._economy._data.setResources(this._gameData.startingResources);
+        this._economy._data.addMoney(this._gameData.startingResources[0][1]);
         this._horizontalOffset = this._map._data._maxOffset / 2;   // Put player in the middle of the map to start out
         this._infrastructure.setup(this._map._data._mapData.length);
         this.createNewGameModal();
@@ -140,8 +138,10 @@ export default class Engine extends View {
         this._saveInfo = saveInfo;
         this.setClock(saveInfo.game_time);
         this._map.setup(this._saveInfo.terrain);
+        this._economy._data.addMoney(saveInfo.resources[0][1]); // Reload money from save data
         // TODO: Update the economy's load sequence to re-load rate-of-change data instead of resource quantities
-        // this._economy._data.setResources(saveInfo.resources);
+        // DON'T DO IT HERE THOUGH - Do it at the end of the loadModuleFromSave method (2 down from this one)
+        this._economy._data.setResourceChangeRates();           // Reset money rate-of-change indicator
         this._horizontalOffset = this._map._data._maxOffset / 2;
         this._infrastructure.setup(this._map._data._mapData.length);
         this._population.loadColonistData(saveInfo.colonists);

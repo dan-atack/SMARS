@@ -4,7 +4,7 @@ import assert from "assert";
 
 // Standardize name of the database:
 const dbName = 'smars'
-const collectionName = 'saved_games'
+const collectionName = 'saves'
 
 // Mini-type for convenience:
 
@@ -75,7 +75,7 @@ export type SaveInfo = {
         type: string,
         segments: {start: Coords, stop: Coords}[],  // Connectors all consist of pairs of start/stop coordinates
     }[]
-    resources: Resource[];
+    resource: Resource[]; // TODO: Make into a list of resource rates of change, since actual quantities are kept in modules now
     colonists: ColonistSaveData[];
     // TODO: Add Technology, Storyline Event Choices, etc.
 }

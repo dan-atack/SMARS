@@ -67,12 +67,6 @@ export default class NewGameSetup extends Screen {
             mapTerrain: [],
             startingResources: [
                 ["money", 10000000],
-                ["oxygen", 10000],
-                ["water", 10000],
-                ["food", 10000],
-                ["power", 50000],
-                ["equipment", 10000],
-                ["minerals", 0]
              ]
         }
     }
@@ -272,21 +266,9 @@ export default class NewGameSetup extends Screen {
     setStartingResources = (difficulty: string) => {
         const basic: Resource[] = [
             ["money", 10000000],
-            ["oxygen", 10000],
-            ["water", 10000],
-            ["food", 10000],
-            ["power", 50000],
-            ["equipment", 10000],
-            ["minerals", 0]
          ];
         const austere: Resource[] = [
             ["money", 5000000],
-            ["oxygen", 7500],
-            ["water", 7500],
-            ["food", 7500],
-            ["power", 25000],
-            ["equipment", 5000],
-            ["minerals", 0]
          ]
         switch (difficulty) {
             case "easy":

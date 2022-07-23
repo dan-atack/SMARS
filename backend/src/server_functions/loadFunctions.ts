@@ -5,7 +5,7 @@ import { SaveInfo } from "./saveFunctions"
 
 // Standardize name of the database:
 const dbName = 'smars';
-const collectionName = 'saved_games';
+const collectionName = 'saves';
 
 const loadGamesForUser = async (req: Request, res: Response) => {
     const { username } = req.params;
