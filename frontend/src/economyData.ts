@@ -77,50 +77,28 @@ export default class EconomyData {
         this._resourceChangeRates[0][1] -= cost;
     };
 
-    updateResource = ( resource: string, amount: number) => {
-        this._resourceChangeRates[0][1] = 0;    // Reset financial costs record each update cycle
-        const res = this._resources.find(r => r[0] === resource);
-        const roc = this._resourceChangeRates.find(r => r[0] === resource);
-        if (res !== undefined && roc !== undefined) {
-            res[1] -= amount;
-            roc[1] = -amount;
-            try {
-                if (res[1] <= 0) {
-                    res[1] = 0;
-                    // @ts-ignore
-                    this._resourceShortages[resource] = true;
-                } else {
-                    // @ts-ignore
-                    this._resourceShortages[resource] = false;
-                }
-            } catch {
-                console.log(`Error updating resource quantity for ${resource}`);
-            }
-        }
-    }
-
     // Gets passed the full list of all module resources once per game hour, and calculates the totals
     // (Updates rate of change data also)
     updateResources = (resources: Resource[]) => {
-        // First, keep track of previous quantities EXCEPT CASH!
+        // First, keep track of previous quantities - INCLUDING CASH!
         const prevs: number[] = [];
-        this._resources.forEach((res, idx) =>  {
-            if (idx > 0) prevs.push(res[1]);
+        this._resources.forEach((res) =>  {
+            prevs.push(res[1]);
         })
         // Reset counters next - do for all counters EXCEPT CASH!!
         this._resources.forEach((res, idx) => {
             if (idx > 0) res[1] = 0;
         })
-        // Lookup each resource name and add the value from the update list
+        // Lookup each resource name and add the value from the update parameter
         resources.forEach((resource) => {
             if (this._resources.find(res => res[0] === resource[0]) !== undefined) {
                 // @ts-ignore
                 this._resources.find(res => res[0] === resource[0])[1] += resource[1]
             }
         })
-        // Update rate of change display by comparing previous values to current ones AGAIN, EXCEPT FOR CASH!!!
+        // Update rate of change display by comparing previous values to current ones INCLUDING CASH!!!
         prevs.forEach((val, idx) => {
-            this._resourceChangeRates[idx + 1][1] = this._resources[idx + 1][1] - val;
+            this._resourceChangeRates[idx][1] = this._resources[idx][1] - val;
         })
     }
 
