@@ -1519,6 +1519,24 @@ Not doing:
 
 29. Finally, fix it so that the cash rate of change is updated back to zero after every hour, like the other resources.
 
+## Chapter Twenty-Nine: Colonist Movement in the Base (Difficulty Estimate: 7 For new colonist movement and decision logic, plus probably a new animation, plus unit tests and planning)
+
+Now that the game's resources are located in the modules, and the modules are on the map, the time has come to re-activate the colonists' needs, so that they gradually become hungry and thirsty throughout the day. As they do so, they will need to decide to acquire the resources necessary to reduce their needs, which they can now do by visiting the modules. Although they will not be able to actually satisfy their needs in this chapter, the Colonists will be given the ability to decide that they should satisfy a need, and that they must go to a specific location, often on a floor inside the base, to do so. This chapter will focus on the decision-making logic that will prioritize which resource to move towards, and the pathfinding logic needed to get to a location that is potentially far away and/or on a different level (floor) than the colonist is currently standing on. Hopefully the lessons learned so far about test-driven development and the use of flow-charts will aid in the development of these new features.
+
+### July 22, 2022
+
+Exit Criteria:
+
+- Colonists will become hungry and thirsty as their needs increase over time
+- Colonists will move toward a module that contains the resource/s they need when they become thirsty or hungry
+- Colonists can walk on Floors in the base as though they were on the ground
+- Colonists can climb up ladders to get to a Floor
+- Colonists can decide to climb up, or down a ladder to get to a module on another floor
+- Colonists can decide to walk up to a ladder
+- Colonists should always be aware of the ground level for the column they are in
+- There should be unit tests for everything before development (obviously now)
+- The Colonist Decision and Movement Logic flowchart must be updated and memorized
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
