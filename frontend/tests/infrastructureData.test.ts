@@ -1,9 +1,33 @@
 import InfrastructureData from "../src/infrastructureData";
 import Floor from "../src/floor";   // To use for mockage, maybe??
+import { ModuleInfo } from "../src/server_functions";
 
 // DUMMY DATA:
 // Module Info
-const moduleInfo = { "name" : "Lander", "width" : 3, "height" : 2, "type" : "test", "pressurized" : true, "columnStrength" : 2, "durability" : 10, "buildCosts" : { "money" : 200000 }, "maintenanceCosts" : [ { "power" : 1 } ], "storageCapacity" : [ { "power" : 10 } ], "crewCapacity" : 2, "shapes" : [ { "shape" : "quad", "color" : "#7D7D7D", "params" : [ 0, 0, 4, 0, 3.5, 0.5, 0.5, 0.5 ] }, { "shape" : "quad", "color" : "#353837", "params" : [ 0, 3, 0.5, 2.5, 3.5, 2.5, 4, 3 ] }, { "shape" : "quad", "color" : "#BCC4C1", "params" : [ 0, 0, 0.5, 0.5, 0.5, 2.5, 0, 3 ] }, { "shape" : "quad", "color" : "#BCC4C1", "params" : [ 3.5, 0.5, 4, 0, 4, 3, 3.5, 2.5 ] }, { "shape" : "rect", "color" : "#4B4446", "params" : [ 0.5, 0.5, 3, 2 ] }, { "shape" : "ellipse", "color" : "#050094", "params" : [ 2, 1.5, 1 ] }, { "shape" : "arc", "color" : "#2E1409", "params" : [ 2, 1.5, 1, 1, 0, 3.14159 ], "mode" : "PIE" } ] };
+const moduleInfo: ModuleInfo = { "name" : "Lander", "width" : 3, "height" : 2, "type" : "test", "pressurized" : true, "columnStrength" : 2, "durability" : 10, "buildCosts" : [[ "money", 200000 ]], "maintenanceCosts" : [ ["power", 1] ], "storageCapacity" : [ ["power", 100] ], "crewCapacity" : 2, "shapes" : [ { "shape" : "quad", "color" : "#7D7D7D", "params" : [ 0, 0, 4, 0, 3.5, 0.5, 0.5, 0.5 ] }, { "shape" : "quad", "color" : "#353837", "params" : [ 0, 3, 0.5, 2.5, 3.5, 2.5, 4, 3 ] }, { "shape" : "quad", "color" : "#BCC4C1", "params" : [ 0, 0, 0.5, 0.5, 0.5, 2.5, 0, 3 ] }, { "shape" : "quad", "color" : "#BCC4C1", "params" : [ 3.5, 0.5, 4, 0, 4, 3, 3.5, 2.5 ] }, { "shape" : "rect", "color" : "#4B4446", "params" : [ 0.5, 0.5, 3, 2 ] }, { "shape" : "ellipse", "color" : "#050094", "params" : [ 2, 1.5, 1 ] }, { "shape" : "arc", "color" : "#2E1409", "params" : [ 2, 1.5, 1, 1, 0, 3.14159 ], "mode" : "PIE" } ] };
+const storageModuleInfo: ModuleInfo = {
+    name: "Basic Storage",
+    width: 4,
+    height: 3,
+    type: "Storage",
+    pressurized: true,
+    columnStrength: 10,
+    durability: 100,
+    buildCosts:[
+        ["money", 100000]
+    ],  // money
+    maintenanceCosts: [
+        ["power", 1]
+    ],
+    storageCapacity: [
+        ["oxygen", 1000],
+        ["food", 10000],
+        ["water", 10000],
+        ["equipment", 20000]// oxygen, water, food... and equipment??
+    ],
+    crewCapacity: 1,
+    shapes: []
+}
 // Dummy Module area data (simulates the output from calculateModuleArea)
 const coords = [
     {x: 0, y: 0},
@@ -206,7 +230,7 @@ describe("Infrastructure Data", () => {
     test("Can create a new floor", () => {
         // Reset test conditions
         infraData._floors = [];
-        infraData.resetSerialNumber();
+        infraData.setSerialNumber(1000);
         expect(infraData._currentSerial).toBe(1000);
         infraData.addNewFloor(5, footprintA, infraData._currentSerial);
         expect(infraData._floors.length).toBe(1);
@@ -236,7 +260,7 @@ describe("Infrastructure Data", () => {
 
     test("Can combine two floors", ()  => {
         // Reset serial number to target the right floor IDs
-        infraData.resetSerialNumber();
+        infraData.setSerialNumber(1000);
         expect(infraData._currentSerial).toBe(1000);    // Validate serial number reset
         // Ensure no previous floors exist
         infraData._floors = [];
@@ -265,14 +289,14 @@ describe("Infrastructure Data", () => {
         expect(infraData._floors[0]._connectors).toStrictEqual([9000]);  // Floor has the connector's ID registered
         infraData.addNewFloor(2, footprintA, 6000);
         // TO IMPLEMENT: Every time a new floor is added, all connectors must be checked
-        // expect(infraData._floors[1]._connectors).toStrictEqual([9000]);     // Newly added floor gets existing connectors
+        expect(infraData._floors[1]._connectors).toStrictEqual([9000]);     // Newly added floor gets existing connectors
         infraData.addConnectorToFloors(9001, { x: 3, y: 0 }, { x: 3, y: 20 });
         // New connectors are added to all applicable floors
         expect(infraData._floors[0]._connectors).toStrictEqual([9000, 9001]);
         expect(infraData._floors[1]._connectors).toStrictEqual([9000, 9001]);   // Both floors get new connector
         infraData.addNewFloor(8, footprintA, 6000);
         // TO IMPLEMENT: All new floors get all applicable connectors
-        // expect(infraData._floors[2]._connectors).toStrictEqual([9000, 9001]);   // New floor gets both existing connectors
+        expect(infraData._floors[2]._connectors).toStrictEqual([9000, 9001]);   // New floor gets both existing connectors
         infraData.addConnectorToFloors(9002, { x: 4, y: 0 }, { x: 4, y: 20 });
         // Connectors are only added to floors they intersect with
         expect(infraData._floors[2]._connectors).toStrictEqual([9000, 9001]);

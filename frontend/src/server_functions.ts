@@ -1,6 +1,7 @@
 import { constants } from "./constants";
 import { SaveInfo } from "./saveGame";
 import { SaveSummary } from "./loadGame";
+import { Resource } from "./economyData";
 
 // Request body custom types:
 
@@ -24,9 +25,9 @@ export type ModuleInfo = {
     pressurized: boolean    // Give dees people eaaair!
     columnStrength: number  // How many more modules can fit on top of each column of this structure
     durability: number      // Basically hitpoints
-    buildCosts: { money: number }         // Just a simple object for now, but more keys can be added in future
-    maintenanceCosts: Object[]    // Same idea as above
-    storageCapacity: Object[]     // Once again, the amount of each type of resource (if any) that can be stored in this module
+    buildCosts: Resource[]        // A list of any kind of Resource, just like storage capacity (see below)
+    maintenanceCosts: Resource[]    // Same idea as above
+    storageCapacity: Resource[]   // A list of the amount of each type of resource (if any) that can be stored in this module
     crewCapacity: number    // How many humans can fit into a phone booth??
     shapes: {
         shape: string,          // Options are "rect", "quad", "triangle", "ellipse" and "arc"
@@ -41,8 +42,8 @@ export type ConnectorInfo = {
     type: string            // Feed this into Engine switch case  - again, ALL IN LOWERCASE!!!
     resourcesCarried: string[]    // Which kinds of things can flow through this connector
     maxFlowRate: number     // Maximum amount of transferrable resource (including people) that can pass per unit of time
-    buildCosts: { money: number }         // For connectors, this is the price for one unit of length
-    maintenanceCosts: Object[]  // Ditto
+    buildCosts: Resource[]          // For connectors, this is the price for one unit of length
+    maintenanceCosts: Resource[]    // Ditto
     vertical: boolean       // Can this go up/down? Ladders can, rails cannot.
     horizontal: boolean     // Can this go from side to side? Rails can, but elevators cannot (some things can do both)
     width: number           // We'll keep this at 1 for most of the basic connectors, but later ones may need to be thicker
@@ -133,7 +134,7 @@ export const getStructures = (setter: (options: ModuleInfo[] | ConnectorInfo[]) 
 }
 
 // Returns an individual structure, based on the category, type and name... And the list of coordinates, since this will be passed directly to the Infrastructure function that will actually re-produce the buildings. It's weird, but it works!
-export const getOneModule = (setter: (selectedBuilding: ModuleInfo, locations: number[][]) => void, category: string, type: string, name: string, locations: number[][]) => {
+export const getOneModule = (setter: (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[], resources?: Resource[][]) => void, category: string, type: string, name: string, locations: number[][], ids?: number[], resources?: Resource[][]) => {
 
     const url = `${constants.URL_PREFIX}/${category}/${type}/${name}`;
 
@@ -148,11 +149,11 @@ export const getOneModule = (setter: (selectedBuilding: ModuleInfo, locations: n
         return res.json();
     })
     .then((response) => {
-        setter(response.data, locations);
+        setter(response.data, locations, ids, resources);
     })
 }
 
-export const getOneConnector = (setter: (selectedConnector: ConnectorInfo, locations: {start: Coords, stop: Coords}[][]) => void, category: string, type: string, name: string, locations: {start: Coords, stop: Coords}[][]) => {
+export const getOneConnector = (setter: (selectedConnector: ConnectorInfo, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => void, category: string, type: string, name: string, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => {
 
     const url = `${constants.URL_PREFIX}/${category}/${type}/${name}`;
 
@@ -167,7 +168,7 @@ export const getOneConnector = (setter: (selectedConnector: ConnectorInfo, locat
         return res.json();
     })
     .then((response) => {
-        setter(response.data, locations);
+        setter(response.data, locations, ids);
     })
 }
 

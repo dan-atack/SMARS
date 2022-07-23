@@ -4,7 +4,7 @@ import assert from "assert";
 
 // Standardize name of the database:
 const dbName = 'smars'
-const collectionName = 'saved_games'
+const collectionName = 'saves'
 
 // Mini-type for convenience:
 
@@ -15,12 +15,17 @@ type Coords = {
 
 // Template for Resources type (copy from Economy.ts):
 
-export type Resources = {
+export type Resources = {       // ENSURE THIS IS KEPT IN SYNC WITH THE FRONTEND'S ECONOMY DATA FILE
     money: [string, number],    // Each value is a tuple, representing the display symbol, and the quantity
     oxygen: [string, number],
     water: [string, number],
     food: [string, number],
+    power: [string, number],
+    equipment: [string, number],
+    minerals: [string, number]
 }
+
+export type Resource = [ string, number ]   // New system: Each individual resource type is represented as a Resource, consisting of the resource's name and quantity (qty can thus be used either as a current quantity, or max capacity, depending on context)
 
 // Template for Colonist Save Info (copy from Colonist.ts):
 
@@ -62,16 +67,15 @@ export type SaveInfo = {
         name: string,
         type: string,           // Module type info is needed to complete search parameters when re-fetching full data object
         x: number,
-        y: number
+        y: number,
+        resources: Resource[]
     }[]
     connectors: {               // Connector data's shape will eventually change, but for now it's basically the same as a module
         name: string,
         type: string,
         segments: {start: Coords, stop: Coords}[],  // Connectors all consist of pairs of start/stop coordinates
-        // x: number,      // Deprecated - remove after implementing coordinate-based system
-        // y: number       // Deprecated - remove after implementing coordinate-based system
     }[]
-    resources: Resources;
+    resource: Resource[]; // TODO: Make into a list of resource rates of change, since actual quantities are kept in modules now
     colonists: ColonistSaveData[];
     // TODO: Add Technology, Storyline Event Choices, etc.
 }

@@ -3,7 +3,7 @@ import P5 from "p5";
 import Screen from "./screen";
 import Button from "./button";
 import Minimap from "./minimap";
-import { Resources } from "./economy";
+import { Resource } from "./economyData";
 import { constants } from "./constants";
 import { getMap } from "./server_functions";
 
@@ -12,7 +12,7 @@ export type GameData = {
     mapType: string,
     randomEvents: boolean,
     mapTerrain: number[][];
-    startingResources: Resources;
+    startingResources: Resource[];
 }
 
 export default class NewGameSetup extends Screen {
@@ -65,12 +65,9 @@ export default class NewGameSetup extends Screen {
             mapType: "",
             randomEvents: true,
             mapTerrain: [],
-            startingResources: {
-                money: ["$", 0],
-                oxygen: ["Air", 0],
-                water: ["H20", 0],
-                food: ["Food", 0],
-            }
+            startingResources: [
+                ["money", 10000000],
+             ]
         }
     }
 
@@ -267,18 +264,12 @@ export default class NewGameSetup extends Screen {
     }
 
     setStartingResources = (difficulty: string) => {
-        const basic: Resources = {
-            money: ["$", 10000000],
-            oxygen: ["Air", 10000],
-            water: ["H20", 10000],
-            food: ["Food", 10000],
-        };
-        const austere: Resources = {
-            money: ["$", 5000000],
-            oxygen: ["Air", 7500],
-            water: ["H20", 7500],
-            food: ["Food", 5000],
-        }
+        const basic: Resource[] = [
+            ["money", 10000000],
+         ];
+        const austere: Resource[] = [
+            ["money", 5000000],
+         ]
         switch (difficulty) {
             case "easy":
                 return basic;

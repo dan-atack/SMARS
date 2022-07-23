@@ -5,6 +5,7 @@ import Module from "./module";
 import Connector from "./connector";
 import { ConnectorInfo, ModuleInfo } from "./server_functions";
 import { constants } from "./constants";
+import { Resource } from "./economyData";
 import { Coords } from "./connectorData";
 
 export default class Infrastructure {
@@ -28,26 +29,35 @@ export default class Infrastructure {
         this._data.setup(mapWidth)
     }
 
-    addModule (x: number, y: number, moduleInfo: ModuleInfo) {
+    // Args: x and y coords and the moduleInfo. Serial is optional (used for loading modules from a save file)
+    addModule (x: number, y: number, moduleInfo: ModuleInfo, serial?: number) {
         // Whenever a serial number is to be used, update it BEFORE passing it to a constructor:
-        this._data.increaseSerialNumber();
-        const m = new Module(this._p5, this._data._currentSerial, x, y, moduleInfo);
+        this._data.increaseSerialNumber();  // Use the serial if there is one
+        const m = new Module(this._p5, serial ? serial : this._data._currentSerial, x, y, moduleInfo);
         this._modules.push(m);
+        // console.log(m._data._moduleInfo.name);
+        // console.log(m._data._moduleInfo.storageCapacity);
+        // console.log(m._data._resources);
         // Update base volume data
         const area = this._data.calculateModuleArea(moduleInfo, x, y);
         this._data.updateBaseVolume(area);
         // Update base floor data
         const footprint = this._data.calculateModuleFootprint(area);
-        this._data.addModuleToFloors(m._id, footprint);
+        this._data.addModuleToFloors(m._data._id, footprint);
     }
 
-    addConnector (start: Coords, stop: Coords, connectorInfo: ConnectorInfo) {
-        this._data.increaseSerialNumber();
-        const c = new Connector(this._p5, this._data._currentSerial, start, stop, connectorInfo)
+    // Args: start and stop coords, and the connectorInfo. Serial is optional for loading connectors from a save file
+    addConnector (start: Coords, stop: Coords, connectorInfo: ConnectorInfo, serial?: number) {
+        this._data.increaseSerialNumber();      // Use the serial if there is one
+        const c = new Connector(this._p5, serial ? serial : this._data._currentSerial, start, stop, connectorInfo)
         this._connectors.push(c);
         // Update base floor data only if connector is of the transport type
         if (connectorInfo.type === "transport") {
-            this._data.addConnectorToFloors(c._id, start, stop);
+            this._data.addConnectorToFloors(c._data._id, start, stop);
+        }
+        // Update Serial number generator if its current serial is lower than the serial being loaded
+        if (serial && serial > this._data._currentSerial) {
+            this._data.setSerialNumber(serial + 1);
         }
     }
 
@@ -83,7 +93,7 @@ export default class Infrastructure {
         let collisions: number[][] = [];
         this._modules.forEach((mod) => {
             // TODO: Improve efficiency by only checking modules with the same X coordinates?
-            const modArea = this._data.calculateModuleArea(mod._moduleInfo, mod._x, mod._y);
+            const modArea = this._data.calculateModuleArea(mod._data._moduleInfo, mod._data._x, mod._data._y);
             modArea.forEach((coordPair) => {
                 moduleArea.forEach((coords) => {
                     if (coordPair.x === coords.x && coordPair.y === coords.y) {
@@ -109,7 +119,7 @@ export default class Infrastructure {
         const {floor, footprint} = this._data.calculateModuleFootprint(moduleArea);
         // Check each column of each existing module to see if its 'roof' (y-value) is one level below the 'floor' of the proposed new module
         this._modules.forEach((mod) => {
-            const modArea = this._data.calculateModuleArea(mod._moduleInfo, mod._x, mod._y);
+            const modArea = this._data.calculateModuleArea(mod._data._moduleInfo, mod._data._x, mod._data._y);
             const fp: number[] = [];
             modArea.forEach((pair) => {
                 if (!fp.includes(pair.x)) {
@@ -119,8 +129,8 @@ export default class Infrastructure {
             fp.forEach((column) => {
                 footprint.forEach((col) => {
                     // Basic column strength check
-                    const canSupport = mod._moduleInfo.columnStrength > 0;
-                    if (column === col && mod._y - floor === 1 && canSupport) {
+                    const canSupport = mod._data._moduleInfo.columnStrength > 0;
+                    if (column === col && mod._data._y - floor === 1 && canSupport) {
                         supportedColumns.push(col);
                     }
                 })
@@ -140,6 +150,53 @@ export default class Infrastructure {
         }
     }
 
+    // ECONOMIC / RESOURCE-RELATED METHODS
+
+    // Looks up a module and passes it the given resource data
+    addResourcesToModule (moduleId: number, resource: Resource) {
+        const m = this._modules.find(mod => mod._data._id === moduleId);
+        if (m !== undefined) {
+            m._data.addResource(resource);
+        } else {
+            console.log(`Unable to add ${resource[1]} ${resource[0]} to module ${moduleId}. Module ID was not found.`);
+        }
+    }
+
+    // Returns array of [IDs and quantities], with the IDs stringified to avoid confusion with the quantity value
+    findModulesWithResource (resource: string) {
+        let mods: [string, number][] = [];  // Each entry will contain both ID (as string) and quantity of the resource present
+        this._modules.forEach((mod) => {
+            if (mod._data._resourceCapacity().includes(resource)) {
+                const r = mod._data._resources.find(res => res[0] === resource[0]);
+                if (r !== undefined) {
+                    mods.push([mod._data._id.toString(), r[1]]);
+                } else {
+                    console.log(`Error retrieving resource data for ${mod._data._id}`);
+                }
+            }
+        });
+        return mods;
+    }
+
+    // Returns a module's coordinates when given a unique ID
+    findModuleLocationFromID (moduleId: number) {
+        const m = this._modules.find(mod => mod._data._id === moduleId);
+        if (m !== undefined) {
+            return { x: m._data._x, y: m._data._y };
+        }
+    }
+
+    // Top-level module resource calculator - returns all resource data to the Economy class to amalgamate it
+    getAllBaseResources = () => {
+        const resources: Resource[] = [];
+        this._modules.forEach((mod) => {
+            mod._data._resources.forEach((res) => {
+                resources.push(res);
+            })
+        })
+        return resources;
+    }
+
     // Basic oxygen loss calculator
     calculateModulesOxygenLoss = () => {
         const loss_rate = 1;
@@ -157,11 +214,11 @@ export default class Infrastructure {
         const leftEdge = Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH);    // Edges are in terms of columns
         const rightEdge = Math.floor(this._horizontalOffset + constants.WORLD_VIEW_WIDTH) / constants.BLOCK_WIDTH;
         this._modules.forEach((module) => {
-            if (module._x + module._width >= leftEdge && module._x < rightEdge) {
+            if (module._data._x + module._data._width >= leftEdge && module._data._x < rightEdge) {
                 module.render(this._horizontalOffset);
-                module._isRendered = true;
+                module._data._isRendered = true;
             } else {
-                module._isRendered = false;
+                module._data._isRendered = false;
             }
         });
         this._connectors.forEach((connector) => {

@@ -43,17 +43,14 @@ export default class Game extends Screen {
         this._industry = new Industry(p5, this.changeView);
         // this._logbook = new Logbook(p5, this.changeView);        // On hold pending investigation into why we need it.
         this._views = [this._engine, this._population, this._techTree, this._earth, this._industry];
-        this._gameData = {
+        this._gameData = {          // Default values will be overridden
             difficulty: "",
             mapType: "",
             randomEvents: true,
             mapTerrain: [],
-            startingResources: {
-                money: ["$", 0],
-                oxygen: ["Air", 0],
-                water: ["H20", 0],
-                food: ["Food", 0],
-            }
+            startingResources: [
+                ["money", 100],
+            ]
         };
         this._loadGameData = null;  // By default there is no loaded game data
         this._gameLoaded = false;   // Initially no game data is loaded
@@ -95,9 +92,6 @@ export default class Game extends Screen {
             case "industry":
                 this._industry.setup();
                 break;
-            // case "logbook":              // Due to limited real-estate on the sidebar, logs are on hold for the moment.
-            //     this._logbook.setup();
-            //     break;
             case "population":
                 this._population.setup(this._engine._population._colonists.length);
                 break;
@@ -129,21 +123,21 @@ export default class Game extends Screen {
         const connectorData: ConnectorSaveInfo[] = [];
         this._engine._infrastructure._modules.forEach((mod) => {
             const stats = {
-                name: mod._moduleInfo.name,
-                type: mod._moduleInfo.type,
-                x: mod._x,
-                y: mod._y
+                id: mod._data._id,
+                name: mod._data._moduleInfo.name,
+                type: mod._data._moduleInfo.type,
+                x: mod._data._x,
+                y: mod._data._y,
+                resources: mod._data._resources
             }
             moduleData.push(stats);
         });
         this._engine._infrastructure._connectors.forEach((con) => {
             const stats = {
+                id: con._data._id,
                 name: con._data._connectorInfo.name,
                 type: con._data._connectorInfo.type,
                 segments: con._data._segments,
-                // TODO: Remove X and Y save data once segment placement is in place
-                x: con._data._x,
-                y: con._data._y
             }
             connectorData.push(stats);
         })
@@ -158,7 +152,7 @@ export default class Game extends Screen {
             terrain: this._engine._map._data._mapData,
             modules: moduleData,
             connectors: connectorData,
-            resources: this._engine._economy._resources,
+            resources: this._engine._economy._data._resources,
             colonists: this._engine._population.prepareColonistSaveData(),
         }
         return saveData;

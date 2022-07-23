@@ -1433,19 +1433,91 @@ Features Added:
 
 ### July 16, 2022
 
-Now that the base's Connector infrastructure is in place, it is time to implement the next key step towards a functioning simulator game: locating resources within the game's world. At the moment, resources are completely abstract quantities that exist in the game's Economy class. This chapter will rework that system so that instead of being represented as a global stockpile, the game's resources will now be 'stored' inside individual modules, so that colonists will need to visit specific locations to get the resources they need to survive. To implement this new system it will be necessary to update the module class to have a field for its current supply of a given resource, and have the Economy class routinely read each module's resource quantity value/s and populate the display at the top of the screen using that information instead. We can also take this opportunity to rework the Economy class's rate-of-change indicators, and add those values to the game's save file system, so that players reloading a game can immediately see all of their economic indicators. Once again we will be taking a test-driven approach to development, so we'll need to start by abstracting out the data and methods for both the Module and Economy classes.
+Now that the base's Connector infrastructure is in place, it is time to implement the next key step towards a functioning simulator game: locating resources within the game's world. At the moment, resources are completely abstract quantities that exist in the game's Economy class. This chapter will rework that system so that instead of being represented as a global stockpile, the game's resources will now be 'stored' inside individual modules, so that colonists will need to visit specific locations to get the resources they need to survive. To implement this new system it will be necessary to update the module class to have a field for its current supply of a given resource, and have the Economy class routinely read each module's resource quantity value/s and populate the display at the top of the screen using that information instead. Once again we will be taking a test-driven approach to development, so we'll need to start by abstracting out the data and methods for both the Module and Economy classes.
 
 Exit Criteria:
 
-- Modules have the capacity to store the game's various resources
-- The Economy class displays the sum total of the resources contained in all the modules
+- [DONE] Modules have the capacity to store the game's various resources
+- [DONE] The Modules created during the landing sequence start with some resources in them
+- [DONE] The Economy class displays the sum total of the resources contained in all the modules
+- [DONE] Modules' resource data is also included in save files and is restored properly upon game load
+- [DONE] ModuleData class is created to allow unit testing of module methods
+- [DONE] EconomyData class is created to allow unit testing of economy methods
+- [DONE] All new functionality has unit tests developed prior to the actual code (as much as possible)
+
+Features Added:
+
+- New unit tests for the abstracted EconomyData class.
+- New unit tests for the abstracted ModuleData class.
+- Modules can now hold any of the game's resources
+- Infrastructure class can produce a list of all modules' resources, to feed to the EconomyData class
+- Resource data comes in the form of a list of tuples (e.g. [ ["water", 1000], ["oxygen", 2000], etc. ] ).
+- Modules' IDs can be retrieved based on their resource containment options (i.e. find all modules containing water).
+- Modules' locations can be gotten from the Infrastructure class using their ID as a lookup
+
+Not doing:
+
 - The Economy class's rate-of-change data is included in save files so it can be displayed as soon as a game is loaded
-- Module resource data is added to the game's save files
-- ModuleData class is created to allow unit testing of module methods
-- EconomyData class is created to allow unit testing of economy methods
-- [STRETCH] Clicking a module in 'select' mode prints a list of its current resource quantities to the screen
-- [STRETCH] Module Information is kept in the Infra class and module instances point to it, to save on memory!
-- Backwards compatibility is fully verified for older save files
+- Query tool AKA 'select' mode lets the player view a module's resources
+- Backwards compatibility is not a consideration here as we will be dropping the use of the original SMARS database saved_games collection. It served us well but the time has come to move on.
+
+1. From the Module class, abstract out its data fields and methods into a new Module Data class. As always, test this refactoring extensively before proceeding, including loading saves from long ago, and creating/loading a new save file.
+
+2. Once the Module class has been refactored, do the same for the Economy class, abstracting out as many of its methods and data fields as possible. Again, test thoroughly with old saves, and new ones before proceeding.
+
+3. Update the Module Data class to add a currentResources property. This can use the Resources type, which is exported from the Economy Data class.
+
+4. Update the Resources type to include 'power' and 'equipment' and 'minerals'. Don't add any kind of display for now, just get ready.
+
+5. Update the type template for the ModuleSaveInfo next (in the SaveGame file) to include a Resources attribute as well.
+
+6. Update the ModuleSaveInfo and ConnectorSaveInfo types to include ID's as well.
+
+7. Update the Game module's logic for gathering data from Modules before saving, so that it includes their Resource data as well as their ID number in the save data.
+
+8. Take this opportunity to have the Game save Connectors' ID's as well.
+
+9. Just when you thought there wasn't enough pain in the world: Revise the Resource type system that's currently in place to change it from Resources (which then contains a dictionary which matches all of the game's resource types to TUPLES containing their quantity and display symbols) to a singular Resource, which will still consist of a tuple, only this time it will represent the ["name", quantity] for a single resource.
+
+10. Update the module data for the backend next, so that each module's storageCapacity field now expresses a list of the Resource(s) [names and quantities] that a module can store in terms of these new tuples, instead of the dictionary-like data storage currently used. Then, update each module in the database to reflect this new system. Save backups in the older_buildings file also.
+
+11. Update the Economy class next so that its resources field contains an array of these tuples; one for each resource type (currently there are seven - money, oxygen, water, food, power, equipment and minerals). You can keep money as a resource this way, and only the Economy class will need to handle it. Tidy up the rest of the Economy class's code so that it can still handle its resource quantity displays for the first four of its resources (money, oxygen, water and food).
+
+12. Do a find-all to update any remaining instances of the Resource type, and then load an old saved game to make sure nothing is broken. Test as well with a new game - save and reload it to validate that everything is still working with no regressions.
+
+13. Make an Engine helper function that can be inserted into the Engine's Load Game sequence to help convert older, dictionary-based Economy data into the new format on the fly when legacy files are loaded. Also, maybe dump the saved games eventually too?
+
+14. Use some strategic console logs and/or engine text readouts to verify that Modules' resource data is correctly formatted now. Add one to log each module's capacity when placed, and another one to log each module's current resources (again, when placed).
+
+15. When modules and connectors are loaded by the Engine's loadConnectorFromSave and loadModuleFromSave methods, make sure to give each structure its proper ID from the save file (overriding whatever one the Infra Data class may have assigned). Check that the serial generator for Infra Data is updated sufficiently by the loading process so that there will be no duplicate serial numbers assigned when new structures are added. Finally, modify the Infra Data class's resetSerialNumber method to just be 'setSerialNumber', and allow it to take an argument (number) that will be used to set the new value. Test extensively with old and new files to make sure this doesn't introduce any regressions.
+
+16. Add a dictionary to the Economy Data class that matches symbols to each resource type. Have the Economy base class access these symbols for its resource count displays, and also have it ignore (not display) the 3 new resources (equipment, power and minerals) for the moment.
+
+17. Create the empty shells of the new Infra base class methods that will be used to manage individual modules' resources and get data for the Economy class. 3 Methods to add: addResourcesToModule, which will take a single Resource and a module ID (for the game start and various other occasions); findModulesWithResource, which will take a single string (the resource name) as its argument, and should return a list of the IDs of any module that contains a non-zero supply of that resource; and lastly a method for finding the location (coords) of a module given its ID. In tandem with the function from the previous step, we will have a good start towards telling the Colonists which module to go to when they need a particular resource.
+
+18. Create empty shells for the new Module Data methods: addResource (takes one resource at a time and attempts to add it if the module has the capacity for it); deductResource (reduces the quantity of a resource in a module if, say, a colonist consumes from it - and if the resource is available).
+
+19. Actually, in the end it's the Economy class that is interested in the 'big picture' economic data, so it makes more sense for the Econo Data class to take care of the grand calculations, so the Infra base class will just have a basic function which returns an array of all of the Resources possessed by all of the Modules (with anywhere from a handful to potentially hundreds of individual entries). The Engine will call this and pass it to the Economy Data class's new calculateResourceTotals method, which will contain a switch case (!)(?) to adjust its resource tallies every hour. Write its unit test first, now that this new architecture is understood, and add a new function, getAllBaseResources to the Infra BASE class (for grand total calculation; returns a list of all resources present in all modules). Make the unit test for the Economy Data function first.
+
+20. Create the unit tests for the new Module Data class methods before writing their code. As always, be imaginative in trying to imaging 'edge cases' that might break the system.
+
+21. Now start by writing the code for the Module Data methods first.
+
+22. Next, do the code for the Infra base class. Sadly it won't be possible to do unit tests for these methods, but we can evaluate them in-game soon enough.
+
+23. Now, update the Economy Data class to perform the function described in step 19. Do unit tests for this feature and create a new method before getting rid of any of the existing code.
+
+24. Add some initial resources to the modules that are created at the end of the landing sequence. This will be a good live-action demonstration of the Infra class's new module resource addition methods too, since we cannot unit test those.
+
+25. Now integrate the new Economy updater method by adding it to the Engine's handleResourceConsumption method (start by renaming it) to call the Infra Data's calculateBaseResources method every hour and then for each item in that function's return, pass the new value to the Economy.
+
+26. Now that resource stockpiles have been added to all of the structures when a game is started, the next task will be re-adding those same resources when the game is saved and then reloaded. First let's make sure that the resource data is being saved correctly, by examining our lovely clean new database. If the resource data has made it successfully to the DB, then we can pass it to the loadModuleFromSave method, which is unfortunately weirdly wedded to the server_functions file in an extremely ungainly way... but such is life, there is no untangling them now. The only solution is to add yet more data to the server functions' getOneModule function, so that it is able to pass resources to newly loaded modules once they are created.
+
+27. Last but not least please consider the following: starting cash based on difficulty level.
+
+28. Also, now that there's a new database without any of the legacy issues, clean up some known legacy-enabling hacks, such as the Engine adding population to load games, the guard for old-fashioned resource data, etc. Most of that stuff is in the Engine I reckon, and it's all just clutter at this point.
+
+29. Finally, fix it so that the cash rate of change is updated back to zero after every hour, like the other resources.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
@@ -1467,7 +1539,7 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ### 5. [3: UX / Inaccurate info display] Economy save data should really include the previous value/rate of change numbers so the player doesn't have to wait an hour for an Economy update. Also, consider how to show rates of change that occur less frequently than every hour (like colonist meals).
 
-### 6. [1: UX / Animation glitch] When the game speed is adjusted, it can cause moving colonists' animations to fly apart for a moment. Add a command for the Engine when the time speed is changed to immediately halt all colonist animations (the Engine should call a Population-level function that tells the individual colonists to reset their animation frame counts). Bonus if they can switch to the new animation speed on the fly rather than simply showing nothing until the next movement.
+### 6. [1: UX / Animation glitch] When the game speed is adjusted, it can cause moving colonists' animations to disappear for a moment before reappearing. Solve that one, if you dare!
 
 ### 7. [1: Coding Convention] Colonist class should have a unique ID field, to individuate the colony's population.
 
@@ -1475,9 +1547,11 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ### 9. [2: UX / Inaccurate info display] The game speed indicator should always be visible, including at the game start, and when the player returns to the game from the menu.
 
-### 10. [1: UX / Gameplay] Restrict the base's baseVolume area to only include modules that have the pressurized trait set to true. This would limit the ability to build certain connectors starting or ending in such modules (and potentially have other cool consequences too).
+### 10. [1: UX / Gameplay] Restrict the base's baseVolume area to only include modules that have the pressurized trait set to true. This would limit the ability to build certain connectors starting or ending in such modules (and potentially have other "cool" consequences too).
 
 ### 11. [8: Major Gameplay issue] Loaded games do not allow the player to scroll all the way to the far right of the map; the section underneath the sidebar becomes unreachable when the player saves and then subsequently reloads the game.
+
+12. [5: Save Data Completeness] Although currently not doing much, save game files do not contain the game's map type or difficulty level data - both fields contain a blank string.
 
 # Annex A: Advanced Concepts
 

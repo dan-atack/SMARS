@@ -1,13 +1,6 @@
 // Global variables for the front-end:
 import { EventData } from "./modal";
-import { Resources } from "./economy";
-
-const basicResources: Resources = {
-   money: ["$", 10000000],
-   oxygen: ["Air", 100],
-   water: ["H20", 10000],
-   food: ["Food", 10000],
- }
+import { Resource } from "./economyData";
 
 export const constants = {
     // Backend connection
@@ -49,7 +42,6 @@ export const constants = {
     BLUEGREEN_DARK: "#052E26",
     BLUE_BG: "#00004F",
     PURPLE_LIGHT: "#A67ACF",
-    BASIC_RESOURCES: basicResources
 }
 
 // Modal Data (for now - eventually it should come from the backend!)
@@ -71,16 +63,16 @@ export const modalData: EventData[] = [
       ]
   },
   {
-   id: 1,
-   title: "Touchdown!",
-   text: "The colonists have arrived at the planet's surface,\nmiraculously unharmed!",
-   resolutions: [
-       {
-           text: "Hallelujah!",
-           outcomes: [["set-mouse-context", "select"]]
-       }
-   ]
-}
+      id: 1,
+      title: "Touchdown!",
+      text: "The colonists have arrived at the planet's surface,\nmiraculously unharmed!",
+      resolutions: [
+         {
+            text: "Hallelujah!",
+            outcomes: [["set-mouse-context", "select"], ["provision-base-structures", 1]]
+         }
+      ]
+   },
 ]
 
 // BLOCKTIONARY!!!!
