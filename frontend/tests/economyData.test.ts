@@ -26,7 +26,7 @@ describe("EconomyData", () => {
         economyData.updateResources(basicResources);
         expect(economyData._resources).toStrictEqual(
             [
-                ["money",  10000000],  // Money should always be default value, as it is not updated with the other resources
+                ["money", 0],  // Money should always be default value, as it is not updated with the other resources
                 ["oxygen", 10000],
                 ["water", 10000],
                 ["food", 10000],
@@ -35,6 +35,10 @@ describe("EconomyData", () => {
                 ["minerals", 0]
             ]
         )
+    })
+
+    test("Can add money", () => {
+        economyData.addMoney(10000000);
     })
 
     test("Can add additional resources and calculate rate of change", () => {
