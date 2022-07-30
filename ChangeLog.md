@@ -1519,7 +1519,7 @@ Not doing:
 
 29. Finally, fix it so that the cash rate of change is updated back to zero after every hour, like the other resources.
 
-## Chapter Twenty-Nine: Colonist Movement in the Base (Difficulty Estimate: 7 For new colonist movement and decision logic, plus probably a new animation, plus unit tests and planning)
+## Chapter Twenty-Nine: Colonist Movement in the Base (Difficulty Estimate: 7 For new colonist movement and decision logic, plus probably a new animation, plus unit tests and planning, AND some refactoring)
 
 Now that the game's resources are located in the modules, and the modules are on the map, the time has come to re-activate the colonists' needs, so that they gradually become hungry and thirsty throughout the day. As they do so, they will need to decide to acquire the resources necessary to reduce their needs, which they can now do by visiting the modules. Although they will not be able to actually satisfy their needs in this chapter, the Colonists will be given the ability to decide that they should satisfy a need, and that they must go to a specific location, often on a floor inside the base, to do so. This chapter will focus on the decision-making logic that will prioritize which resource to move towards, and the pathfinding logic needed to get to a location that is potentially far away and/or on a different level (floor) than the colonist is currently standing on. Hopefully the lessons learned so far about test-driven development and the use of flow-charts will aid in the development of these new features.
 
@@ -1536,6 +1536,51 @@ Exit Criteria:
 - Colonists should always be aware of the ground level for the column they are in
 - There should be unit tests for everything before development (obviously now)
 - The Colonist Decision and Movement Logic flowchart must be updated and memorized
+- Additional data about colonist movement/decisions added to save/load games so they resume what they were doing seamlessly
+
+Features Added:
+
+-
+
+### 1. Add new properties to the Map Data class: topography (list of numbers representing elevations); zones (list of start/stop x values of regions of the map that are separated by an elevation gap of more than 2).
+
+### 1. Define the new Map Data class methods to be used, and create their shells in the Map Data class: determineTopography, determineZones, walkableFromLocation.
+
+### 2. Create unit tests for the determineTopography method, which will be run at the Map class's creation and kept in the topography property. Topography will be a list of numbers, each one representing the map's surface elevation for the column of that index.
+
+### 3. Create unit tests for the determineZones method. It will run after the topography is established, and create a list of start/stop locations (x values only) for every section of the map that is separated from the column next to it by an elevation drop (or increase) of greater than 2 grid spaces.
+
+### 4. Create unit tests for the walkableFromLocation method. It will take four arguments: startX, startY, destX and destY, and use them to calculate whether a destination can be walked to from a given start (i.e. are they in the same 'zone', and does the destination's elevation match the topography for its location).
+
+### 5. Write, and test the code for the determineTopography method. See above for an explanation of how it should work.
+
+### 6. Write, and test the code for the determineZones method. See above for an explanation of how it should work.
+
+### 7. Write and test the code for the walkableFromLocation method. See above for an explanation of how it should work.
+
+### 8. Create the placeholder for the new Infra class method: getModulesWithResource.
+
+### 9. Since this one sadly cannot be tested, just go right on and write the code for the getModulesWithResources method. It should take one argument for the resource type name, and return any module that A) has the resource in question and B) is of the type 'life support.'
+
+### 10. Create the placeholders for the new Infra Data class methods: getFloorFromModuleId, getElevatorFromId, doesElevatorReachFloor, and isFloorOnGround.
+
+### 11. Add a unit test for the getFloorFromModuleId method. As the name implies, it should take a module ID as its argument and return a pointer to the Floor that holds that ID in its modules list.
+
+### 12. Add a unit test for the getElevatorFromId method. It should take a single argument, the ID of an elevator (connector) and return a pointer to the Elevator in question. The Colonist will use it, possibly in a for-each situation, to get info about all of the elevator ID's contained in the return from the function in the previous step.
+
+### 13. Add a unit test for the doesElevatorReachFloor method. It should take a floor ID and and elevator ID, and return true if the elevator ID is found in that Floor's connectors list. The colonist will use this to find out if a connection exists between the floor they are currently standing on and the destination floor. Functionally, it is the equivalent of the Map Data class's walkableFromLocation method, in that it returns true if the colonist is able to walk directly to a connector from their present location.
+
+### 14. Lastly, for the Infra class at least, create the unit test(s) for the isFloorOnGround method. Unlike the others, this will be called at the moment a floor is created, by using the map's topography data to match the elevation, and see that it's flat at both edges. This will determine if a newly-created Floor is considered the 'ground floor' or not.
+
+### 12. Create the code for getFloorFromModuleID and test it. See above for an explanation of how it should work.
+
+### 13. Create the code for geElevatorFromId and test it. See above for an explanation of how it should work.
+
+### 14. Create the code for doesElevatorReachFloor and test it. See above for an explanation of how it should work.
+
+### 15. Create the code for isFloorOnGround and test it. See above for an explanation of how it should work.
+
+### 16. Plug the isFloorOnGround method into the Floor creation sequence and test it out with a sneaky in-game print temporarily added to the Engine (might even be able to adapt a commented-out print that was kept from last time).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

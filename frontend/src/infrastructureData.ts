@@ -264,6 +264,7 @@ export default class InfrastructureData {
 
     // Intermediate-level Floor management methods
 
+    // Returns a list of floors
     findFloorsAtElevation (elevation: number) {
         return this._floors.filter((floor) => floor._elevation === elevation);
     }
