@@ -1542,9 +1542,9 @@ Features Added:
 
 -
 
-### 1. Add new properties to the Map Data class: topography (list of numbers representing elevations); zones (list of start/stop x values of regions of the map that are separated by an elevation gap of more than 2).
+1. Add new properties to the Map Data class: topography (list of numbers representing elevations); zones (list of start/stop x values of regions of the map that are separated by an elevation gap of more than 2).
 
-### 1. Define the new Map Data class methods to be used, and create their shells in the Map Data class: determineTopography, determineZones, walkableFromLocation.
+2. Define the new Map Data class methods to be used, and create their shells in the Map Data class: determineTopography, determineZones, walkableFromLocation.
 
 ### 2. Create unit tests for the determineTopography method, which will be run at the Map class's creation and kept in the topography property. Topography will be a list of numbers, each one representing the map's surface elevation for the column of that index.
 
@@ -1582,6 +1582,8 @@ Features Added:
 
 ### 16. Plug the isFloorOnGround method into the Floor creation sequence and test it out with a sneaky in-game print temporarily added to the Engine (might even be able to adapt a commented-out print that was kept from last time).
 
+### 99 [Optional] For your inner bureaucrat: re-arrange it so that all of the type definitions are exported from a single file, since the current scheme is getting a bit confusing.
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
@@ -1600,7 +1602,7 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ### 4. [1: UX / Inaccurate info display] Save game dates seem to be from a different time zone?!
 
-### 5. [3: UX / Inaccurate info display] Economy save data should really include the previous value/rate of change numbers so the player doesn't have to wait an hour for an Economy update. Also, consider how to show rates of change that occur less frequently than every hour (like colonist meals).
+### 5. [3: UX / Inaccurate info display] Economy save data should really include the previous value/rate of change numbers so the player doesn't have to wait an hour for an Economy update. Also, consider how to show rates of change that occur less frequently than every hour (like colonist meals). This could still be a highly data-driven game.
 
 ### 6. [1: UX / Animation glitch] When the game speed is adjusted, it can cause moving colonists' animations to disappear for a moment before reappearing. Solve that one, if you dare!
 

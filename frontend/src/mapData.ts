@@ -3,6 +3,12 @@
 import P5 from 'p5';
 import { constants } from "./constants";
 import Block from "./block";
+import { Coords } from './connectorData';
+
+export type MapZone = {         // If the map contains obstacles for colonist movement, it will be broken into 'zones'
+    leftEdge: Coords;           // Both edges' positions are given, so that colonists can tell which zone they are standing on
+    rightEdge: Coords;
+}
 
 export default class MapData {
     // Map data types:
@@ -11,6 +17,7 @@ export default class MapData {
     _maxOffset: number;         // Farthest scroll distance, in pixels
     _columns: Block[][];
     _topography: number[];      // A list of the y-value at the surface elevation for every column.
+    _zones: MapZone[];          // List of the edge points of the various zones on the map (if there are more than 1)
     _expanded: boolean          // Sometimes the map occupies the whole screen
 
     constructor() {
@@ -19,6 +26,7 @@ export default class MapData {
         this._maxOffset = 0;    // Determined during setup routine
         this._columns = [];
         this._topography = [];  // Gets filled in when the map data is loaded
+        this._zones = [];       // Filled in after the topography analysis
         this._expanded = true;  // By default the map is expanded
     }
 
@@ -81,5 +89,20 @@ export default class MapData {
         }
         return true;    // If the method gets this far without returning false, the terrain is level
     }
-    // NOTE: When adding new methods, add them to the base Map class too, and have them called from there
+    
+    // Runs when the terrain is loaded (And again if it ever gets changed?!) to produce a list of elevation values for each column
+    determineTopography = () => {
+
+    }
+
+    // Runs right after the topography analysis, to determine if there are parts of the map where elevation changes are too steep for colonists to climb, and determines where the borders are.
+    determineZones = () => {
+
+    }
+
+    // Takes two sets of coordinates and determines if they are A) both on the surface and B) both in the same Zone
+    walkableFromLocation = () => {
+
+    }
+
 }
