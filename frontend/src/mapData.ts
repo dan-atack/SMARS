@@ -10,14 +10,16 @@ export default class MapData {
     _horizontalOffset: number;  // Value is in pixels
     _maxOffset: number;         // Farthest scroll distance, in pixels
     _columns: Block[][];
+    _topography: number[];      // A list of the y-value at the surface elevation for every column.
     _expanded: boolean          // Sometimes the map occupies the whole screen
 
     constructor() {
-        this._mapData = []; // Map data is recieved by setup function
+        this._mapData = [];     // Map data is recieved by setup function
         this._horizontalOffset = 0;
         this._maxOffset = 0;    // Determined during setup routine
         this._columns = [];
-        this._expanded = true; // By default the map is expanded
+        this._topography = [];  // Gets filled in when the map data is loaded
+        this._expanded = true;  // By default the map is expanded
     }
 
     

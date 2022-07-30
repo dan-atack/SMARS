@@ -1570,7 +1570,7 @@ Features Added:
 
 ### 13. Add a unit test for the doesElevatorReachFloor method. It should take a floor ID and and elevator ID, and return true if the elevator ID is found in that Floor's connectors list. The colonist will use this to find out if a connection exists between the floor they are currently standing on and the destination floor. Functionally, it is the equivalent of the Map Data class's walkableFromLocation method, in that it returns true if the colonist is able to walk directly to a connector from their present location.
 
-### 14. Lastly, for the Infra class at least, create the unit test(s) for the isFloorOnGround method. Unlike the others, this will be called at the moment a floor is created, by using the map's topography data to match the elevation, and see that it's flat at both edges. This will determine if a newly-created Floor is considered the 'ground floor' or not.
+### 14. Lastly, for the Infra class at least, create the unit test(s) for the isFloorOnGround method. Unlike the others, this will be called at the moment a floor is created, by using the map data class's (already-existing!) determineFlatness method. This will determine if a newly-created Floor is considered the 'ground floor' or not.
 
 ### 12. Create the code for getFloorFromModuleID and test it. See above for an explanation of how it should work.
 
@@ -1612,7 +1612,7 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ### 10. [1: UX / Gameplay] Restrict the base's baseVolume area to only include modules that have the pressurized trait set to true. This would limit the ability to build certain connectors starting or ending in such modules (and potentially have other "cool" consequences too).
 
-### 11. [8: Major Gameplay issue] Loaded games do not allow the player to scroll all the way to the far right of the map; the section underneath the sidebar becomes unreachable when the player saves and then subsequently reloads the game.
+11. [8: Major Gameplay issue] Loaded games do not allow the player to scroll all the way to the far right of the map; the section underneath the sidebar becomes unreachable when the player saves and then subsequently reloads the game.
 
 12. [5: Save Data Completeness] Although currently not doing much, save game files do not contain the game's map type or difficulty level data - both fields contain a blank string.
 

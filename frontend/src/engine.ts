@@ -138,6 +138,8 @@ export default class Engine extends View {
         this._saveInfo = saveInfo;
         this.setClock(saveInfo.game_time);
         this._map.setup(this._saveInfo.terrain);
+        // TODO: Extract the map expansion/sidebar pop-up (and the reverse) into a separate method
+        this._map.setExpanded(false);   // Map starts in 'expanded' mode by default, so it must tell it the sidebar is open
         this._economy._data.addMoney(saveInfo.resources[0][1]); // Reload money from save data
         // TODO: Update the economy's load sequence to re-load rate-of-change data instead of resource quantities
         // DON'T DO IT HERE THOUGH - Do it at the end of the loadModuleFromSave method (2 down from this one)
