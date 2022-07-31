@@ -47,25 +47,23 @@ describe("MapData", () => {
         expect(mapData._topography).toStrictEqual(bumpyTopography);
     })
 
-    // test("Determines map zones", () => {
-    //     mapData._mapData = bumpyTerrain;    // Bumpy though it is, this should only be a single zone as it is all traversible
-    //     mapData.determineTopography();
-    //     mapData.determineZones();
-    //     expect(mapData._zones).toStrictEqual([{leftEdge: {x: 0, y: 33}, rightEdge: {x: 15, y: 33}}]);
-    //     mapData._mapData = cliffs;      // Cliffs map has a cliff with a height of 3 near the middle - thus it should be two zones
-    //     mapData.determineTopography();
-    //     mapData.determineZones();
-    //     expect(mapData._zones).toStrictEqual([
-    //         {
-    //             leftEdge: {x: 0, y: 33},
-    //             rightEdge: {x: 6, y: 30}
-    //         },
-    //         {
-    //             leftEdge: {x: 7, y: 33},
-    //             rightEdge: {x: 15, y: 33}
-    //         }
-    //     ])
-    // })
+    test("Determines map zones", () => {
+        mapData._mapData = bumpyTerrain;    // Bumpy though it is, this should only be a single zone as it is all traversible
+        mapData.updateTopographyAndZones(); // This calls both the topography and the zone determinator methods
+        expect(mapData._zones).toStrictEqual([{leftEdge: {x: 0, y: 33}, rightEdge: {x: 15, y: 33}}]);
+        mapData._mapData = cliffs;      // Cliffs map has a cliff with a height of 3 near the middle - thus it should be two zones
+        mapData.updateTopographyAndZones();
+        expect(mapData._zones).toStrictEqual([
+            {
+                leftEdge: {x: 0, y: 33},
+                rightEdge: {x: 6, y: 30}
+            },
+            {
+                leftEdge: {x: 7, y: 33},
+                rightEdge: {x: 15, y: 33}
+            }
+        ])
+    })
 
     // test("Determines if a point is walkable from another point", () => {
     //     mapData._mapData = bumpyTerrain;

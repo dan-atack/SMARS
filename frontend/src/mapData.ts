@@ -52,7 +52,7 @@ export default class MapData {
                 }
             })
         });
-        this.determineTopography();
+        this.updateTopographyAndZones();
     }
 
     setExpanded = (expanded: boolean) => {
@@ -90,6 +90,12 @@ export default class MapData {
         }
         return true;    // If the method gets this far without returning false, the terrain is level
     }
+
+    // Top-level terrain zone/topography determinator
+    updateTopographyAndZones = () => {
+        this.determineTopography();
+        this.determineZones();
+    }
     
     // Runs when the terrain is loaded (And again if it ever gets changed?!) to produce a list of elevation values for each column
     determineTopography = () => {
@@ -102,13 +108,48 @@ export default class MapData {
             })
             // console.log(this._topography);
         } else {
-            console.log("ERROR: Could not find topography for map - map data missing.");
+            console.log("Error: Could not find topography for map - map data missing.");
         }
     }
 
     // Runs right after the topography analysis, to determine if there are parts of the map where elevation changes are too steep for colonists to climb, and determines where the borders are.
     determineZones = () => {
+        this._zones = [];   // Reset value every time calculation is made
+        if (this._topography.length > 0) {
+            let i = 0;                          // Go through each column
+            let alt = this._topography[i];      // Prepare to keep measure of the topography deltas between columns
+            let z: MapZone = this.createNewZone(i, alt);
+            while (i < this._topography.length) {
+                const deltaAlt = this._topography[i] - alt; // Get delta by comparing current column's height to the previous
+                if (Math.abs(deltaAlt) > 2) {   // When the delta is greater than 2 that means you just passed into a new zone
+                    z.rightEdge.x = i - 1;       // Fill in the right edge info for the previous zone first
+                    z.rightEdge.y = alt;         // Use the altitude from the previous column here
+                    this._zones.push(z);        // Add the zone to the zones list before creating a new one
+                    // Reset z and give it the right side coords for the next zone
+                    z = this.createNewZone(i, this._topography[i]);
+                }
+                // Be sure to close the last zone
+                if (i === this._topography.length - 1) {
+                    z.rightEdge.x = i;
+                    z.rightEdge.y = this._topography[i];
+                    this._zones.push(z);
+                }
+                alt = this._topography[i];  // Set altitude to compare to next column
+                i++;
+            }
+            // console.log(this._zones);
+        } else {
+            console.log("Error: Could not determine map zones - topography data missing.");
+        }
+    }
 
+    // Creates a Zone - can optionally take two arguments for the x and y value of the new zone's left edge
+    createNewZone = (x?: number, y?: number) => {
+        let z: MapZone = {
+            leftEdge: { x: x ? x : 0, y : y? y : 0},   // Use the x and y values here if provided
+            rightEdge: {x: 0, y: 0}
+        }
+        return z;
     }
 
     // Takes two sets of coordinates and determines if they are A) both on the surface and B) both in the same Zone
