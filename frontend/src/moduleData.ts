@@ -66,7 +66,7 @@ export default class ModuleData {
                 }
             }
         } else {
-            console.log(`Cannot add resource ${resource[0]} to module ${this._moduleInfo.name} ${this._id}`);
+            // console.log(`Cannot add resource ${resource[0]} to module ${this._moduleInfo.name} ${this._id}`);
             return 0;   // Always return the quantity added
         }
     }
@@ -90,7 +90,7 @@ export default class ModuleData {
             }
         }
         else {
-            console.log(`Cannot find resource ${resource[0]} in module ${this._moduleInfo.name} ${this._id}`);
+            // console.log(`Cannot find resource ${resource[0]} in module ${this._moduleInfo.name} ${this._id}`);
             return 0;
         }
     }

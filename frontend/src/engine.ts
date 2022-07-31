@@ -272,7 +272,7 @@ export default class Engine extends View {
                 const [gridX, gridY] = this.getMouseGridPosition(mouseX, mouseY);
                 switch (this.mouseContext) {
                     case "select":
-                        console.log("Select");
+                        console.log(`Select: ${gridX}, ${gridY}`);
                         break;
                     // NOTE: To add new building placement contexts, ensure case name is also added to setMouseContext method
                     case "placeModule":

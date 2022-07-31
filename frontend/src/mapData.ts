@@ -52,6 +52,7 @@ export default class MapData {
                 }
             })
         });
+        this.determineTopography();
     }
 
     setExpanded = (expanded: boolean) => {
@@ -92,7 +93,17 @@ export default class MapData {
     
     // Runs when the terrain is loaded (And again if it ever gets changed?!) to produce a list of elevation values for each column
     determineTopography = () => {
-
+        this._topography = [];  // Reset value every time calculation is made
+        if (this._mapData.length > 0) {
+            this._mapData.forEach((col) => {
+                // Y = the elevation of the highest block (higher numbers representing lower altitude, of course)
+                const y = constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH - col.length;
+                this._topography.push(y);
+            })
+            // console.log(this._topography);
+        } else {
+            console.log("ERROR: Could not find topography for map - map data missing.");
+        }
     }
 
     // Runs right after the topography analysis, to determine if there are parts of the map where elevation changes are too steep for colonists to climb, and determines where the borders are.
@@ -101,7 +112,7 @@ export default class MapData {
     }
 
     // Takes two sets of coordinates and determines if they are A) both on the surface and B) both in the same Zone
-    walkableFromLocation = () => {
+    walkableFromLocation = (startX: number, startY: number, destX: number, destY: number) => {
 
     }
 

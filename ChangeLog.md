@@ -1546,13 +1546,13 @@ Features Added:
 
 2. Define the new Map Data class methods to be used, and create their shells in the Map Data class: determineTopography, determineZones, walkableFromLocation.
 
-### 2. Create unit tests for the determineTopography method, which will be run at the Map class's creation and kept in the topography property. Topography will be a list of numbers, each one representing the map's surface elevation for the column of that index.
+3. Create unit tests for the determineTopography method, which will be run at the Map class's creation and kept in the topography property. Topography will be a list of numbers, each one representing the map's surface elevation for the column of that index.
 
-### 3. Create unit tests for the determineZones method. It will run after the topography is established, and create a list of start/stop locations (x values only) for every section of the map that is separated from the column next to it by an elevation drop (or increase) of greater than 2 grid spaces.
+4. Create unit tests for the determineZones method. It will run after the topography is established, and create a list of start/stop locations for every section of the map that is separated from the column next to it by an elevation drop (or increase) of greater than 2 grid spaces.
 
-### 4. Create unit tests for the walkableFromLocation method. It will take four arguments: startX, startY, destX and destY, and use them to calculate whether a destination can be walked to from a given start (i.e. are they in the same 'zone', and does the destination's elevation match the topography for its location).
+5. Create unit tests for the walkableFromLocation method. It will take four arguments: startX, startY, destX and destY, and use them to calculate whether a destination can be walked to from a given start (i.e. are they in the same 'zone', and does the destination's elevation match the topography for its location).
 
-### 5. Write, and test the code for the determineTopography method. See above for an explanation of how it should work.
+6. Write, and test the code for the determineTopography method. See above for an explanation of how it should work.
 
 ### 6. Write, and test the code for the determineZones method. See above for an explanation of how it should work.
 
