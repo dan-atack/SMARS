@@ -65,14 +65,18 @@ describe("MapData", () => {
         ])
     })
 
-    // test("Determines if a point is walkable from another point", () => {
-    //     mapData._mapData = bumpyTerrain;
-    //     mapData.determineTopography();
-    //     mapData.determineZones();
-    //     expect(mapData.walkableFromLocation(0, 32, 14, 31)).toBe(true);
-    //     mapData._mapData = cliffs;
-    //     mapData.determineTopography();
-    //     mapData.determineZones();
-    //     expect(mapData.walkableFromLocation(0, 32, 14, 32)).toBe(false);
-    // })
+    test("Determines if a point is walkable from another point", () => {
+        mapData._mapData = bumpyTerrain;
+        mapData.updateTopographyAndZones();
+        expect(mapData.walkableFromLocation(0, 32, 15, 32)).toBe(true);     // Can walk all the way across a flat zone
+        mapData._mapData = cliffs;
+        mapData.updateTopographyAndZones();
+        expect(mapData.walkableFromLocation(0, 32, 14, 32)).toBe(false);    // Cannot walk over cliff
+        expect(mapData.walkableFromLocation(0, 33, 1, 33)).toBe(false);     // Cannot start too low
+        expect(mapData.walkableFromLocation(0, 31, 1, 33)).toBe(false);     // Cannot start too high
+        expect(mapData.walkableFromLocation(0, 32, 5, 29)).toBe(false);     // Cannot walk to destination that is too high
+        expect(mapData.walkableFromLocation(0, 32, 5, 31)).toBe(false);     // Cannot walk to destination that is too low
+        expect(mapData.walkableFromLocation(0, 32, 6, 29)).toBe(true);      // CAN walk up to the edge of the cliff
+        expect(mapData.walkableFromLocation(15, 32, 7, 32)).toBe(true);     // CAN walk to the edge of cliff (from other side)
+    })
 })

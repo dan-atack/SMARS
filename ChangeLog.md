@@ -1554,7 +1554,7 @@ Features Added:
 
 6. Write, and test the code for the determineTopography method. See above for an explanation of how it should work.
 
-### 6. Write, and test the code for the determineZones method. See above for an explanation of how it should work.
+7. Write, and test the code for the determineZones method. See above for an explanation of how it should work.
 
 ### 7. Write and test the code for the walkableFromLocation method. See above for an explanation of how it should work.
 

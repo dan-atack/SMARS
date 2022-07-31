@@ -154,7 +154,26 @@ export default class MapData {
 
     // Takes two sets of coordinates and determines if they are A) both on the surface and B) both in the same Zone
     walkableFromLocation = (startX: number, startY: number, destX: number, destY: number) => {
-
+        if (this._topography[startX] === startY + 1) {  // The correct starting height should be one unit above the surface level
+            const zStart = this._zones.find(function(zone) {
+                return zone.leftEdge.x <= startX && zone.rightEdge.x >= startX
+            });
+            const zFinish = this._zones.find(function(zone) {
+                return zone.leftEdge.x <= destX && zone.rightEdge.x >= destX
+            });
+            if (zStart === zFinish && destY + 1 === this._topography[destX]) {
+                return true     // Return true if start and destination are in the same zone, and destination is at ground level
+            } else if (zStart === zFinish) {
+                console.log(`Elevation ${destY} not reachable at destination ${destX}`);
+                return false;
+            } else {
+                console.log(`Column ${startX} is in different zone than column ${destX}`);
+                return false;
+            }
+        } else {
+            console.log(`Error: Provided start location (${startX}, ${startY}) is not on surface level.`);
+            return false;
+        }
     }
 
 }
