@@ -1556,11 +1556,11 @@ Features Added:
 
 7. Write, and test the code for the determineZones method. See above for an explanation of how it should work.
 
-### 7. Write and test the code for the walkableFromLocation method. See above for an explanation of how it should work.
+8. Write and test the code for the walkableFromLocation method. See above for an explanation of how it should work.
 
-### 8. Create the placeholder for the new Infra class method: getModulesWithResource.
+9. Create the placeholder for the new Infra class method: getModulesWithResource.
 
-### 9. Since this one sadly cannot be tested, just go right on and write the code for the getModulesWithResources method. It should take one argument for the resource type name, and return any module that A) has the resource in question and B) is of the type 'life support.'
+10. Since this one sadly cannot be tested, just go right on and write the code for the getModulesWithResources method. It should take one argument for the resource type name, and return any module that A) has the resource in question and B) is of the type 'life support.'
 
 ### 10. Create the placeholders for the new Infra Data class methods: getFloorFromModuleId, getElevatorFromId, doesElevatorReachFloor, and isFloorOnGround.
 

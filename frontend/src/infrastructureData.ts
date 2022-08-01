@@ -316,4 +316,26 @@ export default class InfrastructureData {
         }   
     }
 
+    // Floor information getters
+    
+    // Takes a module ID and returns the floor that contains it
+    getFloorFromModuleId (moduleId: number) {
+
+    }
+
+    // Takes and elevator (ladder) ID and returns the data for that elevator
+    getElevatorFromId (elevatorId: number) {
+
+    }
+
+    // Takes an elevator ID and a floor ID and returns a boolean for whether or not they meet
+    doesElevatorReachFloor (floorId: number, elevatorId: number) {
+
+    }
+
+    // Determines if a new Floor is on the ground when it is created. If it is, its groundFloor property will be set to true
+    isFloorOnGround () {
+
+    }
+
 }
