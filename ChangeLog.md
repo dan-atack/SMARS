@@ -1564,17 +1564,17 @@ Features Added:
 
 11. Create the placeholders for the new Infra Data class methods: getFloorFromModuleId, getElevatorFromId, doesElevatorReachFloor, and isFloorOnGround.
 
-### 11. Add a unit test for the getFloorFromModuleId method. As the name implies, it should take a module ID as its argument and return a pointer to the Floor that holds that ID in its modules list.
+12. Add a unit test for the getFloorFromModuleId method. As the name implies, it should take a module ID as its argument and return a pointer to the Floor that holds that ID in its modules list.
 
-### 12. Add a unit test for the getElevatorFromId method. It should take a single argument, the ID of an elevator (connector) and return a pointer to the Elevator in question. The Colonist will use it, possibly in a for-each situation, to get info about all of the elevator ID's contained in the return from the function in the previous step.
+13. Add a unit test for the getElevatorFromId method. It should take a single argument, the ID of an elevator (connector) and return a pointer to the Elevator in question. The Colonist will use it, possibly in a for-each situation, to get info about all of the elevator ID's contained in the return from the function in the previous step.
 
 ### 13. Add a unit test for the doesElevatorReachFloor method. It should take a floor ID and and elevator ID, and return true if the elevator ID is found in that Floor's connectors list. The colonist will use this to find out if a connection exists between the floor they are currently standing on and the destination floor. Functionally, it is the equivalent of the Map Data class's walkableFromLocation method, in that it returns true if the colonist is able to walk directly to a connector from their present location.
 
 ### 14. Lastly, for the Infra class at least, create the unit test(s) for the isFloorOnGround method. Unlike the others, this will be called at the moment a floor is created, by using the map data class's (already-existing!) determineFlatness method. This will determine if a newly-created Floor is considered the 'ground floor' or not.
 
-### 12. Create the code for getFloorFromModuleID and test it. See above for an explanation of how it should work.
+12. Create the code for getFloorFromModuleID and test it. See above for an explanation of how it should work.
 
-### 13. Create the code for geElevatorFromId and test it. See above for an explanation of how it should work.
+13. Create the code for geElevatorFromId and test it. See above for an explanation of how it should work.
 
 ### 14. Create the code for doesElevatorReachFloor and test it. See above for an explanation of how it should work.
 

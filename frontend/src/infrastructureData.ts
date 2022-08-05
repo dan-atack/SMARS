@@ -331,7 +331,13 @@ export default class InfrastructureData {
 
     // Takes and elevator (ladder) ID and returns the data for that elevator
     getElevatorFromId (elevatorId: number) {
-
+        const elevator = this._elevators.find((el) => el.id === elevatorId);
+        if (elevator !== undefined) {
+            return elevator;
+        } else {
+            console.log(`Error: No elevator with ID ${elevatorId} found.`);
+            return null;    // Always return null instead of undefined when something is missing
+        }
     }
 
     // Takes an elevator ID and a floor ID and returns a boolean for whether or not they meet

@@ -304,11 +304,25 @@ describe("Infrastructure Data", () => {
         expect(infraData._floors[0]._connectors).toStrictEqual([9000, 9001, 9002]); // Only floors that are in-bounds are connected
     })
 
-    // Floor and Elevator (Ladder) Info methods (to be called by the Colonist for the purpose of pathfinding)
+    // Floor and Elevator (Ladder) Info methods - to be called by the Colonist for the purpose of pathfinding
+
+    // Returns a pointer to the entire floor object
     test("Can find the floor that contains a module with a given ID", () => {
         expect(infraData.getFloorFromModuleId(9003)?._id).toBe(1001);   // Returns the whole object if found (in this case the mega-floor from the floor combiner test)
         expect(infraData.getFloorFromModuleId(6001)?._id).toBe(1004);   // Finds the other, smaller floor added in the last test
         expect(infraData.getFloorFromModuleId(9004)).toBe(null);        // When the module is not found, return a null value
     })
+
+    // Returns a pointer to the entire elevator object (which is just an id, x, top and bottom - all integers, incidentally)
+    test("Can find an elevator from its ID", () => {
+        expect(infraData.getElevatorFromId(9000)).toStrictEqual({ id: 9000, x: 1, top: 0, bottom: 20 });    // Find the first elevator added in the 'add connectors to floors' test
+        expect(infraData.getElevatorFromId(9002)).toStrictEqual({ id: 9002, x: 4, top: 0, bottom: 20 });    // Find other elevator
+        expect(infraData.getElevatorFromId(1000)).toBe(null);   // Always return null when something isn't found
+    })
+
+    // Returns true or false
+    // test("Can determine if an elevator segment reaches a particular floor", () => {
+
+    // })
 
 })
