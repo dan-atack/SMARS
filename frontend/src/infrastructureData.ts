@@ -320,7 +320,13 @@ export default class InfrastructureData {
     
     // Takes a module ID and returns the floor that contains it
     getFloorFromModuleId (moduleId: number) {
-
+        const floor = this._floors.find((fl) => fl._modules.includes(moduleId));
+        if (floor !== undefined) {
+            return floor;
+        } else {
+            console.log(`Error: No floor found containing module with ID ${moduleId}`);
+            return null;    // Always return null instead of undefined if the floor is not found
+        }
     }
 
     // Takes and elevator (ladder) ID and returns the data for that elevator

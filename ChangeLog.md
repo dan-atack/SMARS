@@ -1562,7 +1562,7 @@ Features Added:
 
 10. Since this one sadly cannot be tested, just go right on and write the code for the getModulesWithResources method. It should take one argument for the resource type name, and return any module that A) has the resource in question and B) is of the type 'life support.'
 
-### 10. Create the placeholders for the new Infra Data class methods: getFloorFromModuleId, getElevatorFromId, doesElevatorReachFloor, and isFloorOnGround.
+11. Create the placeholders for the new Infra Data class methods: getFloorFromModuleId, getElevatorFromId, doesElevatorReachFloor, and isFloorOnGround.
 
 ### 11. Add a unit test for the getFloorFromModuleId method. As the name implies, it should take a module ID as its argument and return a pointer to the Floor that holds that ID in its modules list.
 

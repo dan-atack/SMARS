@@ -294,14 +294,21 @@ describe("Infrastructure Data", () => {
         // New connectors are added to all applicable floors
         expect(infraData._floors[0]._connectors).toStrictEqual([9000, 9001]);
         expect(infraData._floors[1]._connectors).toStrictEqual([9000, 9001]);   // Both floors get new connector
-        infraData.addNewFloor(8, footprintA, 6000);
-        // TO IMPLEMENT: All new floors get all applicable connectors
+        infraData.addNewFloor(8, footprintA, 6001);
+        // All new floors get all applicable connectors
         expect(infraData._floors[2]._connectors).toStrictEqual([9000, 9001]);   // New floor gets both existing connectors
         infraData.addConnectorToFloors(9002, { x: 4, y: 0 }, { x: 4, y: 20 });
         // Connectors are only added to floors they intersect with
         expect(infraData._floors[2]._connectors).toStrictEqual([9000, 9001]);
         expect(infraData._floors[1]._connectors).toStrictEqual([9000, 9001]);
         expect(infraData._floors[0]._connectors).toStrictEqual([9000, 9001, 9002]); // Only floors that are in-bounds are connected
+    })
+
+    // Floor and Elevator (Ladder) Info methods (to be called by the Colonist for the purpose of pathfinding)
+    test("Can find the floor that contains a module with a given ID", () => {
+        expect(infraData.getFloorFromModuleId(9003)?._id).toBe(1001);   // Returns the whole object if found (in this case the mega-floor from the floor combiner test)
+        expect(infraData.getFloorFromModuleId(6001)?._id).toBe(1004);   // Finds the other, smaller floor added in the last test
+        expect(infraData.getFloorFromModuleId(9004)).toBe(null);        // When the module is not found, return a null value
     })
 
 })
