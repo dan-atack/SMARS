@@ -1,4 +1,5 @@
 import InfrastructureData from "../src/infrastructureData";
+import MapData from "../src/mapData";
 import Floor from "../src/floor";   // To use for mockage, maybe??
 import { ModuleInfo } from "../src/server_functions";
 
@@ -86,7 +87,8 @@ const map1 = [
     [1, 1, 1, 1, 1, 1],
     [1, 1, 1, 1, 1, 1, 1],
     [1, 1, 1, 1, 1, 1, 1, 3],
-]
+];
+const map2 = [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]];
 // Floor test data
 const footprintA = [0, 1, 2, 3];    // Left side
 const footprintB = [4, 5, 6, 7];    // Will link A and C
@@ -304,7 +306,7 @@ describe("Infrastructure Data", () => {
         expect(infraData._floors[0]._connectors).toStrictEqual([9000, 9001, 9002]); // Only floors that are in-bounds are connected
     })
 
-    // Floor and Elevator (Ladder) Info methods - to be called by the Colonist for the purpose of pathfinding
+    // Floor and Elevator (Ladder) Info methods - to be called by the Colonist to help with pathfinding
 
     // Returns a pointer to the entire floor object
     test("Can find the floor that contains a module with a given ID", () => {
@@ -320,9 +322,22 @@ describe("Infrastructure Data", () => {
         expect(infraData.getElevatorFromId(1000)).toBe(null);   // Always return null when something isn't found
     })
 
-    // Returns true or false
-    // test("Can determine if an elevator segment reaches a particular floor", () => {
+    // Returns true or false, depending on if the elevator ID is in the Floor's connectors list
+    test("Can determine if an elevator segment reaches a particular floor", () => {
+        expect(infraData.doesElevatorReachFloor(1001, 9000)).toBe(true);
+        expect(infraData.doesElevatorReachFloor(1001, 9002)).toBe(true);
+        expect(infraData.doesElevatorReachFloor(1002, 9002)).toBe(false);
+    })
 
-    // })
-
+    // Returns true or false depending on whether a new Floor's elevation is at the map's surface level
+    test("Can determine if Floor is at ground level", () => {
+        // Create instance of Map Data class to provide topographical data for ground floor calculation
+        const topographicalMap = new MapData();
+        topographicalMap._mapData = map2;
+        topographicalMap.updateTopographyAndZones();
+        const topo = topographicalMap._topography;
+        expect(infraData.isFloorOnGround(topo, 31, footprintA)).toBe(false);    // Expect to be too high
+        expect(infraData.isFloorOnGround(topo, 33, footprintA)).toBe(false);    // Expect to be too low
+        expect(infraData.isFloorOnGround(topo, 32, footprintB)).toBe(true);     // Expect to be just right
+    })
 })

@@ -4,6 +4,7 @@ import { Coords } from "./connectorData";
 import { Resource } from "./economyData";
 import Floor from "./floor";
 import { constants } from "./constants";
+import MapData from "./mapData";
 
 export default class InfrastructureData {
     // Infra Data class is mostly a calculator for the Infra class to pass values to, so it stores very few of them itself
@@ -346,8 +347,22 @@ export default class InfrastructureData {
     }
 
     // Determines if a new Floor is on the ground when it is created. If it is, its groundFloor property will be set to true
-    isFloorOnGround () {
-
+    isFloorOnGround (topography: number[], elevation: number, footprint: number[]) {
+        
     }
+
+    // TODO: Consider what happens if a floor is not on the ground level in its own columns (i.e. is over some kind of basement) but is flush with the ground level of the adjacent column/s
+    // isFloorFlushWithGround () {
+        
+        // E.G. Like this:
+        //
+        //
+        //          |    Floor    |
+        //----------===============--------
+        // Ground   | Lower Floor | Ground   
+
+    // }
+
+    
 
 }
