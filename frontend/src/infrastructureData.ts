@@ -343,7 +343,21 @@ export default class InfrastructureData {
 
     // Takes an elevator ID and a floor ID and returns a boolean for whether or not they meet
     doesElevatorReachFloor (floorId: number, elevatorId: number) {
-
+        const floor = this._floors.find((fl) => fl._id === floorId);
+        const elevator = this._elevators.find((el) => el.id === elevatorId);
+        if (floor !== undefined && elevator !== undefined) {
+            if (floor._connectors.includes(elevatorId)) {
+                return true;
+            } else {
+                return false;
+            }
+        } else if (floor !== undefined) {
+            console.log(`Error: Could not find elevator with ID ${elevatorId}`);
+            return false;
+        } else {
+            console.log(`Error: Could not find Floor with ID ${floorId}`);
+            return false;
+        }
     }
 
     // Determines if a new Floor is on the ground when it is created. If it is, its groundFloor property will be set to true

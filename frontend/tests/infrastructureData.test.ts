@@ -325,19 +325,22 @@ describe("Infrastructure Data", () => {
     // Returns true or false, depending on if the elevator ID is in the Floor's connectors list
     test("Can determine if an elevator segment reaches a particular floor", () => {
         expect(infraData.doesElevatorReachFloor(1001, 9000)).toBe(true);
-        expect(infraData.doesElevatorReachFloor(1001, 9002)).toBe(true);
-        expect(infraData.doesElevatorReachFloor(1002, 9002)).toBe(false);
+        expect(infraData.doesElevatorReachFloor(1001, 9001)).toBe(true);
+        expect(infraData.doesElevatorReachFloor(1001, 9002)).toBe(true);    // Big floor has all 3 connectors
+        expect(infraData.doesElevatorReachFloor(1003, 9000)).toBe(true);
+        expect(infraData.doesElevatorReachFloor(1003, 9001)).toBe(true);
+        expect(infraData.doesElevatorReachFloor(1003, 9002)).toBe(false);   // Smaller floor has only 2 connectors
     })
 
     // Returns true or false depending on whether a new Floor's elevation is at the map's surface level
-    test("Can determine if Floor is at ground level", () => {
-        // Create instance of Map Data class to provide topographical data for ground floor calculation
-        const topographicalMap = new MapData();
-        topographicalMap._mapData = map2;
-        topographicalMap.updateTopographyAndZones();
-        const topo = topographicalMap._topography;
-        expect(infraData.isFloorOnGround(topo, 31, footprintA)).toBe(false);    // Expect to be too high
-        expect(infraData.isFloorOnGround(topo, 33, footprintA)).toBe(false);    // Expect to be too low
-        expect(infraData.isFloorOnGround(topo, 32, footprintB)).toBe(true);     // Expect to be just right
-    })
+    // test("Can determine if Floor is at ground level", () => {
+    //     // Create instance of Map Data class to provide topographical data for ground floor calculation
+    //     const topographicalMap = new MapData();
+    //     topographicalMap._mapData = map2;
+    //     topographicalMap.updateTopographyAndZones();
+    //     const topo = topographicalMap._topography;
+    //     expect(infraData.isFloorOnGround(topo, 31, footprintA)).toBe(false);    // Expect to be too high
+    //     expect(infraData.isFloorOnGround(topo, 33, footprintA)).toBe(false);    // Expect to be too low
+    //     expect(infraData.isFloorOnGround(topo, 32, footprintB)).toBe(true);     // Expect to be just right
+    // })
 })
