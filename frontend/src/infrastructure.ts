@@ -228,6 +228,7 @@ export default class Infrastructure {
         this._modules.forEach((module) => {
             if (module._data._x + module._data._width >= leftEdge && module._data._x < rightEdge) {
                 module.render(this._horizontalOffset);
+                if (this._data.getFloorFromModuleId(module._data._id) !== null) this._p5.text("grounded", module._data._x + 10, module._data._y + 15)
                 module._data._isRendered = true;
             } else {
                 module._data._isRendered = false;

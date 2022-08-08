@@ -6,6 +6,7 @@ import Block from "./block";
 import { Coords } from './connectorData';
 
 export type MapZone = {         // If the map contains obstacles for colonist movement, it will be broken into 'zones'
+    id: string;                 // You gotta have an ID for everything now...
     leftEdge: Coords;           // Both edges' positions are given, so that colonists can tell which zone they are standing on
     rightEdge: Coords;
 }
@@ -144,9 +145,10 @@ export default class MapData {
     }
 
     // Creates a Zone - can optionally take two arguments for the x and y value of the new zone's left edge
-    createNewZone = (x?: number, y?: number) => {
+    createNewZone = (x: number, y: number) => {
         let z: MapZone = {
-            leftEdge: { x: x ? x : 0, y : y? y : 0},   // Use the x and y values here if provided
+            id: x.toString() + "0" + y.toString(),  // Make a unique ID string from the x and y values!
+            leftEdge: { x: x , y : y},              // Use the x and y values here if provided
             rightEdge: {x: 0, y: 0}
         }
         return z;

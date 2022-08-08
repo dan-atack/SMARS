@@ -360,7 +360,7 @@ export default class InfrastructureData {
         }
     }
 
-    // Determines if a new Floor is on the ground when it is created. If it is, its groundFloor property will be set to true
+    // Determines if a new Floor is on the ground when it is created. If so, its groundFloorZone property will be set accordingly
     isFloorOnGround (topography: number[], elevation: number, footprint: number[]) {
         
     }

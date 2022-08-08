@@ -1576,7 +1576,7 @@ Features Added:
 
 17. Create the code for geElevatorFromId and test it. See above for an explanation of how it should work.
 
-### 14. Create the code for doesElevatorReachFloor and test it. See above for an explanation of how it should work.
+18. Create the code for doesElevatorReachFloor and test it. See above for an explanation of how it should work.
 
 ### 15. Create the code for isFloorOnGround and test it. See above for an explanation of how it should work.
 
