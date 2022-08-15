@@ -10,7 +10,7 @@ export default class Floor {
     _elevation: number;         // Grid location of the floor's altitude, on the y-axis
     _modules: number[];         // List of UIDs all the modules that form this floor
     _connectors: number[];      // List of UIDs of all the transit connectors that intersect with this floor
-    _groundFloorZone: MapZone | null    // Either the map zone that the floor rests on, or nothing
+    _groundFloorZone: MapZone[] // A list of zero to several map zones that the Floor sits upon
 
     // To create a floor we need the floor's ID and elevation only; we can add its first module after construction by calling the add module method
     constructor(id: number, elevation: number) {
@@ -20,7 +20,7 @@ export default class Floor {
         this._elevation = elevation;
         this._modules = [];
         this._connectors = [];
-        this._groundFloorZone = null;
+        this._groundFloorZone = [];
     }
 
     // Take a list of columns' indices and uses them to redetermine the position of the right/left edges

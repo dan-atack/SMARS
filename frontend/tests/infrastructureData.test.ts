@@ -1,5 +1,5 @@
 import InfrastructureData from "../src/infrastructureData";
-import MapData from "../src/mapData";
+import MapData, { MapZone } from "../src/mapData";
 import Floor from "../src/floor";   // To use for mockage, maybe??
 import { ModuleInfo } from "../src/server_functions";
 
@@ -79,6 +79,8 @@ const partlyBlockedCoords = [
     {x: 6, y: 28}
 ];
 // Terrain test data
+
+// Slightly lumpy map (one map zone only)
 const map1 = [
     [1, 1, 1, 1, 1, 1, 1],
     [1, 1, 1, 1, 1, 1, 1],
@@ -88,7 +90,66 @@ const map1 = [
     [1, 1, 1, 1, 1, 1, 1],
     [1, 1, 1, 1, 1, 1, 1, 3],
 ];
-const map2 = [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]];
+
+// Perfectly flat map (one map zone only)
+const map2 = [
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1]
+];
+
+// Map with a 'butte' dividing it into three zones
+const map3 = [
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1]
+];
+
+const map3Zones = [
+    { id: '0033', leftEdge: { x: 0, y: 33 }, rightEdge: { x: 7, y: 33 } },
+    {
+      id: '8030',
+      leftEdge: { x: 8, y: 30 },
+      rightEdge: { x: 11, y: 30 }
+    },
+    {
+      id: '12033',
+      leftEdge: { x: 12, y: 33 },
+      rightEdge: { x: 19, y: 33 }
+    }
+]
+
+
 // Floor test data
 const footprintA = [0, 1, 2, 3];    // Left side
 const footprintB = [4, 5, 6, 7];    // Will link A and C
@@ -333,14 +394,40 @@ describe("Infrastructure Data", () => {
     })
 
     // Returns true or false depending on whether a new Floor's elevation is at the map's surface level
-    // test("Can determine if Floor is at ground level", () => {
-    //     // Create instance of Map Data class to provide topographical data for ground floor calculation
-    //     const topographicalMap = new MapData();
-    //     topographicalMap._mapData = map2;
-    //     topographicalMap.updateTopographyAndZones();
-    //     const topo = topographicalMap._topography;
-    //     expect(infraData.isFloorOnGround(topo, 31, footprintA)).toBe(false);    // Expect to be too high
-    //     expect(infraData.isFloorOnGround(topo, 33, footprintA)).toBe(false);    // Expect to be too low
-    //     expect(infraData.isFloorOnGround(topo, 32, footprintB)).toBe(true);     // Expect to be just right
-    // })
+    test("Can determine if Floor is at ground level on flat map", () => {
+        // Create instance of Map Data class to provide topographical data for ground floor calculation
+        const topographicalMap = new MapData();
+        topographicalMap._mapData = map2;   // Use the flat map for starters
+        topographicalMap.updateTopographyAndZones();
+        const topo = topographicalMap._topography;
+        const zones = topographicalMap._zones;
+        expect(infraData.determineFloorGroundZones(topo, zones, 31, footprintA)).toStrictEqual([]);      // Too high - no zones
+        expect(infraData.determineFloorGroundZones(topo, zones, 33, footprintA)).toStrictEqual([]);      // Too low - no zones
+        expect(infraData.determineFloorGroundZones(topo, zones, 32, footprintB)).toStrictEqual([{id: "0033", leftEdge: {x: 0, y: 33}, rightEdge: {x: 15, y: 33}}]);   // On the ground = in the zone
+        // TODO: Write additional test cases using map3 (the butte) to evaluate more complicated scenarios
+    })
+
+    test("Can determine Floor's ground zone on uneven map", () => {
+        // Load map data for 'butte' shaped map
+        const topographicalMap = new MapData();
+        topographicalMap._mapData = map3;
+        topographicalMap.updateTopographyAndZones();
+        const topo = topographicalMap._topography;
+        const zones = topographicalMap._zones;
+        expect(topographicalMap._zones).toStrictEqual(map3Zones);   // Quick check to verify that map zones are updated correctly
+        expect(infraData.determineFloorGroundZones(topo, zones, 32, footprintA)).toStrictEqual([{ id: '0033', leftEdge: { x: 0, y: 33 }, rightEdge: { x: 7, y: 33 } }]);    // On the ground at the leftmost edge
+        expect(infraData.determineFloorGroundZones(topo, zones, 32, footprintB)).toStrictEqual([{ id: '0033', leftEdge: { x: 0, y: 33 }, rightEdge: { x: 7, y: 33 } }]);    // On the ground, flush with the left edge of the 'butte'
+        expect(infraData.determineFloorGroundZones(topo, zones, 32, footprintC)).toStrictEqual([]);    // Forbidden due to collision with the butte
+        expect(infraData.determineFloorGroundZones(topo, zones, 29, footprintC)).toStrictEqual([{
+            id: '8030',
+            leftEdge: { x: 8, y: 30 },
+            rightEdge: { x: 11, y: 30 }
+        }]);    // On the ground, on top of the butte
+        expect(infraData.determineFloorGroundZones(topo, zones, 32, footprintD)).toStrictEqual([{
+            id: '12033',
+            leftEdge: { x: 12, y: 33 },
+            rightEdge: { x: 19, y: 33 }
+        }]);    // On the ground, on right side of the butte
+        // TODO: Add a case where a floor bridges two zones??
+    })
 })

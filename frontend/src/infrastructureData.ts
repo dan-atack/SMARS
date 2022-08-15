@@ -4,7 +4,7 @@ import { Coords } from "./connectorData";
 import { Resource } from "./economyData";
 import Floor from "./floor";
 import { constants } from "./constants";
-import MapData from "./mapData";
+import { MapZone } from "./mapData";
 
 export default class InfrastructureData {
     // Infra Data class is mostly a calculator for the Infra class to pass values to, so it stores very few of them itself
@@ -360,9 +360,25 @@ export default class InfrastructureData {
         }
     }
 
-    // Determines if a new Floor is on the ground when it is created. If so, its groundFloorZone property will be set accordingly
-    isFloorOnGround (topography: number[], elevation: number, footprint: number[]) {
-        
+    // Determines if a Floor is on the ground when it is created/expanded. A Floor can have 0 to many ground floor zones
+    determineFloorGroundZones (topography: number[], mapZones: MapZone[], elevation: number, footprint: number[]) {
+        const zones: MapZone[] = [];
+        const ids: string[] = [];       // Keep track of IDs of zones added
+        // Check each column in the footprint against the topography map
+        footprint.forEach((col) => {
+            if (topography[col] - 1 === elevation) {  // Floor elevation is one higher (lower!) than topography to be on top of it
+                // Find the zone that contains the current column
+                const zone = mapZones.find(function(z) {
+                    return z.leftEdge.x <= col && z.rightEdge.x >= col
+                })
+                // If the zones list does not already include this zone, then add it
+                if (zone !== undefined && !(ids.includes(zone.id))) {
+                    zones.push(zone);
+                    ids.push(zone.id);
+                }
+            }
+        })
+        return zones;
     }
 
     // TODO: Consider what happens if a floor is not on the ground level in its own columns (i.e. is over some kind of basement) but is flush with the ground level of the adjacent column/s

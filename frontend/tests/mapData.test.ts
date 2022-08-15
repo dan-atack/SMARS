@@ -81,4 +81,5 @@ describe("MapData", () => {
         expect(mapData.walkableFromLocation(0, 32, 6, 29)).toBe(true);      // CAN walk up to the edge of the cliff
         expect(mapData.walkableFromLocation(15, 32, 7, 32)).toBe(true);     // CAN walk to the edge of cliff (from other side)
     })
+
 })
