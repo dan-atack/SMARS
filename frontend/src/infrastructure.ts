@@ -7,6 +7,7 @@ import { ConnectorInfo, ModuleInfo } from "./server_functions";
 import { constants } from "./constants";
 import { Resource } from "./economyData";
 import { Coords } from "./connectorData";
+import { MapZone } from "./mapData";
 
 export default class Infrastructure {
     // Infrastructure class types:
@@ -29,21 +30,18 @@ export default class Infrastructure {
         this._data.setup(mapWidth)
     }
 
-    // Args: x and y coords and the moduleInfo. Serial is optional (used for loading modules from a save file)
-    addModule (x: number, y: number, moduleInfo: ModuleInfo, serial?: number) {
+    // Args: x and y coords and the moduleInfo, plus now the map topography and zone data for ground floor determination. Serial is optional (used for loading modules from a save file)
+    addModule (x: number, y: number, moduleInfo: ModuleInfo, topography: number[], mapZones: MapZone[], serial?: number) {
         // Whenever a serial number is to be used, update it BEFORE passing it to a constructor:
         this._data.increaseSerialNumber();  // Use the serial if there is one
         const m = new Module(this._p5, serial ? serial : this._data._currentSerial, x, y, moduleInfo);
         this._modules.push(m);
-        // console.log(m._data._moduleInfo.name);
-        // console.log(m._data._moduleInfo.storageCapacity);
-        // console.log(m._data._resources);
         // Update base volume data
         const area = this._data.calculateModuleArea(moduleInfo, x, y);
         this._data.updateBaseVolume(area);
         // Update base floor data
         const footprint = this._data.calculateModuleFootprint(area);
-        this._data.addModuleToFloors(m._data._id, footprint);
+        this._data.addModuleToFloors(m._data._id, footprint, topography, mapZones);
     }
 
     // Args: start and stop coords, and the connectorInfo. Serial is optional for loading connectors from a save file

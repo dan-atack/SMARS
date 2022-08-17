@@ -190,16 +190,15 @@ export default class Engine extends View {
 
     // Called by the above method, this will actually use the data from the backend to re-create loaded modules
     loadModuleFromSave = (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[], resources?: Resource[][]) => {
-        // console.log(resources);
         if (selectedBuilding != null) {
             locations.forEach((space, idx) => {
                 if (ids && resources) {     // Use saved serial number and resource data only if they exist
-                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, ids[idx]); // Create module with ID
+                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._data._topography, this._map._data._zones, ids[idx]); // Create module with ID
                     resources[idx].forEach((resource) => {
                         this._infrastructure.addResourcesToModule(ids[idx], resource);  // Provision with saved resources
                     })
                 } else {
-                    this._infrastructure.addModule(space[0], space[1], selectedBuilding);
+                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._data._topography, this._map._data._zones,);
                 }
             })
         }
@@ -452,7 +451,7 @@ export default class Engine extends View {
                 const affordable = this._economy._data.checkResources(this.selectedBuilding.buildCosts[0][1]);
                 const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._data._mapData);
                 if (clear && affordable) {
-                    this._infrastructure.addModule(x, y, this.selectedBuilding);
+                    this._infrastructure.addModule(x, y, this.selectedBuilding,  this._map._data._topography, this._map._data._zones,);
                     this._economy._data.subtractMoney(this.selectedBuilding.buildCosts[0][1]);
                 } else {
                     // TODO: Display this info to the player with an in-game message of some kind
@@ -854,15 +853,9 @@ export default class Engine extends View {
         if (this._modal) {
             this._modal.render();
         }
-        if (this.selectedBuilding) p5.text(this.selectedBuilding.name, 60, 100);
-        // if (this._infrastructure._data._floors.length > 3) {
-        //     p5.text(this._infrastructure._data._floors[2]._modules, 60, 120);
-        //     p5.text(`ROOF ACCESS: ${this._infrastructure._data._floors[2]._connectors.length}`, 60, 180);
-        // }
-        // if (this._infrastructure._data._elevators.length > 1) {
-        //     p5.text(`TOP: ${this._infrastructure._data._elevators[1].top}`, 60, 140);
-        //     p5.text(`BOTTOM: ${this._infrastructure._data._elevators[1].bottom}`, 60, 160);
-        //     p5.text(`ROOF ACCESS: ${this._infrastructure._data._floors[2]._connectors.length}`, 60, 180);
+        // if (this._infrastructure._data._floors.length > 4) {
+        //     p5.text(`Floor 4 modules: ${this._infrastructure._data._floors[4]._modules}`, 160, 180);
+        //     p5.text(`Floor 4 zones: ${this._infrastructure._data._floors[4]._groundFloorZones[0].id}`, 60, 200);
         // }
         
     }

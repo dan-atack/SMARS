@@ -1580,9 +1580,13 @@ Features Added:
 
 19. Add an ID field, this time a unique string given by combining its left side x and y coordinates, to each map zone that gets created during the Map Data class's topographical/zone determination method. This will enable to ground logic for the Infra Data/Floor class's ground floor status determination make more sense, since it is not just a question of WHETHER a floor is grounded, but of which ZONE (if any) a floor rests upon (and thus can be accessed from via walking).
 
-### 15. Create the code for determineFloorGroundZones method and test it. The Infra Data class should have this method, since it is called whenever a new module is placed. See above for an explanation of how it should work. In addition to what is said there, consider too that a floor could become grounded after its creation, if it is extended to overlap with higher terrain on one side or the other of its original edges (e.g. when building out from the middle of a crater). In this case it would be necessary to check each time a module is added whether it (and by extension the whole floor) touches the surface of some zone on the map. Revise the unit tests for this method first to reflect this possibility.
+20. Create the code for determineFloorGroundZones method and test it. See above for an explanation of how it should work. In addition to what is said there, consider too that a floor could become grounded after its creation, if it is extended to overlap with higher terrain on one side or the other of its original edges (e.g. when building out from the middle of a crater). In this case it would be necessary to check each time a module is added whether it (and by extension the whole floor) touches the surface of some zone on the map. Revise the unit tests for this method first to reflect this possibility. Ultimately the Infra Data class should have this method, but then call a new Floor class method when it has determined which Zones (if any) the Floor touches.
 
-### 16. Plug the isFloorOnGround method into the Floor creation sequence and test it out with a sneaky in-game print temporarily added to the Engine (might even be able to adapt a commented-out print that was kept from last time).
+21. Plug the determineFloorGroundZones method into the Infrastructure / Infra Data class's new module creation sequence, so that each time a new module is added a test will be performed to see whether it is on the ground, and the appropriate Zone data added to the Floor's groundFloorZones list as appropriate.
+
+22. Add a sneaky temporary text render to the Engine to show that the integration of the Floor Zone calculation has been successfully implemented.
+
+### 23. Develop the Floor class's new setGroundZones method (unit test first) to allow it to be passed a list of map zones and then add only the ones not already in present in that Floor's ground zones list.
 
 ### 99 [Optional] For your inner bureaucrat: re-arrange it so that all of the type definitions are exported from a single file, since the current scheme is getting a bit confusing.
 

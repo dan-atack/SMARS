@@ -272,21 +272,21 @@ describe("Infrastructure Data", () => {
     test("Can decide whether to create, merge or expand floors when a new module is placed", () => {
         // Ensure the tests are starting clean
         expect(infraData._floors.length).toBe(0);
-        infraData.addModuleToFloors(9000, { floor: 8, footprint: footprintA});
+        infraData.addModuleToFloors(9000, { floor: 8, footprint: footprintA}, [], []);
         expect(infraData._floors.length).toBe(1);   // Create first module --> first floor also
-        infraData.addModuleToFloors(9001, { floor: 8, footprint: footprintC});
+        infraData.addModuleToFloors(9001, { floor: 8, footprint: footprintC}, [], []);
         expect(infraData._floors.length).toBe(2);   // Create second module a ways away --> second floor instance
-        infraData.addModuleToFloors(9002, { floor: 8, footprint: footprintD});
+        infraData.addModuleToFloors(9002, { floor: 8, footprint: footprintD}, [], []);
         expect(infraData._floors.length).toBe(2);   // Create third module in position to merge with second one
         expect(infraData._floors[1]._modules).toStrictEqual([9001, 9002]);
         expect(infraData._floors[1]._leftSide).toBe(8);
         expect(infraData._floors[1]._rightSide).toBe(15);
-        infraData.addModuleToFloors(9003, { floor: 8, footprint: footprintB});
+        infraData.addModuleToFloors(9003, { floor: 8, footprint: footprintB}, [], []);
         expect(infraData._floors.length).toBe(1);   // Create fourth module between first and second, merging into one big floor
         expect(infraData._floors[0]._modules).toStrictEqual([9000, 9001, 9002, 9003]);
         expect(infraData._floors[0]._leftSide).toBe(0);
         expect(infraData._floors[0]._rightSide).toBe(15);
-        infraData.addModuleToFloors(9004, { floor: 5, footprint: footprintA});
+        infraData.addModuleToFloors(9004, { floor: 5, footprint: footprintA}, [], []);
         expect(infraData._floors.length).toBe(2);   // Create a fifth module on another level, just because
     })
 
@@ -295,11 +295,11 @@ describe("Infrastructure Data", () => {
         infraData._floors = [];
         infraData.setSerialNumber(1000);
         expect(infraData._currentSerial).toBe(1000);
-        infraData.addNewFloor(5, footprintA, infraData._currentSerial);
+        infraData.addNewFloor(5, footprintA, infraData._currentSerial, [], []);
         expect(infraData._floors.length).toBe(1);
         expect(infraData._currentSerial).toBe(1001);    // Validate serial number augmentation
-        infraData.addNewFloor(5, footprintB, infraData._currentSerial);
-        infraData.addNewFloor(2, footprintB, infraData._currentSerial);
+        infraData.addNewFloor(5, footprintB, infraData._currentSerial, [], []);
+        infraData.addNewFloor(2, footprintB, infraData._currentSerial, [], []);
         expect(infraData._floors.length).toBe(3);
         expect(infraData._currentSerial).toBe(1003);
     })
@@ -328,9 +328,9 @@ describe("Infrastructure Data", () => {
         // Ensure no previous floors exist
         infraData._floors = [];
         // Add two new floors that are on the same level, but with a gulf between them
-        infraData.addNewFloor(5, footprintA, 9001);
+        infraData.addNewFloor(5, footprintA, 9001, [], []);
         expect(infraData._floors[0]._id).toBe(1001);
-        infraData.addNewFloor(5, footprintC, 9002);
+        infraData.addNewFloor(5, footprintC, 9002, [], []);
         expect(infraData._floors.length).toBe(2);
         expect(infraData._floors[0]._id).toBe(1001);
         expect(infraData._floors[1]._id).toBe(1002);
@@ -350,14 +350,14 @@ describe("Infrastructure Data", () => {
         // Connector is added which intersects the existing floor (continuing from the previous test case)
         infraData.addConnectorToFloors(9000, { x: 1, y: 0 }, { x: 1, y: 20 });
         expect(infraData._floors[0]._connectors).toStrictEqual([9000]);  // Floor has the connector's ID registered
-        infraData.addNewFloor(2, footprintA, 6000);
+        infraData.addNewFloor(2, footprintA, 6000, [], []);
         // TO IMPLEMENT: Every time a new floor is added, all connectors must be checked
         expect(infraData._floors[1]._connectors).toStrictEqual([9000]);     // Newly added floor gets existing connectors
         infraData.addConnectorToFloors(9001, { x: 3, y: 0 }, { x: 3, y: 20 });
         // New connectors are added to all applicable floors
         expect(infraData._floors[0]._connectors).toStrictEqual([9000, 9001]);
         expect(infraData._floors[1]._connectors).toStrictEqual([9000, 9001]);   // Both floors get new connector
-        infraData.addNewFloor(8, footprintA, 6001);
+        infraData.addNewFloor(8, footprintA, 6001, [], []);
         // All new floors get all applicable connectors
         expect(infraData._floors[2]._connectors).toStrictEqual([9000, 9001]);   // New floor gets both existing connectors
         infraData.addConnectorToFloors(9002, { x: 4, y: 0 }, { x: 4, y: 20 });

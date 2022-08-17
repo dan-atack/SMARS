@@ -201,14 +201,14 @@ export default class InfrastructureData {
     // FLOOR-RELATED METHODS
 
     // Top-level update method for adding new modules
-    addModuleToFloors (moduleId: number, footprint: {floor: number, footprint: number[]}) {
+    addModuleToFloors (moduleId: number, footprint: {floor: number, footprint: number[]}, topography: number[], mapZones: MapZone[]) {
         const fp = footprint.footprint;
         const elev = footprint.floor;
         // Check if an existing floor can be added to; if not, create a new one
         const existingFloors = this.findFloorsAtElevation(elev);
         if (existingFloors.length === 0) {
             // Add a new floor
-            this.addNewFloor(elev, fp, moduleId);
+            this.addNewFloor(elev, fp, moduleId, topography, mapZones);
         } else {
             // Keep a list of how many floors the new module footprint is adjacent to
             let adjacents: Floor[] = [];
@@ -220,7 +220,7 @@ export default class InfrastructureData {
             })
             if (adjacents.length === 0) {
                 // Create a new floor if no existing floor is adjacent
-                this.addNewFloor(elev, fp, moduleId);
+                this.addNewFloor(elev, fp, moduleId, topography, mapZones);
             } else if (adjacents.length === 1) {
                 // Add module ID to existing floor is one is adjacent
                 adjacents[0].addModule(moduleId, fp);
@@ -271,7 +271,7 @@ export default class InfrastructureData {
     }
 
     // Creates a new floor, initially comprised of a single module
-    addNewFloor (elevation: number, footprint: number[], moduleId: number) {
+    addNewFloor (elevation: number, footprint: number[], moduleId: number, topography: number[], mapZones: MapZone[]) {
         // Always update serial number first
         this.increaseSerialNumber();
         // Sort the footprint to ensure it goes from left to right
@@ -280,6 +280,12 @@ export default class InfrastructureData {
         f.addModule(moduleId, footprint);
         this._floors.push(f);
         this.addConnectorsToNewFloor(this._currentSerial, elevation, footprint);
+        // Determine if the new module is on the ground, and if so, add the zone info to its floor data
+        const groundFloorZones = this.determineFloorGroundZones(topography, mapZones, elevation, footprint);
+        if (groundFloorZones.length > 0) {
+            // TODO: Rather than crudely setting it this way, add a new Floor method to accept a list of zones and determine for itself whether to add them or not.
+            f._groundFloorZones = groundFloorZones;
+        }
     }
 
     // Deletes the second of two floors involved in a merger to avoid data duplication
