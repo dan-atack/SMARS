@@ -1527,7 +1527,7 @@ Now that the game's resources are located in the modules, and the modules are on
 
 Exit Criteria:
 
-- Colonists will become hungry and thirsty as their needs increase over time
+- [DONE] Colonists will become hungry and thirsty as their needs increase over time
 - Colonists will move toward a module that contains the resource/s they need when they become thirsty or hungry
 - Colonists can walk on Floors in the base as though they were on the ground
 - Colonists can climb up ladders to get to a Floor
@@ -1586,7 +1586,15 @@ Features Added:
 
 22. Add a sneaky temporary text render to the Engine to show that the integration of the Floor Zone calculation has been successfully implemented.
 
-### 23. Develop the Floor class's new setGroundZones method (unit test first) to allow it to be passed a list of map zones and then add only the ones not already in present in that Floor's ground zones list.
+23. Develop the Floor class's new setGroundZones method (unit test first) to allow it to be passed a list of map zones and then add only the ones not already in present in that Floor's ground zones list.
+
+24. Enable the Colonist Data class's updateNeeds method as part of the updateNeedsAndGoals routine. Check that the colonists do indeed become thirsty when this method call is enabled.
+
+### 25. Add a new field for the Colonist Data class: actionStack. This will be an array of objects (new type alert!) with the shape { type: string, location: Coords, duration: number, buildingID: number }. The type string will go into a new switch case method that will be added to the CheckGoalStatus method; location will be a set of coordinates; duration will be the length in minutes that an action will take to complete (movement actions will use 0), and buildingID will be an optional value representing the ID of the module/connector that is the target of an action such as 'work' or 'consume' (again, 0 will be used when this value is not needed).
+
+### 26. Next, create another new field for the colonist for currentActivityElapsed, which will be the amount of minutes that have passed while doing the current activity (if its duration is more than 0).
+
+### 26. Create a new Colonist Data method (unit test first!) that will
 
 ### 99 [Optional] For your inner bureaucrat: re-arrange it so that all of the type definitions are exported from a single file, since the current scheme is getting a bit confusing.
 

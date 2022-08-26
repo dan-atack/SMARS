@@ -283,8 +283,7 @@ export default class InfrastructureData {
         // Determine if the new module is on the ground, and if so, add the zone info to its floor data
         const groundFloorZones = this.determineFloorGroundZones(topography, mapZones, elevation, footprint);
         if (groundFloorZones.length > 0) {
-            // TODO: Rather than crudely setting it this way, add a new Floor method to accept a list of zones and determine for itself whether to add them or not.
-            f._groundFloorZones = groundFloorZones;
+            f.setGroundFloorZones(groundFloorZones);
         }
     }
 

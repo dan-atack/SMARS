@@ -51,7 +51,7 @@ export default class ColonistData {
     // Handles hourly updates to the colonist's needs and priorities (goals)
     updateNeedsAndGoals = (maxColumns: number) => {
         // TODO: Only introduce need-based goal-setting when they are possible to fulfill
-        // this.updateNeeds();
+        this.updateNeeds();
         this.updateGoal(maxColumns);
     }
 

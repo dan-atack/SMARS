@@ -69,5 +69,16 @@ export default class Floor {
         this._connectors.push(connectorId);
     }
 
+    setGroundFloorZones = (zones: MapZone[]) => {
+        zones.forEach((zone) => {
+            if (this._groundFloorZones.find((z) => {
+                return zone.id === zone.id
+            }) === undefined) {
+                console.log(`Added map zone with ID ${zone.id} to Floor ${this._id} ground zones list.`);
+                this._groundFloorZones.push(zone);  // Only add the new zone if it is not found in the existing list
+            }
+        })
+    }
+
     // TODO: Add removal functions for Modules and Connectors
 }
