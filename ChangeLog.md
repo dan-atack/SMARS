@@ -1596,6 +1596,10 @@ Features Added:
 
 27. Update the Engine's call to the Population class's updateColonists method to pass it a link to the Infrastructure class, so that it can pass that to individual colonists to use its methods.
 
+28. Pass down the pointer to the Infra class instance all the way to the Colonist data class, so that its various goal status determination/updater methods can all use it. Ensure the setGoal and determineActionsForGoal methods can both accept an Infra parameter.
+
+29. Add a call to the determineActionsForGoal method from the get-water case in the setGoal method, and in the action determinator method have it console log the ID's of any modules that contain water (making use of one of our newly added methods adder earlier in this chapter).
+
 ### 28. Remove P5 from the constructor of the Infrastructure class; replace both uses of it (there are only 2, one for module creation and one for connector creation) by passing the Engine's P5 instance to those method calls rather than using them in the Infra base class's constructor.
 
 ### 99 [Optional] For your inner bureaucrat: re-arrange it so that all of the type definitions are exported from a single file, since the current scheme is getting a bit confusing.

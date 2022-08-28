@@ -163,11 +163,12 @@ export default class Infrastructure {
         let mods: [string, number][] = [];  // Each entry will contain both ID (as string) and quantity of the resource present
         this._modules.forEach((mod) => {
             if (mod._data._resourceCapacity().includes(resource)) {
-                const r = mod._data._resources.find(res => res[0] === resource[0]);
+                // console.log(`Module ${mod._data._moduleInfo.name} contains ${resource}`);
+                const r = mod._data._resources.find((res) => res[0] === resource);
                 if (r !== undefined) {
                     mods.push([mod._data._id.toString(), r[1]]);
                 } else {
-                    console.log(`Error retrieving resource data for ${mod._data._id}`);
+                    console.log(`Error retrieving resource data for module ${mod._data._id} (${mod._data._moduleInfo.name})`);
                 }
             }
         });

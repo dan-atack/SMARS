@@ -24,7 +24,7 @@ export default class Population {
     // Needs terrain info for position updates (every minute), and a boolean for whether to update colonists' needs (every hour)
     updateColonists = (terrain: number[][], needs: boolean, infra: Infrastructure) => {
         this.updateColonistPositionsAndGoals(terrain, infra);              // Should happen once every minute
-        if (needs) this.updateColonistNeedsAndGoals(terrain);      // Should happen once every hour
+        if (needs) this.updateColonistNeedsAndGoals(terrain, infra);      // Should happen once every hour
     }
 
     // Passes terrain info to each colonist and then checks if they have achieved their current goal
@@ -44,9 +44,9 @@ export default class Population {
         })
     }
 
-    updateColonistNeedsAndGoals = (terrain: number[][]) => {
+    updateColonistNeedsAndGoals = (terrain: number[][], infra: Infrastructure) => {
         this._colonists.forEach((colonist) => {
-            colonist._data.updateNeedsAndGoals(terrain.length - 1);
+            colonist._data.updateNeedsAndGoals(terrain.length - 1, infra);
         })
     }
 

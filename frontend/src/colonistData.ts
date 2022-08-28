@@ -62,10 +62,10 @@ export default class ColonistData {
     }
 
     // Handles hourly updates to the colonist's needs and priorities (goals)
-    updateNeedsAndGoals = (maxColumns: number) => {
+    updateNeedsAndGoals = (maxColumns: number, infra: Infrastructure) => {
         // TODO: Only introduce need-based goal-setting when they are possible to fulfill
         this.updateNeeds();
-        this.updateGoal(maxColumns);
+        this.updateGoal(maxColumns, infra);
     }
 
     // This may take arguments some day, like how much the Colonist has exerted himself since the last update
@@ -77,7 +77,7 @@ export default class ColonistData {
     }
 
     // Checks whether any needs have exceeded their threshold and assigns a new goal if so; otherwise sets goal to 'explore'
-    updateGoal = (maxColumns: number) => {
+    updateGoal = (maxColumns: number, infra: Infrastructure) => {
         // 1 - Determine needs-based (first priority) goals
         // If the colonist has no current goal, or is set to exploring, check if any needs have reached their thresholds
         // TODO: Revamp this logic to check for needs in a separate sub-method, and to include other tasks that can be overridden
@@ -85,7 +85,7 @@ export default class ColonistData {
             Object.keys(this._needs).forEach((need) => {
                 // @ts-ignore
                 if (this._needs[need] >= this._needThresholds[need]) {
-                    this.setGoal(`get-${need}`);
+                    this.setGoal(`get-${need}`, infra);
                 }
             })
         };
@@ -93,41 +93,42 @@ export default class ColonistData {
         // If no goal has been set, tell them to go exploring; otherwise use the goal determined above
         // TODO: When colonists can have jobs, revamp this logic to check for non-exploration jobs before defaulting to explore
         if (this._currentGoal === "") {
-            this.setGoal("explore", maxColumns);
-        } else if (this._currentGoal !== "explore") {
-            this.setGoal(this._currentGoal);
+            this.setGoal("explore", infra, maxColumns);
         };
     }
 
     // Takes a string naming the current goal, and uses that to set the destination (and sets that string as the current goal)
     // Also takes optional parameter when setting the "explore" goal, to ensure the colonist isn't sent off the edge of the world
-    setGoal = (goal: string, maxColumns?: number) => {
+    setGoal = (goal: string, infra?: Infrastructure, maxColumns?: number) => {
         this._currentGoal = goal;
-        switch(this._currentGoal) {
-            case "explore":
-                // Assign the colonist to walk to a nearby position
-                const dir = Math.random() > 0.5;
-                const dist = Math.ceil(Math.random() * 10);
-                const dest = dir ? dist : -dist;
-                this._movementDest = Math.max(this._x + dest, 0);    // Ensure the colonist doesn't wander off the edge
-                if (maxColumns && this._movementDest > maxColumns) {
-                    this._movementDest = maxColumns;
-                }
-                break;
-            case "get-water":
-                console.log("So thirsty...");
-                // TODO: Determine action stack here
-                break;
-            case "get-food":
-                console.log("Merry! I'm hungry!");
-                // TODO: Determine action stack here
-                break;
+        if (this._currentGoal === "explore") {
+            // Assign the colonist to walk to a nearby position
+            const dir = Math.random() > 0.5;
+            const dist = Math.ceil(Math.random() * 10);
+            const dest = dir ? dist : -dist;
+            this._movementDest = Math.max(this._x + dest, 0);    // Ensure the colonist doesn't wander off the edge
+            if (maxColumns && this._movementDest > maxColumns) {
+                this._movementDest = maxColumns;
+            }
+        } else if (infra) {
+            this.determineActionsForGoal(infra)
+        } else if (this._currentGoal !== "") {
+            console.log(`Error: No infra data provided for non-exploration colonist goal: ${this._currentGoal}`);
         }
     }
 
     // For goals other than exploring, determines the individual actions to be performed to achieve the current goal
-    determineActionsForGoal = () => {
-
+    determineActionsForGoal = (infra: Infrastructure) => {
+        switch(this._currentGoal) {
+            case "get-water":
+                console.log("So thirsty...");
+                const waterinHole = infra.findModulesWithResource("water");
+                console.log(waterinHole);
+                break;
+            case "get-food":
+                console.log("Merry! I'm hungry!");
+                break;
+        }
     }
 
     // Resets all goal-oriented values
@@ -143,7 +144,7 @@ export default class ColonistData {
             // If the goal was to explore, check if any needs have become urgent enough to make them the new goal
             if (this._currentGoal === "explore") {
                 this.resolveGoal();
-                this.updateGoal(maxColumns);
+                this.updateGoal(maxColumns, infra);
             } else {
                 // console.log(`Arrived at destination for goal ${this._currentGoal}. Interact with building now?`);
                 // TODO: Resolve goal for non-exploration cases!
