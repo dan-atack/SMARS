@@ -1,6 +1,6 @@
 // The Colonist class represents the individual Smartian colonist. That's... something about a... giant leap... damn!
 import P5 from "p5";
-import ColonistData from "./colonistData";
+import ColonistData, { ColonistAction } from "./colonistData";
 import { constants } from "./constants";
 import { bodyAnimations, headAnimations, handAnimations, footAnimations } from "./animationFunctions";
 
@@ -15,6 +15,7 @@ export type ColonistSaveData = {
     y: number,
     needs: ColonistNeeds,
     goal: string,
+    actionStack: ColonistAction[],
     isMoving: boolean,
     movementType: string,
     movementCost: number,

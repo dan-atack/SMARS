@@ -1,6 +1,14 @@
 // The ColonistData class handles all of the data processing for the colonist class, without any of the rendering tasks
 import { ColonistSaveData, ColonistNeeds } from "./colonist";
+import { Coords } from "./connectorData";
 import { constants } from "./constants";
+
+export type ColonistAction = {
+    type: string,       // Name of the type of action ('move', 'climb', and 'consume' initially)
+    coords: Coords,     // Exact location the colonist needs to be at/move towards
+    duration: number,   // How long the action takes to perform (0 means the action happens immediately)
+    buildingId: number, // ID of the module/connector for 'climb' and 'consume' actions, e.g.
+}
 
 export default class ColonistData {
     // Colonist data types
@@ -13,6 +21,7 @@ export default class ColonistData {
     _needs: ColonistNeeds;          // Keep track of the colonist's needs to help them choose what to do with their lives
     _needThresholds: ColonistNeeds; // Separately keep track of the various thresholds for each type of need
     _currentGoal: string;           // String name of the Colonist's current goal (e.g. "get food", "get rest", "explore", etc.)
+    _actionStack: ColonistAction[]; // The list of actions a colonist will try to perform to achieve their current goal
     _isMoving: boolean;             // Is the colonist currently trying to get somewhere?
     _movementType: string           // E.g. walk, climb-up, climb-down, etc. (used to control animations)
     _movementCost: number;          // The cost, in units of time (and perhaps later, 'exertion') for the current movement
@@ -39,6 +48,7 @@ export default class ColonistData {
             rest: 8
         };
         this._currentGoal = saveData ? saveData.goal : "explore"    // Load saved goal, or go exploring (for new colonists).
+        this._actionStack = saveData ? saveData.actionStack : [];   // Load saved action stack, or default to empty stack
         this._isMoving = saveData ? saveData.isMoving : false;      // Load saved status or colonists is at rest by default
         this._movementType = saveData ? saveData.movementType :  "" // Load name of movement type or default to no movement
         this._movementCost = saveData ? saveData.movementCost : 0;  // Load value or default to zero

@@ -74,7 +74,7 @@ export default class Floor {
             if (this._groundFloorZones.find((z) => {
                 return zone.id === zone.id
             }) === undefined) {
-                console.log(`Added map zone with ID ${zone.id} to Floor ${this._id} ground zones list.`);
+                // console.log(`Added map zone with ID ${zone.id} to Floor ${this._id} ground zones list.`);
                 this._groundFloorZones.push(zone);  // Only add the new zone if it is not found in the existing list
             }
         })

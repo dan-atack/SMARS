@@ -1590,7 +1590,7 @@ Features Added:
 
 24. Enable the Colonist Data class's updateNeeds method as part of the updateNeedsAndGoals routine. Check that the colonists do indeed become thirsty when this method call is enabled.
 
-### 25. Add a new field for the Colonist Data class: actionStack. This will be an array of objects (new type alert!) with the shape { type: string, location: Coords, duration: number, buildingID: number }. The type string will go into a new switch case method that will be added to the CheckGoalStatus method; location will be a set of coordinates; duration will be the length in minutes that an action will take to complete (movement actions will use 0), and buildingID will be an optional value representing the ID of the module/connector that is the target of an action such as 'work' or 'consume' (again, 0 will be used when this value is not needed).
+25. Add a new field for the Colonist Data class: actionStack. This will be an array of objects (new type alert!) with the shape { type: string, location: Coords, duration: number, buildingID: number }. The type string will go into a new switch case method that will be added to the CheckGoalStatus method; location will be a set of coordinates; duration will be the length in minutes that an action will take to complete (movement actions will use 0), and buildingID will be an optional value representing the ID of the module/connector that is the target of an action such as 'work' or 'consume' (again, 0 will be used when this value is not needed).
 
 ### 26. Next, create another new field for the colonist for currentActivityElapsed, which will be the amount of minutes that have passed while doing the current activity (if its duration is more than 0).
 
