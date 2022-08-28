@@ -1592,7 +1592,7 @@ Features Added:
 
 25. Add a new field for the Colonist Data class: actionStack. This will be an array of objects (new type alert!) with the shape { type: string, location: Coords, duration: number, buildingID: number }. The type string will go into a new switch case method that will be added to the CheckGoalStatus method; location will be a set of coordinates; duration will be the length in minutes that an action will take to complete (movement actions will use 0), and buildingID will be an optional value representing the ID of the module/connector that is the target of an action such as 'work' or 'consume' (again, 0 will be used when this value is not needed).
 
-### 26. Next, create another new field for the colonist for currentActivityElapsed, which will be the amount of minutes that have passed while doing the current activity (if its duration is more than 0).
+26. Next, create another new field for the colonist for activityTimeElapsed, which will be the amount of minutes that have passed while doing the current activity (if its duration is more than 0).
 
 ### 26. Create a new Colonist Data method (unit test first!) that will
 

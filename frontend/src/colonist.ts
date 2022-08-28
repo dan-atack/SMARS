@@ -16,6 +16,7 @@ export type ColonistSaveData = {
     needs: ColonistNeeds,
     goal: string,
     actionStack: ColonistAction[],
+    actionTimeElapsed: number,
     isMoving: boolean,
     movementType: string,
     movementCost: number,

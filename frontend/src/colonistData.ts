@@ -22,6 +22,7 @@ export default class ColonistData {
     _needThresholds: ColonistNeeds; // Separately keep track of the various thresholds for each type of need
     _currentGoal: string;           // String name of the Colonist's current goal (e.g. "get food", "get rest", "explore", etc.)
     _actionStack: ColonistAction[]; // The list of actions a colonist will try to perform to achieve their current goal
+    _actionTimeElapsed: number;     // The amount of time, in minutes, that has elapsed performing the current action
     _isMoving: boolean;             // Is the colonist currently trying to get somewhere?
     _movementType: string           // E.g. walk, climb-up, climb-down, etc. (used to control animations)
     _movementCost: number;          // The cost, in units of time (and perhaps later, 'exertion') for the current movement
@@ -49,6 +50,7 @@ export default class ColonistData {
         };
         this._currentGoal = saveData ? saveData.goal : "explore"    // Load saved goal, or go exploring (for new colonists).
         this._actionStack = saveData ? saveData.actionStack : [];   // Load saved action stack, or default to empty stack
+        this._actionTimeElapsed = saveData ? saveData.actionTimeElapsed : 0;    // Load saved value or default to zero
         this._isMoving = saveData ? saveData.isMoving : false;      // Load saved status or colonists is at rest by default
         this._movementType = saveData ? saveData.movementType :  "" // Load name of movement type or default to no movement
         this._movementCost = saveData ? saveData.movementCost : 0;  // Load value or default to zero
@@ -75,7 +77,9 @@ export default class ColonistData {
 
     // Checks whether any needs have exceeded their threshold and assigns a new goal if so; otherwise sets goal to 'explore'
     updateGoal = (maxColumns: number) => {
+        // 1 - Determine needs-based (first priority) goals
         // If the colonist has no current goal, or is set to exploring, check if any needs have reached their thresholds
+        // TODO: Revamp this logic to check for needs in a separate sub-method, and to include other tasks that can be overridden
         if (this._currentGoal === "explore" || this._currentGoal === "") {
             Object.keys(this._needs).forEach((need) => {
                 // @ts-ignore
@@ -84,9 +88,13 @@ export default class ColonistData {
                 }
             })
         };
-        // If no goal has been set, tell them to go exploring
+        // 2- Determine job-related (second priority) goal if no needs-based goal has been set
+        // If no goal has been set, tell them to go exploring; otherwise use the goal determined above
+        // TODO: When colonists can have jobs, revamp this logic to check for non-exploration jobs before defaulting to explore
         if (this._currentGoal === "") {
             this.setGoal("explore", maxColumns);
+        } else if (this._currentGoal !== "explore") {
+            this.setGoal(this._currentGoal);
         };
     }
 
@@ -106,10 +114,19 @@ export default class ColonistData {
                 }
                 break;
             case "get-water":
+                console.log("So thirsty...");
+                // TODO: Determine action stack here
                 break;
             case "get-food":
+                console.log("Merry! I'm hungry!");
+                // TODO: Determine action stack here
                 break;
         }
+    }
+
+    // For goals other than exploring, determines the individual actions to be performed to achieve the current goal
+    determineActionsForGoal = () => {
+
     }
 
     // Resets all goal-oriented values

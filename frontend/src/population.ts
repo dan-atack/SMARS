@@ -20,7 +20,7 @@ export default class Population {
     }
 
     // Master updater function for controlling all individual colonist updater methods:
-    // Needs terrain info for position updates (every minute), a boolean for whether to update colonists' needs (every hour), and the Engine's game speed, express as the number of ticks (frames) per minute
+    // Needs terrain info for position updates (every minute), and a boolean for whether to update colonists' needs (every hour)
     updateColonists = (terrain: number[][], needs: boolean) => {
         this.updateColonistPositions(terrain);              // Should happen once every minute
         if (needs) this.updateColonistNeedsAndGoals(terrain);      // Should happen once every hour
@@ -64,6 +64,8 @@ export default class Population {
                 y: colonist._data._y,
                 needs: colonist._data._needs,
                 goal: colonist._data._currentGoal,
+                actionStack: colonist._data._actionStack,
+                actionTimeElapsed: colonist._data._actionTimeElapsed,
                 isMoving: colonist._data._isMoving,
                 movementType: colonist._data._movementType,
                 movementCost: colonist._data._movementCost,
