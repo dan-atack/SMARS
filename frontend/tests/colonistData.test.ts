@@ -21,7 +21,7 @@ describe("ColonistData", () => {
 
     test("Colonist with no goal will set goal to explore when updateGoal is called", () => {
         colonistData._currentGoal = "";
-        colonistData.updateGoal(3);
+        colonistData.updateGoal(3, mockInfra);
         expect(colonistData._currentGoal).toBe("explore");
     })
 

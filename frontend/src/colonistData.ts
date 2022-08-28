@@ -127,6 +127,8 @@ export default class ColonistData {
                 break;
             case "get-food":
                 console.log("Merry! I'm hungry!");
+                const chow = infra.findModulesWithResource("food");
+                console.log(chow);
                 break;
         }
     }

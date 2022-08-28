@@ -1600,7 +1600,29 @@ Features Added:
 
 29. Add a call to the determineActionsForGoal method from the get-water case in the setGoal method, and in the action determinator method have it console log the ID's of any modules that contain water (making use of one of our newly added methods adder earlier in this chapter).
 
-### 28. Remove P5 from the constructor of the Infrastructure class; replace both uses of it (there are only 2, one for module creation and one for connector creation) by passing the Engine's P5 instance to those method calls rather than using them in the Infra base class's constructor.
+30. Remove P5 from the constructor of the Infrastructure class; replace both uses of it (there are only 2, one for module creation and one for connector creation) by passing the Engine's P5 instance to those method calls rather than using them in the Infra base class's constructor.
+
+### 31. Create a new colonist method, getNearestModule, that takes an array of modules and compares each to the colonist's current location. The ID of the closest module (that also contains the selected resource in a desired amount) is returned. Unit test first, of course.
+
+### 32. Use the outcome of the aforementioned method to get the ID of the nearest module that contains the desired resource. Now is the last best chance to also add the module's "dispenser" role, by the way - unless you don't mind colonists drinking out of the water tank directly.
+
+### 33. Plug the module ID for the needed resource into the Infra class's findFloorFromModuleId method, to find the Floor ID that the Colonist will need to travel to. Console log the floor's ID.
+
+### 34. Next, from the retrieved Floor data, see if it has a ground floor zone, and if so, check if its ID matches the ID of the ground zone the colonist is standing on (they will have to have a property for the ground zone this way, but at least they don't have to also carry around the topography info!). Make this into its own method, and write a unit test before proceeding.
+
+### 35. Next, console log if the floor is on the ground, and is in the same zone as the colonist.
+
+### 36. If a resource-bearing module is not on the ground in the same zone as the colonist, look up whether it's got any connectors (elevators) attached. Log their IDs if it does.
+
+### 37. Add a new Connector Data class method that allows a ladder or other 'transport' type connector to return the coordinates (x and y) of the connector's bottom point.
+
+### 38. For each elevator ID in the non-walkable Floor's elevators list, call the above-mentioned function and pass the result, plus the colonist's current location (remembering to adjust the y value to represent foot level) into the Map Data class's walkableFromLocation method. It'll probably be necessary to pass a pointer to the Map Data class all the way down to Colonist town too, at this point. A bit tangly, but at least it should still be unit-testable!
+
+### 39. At this point, we should have all we need to determine the way to a floor that is removed by one elevator from the colonist's position. Let's have a quick think about how to start adding actions to the action stack, and then keep going!
+
+### 98. Refactor the Infrastructure class to incorporate the Infra Data class once more, since neither now needs P5.
+
+### 97. Update the Infra Data unit tests in light of this refactoring, and add some new ones too since the Infra base class has a lot of methods that are currently untested!
 
 ### 99 [Optional] For your inner bureaucrat: re-arrange it so that all of the type definitions are exported from a single file, since the current scheme is getting a bit confusing.
 
