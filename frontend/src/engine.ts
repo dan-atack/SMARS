@@ -78,7 +78,7 @@ export default class Engine extends View {
         this._gameData = null;
         this._saveInfo = null;  // Saved game info is loaded from the Game module when it calls the setupSavedGame method
         this._map = new Map(this._p5);
-        this._infrastructure = new Infrastructure(p5);
+        this._infrastructure = new Infrastructure();
         this._economy = new Economy(p5);
         this._population = new Population(p5);
         this._modal = null;
@@ -193,12 +193,12 @@ export default class Engine extends View {
         if (selectedBuilding != null) {
             locations.forEach((space, idx) => {
                 if (ids && resources) {     // Use saved serial number and resource data only if they exist
-                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._data._topography, this._map._data._zones, ids[idx]); // Create module with ID
+                    this._infrastructure.addModule(this._p5, space[0], space[1], selectedBuilding, this._map._data._topography, this._map._data._zones, ids[idx]); // Create module with ID
                     resources[idx].forEach((resource) => {
                         this._infrastructure.addResourcesToModule(ids[idx], resource);  // Provision with saved resources
                     })
                 } else {
-                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._data._topography, this._map._data._zones,);
+                    this._infrastructure.addModule(this._p5, space[0], space[1], selectedBuilding, this._map._data._topography, this._map._data._zones,);
                 }
             })
         }
@@ -249,9 +249,9 @@ export default class Engine extends View {
                 const start: Coords = space[0].start;
                 const stop: Coords = space[0].stop;
                 if (ids) {     // Use the saved serial number only if it is available
-                    this._infrastructure.addConnector(start, stop, selectedConnector, ids[idx]);
+                    this._infrastructure.addConnector(this._p5, start, stop, selectedConnector, ids[idx]);
                 } else {
-                    this._infrastructure.addConnector(start, stop, selectedConnector);
+                    this._infrastructure.addConnector(this._p5, start, stop, selectedConnector);
                 }
                 
             })
@@ -451,7 +451,7 @@ export default class Engine extends View {
                 const affordable = this._economy._data.checkResources(this.selectedBuilding.buildCosts[0][1]);
                 const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._data._mapData);
                 if (clear && affordable) {
-                    this._infrastructure.addModule(x, y, this.selectedBuilding,  this._map._data._topography, this._map._data._zones,);
+                    this._infrastructure.addModule(this._p5, x, y, this.selectedBuilding,  this._map._data._topography, this._map._data._zones,);
                     this._economy._data.subtractMoney(this.selectedBuilding.buildCosts[0][1]);
                 } else {
                     // TODO: Display this info to the player with an in-game message of some kind
@@ -483,7 +483,7 @@ export default class Engine extends View {
             const stop = this._mouseShadow._data._connectorStopCoords;
             const clear = this._infrastructure._data.checkConnectorEndpointPlacement(stop.x, stop.y, this._map._data._mapData);
             if (affordable && clear) {
-                this._infrastructure.addConnector(start, stop, this.selectedBuilding);
+                this._infrastructure.addConnector(this._p5, start, stop, this.selectedBuilding);
                 this._economy._data.subtractMoney(cost);
             } else {
                 // TODO: Display this info to the player with an in-game message of some kind
@@ -625,7 +625,7 @@ export default class Engine extends View {
             if (this._tick >= this.ticksPerMinute) {
                 this._tick = 0;     // Advance minutes
                 // Update colonists' locations each 'minute', and all of their other stats every hour
-                this._population.updateColonists(this._map._data._mapData, this._gameTime.minute === 0);
+                this._population.updateColonists(this._map._data._mapData, this._gameTime.minute === 0, this._infrastructure);
                 if (this._gameTime.minute < this._minutesPerHour - 1) {  // Minus one tells the minutes counter to reset to zero after 59
                     this._gameTime.minute ++;
                 } else {

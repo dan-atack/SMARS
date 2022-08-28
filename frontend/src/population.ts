@@ -1,6 +1,7 @@
 // The Population class is the disembodied list of all your colonists, and the functions for updating them.
 import P5 from "p5";
 import Colonist, { ColonistSaveData } from "./colonist";
+import Infrastructure from "./infrastructure";
 
 export default class Population {
     // Population types:
@@ -21,12 +22,13 @@ export default class Population {
 
     // Master updater function for controlling all individual colonist updater methods:
     // Needs terrain info for position updates (every minute), and a boolean for whether to update colonists' needs (every hour)
-    updateColonists = (terrain: number[][], needs: boolean) => {
-        this.updateColonistPositions(terrain);              // Should happen once every minute
+    updateColonists = (terrain: number[][], needs: boolean, infra: Infrastructure) => {
+        this.updateColonistPositionsAndGoals(terrain, infra);              // Should happen once every minute
         if (needs) this.updateColonistNeedsAndGoals(terrain);      // Should happen once every hour
     }
 
-    updateColonistPositions = (terrain: number[][]) => {
+    // Passes terrain info to each colonist and then checks if they have achieved their current goal
+    updateColonistPositionsAndGoals = (terrain: number[][], infra: Infrastructure) => {
         // For each colonist, isolate the 3 terrain columns around them:
         this._colonists.forEach((colonist) => {
             let cols: number[][] = [terrain[colonist._data._x]];
@@ -38,7 +40,7 @@ export default class Population {
                 cols.push(terrain[colonist._data._x + 1]);
             }
             // The colonists' movement functions will be controlled indirectly by the goal status checker
-            colonist._data.checkGoalStatus(cols, terrain.length - 1);
+            colonist._data.checkGoalStatus(cols, terrain.length - 1, infra);
         })
     }
 

@@ -11,15 +11,13 @@ import { MapZone } from "./mapData";
 
 export default class Infrastructure {
     // Infrastructure class types:
-    _p5: P5;
     _data: InfrastructureData;  // Unlike other data classes, Infra data will not hold the modules/connectors lists themselves, but will be passed data about their coordinates, etc so that it can perform checks on potential locations' validity
     _modules: Module[]; 
     _connectors: Connector[];
     _horizontalOffset: number;  // Value is in pixels
 
     // Map width is passed to the data class at construction to help with base volume calculations
-    constructor(p5: P5) {
-        this._p5 = p5;
+    constructor() {
         this._data = new InfrastructureData();
         this._modules = [];
         this._connectors = [];
@@ -31,10 +29,10 @@ export default class Infrastructure {
     }
 
     // Args: x and y coords and the moduleInfo, plus now the map topography and zone data for ground floor determination. Serial is optional (used for loading modules from a save file)
-    addModule (x: number, y: number, moduleInfo: ModuleInfo, topography: number[], mapZones: MapZone[], serial?: number) {
+    addModule (p5: P5, x: number, y: number, moduleInfo: ModuleInfo, topography: number[], mapZones: MapZone[], serial?: number) {
         // Whenever a serial number is to be used, update it BEFORE passing it to a constructor:
         this._data.increaseSerialNumber();  // Use the serial if there is one
-        const m = new Module(this._p5, serial ? serial : this._data._currentSerial, x, y, moduleInfo);
+        const m = new Module(p5, serial ? serial : this._data._currentSerial, x, y, moduleInfo);
         this._modules.push(m);
         // Update base volume data
         const area = this._data.calculateModuleArea(moduleInfo, x, y);
@@ -45,9 +43,9 @@ export default class Infrastructure {
     }
 
     // Args: start and stop coords, and the connectorInfo. Serial is optional for loading connectors from a save file
-    addConnector (start: Coords, stop: Coords, connectorInfo: ConnectorInfo, serial?: number) {
+    addConnector (p5: P5, start: Coords, stop: Coords, connectorInfo: ConnectorInfo, serial?: number) {
         this._data.increaseSerialNumber();      // Use the serial if there is one
-        const c = new Connector(this._p5, serial ? serial : this._data._currentSerial, start, stop, connectorInfo)
+        const c = new Connector(p5, serial ? serial : this._data._currentSerial, start, stop, connectorInfo)
         this._connectors.push(c);
         // Update base floor data only if connector is of the transport type
         if (connectorInfo.type === "transport") {
@@ -226,7 +224,7 @@ export default class Infrastructure {
         this._modules.forEach((module) => {
             if (module._data._x + module._data._width >= leftEdge && module._data._x < rightEdge) {
                 module.render(this._horizontalOffset);
-                // if (this._data.getFloorFromModuleId(module._data._id) !== null) this._p5.text("grounded", module._data._x + 10, module._data._y + 15)
+
                 module._data._isRendered = true;
             } else {
                 module._data._isRendered = false;

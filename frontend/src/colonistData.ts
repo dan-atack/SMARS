@@ -2,6 +2,7 @@
 import { ColonistSaveData, ColonistNeeds } from "./colonist";
 import { Coords } from "./connectorData";
 import { constants } from "./constants";
+import Infrastructure from "./infrastructure";  // Infra data info gets passed by population updater function
 
 export type ColonistAction = {
     type: string,       // Name of the type of action ('move', 'climb', and 'consume' initially)
@@ -136,7 +137,7 @@ export default class ColonistData {
     }
 
     // Determines if a colonist has reached their destination, and if so, what to do next
-    checkGoalStatus = (terrain: number[][], maxColumns: number) => {
+    checkGoalStatus = (terrain: number[][], maxColumns: number, infra: Infrastructure) => {
         // Check if colonist is at their destination and update their goal if so...
         if (this._x === this._movementDest) {
             // If the goal was to explore, check if any needs have become urgent enough to make them the new goal
