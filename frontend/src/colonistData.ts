@@ -61,6 +61,8 @@ export default class ColonistData {
         this._animationTick = 0;                                    // By default, no animation is playing
     }
 
+    // NEEDS AND GOAL-RELATED METHODS
+
     // Handles hourly updates to the colonist's needs and priorities (goals)
     updateNeedsAndGoals = (maxColumns: number, infra: Infrastructure) => {
         // TODO: Only introduce need-based goal-setting when they are possible to fulfill
@@ -123,7 +125,7 @@ export default class ColonistData {
             case "get-water":
                 console.log("So thirsty...");
                 const waterinHole = infra.findModulesWithResource("water");
-                console.log(waterinHole);
+                infra.findModuleNearestToLocation(waterinHole, { x: this._x, y: this._y + 1 }); // Add 1 to colonist Y position to reflect the altitude of their feet, not their head
                 break;
             case "get-food":
                 console.log("Merry! I'm hungry!");
@@ -132,6 +134,8 @@ export default class ColonistData {
                 break;
         }
     }
+
+
 
     // Resets all goal-oriented values
     resolveGoal = () => {
@@ -156,6 +160,8 @@ export default class ColonistData {
             this.handleMovement(terrain);
         }
     }
+
+    // MOVEMENT METHODS
 
     // Movement controller method: Takes a small terrain sample and 'fpm' which is short for 'frames per minute'
     handleMovement = (terrain: number[][]) => {
@@ -262,4 +268,5 @@ export default class ColonistData {
             this._y = surfaceY - 2;
         }
     }
+
 }

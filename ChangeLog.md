@@ -1602,7 +1602,13 @@ Features Added:
 
 30. Remove P5 from the constructor of the Infrastructure class; replace both uses of it (there are only 2, one for module creation and one for connector creation) by passing the Engine's P5 instance to those method calls rather than using them in the Infra base class's constructor.
 
-### 31. Create a new colonist method, getNearestModule, that takes an array of modules and compares each to the colonist's current location. The ID of the closest module (that also contains the selected resource in a desired amount) is returned. Unit test first, of course.
+### 31. Grand re-factor, Part I: to finally untie the Gordian knot wherein classes have a base and data version, have the Engine pass down its P5 instance to the following classes, so that they and their data sub-class can be combined into a single class. Start by refactoring the following classes such that they will have P5 passed as an argument to their render methods. Classes to refactor to use this technique: Module/ModuleData, Infrastructure/InfrastructureData. That is all (for now).
+
+### 32. Grand re-factor, Part II: Go through the unit tests for the newly recombined classes and rewire them to make sure they work in the new context.
+
+### 33. Grand re-factor, Part III: Ensure the game works as it did before, then proceed to revise the ensuing instructions so that we can benefit from the combination of the Infra/Infra Data classes and finally find out (and unit test the logic for finding out) which module is closest to the colonist's coordinates!
+
+### 31. Create a new Infrastructure method, getNearestModule, that takes an array of modules and a set of coordinates (the colonist's location) and compares each module's location to the colonist's location. The ID of the closest module (that also contains the selected resource in a desired amount) is returned. Unit test first, of course.
 
 ### 32. Use the outcome of the aforementioned method to get the ID of the nearest module that contains the desired resource. Now is the last best chance to also add the module's "dispenser" role, by the way - unless you don't mind colonists drinking out of the water tank directly.
 

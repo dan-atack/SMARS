@@ -430,4 +430,5 @@ describe("Infrastructure Data", () => {
         }]);    // On the ground, on right side of the butte
         // TODO: Add a case where a floor bridges two zones??
     })
+
 })

@@ -160,19 +160,24 @@ export default class Infrastructure {
 
     // Returns array of [IDs and quantities], with the IDs stringified to avoid confusion with the quantity value
     findModulesWithResource (resource: string) {
-        let mods: [string, number][] = [];  // Each entry will contain both ID (as string) and quantity of the resource present
+        let mods: Module[] = [];  // Prepare to return the list of modules themselves
         this._modules.forEach((mod) => {
             if (mod._data._resourceCapacity().includes(resource)) {
                 // console.log(`Module ${mod._data._moduleInfo.name} contains ${resource}`);
                 const r = mod._data._resources.find((res) => res[0] === resource);
                 if (r !== undefined) {
-                    mods.push([mod._data._id.toString(), r[1]]);
+                    mods.push(mod);
                 } else {
                     console.log(`Error retrieving resource data for module ${mod._data._id} (${mod._data._moduleInfo.name})`);
                 }
             }
         });
         return mods;
+    }
+
+    findModuleNearestToLocation (modules: Module[], location: Coords) {
+        console.log(modules);
+        console.log(location);
     }
 
     // Returns a module's coordinates when given a unique ID
