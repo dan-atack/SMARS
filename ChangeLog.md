@@ -1612,11 +1612,15 @@ Features Added:
 
 35. Add a new ModuleData method (and unit test) that takes a resource name and returns the quantity (if any) of that resource contained in the module. This will be a useful helper function to the Infra method described above.
 
-36. Create a new Infrastructure method, getNearestModule, that takes an array of modules and a set of coordinates (the colonist's location) and compares each module's location to the colonist's location. The ID of the closest module (that also contains the selected resource in a desired amount) is returned. Initially, only the X value should be evaluated for proximity. Unit test first, now that you can!
+36. Create a new Infrastructure method, findModuleNearestToLocation, that takes an array of modules and a set of coordinates (the colonist's location) and compares each module's location to the colonist's location. The ID of the closest module (that also contains the selected resource in a desired amount) is returned. Initially, only the X value should be evaluated for proximity. Unit test first, now that you can!
 
-### 32. Use the outcome of the aforementioned method to get the ID of the nearest module that contains the desired resource. Now is the last best chance to also add the module's "dispenser" role, by the way - unless you don't mind colonists drinking out of the water tank directly.
+37. Use the outcome of the aforementioned method to get the ID of the nearest module that contains the desired resource. Now is the last best chance to also add the module's "dispenser" role, by the way - unless you don't mind colonists drinking out of the water tank directly. Addendum: For now, they can in fact drink from the water tank.
 
-### 33. Plug the module ID for the needed resource into the Infra class's findFloorFromModuleId method, to find the Floor ID that the Colonist will need to travel to. Console log the floor's ID.
+38. Plug the module ID for the needed resource into the Infra Data class's findFloorFromModuleId method, to find the Floor ID that the Colonist will need to travel to. Console log the floor's ID.
+
+### 39. More importantly, now that the colonist has chosen a module to travel towards in search of resources, they can add the first item to their action stack: The action that will tell them to consume the resources at that module. This action item should look something exactly like this (using drinking water as an example) : { type: "drink", coords: { x: 10, y: 0 }, duration: (1 minute per unit of thirst), buildingId: 1007 }. When the colonist arrives at the chosen module, it will verify the coordinates, then execute a drink action lasting one minute for every unit of thirst (so that they will leave with no thirst).
+
+### 40. We can also add a second item to the action stack (which is executed in reverse order, so that this will happen immediately BEFORE the step added in the previous item). This will be the instruction to move towards the target module, and since movement is an immediate action, only the first two values need to be provided: { type: "move", coords: { module coordinates }, duration: 0, buildingId: 0 }. When the time comes, the actions resolver will read this as a movement type action and simply set the colonist's movementDestination to the appropriate column, since the next action added to the stack will be the one that brings the colonist to the floor containing the target module. More on that below:
 
 ### 34. Next, from the retrieved Floor data, see if it has a ground floor zone, and if so, check if its ID matches the ID of the ground zone the colonist is standing on (they will have to have a property for the ground zone this way, but at least they don't have to also carry around the topography info!). Make this into its own method, and write a unit test before proceeding.
 
@@ -1699,6 +1703,8 @@ As the game matures, it will be more and more desirable to separate features tha
 ### 2. Add ability to merge overlapping connectors (analogous to how floors are combined, only vertically).
 
 ### 3. Add ability for Connector renderer to operate like module renderer (using shapes data).
+
+### 4. Add a "roles" property to the Module Info type description (and thus to all existing modules in the DB) that contains a list of at least one string describing the role that a module plays (e.g. 'storage', 'dispensary', 'rest', 'science', etc.). This will help colonists figure out which module to go to when they have jobs, as well as restrict where resources can be accessed by colonists (so they have to eat at the cantina instead of being able to visit the store room instead, for instance).
 
 ### Exit Criteria for backend save/load game chapter:
 

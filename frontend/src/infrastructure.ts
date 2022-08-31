@@ -177,6 +177,7 @@ export default class Infrastructure {
         return mods;
     }
 
+    // Returns the ID of the module nearest to a specific location (v.1 considers X-axis only for proximity calculation)
     findModuleNearestToLocation (modules: Module[], location: Coords) {
         let nearestID = 0;              // Prepare to store just the ID of the nearest module
         let distance = 1000000;         // Use an impossibly large value for the default
@@ -190,9 +191,10 @@ export default class Infrastructure {
         })
         if (nearestID !== 0) {
             // console.log(`Nearest module for colonist at ${location.x}: ${nearestID}`);
-            return nearestID
+            return nearestID;
         } else{
             console.log(`Error: No modules found near to coordinates ${location.x}, ${location.y}`);
+            return 0;
         }
     }
 
@@ -200,7 +202,7 @@ export default class Infrastructure {
     findModuleLocationFromID (moduleId: number) {
         const m = this._modules.find(mod => mod._data._id === moduleId);
         if (m !== undefined) {
-            return { x: m._data._x, y: m._data._y };
+            return { x: m._data._x, y: m._data._y + m._data._height };  // Add height to y value to find floor height
         }
     }
 

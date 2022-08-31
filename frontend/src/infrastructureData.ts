@@ -322,7 +322,7 @@ export default class InfrastructureData {
         }   
     }
 
-    // Floor information getters
+    // FLOOR INFORMATION GETTERS
     
     // Takes a module ID and returns the floor that contains it
     getFloorFromModuleId (moduleId: number) {

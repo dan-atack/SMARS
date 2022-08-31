@@ -5,7 +5,7 @@ import { constants } from "./constants";
 import Infrastructure from "./infrastructure";  // Infra data info gets passed by population updater function
 
 export type ColonistAction = {
-    type: string,       // Name of the type of action ('move', 'climb', and 'consume' initially)
+    type: string,       // Name of the type of action ('move', 'climb', 'eat' and 'drink' initially)
     coords: Coords,     // Exact location the colonist needs to be at/move towards
     duration: number,   // How long the action takes to perform (0 means the action happens immediately)
     buildingId: number, // ID of the module/connector for 'climb' and 'consume' actions, e.g.
@@ -22,7 +22,7 @@ export default class ColonistData {
     _needs: ColonistNeeds;          // Keep track of the colonist's needs to help them choose what to do with their lives
     _needThresholds: ColonistNeeds; // Separately keep track of the various thresholds for each type of need
     _currentGoal: string;           // String name of the Colonist's current goal (e.g. "get food", "get rest", "explore", etc.)
-    _actionStack: ColonistAction[]; // The list of actions a colonist will try to perform to achieve their current goal
+    _actionStack: ColonistAction[]; // Actions, from last to first, that the colonist will perform to achieve their current goal
     _actionTimeElapsed: number;     // The amount of time, in minutes, that has elapsed performing the current action
     _isMoving: boolean;             // Is the colonist currently trying to get somewhere?
     _movementType: string           // E.g. walk, climb-up, climb-down, etc. (used to control animations)
@@ -121,18 +121,23 @@ export default class ColonistData {
 
     // For goals other than exploring, determines the individual actions to be performed to achieve the current goal
     determineActionsForGoal = (infra: Infrastructure) => {
+        const currentPosition = { x: this._x, y: this._y + 1 };
         switch(this._currentGoal) {
             case "get-water":
                 console.log("So thirsty...");
                 // TODO: Adjust the quantity of water needed to the colonist's need level
-                const waterinHole = infra.findModulesWithResource(["water", 10]);
-                infra.findModuleNearestToLocation(waterinHole, { x: this._x, y: this._y + 1 }); // Add 1 to colonist Y position to reflect the altitude of their feet, not their head
+                const waterinHoles = infra.findModulesWithResource(["water", 10]);
+                const bigWater = infra.findModuleNearestToLocation(waterinHoles, currentPosition); // Add 1 to colonist Y position to reflect the altitude of their feet, not their head
+                const waterFloor = infra._data.getFloorFromModuleId(bigWater);
+                console.log(`Water source found in module ${bigWater} on floor ${waterFloor?._id}`);
                 break;
             case "get-food":
                 console.log("Merry! I'm hungry!");
                 // TODO: Adjust the quantity of food needed to the colonist's need level
-                const chow = infra.findModulesWithResource(["food", 10]);
-                console.log(chow);
+                const eateries = infra.findModulesWithResource(["food", 10]);
+                const oneInTheBush = infra.findModuleNearestToLocation(eateries, currentPosition);
+                const foodFloor = infra._data.getFloorFromModuleId(oneInTheBush);
+                console.log(`Food source found in module ${oneInTheBush} on floor ${foodFloor?._id}`);
                 break;
         }
     }
