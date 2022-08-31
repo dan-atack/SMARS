@@ -158,13 +158,15 @@ export default class Infrastructure {
         }
     }
 
-    // Returns array of [IDs and quantities], with the IDs stringified to avoid confusion with the quantity value
-    findModulesWithResource (resource: string) {
-        let mods: Module[] = [];  // Prepare to return the list of modules themselves
+    // Returns array of modules when given a resource tuple (name and quantity sought, in this case)
+    findModulesWithResource (resource: Resource) {
+        let mods: Module[] = [];  // Prepare to return the list of modules
         this._modules.forEach((mod) => {
-            if (mod._data._resourceCapacity().includes(resource)) {
-                // console.log(`Module ${mod._data._moduleInfo.name} contains ${resource}`);
-                const r = mod._data._resources.find((res) => res[0] === resource);
+            const hasCapacity = mod._data._resourceCapacity().includes(resource[0]);
+            const inStock = mod._data.getResourceQuantity(resource[0]) > resource[1];   // Compare needed vs available quantity
+            if (hasCapacity && inStock) {
+                // console.log(`Module ${mod._data._moduleInfo.name} contains at least ${resource[1]} ${resource[0]}`);
+                const r = mod._data._resources.find((res) => res[0] === resource[0]);
                 if (r !== undefined) {
                     mods.push(mod);
                 } else {

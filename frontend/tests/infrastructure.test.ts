@@ -66,14 +66,30 @@ describe("Infrastructure base class", () => {
 
     test("Can add new modules", () => {
         // Add two modules, which can be used in other tests elsewhere
-        infra.addModule(0, 25, landerModuleInfo, mockography, zonesData);
-        infra.addModule(4, 25, storageModuleInfo, mockography, zonesData);
+        infra.addModule(0, 25, landerModuleInfo, mockography, zonesData, 1000);
+        infra.addModule(4, 25, storageModuleInfo, mockography, zonesData, 1001);
         expect(infra._modules.length).toBe(2);
     })
 
-    // test("Can find modules with a particular resource", () => {
-
-    // })
+    test("Can provision a module with a resource", () => {
+        infra.addResourcesToModule(1001, [ "water", 500 ]);     // Should be able to add water to storage module
+        infra.addResourcesToModule(1000, [ "water", 500 ]);     // Should NOT be able to add water to a lander module
+        expect(infra._modules[1]._data._resources).toStrictEqual([
+            ["oxygen", 0],
+            ["food", 0],
+            ["water", 500],
+            ["equipment", 0]
+        ]);
+        expect(infra._modules[0]._data._resources).toStrictEqual([
+            [ "power", 0 ]
+        ]);
+    })
+    
+    test("Can find module/s with a particular resource", () => {
+        // Just check that the ID of the module returned is correct
+        expect(infra.findModulesWithResource(["water", 10])[0]._data._id).toBe(1001);   // Finds water in the storage module
+        expect(infra.findModulesWithResource(["food", 10])).toStrictEqual([]);          // Does not find any modules with food
+    })
 
     // test("Can find the module nearest to a set of coordinates", () => {
     //     infra.findModuleNearestToLocation()

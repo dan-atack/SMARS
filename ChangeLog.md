@@ -1608,6 +1608,10 @@ Features Added:
 
 33. Grand re-factor, Part III: Ensure the game works as it did before, then proceed to revise the ensuing instructions so that we can benefit from the combination of the Infra/Infra Data classes and finally find out (and unit test the logic for finding out) which module is closest to the colonist's coordinates! Also, create a technical debt section to this log file, and add the grand refactoring to it in some detail (classes remaining, unit tests to combine/update, etc).
 
+### 34. Alter the Infra class's findModulesWithResource method to accept an additional argument for the quantity being sought. The current model returns all modules with a capacity to hold a resource, whereas we want something that actually contains enough of whatever it is to be useful to a hungry/thirsty colonist, say.
+
+### 35. Add a new ModuleData method (and unit test) that takes a resource name and returns the quantity (if any) of that resource contained in the module. This will be a useful helper function to the Infra method described above.
+
 ### 31. Create a new Infrastructure method, getNearestModule, that takes an array of module IDs and a set of coordinates (the colonist's location) and compares each module's location to the colonist's location. The ID of the closest module (that also contains the selected resource in a desired amount) is returned. Initially, only the X value should be evaluated for proximity. Unit test first, now that you can!
 
 ### 32. Use the outcome of the aforementioned method to get the ID of the nearest module that contains the desired resource. Now is the last best chance to also add the module's "dispenser" role, by the way - unless you don't mind colonists drinking out of the water tank directly.

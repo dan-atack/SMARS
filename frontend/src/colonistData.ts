@@ -124,12 +124,14 @@ export default class ColonistData {
         switch(this._currentGoal) {
             case "get-water":
                 console.log("So thirsty...");
-                const waterinHole = infra.findModulesWithResource("water");
+                // TODO: Adjust the quantity of water needed to the colonist's need level
+                const waterinHole = infra.findModulesWithResource(["water", 10]);
                 infra.findModuleNearestToLocation(waterinHole, { x: this._x, y: this._y + 1 }); // Add 1 to colonist Y position to reflect the altitude of their feet, not their head
                 break;
             case "get-food":
                 console.log("Merry! I'm hungry!");
-                const chow = infra.findModulesWithResource("food");
+                // TODO: Adjust the quantity of food needed to the colonist's need level
+                const chow = infra.findModulesWithResource(["food", 10]);
                 console.log(chow);
                 break;
         }

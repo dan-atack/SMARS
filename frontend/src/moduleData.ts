@@ -43,6 +43,17 @@ export default class ModuleData {
         return r;
     }
 
+    // Takes a resource name and returns the quantity, if any, of that resource if it is present in the module
+    getResourceQuantity (resource: string) {
+        let qty = 0;
+        this._resources.forEach((res) => {
+            if (res[0] === resource) {
+                qty = res[1];
+            }
+        })
+        return qty;
+    }
+
     // Try to add a resource and return the quantity actually added
     addResource (resource: Resource) {
         // Check if resource is in the module's capacity list
