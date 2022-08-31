@@ -178,8 +178,22 @@ export default class Infrastructure {
     }
 
     findModuleNearestToLocation (modules: Module[], location: Coords) {
-        console.log(modules);
-        console.log(location);
+        let nearestID = 0;              // Prepare to store just the ID of the nearest module
+        let distance = 1000000;         // Use an impossibly large value for the default
+        modules.forEach((mod) => {
+            // Compare each module's coords to the given location (x values only for now)
+            const deltaX = Math.abs(mod._data._x - location.x);
+            if (deltaX < distance) {
+                distance = deltaX;  // If current module is closer than the previous distance, its delta x is the new value
+                nearestID = mod._data._id;  // And its ID is kept as the default return for this function
+            }
+        })
+        if (nearestID !== 0) {
+            // console.log(`Nearest module for colonist at ${location.x}: ${nearestID}`);
+            return nearestID
+        } else{
+            console.log(`Error: No modules found near to coordinates ${location.x}, ${location.y}`);
+        }
     }
 
     // Returns a module's coordinates when given a unique ID

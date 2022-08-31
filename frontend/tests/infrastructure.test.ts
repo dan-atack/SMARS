@@ -65,23 +65,31 @@ describe("Infrastructure base class", () => {
     infra._data.setup(mockography.length);                  // Setup Infra data with the width of the 'map' being used
 
     test("Can add new modules", () => {
-        // Add two modules, which can be used in other tests elsewhere
-        infra.addModule(0, 25, landerModuleInfo, mockography, zonesData, 1000);
-        infra.addModule(4, 25, storageModuleInfo, mockography, zonesData, 1001);
-        expect(infra._modules.length).toBe(2);
+        // Add three modules, to be reused in subsequent tests
+        infra.addModule(4, 25, landerModuleInfo, mockography, zonesData, 1000);
+        infra.addModule(8, 25, storageModuleInfo, mockography, zonesData, 1001);
+        infra.addModule(12, 25, storageModuleInfo, mockography, zonesData, 1002);
+        expect(infra._modules.length).toBe(3);
     })
 
     test("Can provision a module with a resource", () => {
-        infra.addResourcesToModule(1001, [ "water", 500 ]);     // Should be able to add water to storage module
         infra.addResourcesToModule(1000, [ "water", 500 ]);     // Should NOT be able to add water to a lander module
+        infra.addResourcesToModule(1001, [ "water", 500 ]);     // Should be able to add water to storage module
+        infra.addResourcesToModule(1002, [ "water", 1000000 ])   // Should only be able to fill up to max capacity
+        expect(infra._modules[0]._data._resources).toStrictEqual([
+            [ "power", 0 ]
+        ]);
         expect(infra._modules[1]._data._resources).toStrictEqual([
             ["oxygen", 0],
             ["food", 0],
             ["water", 500],
             ["equipment", 0]
         ]);
-        expect(infra._modules[0]._data._resources).toStrictEqual([
-            [ "power", 0 ]
+        expect(infra._modules[2]._data._resources).toStrictEqual([
+            ["oxygen", 0],
+            ["food", 0],
+            ["water", 10000],
+            ["equipment", 0]
         ]);
     })
     
@@ -91,8 +99,11 @@ describe("Infrastructure base class", () => {
         expect(infra.findModulesWithResource(["food", 10])).toStrictEqual([]);          // Does not find any modules with food
     })
 
-    // test("Can find the module nearest to a set of coordinates", () => {
-    //     infra.findModuleNearestToLocation()
-    // })
+    test("Can find the module nearest to a set of coordinates", () => {
+        const mods = infra.findModulesWithResource(["water", 10]);
+        expect(mods.length).toBe(2);                                        // Two modules contain water
+        expect(infra.findModuleNearestToLocation(mods, { x: 0, y: 10})).toBe(1001);     // Expect rightmost module to be nearest
+        expect(infra.findModuleNearestToLocation(mods, { x: 15, y: 10})).toBe(1002);    // Expect leftmost module to be nearest
+    })
 
 })
