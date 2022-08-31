@@ -7,7 +7,7 @@ jest.mock("p5");
 
 // TEST DATA
 
-const moduleInfo: ModuleInfo = { 
+const landerModuleInfo: ModuleInfo = { 
     name: "Lander",
     width: 3,
     height: 2,
@@ -52,13 +52,31 @@ const storageModuleInfo: ModuleInfo = {
     shapes: []
 }
 
+// Fake terrain data (TODO: Create a Map class instance here to pass legitimate topography and zone data to the Infra tests)
+const mockography = [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10];
+const zonesData = [
+    { id: '0026', leftEdge: { x: 0, y: 26 }, rightEdge: { x: 15, y: 26 } }
+]
+
 describe("Infrastructure base class", () => {
     
     const infra = new Infrastructure();
-    const data = new InfrastructureData();
+    infra._data = new InfrastructureData();  // Necessary... for now
+    infra._data.setup(mockography.length);                  // Setup Infra data with the width of the 'map' being used
 
-    test("Can find the module nearest to a set of coordinates", () => {
-        console.log("Bingo.");
+    test("Can add new modules", () => {
+        // Add two modules, which can be used in other tests elsewhere
+        infra.addModule(0, 25, landerModuleInfo, mockography, zonesData);
+        infra.addModule(4, 25, storageModuleInfo, mockography, zonesData);
+        expect(infra._modules.length).toBe(2);
     })
+
+    // test("Can find modules with a particular resource", () => {
+
+    // })
+
+    // test("Can find the module nearest to a set of coordinates", () => {
+    //     infra.findModuleNearestToLocation()
+    // })
 
 })
