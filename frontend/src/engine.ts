@@ -1,6 +1,5 @@
 // Top-level component for the game environment (as opposed to game interface, which is in game.ts)
 import P5 from "p5";
-import * as dotenv from "dotenv";
 // Components
 import View from "./view";
 import Sidebar from "./sidebar";
@@ -12,7 +11,6 @@ import Modal, { EventData } from "./modal";
 import Lander from "./lander";
 import MouseShadow from "./mouseShadow";
 // Helper/server functions
-import { convertResourceData } from "./engineHelpers";
 import { ModuleInfo, ConnectorInfo, getOneModule, getOneConnector } from "./server_functions";
 import { constants, modalData } from "./constants";
 // Types
@@ -193,12 +191,12 @@ export default class Engine extends View {
         if (selectedBuilding != null) {
             locations.forEach((space, idx) => {
                 if (ids && resources) {     // Use saved serial number and resource data only if they exist
-                    this._infrastructure.addModule(this._p5, space[0], space[1], selectedBuilding, this._map._data._topography, this._map._data._zones, ids[idx]); // Create module with ID
+                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._data._topography, this._map._data._zones, ids[idx]); // Create module with ID
                     resources[idx].forEach((resource) => {
                         this._infrastructure.addResourcesToModule(ids[idx], resource);  // Provision with saved resources
                     })
                 } else {
-                    this._infrastructure.addModule(this._p5, space[0], space[1], selectedBuilding, this._map._data._topography, this._map._data._zones,);
+                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._data._topography, this._map._data._zones,);
                 }
             })
         }
@@ -249,9 +247,9 @@ export default class Engine extends View {
                 const start: Coords = space[0].start;
                 const stop: Coords = space[0].stop;
                 if (ids) {     // Use the saved serial number only if it is available
-                    this._infrastructure.addConnector(this._p5, start, stop, selectedConnector, ids[idx]);
+                    this._infrastructure.addConnector(start, stop, selectedConnector, ids[idx]);
                 } else {
-                    this._infrastructure.addConnector(this._p5, start, stop, selectedConnector);
+                    this._infrastructure.addConnector(start, stop, selectedConnector);
                 }
                 
             })
@@ -451,7 +449,7 @@ export default class Engine extends View {
                 const affordable = this._economy._data.checkResources(this.selectedBuilding.buildCosts[0][1]);
                 const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._data._mapData);
                 if (clear && affordable) {
-                    this._infrastructure.addModule(this._p5, x, y, this.selectedBuilding,  this._map._data._topography, this._map._data._zones,);
+                    this._infrastructure.addModule(x, y, this.selectedBuilding,  this._map._data._topography, this._map._data._zones,);
                     this._economy._data.subtractMoney(this.selectedBuilding.buildCosts[0][1]);
                 } else {
                     // TODO: Display this info to the player with an in-game message of some kind
@@ -483,7 +481,7 @@ export default class Engine extends View {
             const stop = this._mouseShadow._data._connectorStopCoords;
             const clear = this._infrastructure._data.checkConnectorEndpointPlacement(stop.x, stop.y, this._map._data._mapData);
             if (affordable && clear) {
-                this._infrastructure.addConnector(this._p5, start, stop, this.selectedBuilding);
+                this._infrastructure.addConnector(start, stop, this.selectedBuilding);
                 this._economy._data.subtractMoney(cost);
             } else {
                 // TODO: Display this info to the player with an in-game message of some kind
@@ -839,7 +837,7 @@ export default class Engine extends View {
             this._animation.render(this._horizontalOffset);     // Render animation second
         }
         this._map.render(this._horizontalOffset);               // Render map third
-        this._infrastructure.render(this._horizontalOffset);    // Render infrastructure fourth
+        this._infrastructure.render(this._p5, this._horizontalOffset);    // Render infrastructure fourth
         if (this.selectedBuilding && !this._infrastructure._data.isModule(this.selectedBuilding)) {
             this.renderMouseShadow(); // If placing a connector, render mouse shadow above the infra layer
         }

@@ -5,20 +5,16 @@ import { ConnectorInfo } from "./server_functions";
 import { constants } from "./constants";
 
 export default class Connector {
-    // Block types:
-    _p5: P5;
-   
+    // Connector Types
     _data: ConnectorData;
     _color: string;
 
-    constructor(p5: P5, id: number, start: Coords, stop: Coords, connectorInfo: ConnectorInfo) {
-        this._p5 = p5;
+    constructor(id: number, start: Coords, stop: Coords, connectorInfo: ConnectorInfo) {
         this._data = new ConnectorData(id, start, stop, connectorInfo);
         this._color = constants.EGGSHELL    // Default value for now; in the future modules will be of no specific color: ;
     }
 
-    renderLadder = () => {
-        const p5 = this._p5;
+    renderLadder = (p5: P5) => {
         // Only one x coordinate on a vertical connector - the x2 coordinate is simply the right bar's location
         const x = this._data._segments[0].start.x * constants.BLOCK_WIDTH - this._data._xOffset + 2;
         const x2 = x + constants.BLOCK_WIDTH - 2;
@@ -37,9 +33,7 @@ export default class Connector {
         }
     }
 
-    renderDuct = () => {
-        // For convenience
-        const p5 = this._p5;
+    renderDuct = (p5: P5) => {
         const bw = constants.BLOCK_WIDTH;
         // Endpoint coordinates
         const startX = this._data._segments[0].start.x * constants.BLOCK_WIDTH - this._data._xOffset;
@@ -79,13 +73,12 @@ export default class Connector {
         p5.ellipse(stopX + constants.BLOCK_WIDTH / 2, stopY + constants.BLOCK_WIDTH / 2, this._data._thickness * constants.BLOCK_WIDTH / 2);
     }
 
-    render = (xOffset: number) => {    // TODO: Block gets y offset values as arguments to renderer
-        const p5 = this._p5;
+    render = (p5: P5, xOffset: number) => {    // TODO: Block gets y offset values as arguments to renderer
         this._data._xOffset = xOffset;    // Offset is in terms of pixels
         if (this._data._connectorInfo.name === "Ladder") {
-            this.renderLadder();
+            this.renderLadder(p5);
         } else {
-            this.renderDuct();
+            this.renderDuct(p5);
         }
         // p5.text(this._data._length, 20, 160);
     }

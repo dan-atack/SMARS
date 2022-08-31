@@ -1602,13 +1602,13 @@ Features Added:
 
 30. Remove P5 from the constructor of the Infrastructure class; replace both uses of it (there are only 2, one for module creation and one for connector creation) by passing the Engine's P5 instance to those method calls rather than using them in the Infra base class's constructor.
 
-### 31. Grand re-factor, Part I: to finally untie the Gordian knot wherein classes have a base and data version, have the Engine pass down its P5 instance to the following classes, so that they and their data sub-class can be combined into a single class. Start by refactoring the following classes such that they will have P5 passed as an argument to their render methods. Classes to refactor to use this technique: Module/ModuleData, Infrastructure/InfrastructureData. That is all (for now).
+31. Grand re-factor, Part I: to finally untie the Gordian knot wherein classes have a base and data version, have the Engine pass down its P5 instance to the following classes, so that they and their data sub-class can be combined into a single class. Start by refactoring the following classes such that they will have P5 passed as an argument to their render methods. Classes to refactor to use this technique: Module/ModuleData, Infrastructure/InfrastructureData, and finally Connector/ConnectorData That is all (for now).
 
-### 32. Grand re-factor, Part II: Go through the unit tests for the newly recombined classes and rewire them to make sure they work in the new context.
+32. Grand re-factor, Part II: Go through the unit tests for the newly recombined classes and ensure they work in the new context. Do not rewire them if it's not needed to get a 'green' build!
 
-### 33. Grand re-factor, Part III: Ensure the game works as it did before, then proceed to revise the ensuing instructions so that we can benefit from the combination of the Infra/Infra Data classes and finally find out (and unit test the logic for finding out) which module is closest to the colonist's coordinates!
+33. Grand re-factor, Part III: Ensure the game works as it did before, then proceed to revise the ensuing instructions so that we can benefit from the combination of the Infra/Infra Data classes and finally find out (and unit test the logic for finding out) which module is closest to the colonist's coordinates! Also, create a technical debt section to this log file, and add the grand refactoring to it in some detail (classes remaining, unit tests to combine/update, etc).
 
-### 31. Create a new Infrastructure method, getNearestModule, that takes an array of modules and a set of coordinates (the colonist's location) and compares each module's location to the colonist's location. The ID of the closest module (that also contains the selected resource in a desired amount) is returned. Unit test first, of course.
+### 31. Create a new Infrastructure method, getNearestModule, that takes an array of module IDs and a set of coordinates (the colonist's location) and compares each module's location to the colonist's location. The ID of the closest module (that also contains the selected resource in a desired amount) is returned. Unit test first, now that you can!
 
 ### 32. Use the outcome of the aforementioned method to get the ID of the nearest module that contains the desired resource. Now is the last best chance to also add the module's "dispenser" role, by the way - unless you don't mind colonists drinking out of the water tank directly.
 
@@ -1665,6 +1665,26 @@ As the game matures, it will be more and more desirable to separate features tha
 11. [8: Major Gameplay issue] Loaded games do not allow the player to scroll all the way to the far right of the map; the section underneath the sidebar becomes unreachable when the player saves and then subsequently reloads the game.
 
 12. [5: Save Data Completeness] Although currently not doing much, save game files do not contain the game's map type or difficulty level data - both fields contain a blank string.
+
+## Technical Debt Issues:
+
+### 1. Refactoring needed to enable widespread unit testing of Engine subcomponents. Component classes to refactor (by removing P5 from the class attributes and making it an argument to the render method instead):
+
+### - Colonist/ColonistData
+
+### - Map/MapData
+
+### - Block (no data class exists yet - not a high priority)
+
+### - MouseShadow/MouseShadowData (also not a top priority)
+
+### 2. Refactor unit tests for classes that have already been refactored in this way:
+
+### - Infrastructure/InfrastructureData
+
+### - Module/ModuleData
+
+### - Connector/ConnectorData
 
 # Annex A: Advanced Concepts
 

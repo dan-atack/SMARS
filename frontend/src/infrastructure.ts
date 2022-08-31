@@ -29,10 +29,10 @@ export default class Infrastructure {
     }
 
     // Args: x and y coords and the moduleInfo, plus now the map topography and zone data for ground floor determination. Serial is optional (used for loading modules from a save file)
-    addModule (p5: P5, x: number, y: number, moduleInfo: ModuleInfo, topography: number[], mapZones: MapZone[], serial?: number) {
+    addModule (x: number, y: number, moduleInfo: ModuleInfo, topography: number[], mapZones: MapZone[], serial?: number) {
         // Whenever a serial number is to be used, update it BEFORE passing it to a constructor:
         this._data.increaseSerialNumber();  // Use the serial if there is one
-        const m = new Module(p5, serial ? serial : this._data._currentSerial, x, y, moduleInfo);
+        const m = new Module(serial ? serial : this._data._currentSerial, x, y, moduleInfo);
         this._modules.push(m);
         // Update base volume data
         const area = this._data.calculateModuleArea(moduleInfo, x, y);
@@ -43,9 +43,9 @@ export default class Infrastructure {
     }
 
     // Args: start and stop coords, and the connectorInfo. Serial is optional for loading connectors from a save file
-    addConnector (p5: P5, start: Coords, stop: Coords, connectorInfo: ConnectorInfo, serial?: number) {
+    addConnector (start: Coords, stop: Coords, connectorInfo: ConnectorInfo, serial?: number) {
         this._data.increaseSerialNumber();      // Use the serial if there is one
-        const c = new Connector(p5, serial ? serial : this._data._currentSerial, start, stop, connectorInfo)
+        const c = new Connector(serial ? serial : this._data._currentSerial, start, stop, connectorInfo)
         this._connectors.push(c);
         // Update base floor data only if connector is of the transport type
         if (connectorInfo.type === "transport") {
@@ -222,14 +222,14 @@ export default class Infrastructure {
         this._data._justBuilt = null;
     }
 
-    render(horizontalOffset: number) {
+    render(p5: P5, horizontalOffset: number) {
         this._horizontalOffset = horizontalOffset;
         // Only render one screen width's worth, taking horizontal offset into account:
         const leftEdge = Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH);    // Edges are in terms of columns
         const rightEdge = Math.floor(this._horizontalOffset + constants.WORLD_VIEW_WIDTH) / constants.BLOCK_WIDTH;
         this._modules.forEach((module) => {
             if (module._data._x + module._data._width >= leftEdge && module._data._x < rightEdge) {
-                module.render(this._horizontalOffset);
+                module.render(p5, this._horizontalOffset);
 
                 module._data._isRendered = true;
             } else {
@@ -239,7 +239,7 @@ export default class Infrastructure {
         this._connectors.forEach((connector) => {
             // TODO: Check which side is nearest to the left/right sides, using a Connector Data method
             if (connector._data._rightEdge >= leftEdge && connector._data._leftEdge < rightEdge) {
-                connector.render(this._horizontalOffset);
+                connector.render(p5, this._horizontalOffset);
             }
         });
     }
