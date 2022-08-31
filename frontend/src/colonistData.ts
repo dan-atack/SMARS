@@ -61,7 +61,17 @@ export default class ColonistData {
         this._animationTick = 0;                                    // By default, no animation is playing
     }
 
-    // NEEDS AND GOAL-RELATED METHODS
+    // TODO: TOP-LEVEL UPDATER METHODS:
+
+    handleHourlyUpdates = () => {
+        // TODO: Relocate every hourly update call here
+    }
+
+    handleMinutelyUpdates = () => {
+        // TODO: Relocate every update call that happens each minute here
+    }
+
+    // NEEDS AND GOAL-ORIENTED METHODS
 
     // Handles hourly updates to the colonist's needs and priorities (goals)
     updateNeedsAndGoals = (maxColumns: number, infra: Infrastructure) => {
@@ -119,37 +129,6 @@ export default class ColonistData {
         }
     }
 
-    // For goals other than exploring, determines the individual actions to be performed to achieve the current goal
-    determineActionsForGoal = (infra: Infrastructure) => {
-        const currentPosition = { x: this._x, y: this._y + 1 };
-        switch(this._currentGoal) {
-            case "get-water":
-                console.log("So thirsty...");
-                // TODO: Adjust the quantity of water needed to the colonist's need level
-                const waterinHoles = infra.findModulesWithResource(["water", 10]);
-                const bigWater = infra.findModuleNearestToLocation(waterinHoles, currentPosition); // Add 1 to colonist Y position to reflect the altitude of their feet, not their head
-                const waterFloor = infra._data.getFloorFromModuleId(bigWater);
-                console.log(`Water source found in module ${bigWater} on floor ${waterFloor?._id}`);
-                break;
-            case "get-food":
-                console.log("Merry! I'm hungry!");
-                // TODO: Adjust the quantity of food needed to the colonist's need level
-                const eateries = infra.findModulesWithResource(["food", 10]);
-                const oneInTheBush = infra.findModuleNearestToLocation(eateries, currentPosition);
-                const foodFloor = infra._data.getFloorFromModuleId(oneInTheBush);
-                console.log(`Food source found in module ${oneInTheBush} on floor ${foodFloor?._id}`);
-                break;
-        }
-    }
-
-
-
-    // Resets all goal-oriented values
-    resolveGoal = () => {
-        this.setGoal("");
-        this._movementDest = this._x;
-    }
-
     // Determines if a colonist has reached their destination, and if so, what to do next
     checkGoalStatus = (terrain: number[][], maxColumns: number, infra: Infrastructure) => {
         // Check if colonist is at their destination and update their goal if so...
@@ -166,6 +145,68 @@ export default class ColonistData {
             // ...Otherwise, initiate movement sequence
             this.handleMovement(terrain);
         }
+    }
+
+    // Resets all goal-oriented values
+    resolveGoal = () => {
+        this.setGoal("");
+        this._movementDest = this._x;
+    }
+
+    // ACTION-ORIENTED METHODS
+    // (Actions are individual tasks, such as 'move to x', or 'consume a resource' which collectively form a single GOAL)
+
+    // Top Level Action Creation Method: determines the individual actions to be performed to achieve the current goal
+    determineActionsForGoal = (infra: Infrastructure) => {
+        // Add 1 to colonist Y position to reflect the altitude of their feet, not their head
+        const currentPosition = { x: this._x, y: this._y + 1 };
+        switch(this._currentGoal) {
+            case "get-water":
+                console.log("So thirsty...");
+                const waterinHoles = infra.findModulesWithResource(["water", this._needs.water]);
+                const bigWater = infra.findModuleNearestToLocation(waterinHoles, currentPosition);
+                const waterFloor = infra._data.getFloorFromModuleId(bigWater);
+                console.log(`Water source found in module ${bigWater} on floor ${waterFloor?._id}`);
+                break;
+            case "get-food":
+                console.log("Merry! I'm hungry!");
+                const eateries = infra.findModulesWithResource(["food", this._needs.food]);
+                const oneInTheBush = infra.findModuleNearestToLocation(eateries, currentPosition);
+                const foodFloor = infra._data.getFloorFromModuleId(oneInTheBush);
+                console.log(`Food source found in module ${oneInTheBush} on floor ${foodFloor?._id}`);
+                break;
+        }
+    }
+
+    // Called every minute by the master updater; checks and updates progress towards the completion of the current action
+    updateActionStatus = () => {
+
+    }
+
+    // Adds a new action to the end of the action stack
+    addAction = (type: string, location: Coords, duration?: number, buildingId?: number) => {
+        const action: ColonistAction = {
+            type: type,
+            coords: location,
+            duration: duration ? duration : 0,
+            buildingId: buildingId ? buildingId : 0
+        }
+        this._actionStack.push(action);     // Add the action to the end of the action stack, so last added is first executed
+    }
+
+    // Pops the last item off of the action stack and initiates it
+    startAction = () => {
+
+    }
+
+    // Completes the current action and, if there are more in the stack, begins the next one
+    resolveAction = () => {
+
+    }
+
+    // Resets the action stack to an empty array
+    clearActions = () => {
+        this._actionStack = [];
     }
 
     // MOVEMENT METHODS
