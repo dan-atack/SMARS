@@ -623,7 +623,7 @@ export default class Engine extends View {
             if (this._tick >= this.ticksPerMinute) {
                 this._tick = 0;     // Advance minutes
                 // Update colonists' locations each 'minute', and all of their other stats every hour
-                this._population.updateColonists(this._map._data._mapData, this._gameTime.minute === 0, this._infrastructure);
+                this._population.updateColonists(this._map._data._mapData, this._gameTime.minute === 0, this._infrastructure, this._map);
                 if (this._gameTime.minute < this._minutesPerHour - 1) {  // Minus one tells the minutes counter to reset to zero after 59
                     this._gameTime.minute ++;
                 } else {
@@ -856,8 +856,8 @@ export default class Engine extends View {
         //     p5.text(`Floor 4 zones: ${this._infrastructure._data._floors[4]._groundFloorZones[0].id}`, 60, 200);
         // }
         if (this._population._colonists.length > 1) {
-            p5.text(`Colonist 1 goal: ${this._population._colonists[0]._data._currentGoal}`, 60, 160);
-            p5.text(`Colonist 2 goal: ${this._population._colonists[1]._data._currentGoal}`, 60, 180);
+            p5.text(`Colonist 1 map zone: ${this._population._colonists[0]._data._mapZoneId}`, 100, 160);
+            p5.text(`Colonist 2 map zone: ${this._population._colonists[1]._data._mapZoneId}`, 100, 180);
         }
         
     }

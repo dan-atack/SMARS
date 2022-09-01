@@ -3,6 +3,7 @@ import { ColonistSaveData, ColonistNeeds } from "./colonist";
 import { Coords } from "./connectorData";
 import { constants } from "./constants";
 import Infrastructure from "./infrastructure";  // Infra data info gets passed by population updater function
+import Map from "./map";
 
 export type ColonistAction = {
     type: string,       // Name of the type of action ('move', 'climb', 'eat' and 'drink' initially)
@@ -15,6 +16,7 @@ export default class ColonistData {
     // Colonist data types
     _x: number;         // Colonists' x and y positions will be in terms of grid locations
     _y: number;
+    _mapZoneId: string; // To keep track of which map zone the colonist is standing on
     _width: number;     // Colonists' width is in terms of grid spaces...
     _height: number;    // Colonists' height is in terms of grid spaces...
     _xOffset: number;   // ...The offset value, on the other hand, will be in terms of pixels, to allow for smoother scrolling
@@ -35,6 +37,7 @@ export default class ColonistData {
     constructor(x: number, y: number, saveData?: ColonistSaveData) {
         this._x = x;
         this._y = y;
+        this._mapZoneId = "";
         this._width = 1;
         this._height = 2;
         this._xOffset = 0;
@@ -67,8 +70,11 @@ export default class ColonistData {
         // TODO: Relocate every hourly update call here
     }
 
-    handleMinutelyUpdates = () => {
+    // Terrain is a subset of the map; just the column the colonist is on, plus one to the immediate right/left
+    handleMinutelyUpdates = (terrain: number[][], infra: Infrastructure, map: Map) => {
         // TODO: Relocate every update call that happens each minute here
+        this.updateMapZone(map);
+        this.checkGoalStatus(terrain, map._data._columns.length - 1, infra)
     }
 
     // NEEDS AND GOAL-ORIENTED METHODS
@@ -218,7 +224,11 @@ export default class ColonistData {
         this._actionStack = [];
     }
 
-    // MOVEMENT METHODS
+    // MOVEMENT AND POSITIONING METHODS
+
+    updateMapZone = (map: Map) => {
+        this._mapZoneId = map._data.getZoneIdForCoordinates({ x: this._x, y: this._y + 1 });    // Plus one to Y for foot level
+    }
 
     // Movement controller method: Takes a small terrain sample and 'fpm' which is short for 'frames per minute'
     handleMovement = (terrain: number[][]) => {

@@ -1624,9 +1624,9 @@ Features Added:
 
 41. Add a new method (and unit test) to the Map Data class, to retrieve the ID of a map zone when given a single set of coordinates.
 
-### 42. The colonist will call this method every minute, so the time has now come to pass the map data to the Population updater method in the Engine.
+42. The colonist will call this method every minute, so the time has now come to pass the map data to the Population updater method in the Engine. Do this by adding an updateMapZone method to the Colonist class, which takes the map class and gets a zone ID from it by passing it the colonist's coordinates. Test in-game by re-writing the p5 text element that's currently showing the colonists' current goal to show their current map zone ID instead.
 
-### 34. Next, from the retrieved Floor data, see if it has a ground floor zone, and if so, check if its ID matches the ID of the ground zone the colonist is standing on (they will have to have a property for the ground zone this way, but at least they don't have to also carry around the topography info!). Make this into its own method, and write a unit test before proceeding.
+### 34. Next, from the retrieved Floor data, see if it has a ground floor zone, and if so, check if its ID matches the ID of the ground zone the colonist is standing on (they will have to have a property for the ground zone ID this way, but at least they don't have to also carry around the topography info!). Make this into its own method, and write a unit test before proceeding.
 
 ### 35. Next, console log if the floor is on the ground, and is in the same zone as the colonist.
 

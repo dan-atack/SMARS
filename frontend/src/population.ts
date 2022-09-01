@@ -2,6 +2,7 @@
 import P5 from "p5";
 import Colonist, { ColonistSaveData } from "./colonist";
 import Infrastructure from "./infrastructure";
+import Map from "./map";
 
 export default class Population {
     // Population types:
@@ -22,13 +23,15 @@ export default class Population {
 
     // Master updater function for controlling all individual colonist updater methods:
     // Needs terrain info for position updates (every minute), and a boolean for whether to update colonists' needs (every hour)
-    updateColonists = (terrain: number[][], needs: boolean, infra: Infrastructure) => {
-        this.updateColonistPositionsAndGoals(terrain, infra);              // Should happen once every minute
+    updateColonists = (terrain: number[][], needs: boolean, infra: Infrastructure, map: Map) => {
+        // Every minute:
+        this.handleColonistMinutelyUpdates(terrain, infra, map);              // Should happen once every minute
+        // Every hour:
         if (needs) this.updateColonistNeedsAndGoals(terrain, infra);      // Should happen once every hour
     }
 
     // Passes terrain info to each colonist and then checks if they have achieved their current goal
-    updateColonistPositionsAndGoals = (terrain: number[][], infra: Infrastructure) => {
+    handleColonistMinutelyUpdates = (terrain: number[][], infra: Infrastructure, map: Map) => {
         // For each colonist, isolate the 3 terrain columns around them:
         this._colonists.forEach((colonist) => {
             let cols: number[][] = [terrain[colonist._data._x]];
@@ -39,8 +42,10 @@ export default class Population {
             if (colonist._data._x < terrain.length - 1) {
                 cols.push(terrain[colonist._data._x + 1]);
             }
-            // The colonists' movement functions will be controlled indirectly by the goal status checker
-            colonist._data.checkGoalStatus(cols, terrain.length - 1, infra);
+            // Pass all info to the colonist's minutely update handler
+            colonist._data.handleMinutelyUpdates(cols, infra, map);
+            // colonist._data.checkGoalStatus(cols, terrain.length - 1, infra);
+            // colonist._data.updateMapZone(map);
         })
     }
 
