@@ -178,4 +178,7 @@ export default class MapData {
         }
     }
 
+    // Returns the zone ID for a set of coordinates on the map's surface
+    
+
 }

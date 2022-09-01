@@ -44,13 +44,13 @@ export default class ColonistData {
             food: 0,
             rest: 0
         };
-        this._needThresholds = {                    // The higher the threshold, the longer a colonist can go without
+        this._needThresholds = {    // The higher the threshold, the longer a colonist can go without; 1 unit = 1 hour
             water: 4,
             food: 6,
             rest: 8
         };
         this._currentGoal = saveData ? saveData.goal : "explore"    // Load saved goal, or go exploring (for new colonists).
-        this._actionStack = saveData ? saveData.actionStack : [];   // Load saved action stack, or default to empty stack
+        this._actionStack = saveData?.actionStack ? saveData.actionStack : [];   // Load saved action stack, or default to empty stack
         this._actionTimeElapsed = saveData ? saveData.actionTimeElapsed : 0;    // Load saved value or default to zero
         this._isMoving = saveData ? saveData.isMoving : false;      // Load saved status or colonists is at rest by default
         this._movementType = saveData ? saveData.movementType :  "" // Load name of movement type or default to no movement
@@ -163,17 +163,25 @@ export default class ColonistData {
         switch(this._currentGoal) {
             case "get-water":
                 console.log("So thirsty...");
-                const waterinHoles = infra.findModulesWithResource(["water", this._needs.water]);
-                const bigWater = infra.findModuleNearestToLocation(waterinHoles, currentPosition);
-                const waterFloor = infra._data.getFloorFromModuleId(bigWater);
-                console.log(`Water source found in module ${bigWater} on floor ${waterFloor?._id}`);
+                const waterSources = infra.findModulesWithResource(["water", this._needs.water]);
+                const waterModuleId = infra.findModuleNearestToLocation(waterSources, currentPosition);
+                const waterLocation = infra.findModuleLocationFromID(waterModuleId);
+                // Once module is found, add a 'drink' action to the stack (the last step is added first)
+                this.addAction("drink", waterLocation, this._needs.water, waterModuleId);
+                // Next, since we're working backwards from the final action, tell the Colonist to move to the resource location
+                this.addAction("move", waterLocation);      // Only 2 arguments needed for move actions
+                const waterFloor = infra._data.getFloorFromModuleId(waterModuleId);
+                console.log(`Water source found in module ${waterModuleId} on floor ${waterFloor?._id}`);
                 break;
-            case "get-food":
+            case "get-food":    // Parallels the get-water case almost closely enough to be the same... but not quite!
                 console.log("Merry! I'm hungry!");
-                const eateries = infra.findModulesWithResource(["food", this._needs.food]);
-                const oneInTheBush = infra.findModuleNearestToLocation(eateries, currentPosition);
-                const foodFloor = infra._data.getFloorFromModuleId(oneInTheBush);
-                console.log(`Food source found in module ${oneInTheBush} on floor ${foodFloor?._id}`);
+                const foodSources = infra.findModulesWithResource(["food", this._needs.food]);
+                const foodModuleId = infra.findModuleNearestToLocation(foodSources, currentPosition);
+                const foodLocation = infra.findModuleLocationFromID(foodModuleId);
+                this.addAction("eat", foodLocation, this._needs.food, foodModuleId);
+                this.addAction("move", foodLocation);
+                const foodFloor = infra._data.getFloorFromModuleId(foodModuleId);
+                console.log(`Food source found in module ${foodModuleId} on floor ${foodFloor?._id}`);
                 break;
         }
     }
@@ -192,6 +200,7 @@ export default class ColonistData {
             buildingId: buildingId ? buildingId : 0
         }
         this._actionStack.push(action);     // Add the action to the end of the action stack, so last added is first executed
+        console.log(this._actionStack);
     }
 
     // Pops the last item off of the action stack and initiates it

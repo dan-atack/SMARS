@@ -202,7 +202,10 @@ export default class Infrastructure {
     findModuleLocationFromID (moduleId: number) {
         const m = this._modules.find(mod => mod._data._id === moduleId);
         if (m !== undefined) {
-            return { x: m._data._x, y: m._data._y + m._data._height };  // Add height to y value to find floor height
+            return { x: m._data._x, y: m._data._y + m._data._height - 1 };  // Add height minus 1 to y value to find floor height
+        } else {
+            console.log(`Error: Module location data not found for module with ID ${moduleId}`);
+            return { x: 0, y: 0 };
         }
     }
 
