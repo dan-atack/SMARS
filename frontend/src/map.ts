@@ -6,16 +6,15 @@ import { constants } from "./constants";
 
 export default class Map {
     // Map types:
-    _p5: P5;
+    // TODO: Re-unify the map class with its data
     _data: MapData;
 
-    constructor(p5: P5) {
-        this._p5 = p5;
+    constructor() {
         this._data = new MapData();
     }
 
-    setup = (mapData: number[][]) => {
-        this._data.setup(this._p5, mapData)
+    setup = (p5: P5, mapData: number[][]) => {
+        this._data.setup(p5, mapData)
     }
 
     setExpanded = (expanded: boolean) => {
@@ -27,7 +26,7 @@ export default class Map {
     }
 
     // The Engine passes the H-offset (V-offset coming soon) value here so that the blocks' positions are updated with every render; if the sidebar is open then compact = true, causing a smaller area of the map to be shown:
-    render = (horizontalOffset: number) => {
+    render = (p5: P5, horizontalOffset: number) => {
         this._data._horizontalOffset = horizontalOffset;
         // Only render one screen width's worth, taking horizontal offset into account:
         const leftEdge = Math.floor(this._data._horizontalOffset / constants.BLOCK_WIDTH);    // Edges are in terms of columns

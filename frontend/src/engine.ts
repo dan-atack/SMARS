@@ -75,7 +75,7 @@ export default class Engine extends View {
         this._sidebarExtended = true;   // Side bar can be partially hidden to expand map view - should this be here or in the SB itself??
         this._gameData = null;
         this._saveInfo = null;  // Saved game info is loaded from the Game module when it calls the setupSavedGame method
-        this._map = new Map(this._p5);
+        this._map = new Map();
         this._infrastructure = new Infrastructure();
         this._economy = new Economy(p5);
         this._population = new Population(p5);
@@ -125,7 +125,7 @@ export default class Engine extends View {
 
     setupNewGame = (gameData: GameData) => {
         this._gameData = gameData;  // gameData object only needs to be set for new games
-        this._map.setup(this._gameData.mapTerrain);
+        this._map.setup(this._p5, this._gameData.mapTerrain);
         this._economy._data.addMoney(this._gameData.startingResources[0][1]);
         this._horizontalOffset = this._map._data._maxOffset / 2;   // Put player in the middle of the map to start out
         this._infrastructure.setup(this._map._data._mapData.length);
@@ -135,7 +135,7 @@ export default class Engine extends View {
     setupSavedGame = (saveInfo: SaveInfo) => {
         this._saveInfo = saveInfo;
         this.setClock(saveInfo.game_time);
-        this._map.setup(this._saveInfo.terrain);
+        this._map.setup(this._p5, this._saveInfo.terrain);
         // TODO: Extract the map expansion/sidebar pop-up (and the reverse) into a separate method
         this._map.setExpanded(false);   // Map starts in 'expanded' mode by default, so it must tell it the sidebar is open
         this._economy._data.addMoney(saveInfo.resources[0][1]); // Reload money from save data
@@ -623,7 +623,7 @@ export default class Engine extends View {
             if (this._tick >= this.ticksPerMinute) {
                 this._tick = 0;     // Advance minutes
                 // Update colonists' locations each 'minute', and all of their other stats every hour
-                this._population.updateColonists(this._map._data._mapData, this._gameTime.minute === 0, this._infrastructure, this._map);
+                this._population.updateColonists(this._gameTime.minute === 0, this._infrastructure, this._map);
                 if (this._gameTime.minute < this._minutesPerHour - 1) {  // Minus one tells the minutes counter to reset to zero after 59
                     this._gameTime.minute ++;
                 } else {
@@ -836,7 +836,7 @@ export default class Engine extends View {
         if (this._animation) {
             this._animation.render(this._horizontalOffset);     // Render animation second
         }
-        this._map.render(this._horizontalOffset);               // Render map third
+        this._map.render(this._p5, this._horizontalOffset);               // Render map third
         this._infrastructure.render(this._p5, this._horizontalOffset);    // Render infrastructure fourth
         if (this.selectedBuilding && !this._infrastructure._data.isModule(this.selectedBuilding)) {
             this.renderMouseShadow(); // If placing a connector, render mouse shadow above the infra layer

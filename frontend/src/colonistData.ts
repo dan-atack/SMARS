@@ -66,24 +66,24 @@ export default class ColonistData {
 
     // TODO: TOP-LEVEL UPDATER METHODS:
 
-    handleHourlyUpdates = () => {
+    handleHourlyUpdates = (infra: Infrastructure, map: Map) => {
         // TODO: Relocate every hourly update call here
+        this.updateNeedsAndGoals(infra, map);
     }
 
-    // Terrain is a subset of the map; just the column the colonist is on, plus one to the immediate right/left
-    handleMinutelyUpdates = (terrain: number[][], infra: Infrastructure, map: Map) => {
+    // AdjacentColumns is a subset of the map; just the column the colonist is on, plus one to the immediate right/left
+    handleMinutelyUpdates = (adjacentColumns: number[][], infra: Infrastructure, map: Map) => {
         // TODO: Relocate every update call that happens each minute here
         this.updateMapZone(map);
-        this.checkGoalStatus(terrain, map._data._columns.length - 1, infra)
+        this.checkGoalStatus(adjacentColumns, infra, map)
     }
 
     // NEEDS AND GOAL-ORIENTED METHODS
 
     // Handles hourly updates to the colonist's needs and priorities (goals)
-    updateNeedsAndGoals = (maxColumns: number, infra: Infrastructure) => {
-        // TODO: Only introduce need-based goal-setting when they are possible to fulfill
+    updateNeedsAndGoals = (infra: Infrastructure, map: Map) => {
         this.updateNeeds();
-        this.updateGoal(maxColumns, infra);
+        this.updateGoal(infra, map);
     }
 
     // This may take arguments some day, like how much the Colonist has exerted himself since the last update
@@ -95,7 +95,7 @@ export default class ColonistData {
     }
 
     // Checks whether any needs have exceeded their threshold and assigns a new goal if so; otherwise sets goal to 'explore'
-    updateGoal = (maxColumns: number, infra: Infrastructure) => {
+    updateGoal = (infra: Infrastructure, map: Map) => {
         // 1 - Determine needs-based (first priority) goals
         // If the colonist has no current goal, or is set to exploring, check if any needs have reached their thresholds
         // TODO: Revamp this logic to check for needs in a separate sub-method, and to include other tasks that can be overridden
@@ -103,7 +103,7 @@ export default class ColonistData {
             Object.keys(this._needs).forEach((need) => {
                 // @ts-ignore
                 if (this._needs[need] >= this._needThresholds[need]) {
-                    this.setGoal(`get-${need}`, infra);
+                    this.setGoal(`get-${need}`, infra, map);
                 }
             })
         };
@@ -111,13 +111,13 @@ export default class ColonistData {
         // If no goal has been set, tell them to go exploring; otherwise use the goal determined above
         // TODO: When colonists can have jobs, revamp this logic to check for non-exploration jobs before defaulting to explore
         if (this._currentGoal === "") {
-            this.setGoal("explore", infra, maxColumns);
+            this.setGoal("explore", infra, map);
         };
     }
 
     // Takes a string naming the current goal, and uses that to set the destination (and sets that string as the current goal)
     // Also takes optional parameter when setting the "explore" goal, to ensure the colonist isn't sent off the edge of the world
-    setGoal = (goal: string, infra?: Infrastructure, maxColumns?: number) => {
+    setGoal = (goal: string, infra?: Infrastructure, map?: Map) => {
         this._currentGoal = goal;
         if (this._currentGoal === "explore") {
             // Assign the colonist to walk to a nearby position
@@ -125,31 +125,31 @@ export default class ColonistData {
             const dist = Math.ceil(Math.random() * 10);
             const dest = dir ? dist : -dist;
             this._movementDest = Math.max(this._x + dest, 0);    // Ensure the colonist doesn't wander off the edge
-            if (maxColumns && this._movementDest > maxColumns) {
-                this._movementDest = maxColumns;
+            if (map && this._movementDest > map._data._columns.length - 1) {
+                this._movementDest = map._data._columns.length - 1;
             }
-        } else if (infra) {
-            this.determineActionsForGoal(infra)
+        } else if (infra && map) {
+            this.determineActionsForGoal(infra, map)
         } else if (this._currentGoal !== "") {
             console.log(`Error: No infra data provided for non-exploration colonist goal: ${this._currentGoal}`);
         }
     }
 
     // Determines if a colonist has reached their destination, and if so, what to do next
-    checkGoalStatus = (terrain: number[][], maxColumns: number, infra: Infrastructure) => {
+    checkGoalStatus = (adjacentColumns: number[][], infra: Infrastructure, map: Map) => {
         // Check if colonist is at their destination and update their goal if so...
         if (this._x === this._movementDest) {
             // If the goal was to explore, check if any needs have become urgent enough to make them the new goal
             if (this._currentGoal === "explore") {
                 this.resolveGoal();
-                this.updateGoal(maxColumns, infra);
+                this.updateGoal(infra, map);
             } else {
                 // console.log(`Arrived at destination for goal ${this._currentGoal}. Interact with building now?`);
                 // TODO: Resolve goal for non-exploration cases!
             }
         } else {
             // ...Otherwise, initiate movement sequence
-            this.handleMovement(terrain);
+            this.handleMovement(adjacentColumns);
         }
     }
 
@@ -163,7 +163,7 @@ export default class ColonistData {
     // (Actions are individual tasks, such as 'move to x', or 'consume a resource' which collectively form a single GOAL)
 
     // Top Level Action Creation Method: determines the individual actions to be performed to achieve the current goal
-    determineActionsForGoal = (infra: Infrastructure) => {
+    determineActionsForGoal = (infra: Infrastructure, map: Map) => {
         // Add 1 to colonist Y position to reflect the altitude of their feet, not their head
         const currentPosition = { x: this._x, y: this._y + 1 };
         switch(this._currentGoal) {
@@ -231,14 +231,14 @@ export default class ColonistData {
     }
 
     // Movement controller method: Takes a small terrain sample and 'fpm' which is short for 'frames per minute'
-    handleMovement = (terrain: number[][]) => {
+    handleMovement = (adjacentColumns: number[][]) => {
         // Colonists are passed an array of 2-3 columns: The one they're in, and the ones to the left and to the right
         // By default, the middle (second) column is the colonist's current position
         let currentColumn = 1;
         // If the colonist is at the right-most edge, then they are standing on column zero
-        if (terrain.length === 2 && this._x === 0) currentColumn = 0;
+        if (adjacentColumns.length === 2 && this._x === 0) currentColumn = 0;
         // 1 - Check what colonist is standing on
-        this.detectTerrainBeneath(terrain[currentColumn]);
+        this.detectTerrainBeneath(adjacentColumns[currentColumn]);
         // 2 - Conclude moves in progress
         if (this._isMoving) {
             this._movementProg ++;
@@ -248,18 +248,18 @@ export default class ColonistData {
             }
         // 3 - If no movement is currently taking place and the colonist is not at their destination, start a new move
         } else if (this._x !== this._movementDest) {
-            this.startMovement(terrain, currentColumn);
+            this.startMovement(adjacentColumns, currentColumn);
         }
     }
 
     // Determines what type of move is needed next (walking, climbing, etc) and initiates it
-    startMovement = (terrain: number[][], currentColumn: number) => {
+    startMovement = (adjacentColumns: number[][], currentColumn: number) => {
         // Determine direction
         const dir = this._x > this._movementDest ? "left" : "right";
         this._facing = dir;
         // Determine movement type by comparing current height to height of target column
-        const currentHeight = terrain[currentColumn].length;
-        const destHeight = dir === "right" ? terrain[currentColumn + 1].length : terrain[currentColumn - 1].length;
+        const currentHeight = adjacentColumns[currentColumn].length;
+        const destHeight = dir === "right" ? adjacentColumns[currentColumn + 1].length : adjacentColumns[currentColumn - 1].length;
         const delta = currentHeight - destHeight;
         switch (delta) {
             // Jumping down from either 1 or 2 blocks takes the same movement

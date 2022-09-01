@@ -23,16 +23,18 @@ export default class Population {
 
     // Master updater function for controlling all individual colonist updater methods:
     // Needs terrain info for position updates (every minute), and a boolean for whether to update colonists' needs (every hour)
-    updateColonists = (terrain: number[][], needs: boolean, infra: Infrastructure, map: Map) => {
+    updateColonists = (needs: boolean, infra: Infrastructure, map: Map) => {
+        const terrain = map._data._mapData;
         // Every minute:
-        this.handleColonistMinutelyUpdates(terrain, infra, map);              // Should happen once every minute
+        this.handleColonistMinutelyUpdates(infra, map);              // Should happen once every minute
         // Every hour:
-        if (needs) this.updateColonistNeedsAndGoals(terrain, infra);      // Should happen once every hour
+        if (needs) this.updateColonistNeedsAndGoals(infra, map);      // Should happen once every hour
     }
 
     // Passes terrain info to each colonist and then checks if they have achieved their current goal
-    handleColonistMinutelyUpdates = (terrain: number[][], infra: Infrastructure, map: Map) => {
+    handleColonistMinutelyUpdates = (infra: Infrastructure, map: Map) => {
         // For each colonist, isolate the 3 terrain columns around them:
+        const terrain = map._data._mapData;
         this._colonists.forEach((colonist) => {
             let cols: number[][] = [terrain[colonist._data._x]];
             // If colonist is next to the right or left edge of the map, only return 2 columns:
@@ -49,9 +51,9 @@ export default class Population {
         })
     }
 
-    updateColonistNeedsAndGoals = (terrain: number[][], infra: Infrastructure) => {
+    updateColonistNeedsAndGoals = (infra: Infrastructure, map: Map) => {
         this._colonists.forEach((colonist) => {
-            colonist._data.updateNeedsAndGoals(terrain.length - 1, infra);
+            colonist._data.updateNeedsAndGoals(infra, map);
         })
     }
 

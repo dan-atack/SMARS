@@ -1626,7 +1626,11 @@ Features Added:
 
 42. The colonist will call this method every minute, so the time has now come to pass the map data to the Population updater method in the Engine. Do this by adding an updateMapZone method to the Colonist class, which takes the map class and gets a zone ID from it by passing it the colonist's coordinates. Test in-game by re-writing the p5 text element that's currently showing the colonists' current goal to show their current map zone ID instead.
 
-### 34. Next, from the retrieved Floor data, see if it has a ground floor zone, and if so, check if its ID matches the ID of the ground zone the colonist is standing on (they will have to have a property for the ground zone ID this way, but at least they don't have to also carry around the topography info!). Make this into its own method, and write a unit test before proceeding.
+### 43. Fix Colonist Data class unit tests after recent refactoring of goal-setting methods.
+
+44. Remove P5 from the map base class, and pass it to the render function. Cross this off the tech debt list once completed.
+
+### 34. Next, from the retrieved Floor data, see if it has a ground floor zone, and if so, check if its ID matches the ID of the ground zone the colonist is standing on (they will have to have a property for the ground zone ID this way, but at least they don't have to also carry around the topography info!). If it is, then that means the Colonist can begin walking towards the module right away! If not, it means they will have to find a ladder... Test this by temporarily removing the need for a module to actually contain more than zero of the desired resource, and placing some empty store rooms on the ground, and seeing if the colonists will go for them (or at least, have them console log if they detect that they are in the same zone as the storage modules).
 
 ### 35. Next, console log if the floor is on the ground, and is in the same zone as the colonist.
 
