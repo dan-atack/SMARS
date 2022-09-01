@@ -1622,7 +1622,9 @@ Features Added:
 
 40. We can also add a second item to the action stack (which is executed in reverse order, so that this will happen immediately BEFORE the step added in the previous item). This will be the instruction to move towards the target module, and since movement is an immediate action, only the first two values need to be provided: { type: "move", coords: { module coordinates }, duration: 0, buildingId: 0 }. When the time comes, the actions resolver will read this as a movement type action and simply set the colonist's movementDestination to the appropriate column, since the next action added to the stack will be the one that brings the colonist to the floor containing the target module. Before we get to that though...
 
-### 41. Add a new method (and unit test) to the Map Data class, to retrieve the ID of a map zone when given a single set of coordinates. The colonist will call this method every minute, so the time has now come to pass the map data to the Population updater method in the Engine.
+41. Add a new method (and unit test) to the Map Data class, to retrieve the ID of a map zone when given a single set of coordinates.
+
+### 42. The colonist will call this method every minute, so the time has now come to pass the map data to the Population updater method in the Engine.
 
 ### 34. Next, from the retrieved Floor data, see if it has a ground floor zone, and if so, check if its ID matches the ID of the ground zone the colonist is standing on (they will have to have a property for the ground zone this way, but at least they don't have to also carry around the topography info!). Make this into its own method, and write a unit test before proceeding.
 

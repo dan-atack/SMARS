@@ -82,4 +82,11 @@ describe("MapData", () => {
         expect(mapData.walkableFromLocation(15, 32, 7, 32)).toBe(true);     // CAN walk to the edge of cliff (from other side)
     })
 
+    test("Returns the ID of a map zone for a pair of surface coordinates", () => {
+        expect(mapData.getZoneIdForCoordinates({x: 0, y: 32})).toBe("0033");
+        expect(mapData.getZoneIdForCoordinates({x: 6, y: 29})).toBe("0033");
+        expect(mapData.getZoneIdForCoordinates({x: 7, y: 32})).toBe("7033");
+        expect(mapData.getZoneIdForCoordinates({x: 0, y: 33})).toBe("");  // Invalid (non-surface) location gives empty result
+    })
+
 })

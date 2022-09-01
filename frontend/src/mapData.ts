@@ -179,6 +179,22 @@ export default class MapData {
     }
 
     // Returns the zone ID for a set of coordinates on the map's surface
-    
+    getZoneIdForCoordinates = (coords: Coords) => {
+        if (this._topography[coords.x] === coords.y + 1) {   // Valid height is one above surface level
+            const zone = this._zones.find(function(z) {
+                return z.leftEdge.x <= coords.x && z.rightEdge.x >= coords.x
+            });
+            if (zone !== undefined) {
+                return zone.id;
+            } else {
+                console.log(`Error: No zone found for X coordinate ${coords.x}`);
+                return "";
+            }
+        } else {
+            console.log(`Error: coordinates ${coords.x}, ${coords.y} are not at surface level.`);
+            return "";
+        }
+
+    }
 
 }
