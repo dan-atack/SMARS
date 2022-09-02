@@ -25,6 +25,7 @@ export default class ColonistData {
     _needThresholds: ColonistNeeds; // Separately keep track of the various thresholds for each type of need
     _currentGoal: string;           // String name of the Colonist's current goal (e.g. "get food", "get rest", "explore", etc.)
     _actionStack: ColonistAction[]; // Actions, from last to first, that the colonist will perform to achieve their current goal
+    _currentAction: ColonistAction | null; // The individual action that is currently being undertaken (if any)
     _actionTimeElapsed: number;     // The amount of time, in minutes, that has elapsed performing the current action
     _isMoving: boolean;             // Is the colonist currently trying to get somewhere?
     _movementType: string           // E.g. walk, climb-up, climb-down, etc. (used to control animations)
@@ -53,7 +54,8 @@ export default class ColonistData {
             rest: 8
         };
         this._currentGoal = saveData ? saveData.goal : "explore"    // Load saved goal, or go exploring (for new colonists).
-        this._actionStack = saveData?.actionStack ? saveData.actionStack : [];   // Load saved action stack, or default to empty stack
+        this._actionStack = saveData?.actionStack ? saveData.actionStack : [];   // Load saved action stack or default to empty
+        this._currentAction = null;
         this._actionTimeElapsed = saveData ? saveData.actionTimeElapsed : 0;    // Load saved value or default to zero
         this._isMoving = saveData ? saveData.isMoving : false;      // Load saved status or colonists is at rest by default
         this._movementType = saveData ? saveData.movementType :  "" // Load name of movement type or default to no movement
@@ -103,6 +105,7 @@ export default class ColonistData {
             Object.keys(this._needs).forEach((need) => {
                 // @ts-ignore
                 if (this._needs[need] >= this._needThresholds[need]) {
+                    this.resolveGoal(); // Clear out the old goal information first
                     this.setGoal(`get-${need}`, infra, map);
                 }
             })
@@ -129,7 +132,8 @@ export default class ColonistData {
                 this._movementDest = map._data._columns.length - 1;
             }
         } else if (infra && map) {
-            this.determineActionsForGoal(infra, map)
+            this.determineActionsForGoal(infra, map);
+
         } else if (this._currentGoal !== "") {
             console.log(`Error: No infra data provided for non-exploration colonist goal: ${this._currentGoal}`);
         }
@@ -144,13 +148,20 @@ export default class ColonistData {
                 this.resolveGoal();
                 this.updateGoal(infra, map);
             } else {
-                // console.log(`Arrived at destination for goal ${this._currentGoal}. Interact with building now?`);
+                console.log(`Arrived at destination for goal ${this._currentGoal}. Interact with building now?`);
                 // TODO: Resolve goal for non-exploration cases!
             }
         } else {
             // ...Otherwise, initiate movement sequence
             this.handleMovement(adjacentColumns);
         }
+    }
+
+    // Clears the current action (if any) and starts progress towards a newly selected goal
+    startGoalProgress = () => {
+        console.log(`Starting progress towards goal: ${this._currentGoal}`);
+        this.resolveAction();   // Ensure no previous actions are still in progress
+        this.startAction();
     }
 
     // Resets all goal-oriented values
@@ -164,12 +175,12 @@ export default class ColonistData {
 
     // Top Level Action Creation Method: determines the individual actions to be performed to achieve the current goal
     determineActionsForGoal = (infra: Infrastructure, map: Map) => {
-        // Add 1 to colonist Y position to reflect the altitude of their feet, not their head
-        const currentPosition = { x: this._x, y: this._y + 1 };
+        this.clearActions();    // Ensure the action stack is empty before adding to it
+        const currentPosition = { x: this._x, y: this._y + 1 }; // Add 1 to colonist Y position to get 'foot level' value
         switch(this._currentGoal) {
             case "get-water":
                 console.log("So thirsty...");
-                const waterSources = infra.findModulesWithResource(["water", this._needs.water]);
+                const waterSources = infra.findModulesWithResource(["water", 0 /*this._needs.water */]);
                 const waterModuleId = infra.findModuleNearestToLocation(waterSources, currentPosition);
                 const waterLocation = infra.findModuleLocationFromID(waterModuleId);
                 // Once module is found, add a 'drink' action to the stack (the last step is added first)
@@ -177,7 +188,22 @@ export default class ColonistData {
                 // Next, since we're working backwards from the final action, tell the Colonist to move to the resource location
                 this.addAction("move", waterLocation);      // Only 2 arguments needed for move actions
                 const waterFloor = infra._data.getFloorFromModuleId(waterModuleId);
-                console.log(`Water source found in module ${waterModuleId} on floor ${waterFloor?._id}`);
+                // Does the floor have a ground zone?
+                if (waterFloor !== null) {
+                    waterFloor._groundFloorZones.forEach((zone) => {
+                        if (zone.id === this._mapZoneId.toString()) {
+                            console.log(`Water source on floor ${waterFloor._id} is walkable from current map zone.`);
+                            this.startGoalProgress();
+                        } else {
+                            console.log(`Water source on floor ${waterFloor._id} is not walkable from current map zone.`);
+                            // Find elevators to target floor
+                        }
+                    })
+                    if (waterFloor._groundFloorZones.length === 0) {
+                        console.log(`Water source on floor ${waterFloor._id} is not on a ground floor.`)
+                        // Find elevators to target floor
+                    }
+                }
                 break;
             case "get-food":    // Parallels the get-water case almost closely enough to be the same... but not quite!
                 console.log("Merry! I'm hungry!");
@@ -206,17 +232,33 @@ export default class ColonistData {
             buildingId: buildingId ? buildingId : 0
         }
         this._actionStack.push(action);     // Add the action to the end of the action stack, so last added is first executed
-        console.log(this._actionStack);
+        // console.log(this._actionStack);
     }
 
     // Pops the last item off of the action stack and initiates it
     startAction = () => {
-
+        const action = this._actionStack.pop();
+        if (action !== undefined) {
+            this._currentAction = action;
+            switch(this._currentAction.type) {
+                case "drink":
+                    console.log(`Drinking at ${this._currentAction.buildingId}`);
+                    break;
+                case "eat":
+                    console.log(`Eating at ${this._currentAction.buildingId}`);
+                    break;
+                case "move":
+                    console.log(`Beginning movement to ${this._currentAction.coords.x}`);
+                    this._movementDest = this._currentAction.coords.x;
+                    break;
+            }
+        }
     }
 
-    // Completes the current action and, if there are more in the stack, begins the next one
+    // Completes the current action and resets all values related to the current action
     resolveAction = () => {
-
+        this._currentAction = null;
+        this._actionTimeElapsed = 0;
     }
 
     // Resets the action stack to an empty array

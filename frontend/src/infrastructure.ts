@@ -163,7 +163,7 @@ export default class Infrastructure {
         let mods: Module[] = [];  // Prepare to return the list of modules
         this._modules.forEach((mod) => {
             const hasCapacity = mod._data._resourceCapacity().includes(resource[0]);
-            const inStock = mod._data.getResourceQuantity(resource[0]) > resource[1];   // Compare needed vs available quantity
+            const inStock = mod._data.getResourceQuantity(resource[0]) >= resource[1];   // Compare needed vs available quantity
             if (hasCapacity && inStock) {
                 // console.log(`Module ${mod._data._moduleInfo.name} contains at least ${resource[1]} ${resource[0]}`);
                 const r = mod._data._resources.find((res) => res[0] === resource[0]);
