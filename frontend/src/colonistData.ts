@@ -78,7 +78,8 @@ export default class ColonistData {
     handleMinutelyUpdates = (adjacentColumns: number[][], infra: Infrastructure, map: Map) => {
         // TODO: Relocate every update call that happens each minute here
         this.updateMapZone(map);
-        this.checkGoalStatus(adjacentColumns, infra, map)
+        this.checkGoalStatus(adjacentColumns, infra, map);
+        this.checkActionStatus();
     }
 
     // NEEDS AND GOAL-ORIENTED METHODS
@@ -149,7 +150,7 @@ export default class ColonistData {
                 this.resolveGoal();
                 this.updateGoal(infra, map);
             } else {
-                console.log(`Arrived at destination for goal ${this._currentGoal}. Interact with building now?`);
+                // console.log(`Arrived at destination for goal ${this._currentGoal}. Interact with building now?`);
                 // TODO: Resolve goal for non-exploration cases!
             }
         } else {
@@ -222,6 +223,7 @@ export default class ColonistData {
                                 // Climb action needs all 4 args; coordinates = ladder.x and the height at which to get off
                                 this.addAction("climb", { x: ladderOfChoice.x, y: waterFloor._elevation}, 0, ladderOfChoice.id);
                                 this.addAction("move", { x: ladderOfChoice.x, y: ladderOfChoice.bottom});
+                                this.startGoalProgress();
                             } else {
                                 console.log(`No ladder matching zone ID ${this._mapZoneId} found.`);
                             }
@@ -243,8 +245,24 @@ export default class ColonistData {
     }
 
     // Called every minute by the master updater; checks and updates progress towards the completion of the current action
-    updateActionStatus = () => {
-
+    checkActionStatus = () => {
+        if (this._currentAction) {
+            switch (this._currentAction.type) {
+                case "climb":
+                    break;
+                case "drink":
+                    break;
+                case "eat":
+                    break;
+                case "move":
+                    if (this._x === this._currentAction.coords.x) {
+                        this.resolveAction();
+                        this.checkForNextAction();
+                    }
+                    break;
+            }
+        }
+        
     }
 
     // Adds a new action to the end of the action stack
@@ -265,6 +283,9 @@ export default class ColonistData {
         if (action !== undefined) {
             this._currentAction = action;
             switch(this._currentAction.type) {
+                case "climb":
+                    console.log(`Climbing ladder at ${this._currentAction.coords.x}`);
+                    break;
                 case "drink":
                     console.log(`Drinking at ${this._currentAction.buildingId}`);
                     break;
@@ -276,6 +297,15 @@ export default class ColonistData {
                     this._movementDest = this._currentAction.coords.x;
                     break;
             }
+        }
+    }
+
+    // Advances to the next action in the stack, if there is one
+    checkForNextAction = () => {
+        if (this._actionStack.length > 0) {
+            this.startAction();     // If there are more actions to be taken, start the next one
+        } else {    
+            this.resolveGoal();     // If no actions remain in the stack, then the goal has been achieved
         }
     }
 

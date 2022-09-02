@@ -1642,11 +1642,9 @@ Features Added:
 
 50. If, on the other hand, an elevator DOES have a ground zone ID, then compare it to the Colonist's current ground zone. If they match, then we can add two new actions to the action stack: one telling the Colonist to climb the ladder, and another to tell them to move towards it. Then at that point we can start the action stack. If, however, there are ladders which have ground zone IDs but the colonist isn't in the right zone, then we'll have to think of how to handle that. Oy yoy yoy!
 
-### 39. At this point, we should have all we need to determine the way to a floor that is removed by one elevator from the colonist's position... Now what??
+51. At this point, we should have all we need to determine the way to a floor that is removed by one elevator from the colonist's position, and the actions needed to get there from the current position. Phew! Take a moment to savour this triumph, before going in for some major refactoring and unit testing.
 
 ### 41. Update the "explore" case in the Colonist's goalSetter method so that it also expresses its output in the form of adding an action to the stack. Then, within
-
-### 98. Refactor the Infrastructure class to incorporate the Infra Data class once more, since neither now needs P5.
 
 ### 97. Update the Infra Data unit tests in light of this refactoring, and add some new ones too since the Infra base class has a lot of methods that are currently untested!
 
