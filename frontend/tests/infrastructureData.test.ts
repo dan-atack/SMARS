@@ -348,19 +348,19 @@ describe("Infrastructure Data", () => {
 
     test("Can add connectors to floors", () => {
         // Connector is added which intersects the existing floor (continuing from the previous test case)
-        infraData.addConnectorToFloors(9000, { x: 1, y: 0 }, { x: 1, y: 20 });
+        infraData.addConnectorToFloors(9000, { x: 1, y: 0 }, { x: 1, y: 20 }, "");
         expect(infraData._floors[0]._connectors).toStrictEqual([9000]);  // Floor has the connector's ID registered
         infraData.addNewFloor(2, footprintA, 6000, [], []);
         // TO IMPLEMENT: Every time a new floor is added, all connectors must be checked
         expect(infraData._floors[1]._connectors).toStrictEqual([9000]);     // Newly added floor gets existing connectors
-        infraData.addConnectorToFloors(9001, { x: 3, y: 0 }, { x: 3, y: 20 });
+        infraData.addConnectorToFloors(9001, { x: 3, y: 0 }, { x: 3, y: 20 }, "");
         // New connectors are added to all applicable floors
         expect(infraData._floors[0]._connectors).toStrictEqual([9000, 9001]);
         expect(infraData._floors[1]._connectors).toStrictEqual([9000, 9001]);   // Both floors get new connector
         infraData.addNewFloor(8, footprintA, 6001, [], []);
         // All new floors get all applicable connectors
         expect(infraData._floors[2]._connectors).toStrictEqual([9000, 9001]);   // New floor gets both existing connectors
-        infraData.addConnectorToFloors(9002, { x: 4, y: 0 }, { x: 4, y: 20 });
+        infraData.addConnectorToFloors(9002, { x: 4, y: 0 }, { x: 4, y: 20 }, "");
         // Connectors are only added to floors they intersect with
         expect(infraData._floors[2]._connectors).toStrictEqual([9000, 9001]);
         expect(infraData._floors[1]._connectors).toStrictEqual([9000, 9001]);
@@ -378,8 +378,8 @@ describe("Infrastructure Data", () => {
 
     // Returns a pointer to the entire elevator object (which is just an id, x, top and bottom - all integers, incidentally)
     test("Can find an elevator from its ID", () => {
-        expect(infraData.getElevatorFromId(9000)).toStrictEqual({ id: 9000, x: 1, top: 0, bottom: 20 });    // Find the first elevator added in the 'add connectors to floors' test
-        expect(infraData.getElevatorFromId(9002)).toStrictEqual({ id: 9002, x: 4, top: 0, bottom: 20 });    // Find other elevator
+        expect(infraData.getElevatorFromId(9000)).toStrictEqual({ id: 9000, x: 1, top: 0, bottom: 20, groundZoneId: "" });    // Find the first elevator added in the 'add connectors to floors' test
+        expect(infraData.getElevatorFromId(9002)).toStrictEqual({ id: 9002, x: 4, top: 0, bottom: 20, groundZoneId: "" });    // Find other elevator
         expect(infraData.getElevatorFromId(1000)).toBe(null);   // Always return null when something isn't found
     })
 

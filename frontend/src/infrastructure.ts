@@ -8,6 +8,7 @@ import { constants } from "./constants";
 import { Resource } from "./economyData";
 import { Coords } from "./connectorData";
 import { MapZone } from "./mapData";
+import Map from "./map";
 
 export default class Infrastructure {
     // Infrastructure class types:
@@ -43,13 +44,19 @@ export default class Infrastructure {
     }
 
     // Args: start and stop coords, and the connectorInfo. Serial is optional for loading connectors from a save file
-    addConnector (start: Coords, stop: Coords, connectorInfo: ConnectorInfo, serial?: number) {
+    addConnector (start: Coords, stop: Coords, connectorInfo: ConnectorInfo, map: Map, serial?: number) {
         this._data.increaseSerialNumber();      // Use the serial if there is one
         const c = new Connector(serial ? serial : this._data._currentSerial, start, stop, connectorInfo)
         this._connectors.push(c);
         // Update base floor data only if connector is of the transport type
         if (connectorInfo.type === "transport") {
-            this._data.addConnectorToFloors(c._data._id, start, stop);
+            // Determine if the ladder/elevator touches a ground zone
+            const bottom = Math.max(start.y, stop.y);   // Bottom has higher y value
+            const coords: Coords = { x: start.x, y: bottom };
+            const zoneId = map._data.getZoneIdForCoordinates(coords);
+            // Add the zone ID regardless of whether it's found (adds "" if connector is not grounded)
+            this._data.addConnectorToFloors(c._data._id, start, stop, zoneId);
+            c._data.setGroundZoneId(zoneId);
         }
         // Update Serial number generator if its current serial is lower than the serial being loaded
         if (serial && serial > this._data._currentSerial) {

@@ -1632,11 +1632,15 @@ Features Added:
 
 45. Next, from the retrieved Floor data, see if it has a ground floor zone, and if so, check if its ID matches the ID of the ground zone the colonist is standing on (they will have to have a property for the ground zone ID this way, but at least they don't have to also carry around the topography info!). If it is, then that means the Colonist can begin walking towards the module right away! If not, it means they will have to find a ladder... Test this by temporarily removing the need for a module to actually contain more than zero of the desired resource, and placing some empty store rooms on the ground, and seeing if the colonists will go for them (or at least, have them console log if they detect that they are in the same zone as the storage modules).
 
-### 36. If a resource-bearing module is not on the ground in the same zone as the colonist, look up whether it's got any connectors (elevators) attached. Log their IDs if it does.
+46. If a resource-bearing module is not on the ground in the same zone as the colonist, look up whether it's got any connectors (elevators) attached. Log their IDs if it does.
 
-### 37. Add a new Connector Data class method that allows a ladder or other 'transport' type connector to return the coordinates (x and y) of the connector's bottom point.
+47. Update the Infra base class's addConnector method such that when a transport type Connector is placed it can determine its bottom point, and then use that to find if it has a ground floor zone. Add a groundFloorZone property to the Connector class, and make it a singular tense, since a ladder/elevator cannot be grounded in more than one zone (if any). Pass the Map to the addConnector method in the Engine to allow it to use the mapData class's getZoneIdFromCoordinates function.
 
-### 38. For each elevator ID in the non-walkable Floor's elevators list, call the above-mentioned function and pass the result, plus the colonist's current location (remembering to adjust the y value to represent foot level) into the Map Data class's walkableFromLocation method. It'll probably be necessary to pass a pointer to the Map Data class all the way down to Colonist town too, at this point. A bit tangly, but at least it should still be unit-testable!
+48. Add the creation of a ladder to the Engine's initial base structure creation method.
+
+49. For each elevator ID in a non-walkable Floor's elevators list, check if it has a ground zone ID. If any elevator has a ground floor ID, check if that matches the Colonist's current ground zone ID. If none of them do, then we'll have to tell the Colonist to clear their action stack and try looking for another module that contains their needed resource. But we'll get back to that in a moment...
+
+50. If, on the other hand, an elevator DOES have a ground zone ID, then compare it to the Colonist's current ground zone. If they match, then we can add two new actions to the action stack: one telling the Colonist to climb the ladder, and another to tell them to move towards it. Then at that point we can start the action stack. If, however, there are ladders which have ground zone IDs but the colonist isn't in the right zone, then we'll have to think of how to handle that. Oy yoy yoy!
 
 ### 39. At this point, we should have all we need to determine the way to a floor that is removed by one elevator from the colonist's position... Now what??
 
@@ -1688,8 +1692,6 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ### - Colonist/ColonistData
 
-### - Map/MapData
-
 ### - Block (no data class exists yet - not a high priority)
 
 ### - MouseShadow/MouseShadowData (also not a top priority)
@@ -1701,6 +1703,8 @@ As the game matures, it will be more and more desirable to separate features tha
 ### - Module/ModuleData
 
 ### - Connector/ConnectorData
+
+### - Map/MapData
 
 # Annex A: Advanced Concepts
 

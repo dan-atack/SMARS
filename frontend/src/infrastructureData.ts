@@ -6,13 +6,15 @@ import Floor from "./floor";
 import { constants } from "./constants";
 import { MapZone } from "./mapData";
 
+export type Elevator = { id: number, x: number, top: number, bottom: number, groundZoneId: string }
+
 export default class InfrastructureData {
     // Infra Data class is mostly a calculator for the Infra class to pass values to, so it stores very few of them itself
     _justBuilt: ModuleInfo | ConnectorInfo | null;
     _currentSerial: number;     // A crude but hopefully effective method of ID-ing structures as they're created
     _baseVolume: number[][];    // Works the same as the terrain map, but to keep track of the base's inner area
     _floors: Floor[];           // Floors are a formation of one or more modules, representing walkable surfaces within the base
-    _elevators: { id: number, x: number, top: number, bottom: number }[]    // Basic data to keep track of inter-floor connectors
+    _elevators: Elevator[]    // Basic data to keep track of inter-floor connectors
     _moduleResources: Resource[];   // The data that will be passed to the Economy class
 
     constructor() {
@@ -232,13 +234,13 @@ export default class InfrastructureData {
     }
 
     // Top-level method for adding new connectors
-    addConnectorToFloors (connectorId: number, start: Coords, stop: Coords) {
+    addConnectorToFloors (connectorId: number, start: Coords, stop: Coords, groundZoneId: string) {
         // First, register the connector as an 'elevator' (inter-floor connection)
         const bottom = Math.max(start.y, stop.y);
         const top = Math.min(start.y, stop.y);
         const left = Math.min(start.x, stop.x);
         const right = Math.max(start.x, stop.x);
-        this._elevators.push({ id: connectorId, x: start.x, top: top, bottom: bottom });
+        this._elevators.push({ id: connectorId, x: start.x, top: top, bottom: bottom, groundZoneId: groundZoneId });
         // Check for floors intersected by a new connector; add the new connector to their list if they overlap
         this._floors.forEach((floor) => {
             const yMatch = floor._elevation >= top && floor._elevation <= bottom;

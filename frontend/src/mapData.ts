@@ -191,7 +191,7 @@ export default class MapData {
                 return "";
             }
         } else {
-            console.log(`Error: coordinates ${coords.x}, ${coords.y} are not at surface level.`);
+            // console.log(`Coordinates ${coords.x}, ${coords.y} are not at surface level.`);
             return "";
         }
 

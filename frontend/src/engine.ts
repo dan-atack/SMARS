@@ -247,9 +247,9 @@ export default class Engine extends View {
                 const start: Coords = space[0].start;
                 const stop: Coords = space[0].stop;
                 if (ids) {     // Use the saved serial number only if it is available
-                    this._infrastructure.addConnector(start, stop, selectedConnector, ids[idx]);
+                    this._infrastructure.addConnector(start, stop, selectedConnector,this._map, ids[idx]);
                 } else {
-                    this._infrastructure.addConnector(start, stop, selectedConnector);
+                    this._infrastructure.addConnector(start, stop, selectedConnector, this._map);
                 }
                 
             })
@@ -481,7 +481,7 @@ export default class Engine extends View {
             const stop = this._mouseShadow._data._connectorStopCoords;
             const clear = this._infrastructure._data.checkConnectorEndpointPlacement(stop.x, stop.y, this._map._data._mapData);
             if (affordable && clear) {
-                this._infrastructure.addConnector(start, stop, this.selectedBuilding);
+                this._infrastructure.addConnector(start, stop, this.selectedBuilding, this._map);
                 this._economy._data.subtractMoney(cost);
             } else {
                 // TODO: Display this info to the player with an in-game message of some kind
@@ -544,7 +544,10 @@ export default class Engine extends View {
         const h20Coords = [[x + 6, y - 3]]
         const crewCoords = [[x, y]];
         const canCoords = [[x + 4, y]];
-        const antennaCoords = [[x, y - 8]]
+        const antennaCoords = [[x, y - 8]];
+        const ladderStart: Coords = { x: x + 4, y: y};
+        const ladderStop: Coords = { x: x + 4, y: y + 3};
+        const ladderCoords = [[{ start: ladderStart, stop: ladderStop }]];
         // Note: getModuleInfo can print many copies of the same module, hence the double-list for coords at the end there
         this.getModuleInfo(this.loadModuleFromSave, "modules", "Life Support", "Cantina", canCoords);
         this.getModuleInfo(this.loadModuleFromSave, "modules", "Life Support", "Crew Quarters", crewCoords);
@@ -552,6 +555,7 @@ export default class Engine extends View {
         this.getModuleInfo(this.loadModuleFromSave, "modules", "Storage", "Oxygen Tank", tankCoords);
         this.getModuleInfo(this.loadModuleFromSave, "modules", "Storage", "Water Tank", h20Coords);
         this.getModuleInfo(this.loadModuleFromSave, "modules", "Communications", "Comms Antenna", antennaCoords);
+        this.getConnectorInfo(this.loadConnectorFromSave, "connectors", "transport", "Ladder", ladderCoords);
         let rubbleCoords: number[][] = [];
         for (let i = 0; i < 8; i++) {
             rubbleCoords.push([x + i, rY]);

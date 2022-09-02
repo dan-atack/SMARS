@@ -3,6 +3,7 @@ import { ColonistSaveData, ColonistNeeds } from "./colonist";
 import { Coords } from "./connectorData";
 import { constants } from "./constants";
 import Infrastructure from "./infrastructure";  // Infra data info gets passed by population updater function
+import { Elevator } from "./infrastructureData";
 import Map from "./map";
 
 export type ColonistAction = {
@@ -188,20 +189,43 @@ export default class ColonistData {
                 // Next, since we're working backwards from the final action, tell the Colonist to move to the resource location
                 this.addAction("move", waterLocation);      // Only 2 arguments needed for move actions
                 const waterFloor = infra._data.getFloorFromModuleId(waterModuleId);
-                // Does the floor have a ground zone?
                 if (waterFloor !== null) {
+                    // Does the floor have a ground zone?
                     waterFloor._groundFloorZones.forEach((zone) => {
                         if (zone.id === this._mapZoneId.toString()) {
                             console.log(`Water source on floor ${waterFloor._id} is walkable from current map zone.`);
                             this.startGoalProgress();
                         } else {
                             console.log(`Water source on floor ${waterFloor._id} is not walkable from current map zone.`);
-                            // Find elevators to target floor
+                            // Find elevators IDs connecting to target floor
+                            
                         }
                     })
                     if (waterFloor._groundFloorZones.length === 0) {
                         console.log(`Water source on floor ${waterFloor._id} is not on a ground floor.`)
                         // Find elevators to target floor
+                        const elevatorIDs = waterFloor._connectors;
+                        console.log(`Elevators connecting to water source floor: ${elevatorIDs}`);
+                        if (elevatorIDs.length > 0) {
+                            // If there are any elevators/ladders, check if any of them has a ground zone
+                            const groundedElevators: Elevator[] = [];
+                            elevatorIDs.forEach((id) => {
+                                const elev = infra._data.getElevatorFromId(id);
+                                if (elev && elev.groundZoneId.length > 0) {
+                                    groundedElevators.push(elev);
+                                }
+                            })
+                            // If any do, find if any of them has the same ground zone as the colonist
+                            const ladderOfChoice = groundedElevators.find(ladder => ladder.groundZoneId === this._mapZoneId);
+                            if (ladderOfChoice) {
+                                // If a ladder is found that has the same ground zone, tell the colonist to climb it!
+                                // Climb action needs all 4 args; coordinates = ladder.x and the height at which to get off
+                                this.addAction("climb", { x: ladderOfChoice.x, y: waterFloor._elevation}, 0, ladderOfChoice.id);
+                                this.addAction("move", { x: ladderOfChoice.x, y: ladderOfChoice.bottom});
+                            } else {
+                                console.log(`No ladder matching zone ID ${this._mapZoneId} found.`);
+                            }
+                        }
                     }
                 }
                 break;
@@ -232,7 +256,7 @@ export default class ColonistData {
             buildingId: buildingId ? buildingId : 0
         }
         this._actionStack.push(action);     // Add the action to the end of the action stack, so last added is first executed
-        // console.log(this._actionStack);
+        console.log(this._actionStack);
     }
 
     // Pops the last item off of the action stack and initiates it
