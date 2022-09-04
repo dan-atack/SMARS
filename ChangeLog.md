@@ -1644,11 +1644,11 @@ Features Added:
 
 51. At this point, we should have all we need to determine the way to a floor that is removed by one elevator from the colonist's position, and the actions needed to get there from the current position. Phew! Take a moment to savour this triumph, before going in for some major refactoring and unit testing.
 
-### 41. Change the code for the Colonist's checkGoalStatus method, so that instead of looking at whether the Colonist is at their movementDestination, instead it checks if there are any actions left in the action stack/current action. If there is no current action and the stack is empty then the current goal must be completed and it is time to pick a new one.
+52. Change the code for the Colonist's checkGoalStatus method, so that instead of looking at whether the Colonist is at their movementDestination, instead it checks if there are any actions left in the action stack/current action. If there is no current action and the stack is empty then the current goal must be completed and it is time to pick a new one.
 
-### 42. Next, take the 'explore' determination calculations and pass them to the determineActionsForGoal method, so that setGoal becomes a very minimal setter method with a single call to the action determinator. Place all code for the exploration movement destination determination into the action determinator.
+53. Next, take the 'explore' determination calculations and pass them to the determineActionsForGoal method, so that setGoal becomes a very minimal setter method with a single call to the action determinator. Place all code for the exploration movement destination determination into the action determinator.
 
-### 43. Once the code for setting the exploration goal has been transplanted, update it so that instead of setting the movementDestination, it creates a one-action stack and then begins it.
+54. Once the code for setting the exploration goal has been transplanted, update it so that instead of setting the movementDestination, it creates a one-action stack and then begins it.
 
 ### 44. Next we'll update how the movementDestination gets interpreted by the handleMovement method, to allow movements other than walking/climbing across the map to be considered, starting with climbing a ladder. We'll have to start by upgrading movementDest from a single number representing an x value to a fully-fledged set of Coordinates. Next, we'll stipulate that when the current action is "move" that the y value doesn't need to be considered by the startMovement method. I suppose the startMovement method should be divided into a higher-level switch case where it looks at the action type, and then its existing switch case for determining types of movement over the terrain can be called in the "move" case only.
 

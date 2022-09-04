@@ -32,7 +32,7 @@ export default class ColonistData {
     _movementType: string           // E.g. walk, climb-up, climb-down, etc. (used to control animations)
     _movementCost: number;          // The cost, in units of time (and perhaps later, 'exertion') for the current movement
     _movementProg: number;          // The amount of time and/or exertion expended towards the current movement cost
-    _movementDest: number;          // The x value of the current destination for the colonist's movement
+    _movementDest: Coords;          // The coordinates of the current destination for the colonist's movement
     _facing: string;                // Either "right" or "left"... until SMARS 3D is released, that is!
     _animationTick: number;         // Governs the progression of movement/activity animations
 
@@ -62,7 +62,7 @@ export default class ColonistData {
         this._movementType = saveData ? saveData.movementType :  "" // Load name of movement type or default to no movement
         this._movementCost = saveData ? saveData.movementCost : 0;  // Load value or default to zero
         this._movementProg = saveData ? saveData.movementProg : 0;  // Load value or default to zero
-        this._movementDest = saveData ? saveData.movementDest : this._x + 1; // Load destination or go one to the right
+        this._movementDest = saveData ? saveData.movementDest : { x: this._x + 1, y: this._y }; // Load destination or go right
         this._facing = saveData ? saveData.facing : "right";        // Let's not make this a political issue, Terry.
         this._animationTick = 0;                                    // By default, no animation is playing
     }
@@ -119,36 +119,31 @@ export default class ColonistData {
     // Also takes optional parameter when setting the "explore" goal, to ensure the colonist isn't sent off the edge of the world
     setGoal = (goal: string, infra?: Infrastructure, map?: Map) => {
         this._currentGoal = goal;
-        if (this._currentGoal === "explore") {
-            // Assign the colonist to walk to a nearby position
-            const dir = Math.random() > 0.5;
-            const dist = Math.ceil(Math.random() * 10);
-            const dest = dir ? dist : -dist;
-            this._movementDest = Math.max(this._x + dest, 0);    // Ensure the colonist doesn't wander off the edge
-            if (map && this._movementDest > map._data._columns.length - 1) {
-                this._movementDest = map._data._columns.length - 1;
-            }
-        } else if (infra && map) {
+        if (infra && map) {
             this.determineActionsForGoal(infra, map);
-
         } else if (this._currentGoal !== "") {
-            console.log(`Error: No infra data provided for non-exploration colonist goal: ${this._currentGoal}`);
+            console.log(`Error: No infra data provided for non-empty colonist goal: ${this._currentGoal}`);
         }
     }
 
     // Determines if a colonist has reached their destination, and if so, what to do next
     checkGoalStatus = (infra: Infrastructure, map: Map) => {
-        // Check if colonist is at their destination and update their goal if so...
-        if (this._x === this._movementDest) {
-            // If the goal was to explore, check if any needs have become urgent enough to make them the new goal
-            if (this._currentGoal === "explore") {
-                this.resolveGoal();
-                this.updateGoal(infra, map);
-            } else {
-                // console.log(`Arrived at destination for goal ${this._currentGoal}. Interact with building now?`);
-                // TODO: Resolve goal for non-exploration cases!
-            }
+        // New way: Check if the colonist has no actions remaining - if so, they have resolved their current goal
+        if (this._actionStack.length === 0 && this._currentAction === null) {
+            this.resolveGoal();
+            this.updateGoal(infra, map);
         }
+        // Old way: Check if colonist is at their destination and update their goal if so...
+        // if (this._x === this._movementDest) {
+        //     // If the goal was to explore, check if any needs have become urgent enough to make them the new goal
+        //     if (this._currentGoal === "explore") {
+        //         this.resolveGoal();
+        //         this.updateGoal(infra, map);
+        //     } else {
+        //         // console.log(`Arrived at destination for goal ${this._currentGoal}. Interact with building now?`);
+        //         // TODO: Resolve goal for non-exploration cases!
+        //     }
+        // }
     }
 
     // Clears the current action (if any) and starts progress towards a newly selected goal
@@ -161,7 +156,8 @@ export default class ColonistData {
     // Resets all goal-oriented values
     resolveGoal = () => {
         this.setGoal("");
-        this._movementDest = this._x;
+        this.resolveAction();
+        this.clearActions();    // Ensure no actions remain if the goal is declared resolved
     }
 
     // ACTION-ORIENTED METHODS
@@ -172,6 +168,18 @@ export default class ColonistData {
         this.clearActions();    // Ensure the action stack is empty before adding to it
         const currentPosition = { x: this._x, y: this._y + 1 }; // Add 1 to colonist Y position to get 'foot level' value
         switch(this._currentGoal) {
+            case "explore":
+                // Assign the colonist to walk to a nearby position
+                const dir = Math.random() > 0.5;
+                const dist = Math.ceil(Math.random() * 10);
+                let dest = dir ? dist : -dist;
+                dest = Math.max(this._x + dest, 0);    // Ensure the colonist doesn't wander off the edge
+                if (dest > map._data._columns.length - 1) {
+                    dest = map._data._columns.length - 1;
+                }
+                this.addAction("move", { x: dest, y: 0 });  // Y coordinate doesn't matter for move action
+                this.startAction();
+                break;
             case "get-water":
                 console.log("So thirsty...");
                 const waterSources = infra.findModulesWithResource(["water", 0 /*this._needs.water */]);
@@ -270,7 +278,7 @@ export default class ColonistData {
             buildingId: buildingId ? buildingId : 0
         }
         this._actionStack.push(action);     // Add the action to the end of the action stack, so last added is first executed
-        console.log(this._actionStack);
+        // console.log(this._actionStack);
     }
 
     // Pops the last item off of the action stack and initiates it
@@ -290,7 +298,7 @@ export default class ColonistData {
                     break;
                 case "move":
                     console.log(`Beginning movement to ${this._currentAction.coords.x}`);
-                    this._movementDest = this._currentAction.coords.x;
+                    this._movementDest = { x: this._currentAction.coords.x, y: 0 };
                     break;
             }
         }
@@ -300,9 +308,9 @@ export default class ColonistData {
     checkForNextAction = () => {
         if (this._actionStack.length > 0) {
             this.startAction();     // If there are more actions to be taken, start the next one
-        } else {    
-            this.resolveGoal();     // If no actions remain in the stack, then the goal has been achieved
-        }
+        } // else {    
+        //     this.resolveGoal();     // If no actions remain in the stack, then the goal has been achieved
+        // }
     }
 
     // Completes the current action and resets all values related to the current action
@@ -339,7 +347,7 @@ export default class ColonistData {
                 this.stopMovement();
             }
         // 3 - If no movement is currently taking place and the colonist is not at their destination, start a new move
-        } else if (this._x !== this._movementDest) {
+        } else if (this._x !== this._movementDest.x) {
             this.startMovement(adjacentColumns, currentColumn);
         }
     }
@@ -347,7 +355,7 @@ export default class ColonistData {
     // Determines what type of move is needed next (walking, climbing, etc) and initiates it
     startMovement = (adjacentColumns: number[][], currentColumn: number) => {
         // Determine direction
-        const dir = this._x > this._movementDest ? "left" : "right";
+        const dir = this._x > this._movementDest.x ? "left" : "right";
         this._facing = dir;
         // Determine movement type by comparing current height to height of target column
         const currentHeight = adjacentColumns[currentColumn].length;
@@ -378,7 +386,7 @@ export default class ColonistData {
             default:
                 // Abort movement if terrain is too steep
                 this.stopMovement();
-                this.setGoal("explore");   // Reset colonist goal if they reach an impassable obstacle.
+                this.resolveGoal();
                 break;
         }
         // Start new move
