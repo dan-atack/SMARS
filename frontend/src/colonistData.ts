@@ -69,26 +69,21 @@ export default class ColonistData {
 
     // TODO: TOP-LEVEL UPDATER METHODS:
 
+    // Handles hourly updates to the colonist's needs and priorities (goals)
     handleHourlyUpdates = (infra: Infrastructure, map: Map) => {
-        // TODO: Relocate every hourly update call here
-        this.updateNeedsAndGoals(infra, map);
+        this.updateNeeds();
+        this.updateGoal(infra, map);
     }
 
     // AdjacentColumns is a subset of the map; just the column the colonist is on, plus one to the immediate right/left
     handleMinutelyUpdates = (adjacentColumns: number[][], infra: Infrastructure, map: Map) => {
-        // TODO: Relocate every update call that happens each minute here
         this.updateMapZone(map);
-        this.checkGoalStatus(adjacentColumns, infra, map);
-        this.checkActionStatus();
+        this.checkActionStatus();   // Update actions before goals
+        this.checkGoalStatus(infra, map);
+        this.handleMovement(adjacentColumns);
     }
 
     // NEEDS AND GOAL-ORIENTED METHODS
-
-    // Handles hourly updates to the colonist's needs and priorities (goals)
-    updateNeedsAndGoals = (infra: Infrastructure, map: Map) => {
-        this.updateNeeds();
-        this.updateGoal(infra, map);
-    }
 
     // This may take arguments some day, like how much the Colonist has exerted himself since the last update
     updateNeeds = () => {
@@ -142,7 +137,7 @@ export default class ColonistData {
     }
 
     // Determines if a colonist has reached their destination, and if so, what to do next
-    checkGoalStatus = (adjacentColumns: number[][], infra: Infrastructure, map: Map) => {
+    checkGoalStatus = (infra: Infrastructure, map: Map) => {
         // Check if colonist is at their destination and update their goal if so...
         if (this._x === this._movementDest) {
             // If the goal was to explore, check if any needs have become urgent enough to make them the new goal
@@ -153,9 +148,6 @@ export default class ColonistData {
                 // console.log(`Arrived at destination for goal ${this._currentGoal}. Interact with building now?`);
                 // TODO: Resolve goal for non-exploration cases!
             }
-        } else {
-            // ...Otherwise, initiate movement sequence
-            this.handleMovement(adjacentColumns);
         }
     }
 
@@ -249,6 +241,10 @@ export default class ColonistData {
         if (this._currentAction) {
             switch (this._currentAction.type) {
                 case "climb":
+                    if (this._x === this._currentAction.coords.x && this._y + 1 === this._currentAction.coords.y) {
+                        this.resolveAction();
+                        this.checkForNextAction();
+                    }
                     break;
                 case "drink":
                     break;

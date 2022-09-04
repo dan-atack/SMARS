@@ -1644,7 +1644,19 @@ Features Added:
 
 51. At this point, we should have all we need to determine the way to a floor that is removed by one elevator from the colonist's position, and the actions needed to get there from the current position. Phew! Take a moment to savour this triumph, before going in for some major refactoring and unit testing.
 
-### 41. Update the "explore" case in the Colonist's goalSetter method so that it also expresses its output in the form of adding an action to the stack. Then, within
+### 41. Change the code for the Colonist's checkGoalStatus method, so that instead of looking at whether the Colonist is at their movementDestination, instead it checks if there are any actions left in the action stack/current action. If there is no current action and the stack is empty then the current goal must be completed and it is time to pick a new one.
+
+### 42. Next, take the 'explore' determination calculations and pass them to the determineActionsForGoal method, so that setGoal becomes a very minimal setter method with a single call to the action determinator. Place all code for the exploration movement destination determination into the action determinator.
+
+### 43. Once the code for setting the exploration goal has been transplanted, update it so that instead of setting the movementDestination, it creates a one-action stack and then begins it.
+
+### 44. Next we'll update how the movementDestination gets interpreted by the handleMovement method, to allow movements other than walking/climbing across the map to be considered, starting with climbing a ladder. We'll have to start by upgrading movementDest from a single number representing an x value to a fully-fledged set of Coordinates. Next, we'll stipulate that when the current action is "move" that the y value doesn't need to be considered by the startMovement method. I suppose the startMovement method should be divided into a higher-level switch case where it looks at the action type, and then its existing switch case for determining types of movement over the terrain can be called in the "move" case only.
+
+### 45. Update the detectTerrainBeneath method and overhaul it completely so that it calls the determineMapZone method and also does a secondary check to see if the colonist is either a) climbing a ladder or b) on a module floor if they're not standing on the surface of whichever column they're currently in.
+
+### 46. All of these changes will probably have wreaked havoc with the existing Colonist Data unit tests, so take a moment to fix those/update them with the new (and in some cases drastically different) expectations for the updated methods.
+
+### 47. Also, add some new unit tests for the various action related functions; these will help to further clarify the new colonist decision/action/movement workflows as well as focusing the direction of the remaining efforts for this chapter.
 
 ### 97. Update the Infra Data unit tests in light of this refactoring, and add some new ones too since the Infra base class has a lot of methods that are currently untested!
 
