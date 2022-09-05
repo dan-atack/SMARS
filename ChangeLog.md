@@ -1652,6 +1652,12 @@ Features Added:
 
 55. Next we'll update how the movementDestination gets interpreted by the handleMovement method, to allow movements other than walking/climbing across the map to be considered, starting with climbing a ladder. We'll have to start by upgrading movementDest from a single number representing an x value to a fully-fledged set of Coordinates. Next, we'll stipulate that when the current action is "move" that the y value doesn't need to be considered by the startMovement method. Then the startMovement method will be divided into a higher-level switch case where it looks at the action type, and then its existing switch case for determining types of movement over the terrain can be called in the "move" case only.
 
+### 56. Complete the drinking sequence by having the Colonist's startMovement case for 'drink' set the movementType to 'drink' and set the movementCost value to 1 unit of time per point of thirst. For the heck of it, do the same thing for 'eat' while we're at it.
+
+### 57. Next, tell the checkActionStatus method to check actionTimeElapsed against the current action's duration when the current action is 'drink' or 'eat' and so that the action (And hopefully the goal) is resolved when the Colonist has finished eating/drinking their fill.
+
+### 58. Also, tell the checkActionStatus method to start increasing the actionTimeElapsed value by one per cycle when the current action's duration is greater than zero, so that the when the Colonist is performing an activity with a set duration value they start making progress towards it once they start.
+
 ### 46. All of these changes will probably have wreaked havoc with the existing Colonist Data unit tests, so take a moment to fix those/update them with the new (and in some cases drastically different) expectations for the updated methods.
 
 ### 47. Also, add some new unit tests for the various action related functions; these will help to further clarify the new colonist decision/action/movement workflows as well as focusing the direction of the remaining efforts for this chapter.

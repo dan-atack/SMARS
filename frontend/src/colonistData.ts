@@ -122,7 +122,7 @@ export default class ColonistData {
         if (infra && map) {
             this.determineActionsForGoal(infra, map);
         } else if (this._currentGoal !== "") {
-            console.log(`Error: No infra data provided for non-empty colonist goal: ${this._currentGoal}`);
+            console.log(`Error: Infra/Map data missing for non-empty colonist goal: ${this._currentGoal}`);
         }
     }
 
@@ -155,6 +155,7 @@ export default class ColonistData {
 
     // Resets all goal-oriented values
     resolveGoal = () => {
+        console.log(`Goal resolved: ${this._currentGoal}`);
         this.setGoal("");
         this.resolveAction();
         this.clearActions();    // Ensure no actions remain if the goal is declared resolved
@@ -248,6 +249,11 @@ export default class ColonistData {
     // Called every minute by the master updater; checks and updates progress towards the completion of the current action
     checkActionStatus = () => {
         if (this._currentAction) {
+            // 1 - Increase action elapsed time if the current action has a duration value
+            if (this._currentAction.duration > 0) {
+                this._actionTimeElapsed++;
+            }
+            // 2 - Check for action completion conditions depending on action type
             switch (this._currentAction.type) {
                 case "climb":
                     if (this._x === this._currentAction.coords.x && this._y === this._currentAction.coords.y) {
@@ -256,8 +262,16 @@ export default class ColonistData {
                     }
                     break;
                 case "drink":
+                    if (this._actionTimeElapsed >= this._currentAction.duration) {
+                        this.resolveAction();
+                        this.checkForNextAction();
+                    }
                     break;
                 case "eat":
+                    if (this._actionTimeElapsed >= this._currentAction.duration) {
+                        this.resolveAction();
+                        this.checkForNextAction();
+                    }
                     break;
                 case "move":
                     if (this._x === this._currentAction.coords.x) {
@@ -265,6 +279,7 @@ export default class ColonistData {
                         this.checkForNextAction();
                     }
                     break;
+                // Housekeeping: Keep options in sync with startAction and startMovement methods and animationFunctions.ts
             }
         }
         
@@ -310,9 +325,7 @@ export default class ColonistData {
     checkForNextAction = () => {
         if (this._actionStack.length > 0) {
             this.startAction();     // If there are more actions to be taken, start the next one
-        } // else {    
-        //     this.resolveGoal();     // If no actions remain in the stack, then the goal has been achieved
-        // }
+        }
     }
 
     // Completes the current action and resets all values related to the current action
@@ -334,6 +347,9 @@ export default class ColonistData {
 
     // Movement Top-Level controller method: Initiates/continues a move based on what type of action is being performed
     handleMovement = (map: Map, adjacentColumns: number[][]) => {
+        // 0 - Check if non-movement (duration-based) action is taking place
+        let otherAction = false;
+        if (this._currentAction !== null) otherAction = this._currentAction.duration > this._actionTimeElapsed;
         // 1 - Check what colonist is standing on
         this.detectTerrainBeneath(map);
         // 2 - Conclude moves in progress
@@ -343,14 +359,14 @@ export default class ColonistData {
                 this.updatePosition();
                 this.stopMovement();
             }
-        // 3 - If no movement is currently taking place and the colonist is not at their destination, start a new move
-        } else if (this._x !== this._movementDest.x || this._y !== this._movementDest.y) {
-            this.startMovement(map, adjacentColumns);
+        // 3 - If no move is currently in progress and colonist is not at destination or has other type of action, start new move
+        } else if (this._x !== this._movementDest.x || this._y !== this._movementDest.y || otherAction) {
+            this.startMovement(adjacentColumns);
         }
     }
 
     // Determines what type of move is needed next (walking, climbing, etc) and initiates it
-    startMovement = (map: Map, adjacentColumns: number[][]) => {
+    startMovement = (adjacentColumns: number[][]) => {
         // 1 - Determine movement type and cost
         if (this._currentAction) {
             switch (this._currentAction.type) {
@@ -359,8 +375,12 @@ export default class ColonistData {
                     this._movementCost = 5; // It takes 5 time units to climb one segment of ladder
                     break;
                 case "drink":
+                    this._movementType = "drink";
+                    this._movementCost = this._currentAction.duration;  // Drink time depends on thirst level
                     break;
                 case "eat":
+                    this._movementType = "eat";
+                    this._movementCost = this._currentAction.duration;  // Eating time depends on hunger level
                     break;
                 case "move":
                     // A - Determine direction
@@ -369,7 +389,7 @@ export default class ColonistData {
                     let currentColumn = 1;
                     // If the colonist is at the right-most edge, then they are standing on column zero
                     if (adjacentColumns.length === 2 && this._x === 0) currentColumn = 0;
-                    const dir = this._x > this._movementDest.x ? "left" : "right";
+                    const dir = this._x >= this._movementDest.x ? "left" : "right";
                     this._facing = dir;
                     // B - Determine movement type by comparing current height to height of target column
                     const currentHeight = adjacentColumns[currentColumn].length;
