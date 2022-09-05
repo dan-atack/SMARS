@@ -80,7 +80,7 @@ export default class ColonistData {
         this.updateMapZone(map);
         this.checkActionStatus();   // Update actions before goals
         this.checkGoalStatus(infra, map);
-        this.handleMovement(adjacentColumns);
+        this.handleMovement(map, adjacentColumns);
     }
 
     // NEEDS AND GOAL-ORIENTED METHODS
@@ -221,7 +221,8 @@ export default class ColonistData {
                             if (ladderOfChoice) {
                                 // If a ladder is found that has the same ground zone, tell the colonist to climb it!
                                 // Climb action needs all 4 args; coordinates = ladder.x and the height at which to get off
-                                this.addAction("climb", { x: ladderOfChoice.x, y: waterFloor._elevation}, 0, ladderOfChoice.id);
+                                // Subtract 1 from elevation value to ensure the Colonist's feet align with the floor
+                                this.addAction("climb", { x: ladderOfChoice.x, y: waterFloor._elevation - 1}, 0, ladderOfChoice.id);
                                 this.addAction("move", { x: ladderOfChoice.x, y: ladderOfChoice.bottom});
                                 this.startGoalProgress();
                             } else {
@@ -249,7 +250,7 @@ export default class ColonistData {
         if (this._currentAction) {
             switch (this._currentAction.type) {
                 case "climb":
-                    if (this._x === this._currentAction.coords.x && this._y + 1 === this._currentAction.coords.y) {
+                    if (this._x === this._currentAction.coords.x && this._y === this._currentAction.coords.y) {
                         this.resolveAction();
                         this.checkForNextAction();
                     }
@@ -289,6 +290,7 @@ export default class ColonistData {
             switch(this._currentAction.type) {
                 case "climb":
                     console.log(`Climbing ladder at ${this._currentAction.coords.x}`);
+                    this._movementDest = this._currentAction.coords;
                     break;
                 case "drink":
                     console.log(`Drinking at ${this._currentAction.buildingId}`);
@@ -298,7 +300,7 @@ export default class ColonistData {
                     break;
                 case "move":
                     console.log(`Beginning movement to ${this._currentAction.coords.x}`);
-                    this._movementDest = { x: this._currentAction.coords.x, y: 0 };
+                    this._movementDest = this._currentAction.coords;
                     break;
             }
         }
@@ -330,15 +332,10 @@ export default class ColonistData {
         this._mapZoneId = map._data.getZoneIdForCoordinates({ x: this._x, y: this._y + 1 });    // Plus one to Y for foot level
     }
 
-    // Movement controller method: Takes a small terrain sample and 'fpm' which is short for 'frames per minute'
-    handleMovement = (adjacentColumns: number[][]) => {
-        // Colonists are passed an array of 2-3 columns: The one they're in, and the ones to the left and to the right
-        // By default, the middle (second) column is the colonist's current position
-        let currentColumn = 1;
-        // If the colonist is at the right-most edge, then they are standing on column zero
-        if (adjacentColumns.length === 2 && this._x === 0) currentColumn = 0;
+    // Movement Top-Level controller method: Initiates/continues a move based on what type of action is being performed
+    handleMovement = (map: Map, adjacentColumns: number[][]) => {
         // 1 - Check what colonist is standing on
-        this.detectTerrainBeneath(adjacentColumns[currentColumn]);
+        this.detectTerrainBeneath(map);
         // 2 - Conclude moves in progress
         if (this._isMoving) {
             this._movementProg ++;
@@ -347,49 +344,71 @@ export default class ColonistData {
                 this.stopMovement();
             }
         // 3 - If no movement is currently taking place and the colonist is not at their destination, start a new move
-        } else if (this._x !== this._movementDest.x) {
-            this.startMovement(adjacentColumns, currentColumn);
+        } else if (this._x !== this._movementDest.x || this._y !== this._movementDest.y) {
+            this.startMovement(map, adjacentColumns);
         }
     }
 
     // Determines what type of move is needed next (walking, climbing, etc) and initiates it
-    startMovement = (adjacentColumns: number[][], currentColumn: number) => {
-        // Determine direction
-        const dir = this._x > this._movementDest.x ? "left" : "right";
-        this._facing = dir;
-        // Determine movement type by comparing current height to height of target column
-        const currentHeight = adjacentColumns[currentColumn].length;
-        const destHeight = dir === "right" ? adjacentColumns[currentColumn + 1].length : adjacentColumns[currentColumn - 1].length;
-        const delta = currentHeight - destHeight;
-        switch (delta) {
-            // Jumping down from either 1 or 2 blocks takes the same movement
-            case 2:
-                this._movementType = "big-drop";
-                this._movementCost = 5;
-                break;
-            case 1:
-                this._movementType = "small-drop";
-                this._movementCost = 3;
-                break;
-            case 0:
-                this._movementType = "walk";
-                this._movementCost = 1;
-                break;
-            case -1:
-                this._movementType = "small-climb";
-                this._movementCost = 5;
-                break;
-            case -2:
-                this._movementType = "big-climb";
-                this._movementCost = 10;
-                break;
-            default:
-                // Abort movement if terrain is too steep
-                this.stopMovement();
-                this.resolveGoal();
-                break;
+    startMovement = (map: Map, adjacentColumns: number[][]) => {
+        // 1 - Determine movement type and cost
+        if (this._currentAction) {
+            switch (this._currentAction.type) {
+                case "climb":
+                    this._movementType = "climb-ladder";
+                    this._movementCost = 5; // It takes 5 time units to climb one segment of ladder
+                    break;
+                case "drink":
+                    break;
+                case "eat":
+                    break;
+                case "move":
+                    // A - Determine direction
+                    // Colonists are passed an array of 2-3 columns: The one they're in, and the ones to the left and to the right
+                    // By default, the middle (second) column is the colonist's current position
+                    let currentColumn = 1;
+                    // If the colonist is at the right-most edge, then they are standing on column zero
+                    if (adjacentColumns.length === 2 && this._x === 0) currentColumn = 0;
+                    const dir = this._x > this._movementDest.x ? "left" : "right";
+                    this._facing = dir;
+                    // B - Determine movement type by comparing current height to height of target column
+                    const currentHeight = adjacentColumns[currentColumn].length;
+                    const destHeight = dir === "right" ? adjacentColumns[currentColumn + 1].length : adjacentColumns[currentColumn - 1].length;
+                    const delta = currentHeight - destHeight;
+                    switch (delta) {
+                        // Jumping down from either 1 or 2 blocks takes the same movement
+                        case 2:
+                            this._movementType = "big-drop";
+                            this._movementCost = 5;
+                            break;
+                        case 1:
+                            this._movementType = "small-drop";
+                            this._movementCost = 3;
+                            break;
+                        case 0:
+                            this._movementType = "walk";
+                            this._movementCost = 1;
+                            break;
+                        case -1:
+                            this._movementType = "small-climb";
+                            this._movementCost = 5;
+                            break;
+                        case -2:
+                            this._movementType = "big-climb";
+                            this._movementCost = 10;
+                            break;
+                        default:
+                            // Abort movement if terrain is too steep
+                            this.stopMovement();
+                            this.resolveGoal();
+                            break;
+                        }
+                    break;
+            }
+        } else {
+            console.log("Not moving due to: No value for current action.")
         }
-        // Start new move
+        // 2 - Initiate movement
         this._isMoving = true;
     }
 
@@ -404,12 +423,12 @@ export default class ColonistData {
 
     // Update colonist position (x AND y) when movement is completed
     updatePosition = () => {
-        // Horizontal position changes regardless of movement type
-        if (this._movementType) {
+        // Horizontal position changes only if current action type is "move"
+        if (this._movementType && this._currentAction && this._currentAction.type === "move") {
             this._facing === "right" ? this._x++ : this._x--;
             this._animationTick = 0;    // Reset animation sequence tick immediately after horizontal translation
         }
-        // Only moves with a vertical component are considered here (no case for 'walk' since it's horizontal only)
+        // Only moves with a vertical component are considered here (no case for 'walk' since it's horizontal only, but climbing a ladder - which is not technically a 'move' movement - does change your Y value)
         switch (this._movementType) {
             case "small-climb":
                 this._y--;
@@ -423,17 +442,22 @@ export default class ColonistData {
             case "big-drop":
                 this._y += 2;
                 break;
+            case "climb-ladder":
+                this._y--;
+                break;
         }
     }
 
     // Ensures the colonist is always on the ground
-    detectTerrainBeneath(column: number[]) {
-        const surfaceY = (constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH) - column.length;
-        if (this._y + 2 < surfaceY) {
-            // Colonist is moved downwards if they're not standing on solid ground.
-            // TODO: Find a way to include the floors of modules in the definition of 'solid ground.'
-            this._y = surfaceY - 2;
-        }
+    detectTerrainBeneath(map: Map) {
+        this.updateMapZone(map);
+        
+        // const surfaceY = (constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH) - column.length;
+        // if (this._y + 2 < surfaceY) {
+        //     // Colonist is moved downwards if they're not standing on solid ground.
+        //     // TODO: Find a way to include the floors of modules in the definition of 'solid ground.'
+        //     this._y = surfaceY - 2;
+        // }
     }
 
 }

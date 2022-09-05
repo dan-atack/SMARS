@@ -860,8 +860,10 @@ export default class Engine extends View {
         //     p5.text(`Floor 4 zones: ${this._infrastructure._data._floors[4]._groundFloorZones[0].id}`, 60, 200);
         // }
         if (this._population._colonists.length > 1) {
-            p5.text(`Colonist 1 map zone: ${this._population._colonists[0]._data._movementDest}`, 120, 160);
-            p5.text(`Colonist 2 map zone: ${this._population._colonists[1]._data._movementDest}`, 120, 180);
+            p5.text(`Colonist 1 movement type: ${this._population._colonists[0]._data._movementType}`, 120, 160);
+            p5.text(`Colonist 1 movement dest: ${this._population._colonists[0]._data._movementDest.y}`, 120, 180);
+            p5.text(`Colonist 2 movement type: ${this._population._colonists[1]._data._movementType}`, 120, 200);
+            p5.text(`Colonist 2 movement dest: ${this._population._colonists[1]._data._movementDest.y}`, 120, 220);
         }
         
     }
