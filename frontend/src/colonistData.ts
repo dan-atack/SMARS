@@ -67,8 +67,6 @@ export default class ColonistData {
         this._animationTick = 0;                                    // By default, no animation is playing
     }
 
-    // TODO: TOP-LEVEL UPDATER METHODS:
-
     // Handles hourly updates to the colonist's needs and priorities (goals)
     handleHourlyUpdates = (infra: Infrastructure, map: Map) => {
         this.updateNeeds();
@@ -78,7 +76,7 @@ export default class ColonistData {
     // AdjacentColumns is a subset of the map; just the column the colonist is on, plus one to the immediate right/left
     handleMinutelyUpdates = (adjacentColumns: number[][], infra: Infrastructure, map: Map) => {
         this.updateMapZone(map);
-        this.checkActionStatus();   // Update actions before goals
+        this.checkActionStatus(infra);   // Update actions before goals
         this.checkGoalStatus(infra, map);
         this.handleMovement(map, adjacentColumns);
     }
@@ -133,24 +131,13 @@ export default class ColonistData {
             this.resolveGoal();
             this.updateGoal(infra, map);
         }
-        // Old way: Check if colonist is at their destination and update their goal if so...
-        // if (this._x === this._movementDest) {
-        //     // If the goal was to explore, check if any needs have become urgent enough to make them the new goal
-        //     if (this._currentGoal === "explore") {
-        //         this.resolveGoal();
-        //         this.updateGoal(infra, map);
-        //     } else {
-        //         // console.log(`Arrived at destination for goal ${this._currentGoal}. Interact with building now?`);
-        //         // TODO: Resolve goal for non-exploration cases!
-        //     }
-        // }
     }
 
     // Clears the current action (if any) and starts progress towards a newly selected goal
-    startGoalProgress = () => {
+    startGoalProgress = (infra: Infrastructure) => {
         console.log(`Starting progress towards goal: ${this._currentGoal}`);
         this.resolveAction();   // Ensure no previous actions are still in progress
-        this.startAction();
+        this.startAction(infra);
     }
 
     // Resets all goal-oriented values
@@ -179,7 +166,7 @@ export default class ColonistData {
                     dest = map._data._columns.length - 1;
                 }
                 this.addAction("move", { x: dest, y: 0 });  // Y coordinate doesn't matter for move action
-                this.startAction();
+                this.startAction(infra);
                 break;
             case "get-water":
                 console.log("So thirsty...");
@@ -196,7 +183,7 @@ export default class ColonistData {
                     waterFloor._groundFloorZones.forEach((zone) => {
                         if (zone.id === this._mapZoneId.toString()) {
                             console.log(`Water source on floor ${waterFloor._id} is walkable from current map zone.`);
-                            this.startGoalProgress();
+                            this.startGoalProgress(infra);
                         } else {
                             console.log(`Water source on floor ${waterFloor._id} is not walkable from current map zone.`);
                             // Find elevators IDs connecting to target floor
@@ -225,7 +212,7 @@ export default class ColonistData {
                                 // Subtract 1 from elevation value to ensure the Colonist's feet align with the floor
                                 this.addAction("climb", { x: ladderOfChoice.x, y: waterFloor._elevation - 1}, 0, ladderOfChoice.id);
                                 this.addAction("move", { x: ladderOfChoice.x, y: ladderOfChoice.bottom});
-                                this.startGoalProgress();
+                                this.startGoalProgress(infra);
                             } else {
                                 console.log(`No ladder matching zone ID ${this._mapZoneId} found.`);
                             }
@@ -247,7 +234,7 @@ export default class ColonistData {
     }
 
     // Called every minute by the master updater; checks and updates progress towards the completion of the current action
-    checkActionStatus = () => {
+    checkActionStatus = (infra: Infrastructure) => {
         if (this._currentAction) {
             // 1 - Increase action elapsed time if the current action has a duration value
             if (this._currentAction.duration > 0) {
@@ -258,25 +245,27 @@ export default class ColonistData {
                 case "climb":
                     if (this._x === this._currentAction.coords.x && this._y === this._currentAction.coords.y) {
                         this.resolveAction();
-                        this.checkForNextAction();
+                        this.checkForNextAction(infra);
                     }
                     break;
                 case "drink":
                     if (this._actionTimeElapsed >= this._currentAction.duration) {
+                        this._needs.water -= this._currentAction.duration;  // Reduce water need by 1/unit of time spent drinking
                         this.resolveAction();
-                        this.checkForNextAction();
+                        this.checkForNextAction(infra);
                     }
                     break;
                 case "eat":
                     if (this._actionTimeElapsed >= this._currentAction.duration) {
+                        this._needs.food -= this._currentAction.duration;   // Reduce food need by 1/unit of time spent eating
                         this.resolveAction();
-                        this.checkForNextAction();
+                        this.checkForNextAction(infra);
                     }
                     break;
                 case "move":
                     if (this._x === this._currentAction.coords.x) {
                         this.resolveAction();
-                        this.checkForNextAction();
+                        this.checkForNextAction(infra);
                     }
                     break;
                 // Housekeeping: Keep options in sync with startAction and startMovement methods and animationFunctions.ts
@@ -294,11 +283,10 @@ export default class ColonistData {
             buildingId: buildingId ? buildingId : 0
         }
         this._actionStack.push(action);     // Add the action to the end of the action stack, so last added is first executed
-        // console.log(this._actionStack);
     }
 
     // Pops the last item off of the action stack and initiates it
-    startAction = () => {
+    startAction = (infra: Infrastructure) => {
         const action = this._actionStack.pop();
         if (action !== undefined) {
             this._currentAction = action;
@@ -309,9 +297,11 @@ export default class ColonistData {
                     break;
                 case "drink":
                     console.log(`Drinking at ${this._currentAction.buildingId}`);
+                    this.consume("water", infra);
                     break;
                 case "eat":
                     console.log(`Eating at ${this._currentAction.buildingId}`);
+                    this.consume("food", infra);
                     break;
                 case "move":
                     console.log(`Beginning movement to ${this._currentAction.coords.x}`);
@@ -322,9 +312,9 @@ export default class ColonistData {
     }
 
     // Advances to the next action in the stack, if there is one
-    checkForNextAction = () => {
+    checkForNextAction = (infra: Infrastructure) => {
         if (this._actionStack.length > 0) {
-            this.startAction();     // If there are more actions to be taken, start the next one
+            this.startAction(infra);     // If there are more actions to be taken, start the next one
         }
     }
 
@@ -339,7 +329,7 @@ export default class ColonistData {
         this._actionStack = [];
     }
 
-    // MOVEMENT AND POSITIONING METHODS
+    // MOVEMENT/POSITIONING METHODS
 
     updateMapZone = (map: Map) => {
         this._mapZoneId = map._data.getZoneIdForCoordinates({ x: this._x, y: this._y + 1 });    // Plus one to Y for foot level
@@ -469,7 +459,7 @@ export default class ColonistData {
     }
 
     // Ensures the colonist is always on the ground
-    detectTerrainBeneath(map: Map) {
+    detectTerrainBeneath = (map: Map) => {
         this.updateMapZone(map);
         
         // const surfaceY = (constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH) - column.length;
@@ -478,6 +468,31 @@ export default class ColonistData {
         //     // TODO: Find a way to include the floors of modules in the definition of 'solid ground.'
         //     this._y = surfaceY - 2;
         // }
+    }
+
+    // NON-MOVEMENT ACTIVITIES
+
+    // Generic resource-consumption method (can be used for eating and drinking)
+    consume = (resourceName: string, infra: Infrastructure) => {
+        if (this._currentAction) {
+            const modCoords = this._currentAction.coords;
+            // Ensure the colonist is standing in the right place
+            if (this._x === modCoords.x && this._y === modCoords.y) {
+                // Find the module using its ID
+                const mod = infra.getModuleFromID(this._currentAction.buildingId);
+                // Call its resource-reduction method
+                if (mod) {
+                    const consumed = mod._data.deductResource([resourceName, this._currentAction.duration]);  // Duration = qty
+                    if (consumed < this._currentAction.duration) {
+                        this._currentAction.duration = consumed;    // If the action calls for consuming more of the resource than the module holds, reduce the amount the colonist actually gets
+                    }
+                } else {
+                    console.log(`Error: Module ${this._currentAction.buildingId} not found.`)
+                }
+            } else {
+                console.log(`Error: Consume action failed due to: Colonist position (${this._x}, ${this._y}) does not match module location ${modCoords.x}, ${modCoords.y}.`);
+            }
+        }
     }
 
 }

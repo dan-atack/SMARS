@@ -98,6 +98,8 @@ export default class ModuleData {
                     this._resources.find(res => res[0] === resource[0])[1] = 0;
                     return currentQty;
                 }
+            } else {
+                return 0;
             }
         }
         else {

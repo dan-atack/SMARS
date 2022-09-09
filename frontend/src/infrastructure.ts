@@ -25,12 +25,12 @@ export default class Infrastructure {
         this._horizontalOffset = 0;
     }
 
-    setup(mapWidth: number) {
+    setup = (mapWidth: number) => {
         this._data.setup(mapWidth)
     }
 
     // Args: x and y coords and the moduleInfo, plus now the map topography and zone data for ground floor determination. Serial is optional (used for loading modules from a save file)
-    addModule (x: number, y: number, moduleInfo: ModuleInfo, topography: number[], mapZones: MapZone[], serial?: number) {
+    addModule = (x: number, y: number, moduleInfo: ModuleInfo, topography: number[], mapZones: MapZone[], serial?: number) => {
         // Whenever a serial number is to be used, update it BEFORE passing it to a constructor:
         this._data.increaseSerialNumber();  // Use the serial if there is one
         const m = new Module(serial ? serial : this._data._currentSerial, x, y, moduleInfo);
@@ -44,7 +44,7 @@ export default class Infrastructure {
     }
 
     // Args: start and stop coords, and the connectorInfo. Serial is optional for loading connectors from a save file
-    addConnector (start: Coords, stop: Coords, connectorInfo: ConnectorInfo, map: Map, serial?: number) {
+    addConnector = (start: Coords, stop: Coords, connectorInfo: ConnectorInfo, map: Map, serial?: number) => {
         this._data.increaseSerialNumber();      // Use the serial if there is one
         const c = new Connector(serial ? serial : this._data._currentSerial, start, stop, connectorInfo)
         this._connectors.push(c);
@@ -65,7 +65,7 @@ export default class Infrastructure {
     }
 
     // Top level module placement checker: Calls sub-routines from the data class
-    checkModulePlacement (x: number, y: number, moduleInfo: ModuleInfo, terrain: number[][]) {
+    checkModulePlacement = (x: number, y: number, moduleInfo: ModuleInfo, terrain: number[][]) => {
         const moduleArea = this._data.calculateModuleArea(moduleInfo, x, y);
         const {floor, footprint} = this._data.calculateModuleFootprint(moduleArea);
         // Check other modules, then the map, for any obstructions:
@@ -91,7 +91,7 @@ export default class Infrastructure {
     }
 
     //  Takes in data for a new module's location and compares it to all of the other existing modules to look for overlaps
-    checkOtherModulesForObstructions (moduleArea: {x: number, y: number}[]) {
+    checkOtherModulesForObstructions = (moduleArea: {x: number, y: number}[]) => {
         let clear = true;               // Set to false if there is any overlap between the map and the proposed new module
         let collisions: number[][] = [];
         this._modules.forEach((mod) => {
@@ -156,7 +156,7 @@ export default class Infrastructure {
     // ECONOMIC / RESOURCE-RELATED METHODS
 
     // Looks up a module and passes it the given resource data
-    addResourcesToModule (moduleId: number, resource: Resource) {
+    addResourcesToModule = (moduleId: number, resource: Resource) => {
         const m = this._modules.find(mod => mod._data._id === moduleId);
         if (m !== undefined) {
             m._data.addResource(resource);
@@ -166,7 +166,7 @@ export default class Infrastructure {
     }
 
     // Returns array of modules when given a resource tuple (name and quantity sought, in this case)
-    findModulesWithResource (resource: Resource) {
+    findModulesWithResource = (resource: Resource) => {
         let mods: Module[] = [];  // Prepare to return the list of modules
         this._modules.forEach((mod) => {
             const hasCapacity = mod._data._resourceCapacity().includes(resource[0]);
@@ -185,7 +185,7 @@ export default class Infrastructure {
     }
 
     // Returns the ID of the module nearest to a specific location (v.1 considers X-axis only for proximity calculation)
-    findModuleNearestToLocation (modules: Module[], location: Coords) {
+    findModuleNearestToLocation = (modules: Module[], location: Coords) => {
         let nearestID = 0;              // Prepare to store just the ID of the nearest module
         let distance = 1000000;         // Use an impossibly large value for the default
         modules.forEach((mod) => {
@@ -206,13 +206,24 @@ export default class Infrastructure {
     }
 
     // Returns a module's coordinates when given a unique ID
-    findModuleLocationFromID (moduleId: number) {
+    findModuleLocationFromID = (moduleId: number) => {
         const m = this._modules.find(mod => mod._data._id === moduleId);
         if (m !== undefined) {
             return { x: m._data._x, y: m._data._y + m._data._height - 1 };  // Add height minus 1 to y value to find floor height
         } else {
             console.log(`Error: Module location data not found for module with ID ${moduleId}`);
             return { x: 0, y: 0 };
+        }
+    }
+
+    // Returns the whole module when given its ID
+    getModuleFromID = (moduleId: number) => {
+        const m = this._modules.find(mod => mod._data._id === moduleId);
+        if (m !== undefined) {
+            return m;  // Add height minus 1 to y value to find floor height
+        } else {
+            console.log(`Error: Module data not found for module with ID ${moduleId}`);
+            return null;    // Always return a null rather than an undefined in case of an error
         }
     }
 
@@ -245,12 +256,7 @@ export default class Infrastructure {
         return loss_rate * this._modules.length;   
     }
 
-    // Unset missing resources and just built flags:
-    resetFlags() {
-        this._data._justBuilt = null;
-    }
-
-    render(p5: P5, horizontalOffset: number) {
+    render = (p5: P5, horizontalOffset: number) => {
         this._horizontalOffset = horizontalOffset;
         // Only render one screen width's worth, taking horizontal offset into account:
         const leftEdge = Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH);    // Edges are in terms of columns
@@ -272,7 +278,7 @@ export default class Infrastructure {
         });
     }
 
-    reset() {
+    reset = () => {
         this._modules = [];
         this._connectors = [];
         this._data._justBuilt = null;

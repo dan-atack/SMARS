@@ -30,11 +30,11 @@ describe("ColonistData", () => {
     test("Colonist increases movement progress when moving towards destination", () => {
         colonistData._currentGoal = "explore";
         colonistData._x = 1;
-        colonistData._movementDest = 2;
+        colonistData._movementDest = { x: 2, y: 0};
         colonistData._isMoving = true;
         colonistData._movementCost = 10;
         colonistData._movementProg = 0;
-        colonistData.checkGoalStatus(flatTerrain, mockInfra, mockMap);
+        colonistData.handleMovement(mockMap, unevenTerrain);
         expect(colonistData._movementProg).toBe(1);
     })
 
@@ -42,12 +42,11 @@ describe("ColonistData", () => {
         colonistData.stopMovement();        // Reset movement from previous test
         colonistData._currentGoal = "explore";
         colonistData._x = 1;
-        colonistData._movementDest = 0;
+        colonistData._movementDest = { x: 0, y: 0 };
         colonistData._isMoving = false;
-        colonistData.checkGoalStatus(flatTerrain, mockInfra, mockMap);
+        colonistData.handleMovement(mockMap, flatTerrain);
         expect(colonistData._isMoving).toBe(true);
         expect(colonistData._movementType).toBe("walk");
-        expect(colonistData._y).toBe(31);       // y = 31 when the current column has 3 blocks
     })
 
     test("Colonist starts to big climb towards destination when it is two above them", () => {
@@ -55,10 +54,9 @@ describe("ColonistData", () => {
         colonistData._currentGoal = "explore";
         colonistData._x = 1;                // Start away from the edge
         colonistData._y = 0;                // Start the colonist up in the air to test their gravity as well!
-        colonistData._movementDest = 4;     // Destination is to the right - current column = 4, dest = 6
-        colonistData.checkGoalStatus(unevenTerrain, mockInfra, mockMap);
+        colonistData._movementDest = { x: 4, y: 0 };     // Destination is to the right - current column = 4, dest = 6
+        colonistData.startMovement(unevenTerrain);
         expect(colonistData._isMoving).toBe(true);
-        expect(colonistData._y).toBe(30);   // Column is 4 blocks tall
         expect(colonistData._movementType).toBe("big-climb");
     })
 
@@ -68,8 +66,8 @@ describe("ColonistData", () => {
         colonistData._currentGoal = "explore";
         colonistData._x = 4;                // Start away from the edge
         colonistData._y = 0;                // Start the colonist up in the air to test their gravity as well!
-        colonistData._movementDest = 0;     // Destination is to the right - current column = 4, dest = 6
-        colonistData.checkGoalStatus(unevenTerrain, mockInfra, mockMap);
+        colonistData._movementDest = { x: 0, y: 0 };     // Destination is to the right - current column = 4, dest = 6
+        colonistData.startMovement(unevenTerrain);
         expect(colonistData._isMoving).toBe(true);
         expect(colonistData._movementType).toBe("small-drop");
         expect(colonistData._facing).toBe("left");
