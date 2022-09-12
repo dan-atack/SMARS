@@ -75,7 +75,6 @@ export default class ColonistData {
 
     // AdjacentColumns is a subset of the map; just the column the colonist is on, plus one to the immediate right/left
     handleMinutelyUpdates = (adjacentColumns: number[][], infra: Infrastructure, map: Map) => {
-        this.updateMapZone(map);
         this.checkActionStatus(infra);   // Update actions before goals
         this.checkGoalStatus(infra, map);
         this.handleMovement(map, adjacentColumns);
@@ -308,6 +307,8 @@ export default class ColonistData {
                     this._movementDest = this._currentAction.coords;
                     break;
             }
+        } else {
+            console.log('Error: Unable to start action because the action stack is empty.')
         }
     }
 
