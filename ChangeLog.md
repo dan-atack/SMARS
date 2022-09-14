@@ -1662,17 +1662,25 @@ Features Added:
 
 60. Colonist class gets two new methods: eat and drink, which will be called by the startAction method, and which will initiate eating/drinking after verifying that the Colonist is in the right place. They will also call the Module Data class's deductResource method, which checks if a quantity of a given resource is available and reduces it by that amount if possible. If the resource is unavailable, or available in a smaller quantity than requested, it should return the amount of the resource that was available (if any) while reducing its supply to zero. As a bonus, use the return value to reset the duration value of the colonist's eat/drink action and then have the functions described in the previous step use that value instead, so the Colonist isn't filled up if the module doesn't have all of the needed amount of the a resource.
 
-### 61. At this point sadly it would be foolhardy to go any further without attending to the existing unit tests for the Colonist/ColonistData class and trying to either tidy them up or just get rid of a bunch of them frankly. It would also be more than wise to invest some time and thought into replacing them, and validating as much of the new design as possible before going any further with this gargantuan chapter.
+61. At this point sadly it would be foolhardy to go any further without attending to the existing unit tests for the Colonist/ColonistData class and trying to either tidy them up or just get rid of a bunch of them frankly. Addendum: They weren't in such poor shape after all, although a fair few modifications were needed. The real challenge now will be adding tests for all the newly added functionality in this chapter.
+
+62. Add new unit tests for all of the currently existing goal-determination functionality.
+
+### 63. Add new unit tests for all of the currently existing action-related functionality (except for the action stack determination logic - we'll tackle that in a moment).
+
+### 64. Add new unit tests for the new movement logic (for resource consumption functionality).
+
+### 65. Add new unit tests for the as-yet-to-be-developed action stack determination logic. Consider several precise scenarios, to be defined in advance on paper before going any further with the code for these operations.
 
 ### 62. Create a new file called ColonistActionLogic, and copy the current contents of the DetermineActionsForGoal method into it, translating things initially into a single large function that takes the Map and Infra objects as parameters, and then returns an array which will be given to the colonist as an action stack. This master function can then be broken down so that individual parts of the logic currently in it can be reused in multiple places, allowing the completion of the Colonist's basic pathfinding logic.
-
-### 46. All of these changes will probably have wreaked havoc with the existing Colonist Data unit tests, so take a moment to fix those/update them with the new (and in some cases drastically different) expectations for the updated methods.
 
 ### 47. Also, add some new unit tests for the various action related functions; these will help to further clarify the new colonist decision/action/movement workflows as well as focusing the direction of the remaining efforts for this chapter.
 
 ### 96. Update the detectTerrainBeneath method and overhaul it completely so that it calls the determineMapZone method and also does a secondary check to see if the colonist is either a) climbing a ladder or b) on a module floor if they're not standing on the surface of whichever column they're currently in.
 
 ### 97. Update the Infra Data unit tests in light of this refactoring, and add some new ones too since the Infra base class has a lot of methods that are currently untested!
+
+### 98. Give the Colonist class a unique ID field. Colonist IDs should be 8-character strings created by stringifying a random 8-digit number.
 
 ### 99 [Optional] For your inner bureaucrat: re-arrange it so that all of the type definitions are exported from a single file, since the current scheme is getting a bit confusing.
 
