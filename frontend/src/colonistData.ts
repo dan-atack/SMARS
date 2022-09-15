@@ -473,7 +473,7 @@ export default class ColonistData {
 
     // NON-MOVEMENT ACTIVITIES
 
-    // Generic resource-consumption method (can be used for eating and drinking)
+    // Generic resource-consumption method (can be used for eating and drinking... and who knows what else, eh? ;)
     consume = (resourceName: string, infra: Infrastructure) => {
         if (this._currentAction) {
             const modCoords = this._currentAction.coords;
@@ -483,15 +483,18 @@ export default class ColonistData {
                 const mod = infra.getModuleFromID(this._currentAction.buildingId);
                 // Call its resource-reduction method
                 if (mod) {
-                    const consumed = mod._data.deductResource([resourceName, this._currentAction.duration]);  // Duration = qty
+                    // Resource is immediately removed from the module; colonist 'gets' it when they complete the action
+                    const consumed = mod._data.deductResource([resourceName, this._currentAction.duration]);  // Duration = qty taken
                     if (consumed < this._currentAction.duration) {
-                        this._currentAction.duration = consumed;    // If the action calls for consuming more of the resource than the module holds, reduce the amount the colonist actually gets
+                        this._currentAction.duration = consumed;    // Since the module's deductResources method returns a number representing the amount of resource dispensed, we can see if it contained less than the required amount and reduce the action duration (and eventual amount of need relieved) if so
                     }
                 } else {
-                    console.log(`Error: Module ${this._currentAction.buildingId} not found.`)
+                    console.log(`Error: Module ${this._currentAction.buildingId} not found.`);
+                    // TODO: Redirect/recalculate action stack if this happens?
                 }
             } else {
                 console.log(`Error: Consume action failed due to: Colonist position (${this._x}, ${this._y}) does not match module location ${modCoords.x}, ${modCoords.y}.`);
+                // TODO: Redirect/recalculate action stack if this happens?
             }
         }
     }

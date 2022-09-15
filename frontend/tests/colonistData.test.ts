@@ -139,6 +139,22 @@ describe("ColonistData", () => {
                 buildingId: 0
             }
         ])
+        // Add another one for good luck!
+        colonistData.addAction("eat", { x: 10, y: 32 }, 10, 1001);
+        expect(colonistData._actionStack).toStrictEqual([
+            {
+                type: "move",
+                coords: { x: 0, y: 0 },
+                duration: 10,
+                buildingId: 0
+            },
+            {
+                type: "eat",
+                coords: { x: 10, y: 32 },
+                duration: 10,
+                buildingId: 1001
+            }
+        ])
     })
 
     test("CheckActionStatus increments the actionTimeElapsed value for actions with a duration", () => {
@@ -188,7 +204,6 @@ describe("ColonistData", () => {
         expect(colonistData._currentAction).toBe(null); // Action should now be resolved
     })
 
-    // NOTE: Requires the creation of a test module to contain the water
     test("CheckActionStatus resolves 'drink' action when colonist actionTimeElapsed value is equal to action duration", () => {
         // Setup test first
         colonistData.clearActions();
@@ -212,6 +227,79 @@ describe("ColonistData", () => {
             buildingId: 1001
         })
         colonistData._actionTimeElapsed = 10;   // Increase the action time elapsed to equal the duration value
+        colonistData.checkActionStatus(mockInfra);
+        expect(colonistData._currentAction).toBe(null); // Action should now be resolved
+    })
+
+    test("CheckActionStatus resolves 'eat' action when colonist actionTimeElapsed value is equal to action duration", () => {
+        // PART 1: Action is resolved when, and only when, its condition is met
+        // Setup test first
+        colonistData.clearActions();
+        colonistData.resolveAction();
+        colonistData.addAction("eat", { x: 10, y: 32 }, 10, 1001);
+        colonistData.startAction(mockInfra);
+        // Verify that action is initiated
+        expect(colonistData._currentAction).toStrictEqual({
+            type: "eat",
+            coords: { x: 10, y: 32 },
+            duration: 10,
+            buildingId: 1001
+        })
+        // Verify that action is not resolved when colonist has not finished eating
+        colonistData._actionTimeElapsed = 8;
+        colonistData.checkActionStatus(mockInfra);
+        expect(colonistData._currentAction).toStrictEqual({
+            type: "eat",
+            coords: { x: 10, y: 32 },
+            duration: 10,
+            buildingId: 1001
+        })
+        colonistData._actionTimeElapsed = 10;   // Increase the action time elapsed to equal the duration value
+        colonistData.checkActionStatus(mockInfra);
+        expect(colonistData._currentAction).toBe(null); // Action should now be resolved
+        // PART 2: Action is resolved, but Colonist's need is only partially satisfied if target module has insufficient resources
+        // Reset test conditions
+        colonistData.clearActions();
+        colonistData.resolveAction();
+        colonistData._needs.food = 10;
+        mockInfra._modules[0]._data.deductResource(["food", 10000]);    // Ensure module is empty
+        mockInfra._modules[0]._data.addResource(["food", 5]);           // Provision with slightly fewer resources than are needed
+        colonistData.addAction("eat", { x: 10, y: 32 }, 10, 1001);
+        colonistData.startAction(mockInfra);
+        expect(mockInfra._modules[0]._data.getResourceQuantity("food")).toBe(0);    // Colonist takes everything there is to take
+        expect(colonistData._currentAction?.duration).toBe(5);      // Reduce duration since it takes less time to eat less food
+        // Fast forward to the end of the action
+        colonistData._actionTimeElapsed = 4;
+        colonistData.checkActionStatus(mockInfra);
+        expect(colonistData._currentAction).toBe(null);     // Action should resolve itself after a shorter than expected duration
+        expect(colonistData._needs.food).toBe(5);           // Only half of the hunger is removed, however
+    })
+
+    test("CheckActionStatus resolves 'move' action when colonist x position matches action coordinate x (y is ignored)", () => {
+        // Setup test first
+        colonistData.clearActions();
+        colonistData.resolveAction();
+        colonistData.addAction("move", { x: 10, y: 32 });    // Only 2 arguments, type and coords, are needed for move action
+        colonistData.startAction(mockInfra);
+        // Verify that action is initiated
+        expect(colonistData._currentAction).toStrictEqual({
+            type: "move",
+            coords: { x: 10, y: 32 },
+            duration: 0,                // Validate default values for duration and buildingId
+            buildingId: 0
+        })
+        // Verify that action is not resolved when colonist is not at the right x coordinate, even if y coord is matching
+        colonistData._x = 9;
+        colonistData._y = 32;
+        colonistData.checkActionStatus(mockInfra);
+        expect(colonistData._currentAction).toStrictEqual({
+            type: "move",
+            coords: { x: 10, y: 32 },
+            duration: 0,
+            buildingId: 0
+        })
+        colonistData._x = 10;   // Move the colonist into position and re-check (mess up the y coordinate too, just for show)
+        colonistData._y = 99;
         colonistData.checkActionStatus(mockInfra);
         expect(colonistData._currentAction).toBe(null); // Action should now be resolved
     })
