@@ -490,11 +490,13 @@ export default class ColonistData {
                     }
                 } else {
                     console.log(`Error: Module ${this._currentAction.buildingId} not found.`);
-                    // TODO: Redirect/recalculate action stack if this happens?
+                    // Skip this action if the module is not found
+                    this.resolveAction();
                 }
             } else {
                 console.log(`Error: Consume action failed due to: Colonist position (${this._x}, ${this._y}) does not match module location ${modCoords.x}, ${modCoords.y}.`);
-                // TODO: Redirect/recalculate action stack if this happens?
+                // Skip this action if the colonist was sent to the wrong coordinates
+                this.resolveAction();
             }
         }
     }
