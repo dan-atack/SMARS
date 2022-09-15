@@ -379,6 +379,29 @@ describe("ColonistData", () => {
         expect(colonistData._actionStack).toStrictEqual([]);
    })
 
+   test("ResolveAction sets current action to null and resets actionTimeElapsed to zero", () => {
+        // Setup test
+        colonistData._currentAction = {
+            type: "drink",
+            coords: { x: 10, y: 32 },
+            duration: 10,
+            buildingId: 1001
+        };
+        colonistData._actionTimeElapsed = 5;
+        colonistData.resolveAction();
+        expect(colonistData._currentAction).toBe(null);
+        expect(colonistData._actionTimeElapsed).toBe(0);
+   })
+
+   test("ClearActions sets action stack to empty array", () => {
+        // Setup test with fake actions
+        colonistData.addAction("drink", { x: 10, y: 32 }, 10, 1001);
+        colonistData.addAction("move", { x: 10, y: 32 }, 0, 1001);
+        expect(colonistData._actionStack.length).toBe(2);   // Verify stack is populated first
+        colonistData.clearActions();
+        expect(colonistData._actionStack.length).toBe(0);
+   })
+
     // MOVEMENT-RELATED TESTS
 
     test("Colonist increases movement progress when moving towards destination", () => {
