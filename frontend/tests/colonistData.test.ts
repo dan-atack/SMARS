@@ -336,6 +336,7 @@ describe("ColonistData", () => {
         // Setup test first
         colonistData.clearActions();
         colonistData.resolveAction();
+        colonistData._y = 32;   // Ensure colonist is in position to gain access to the storage module
         // Check that action stack is empty and that no action is currently set
         expect(colonistData._actionStack.length).toBe(0);
         expect(colonistData._currentAction).toBe(null);
@@ -357,7 +358,25 @@ describe("ColonistData", () => {
             duration: 10,
             buildingId: 1001
         }]);
-        // 
+        // Checking again will start the next action immediately (overwriting the current one)
+        console.log(colonistData._actionStack);
+        colonistData.checkForNextAction(mockInfra);
+        expect(colonistData._currentAction).toStrictEqual({
+            type: "drink",
+            coords: { x: 10, y: 32 },
+            duration: 10,
+            buildingId: 1001
+        });
+        expect(colonistData._actionStack).toStrictEqual([]);
+        // Checking with an empty stack will not overwrite the current action (or do anything at all, for that matter)
+        colonistData.checkForNextAction(mockInfra);
+        expect(colonistData._currentAction).toStrictEqual({
+            type: "drink",
+            coords: { x: 10, y: 32 },
+            duration: 10,
+            buildingId: 1001
+        });
+        expect(colonistData._actionStack).toStrictEqual([]);
    })
 
     // MOVEMENT-RELATED TESTS
