@@ -165,7 +165,7 @@ export default class ColonistData {
                     dest = map._data._columns.length - 1;
                 }
                 this.addAction("move", { x: dest, y: 0 });  // Y coordinate doesn't matter for move action
-                this.startAction(infra);
+                // this.startAction(infra);
                 break;
             case "get-water":
                 console.log("So thirsty...");
@@ -182,7 +182,7 @@ export default class ColonistData {
                     waterFloor._groundFloorZones.forEach((zone) => {
                         if (zone.id === this._mapZoneId.toString()) {
                             console.log(`Water source on floor ${waterFloor._id} is walkable from current map zone.`);
-                            this.startGoalProgress(infra);
+                            // this.startGoalProgress(infra);
                         } else {
                             console.log(`Water source on floor ${waterFloor._id} is not walkable from current map zone.`);
                             // Find elevators IDs connecting to target floor
@@ -211,7 +211,7 @@ export default class ColonistData {
                                 // Subtract 1 from elevation value to ensure the Colonist's feet align with the floor
                                 this.addAction("climb", { x: ladderOfChoice.x, y: waterFloor._elevation - 1}, 0, ladderOfChoice.id);
                                 this.addAction("move", { x: ladderOfChoice.x, y: ladderOfChoice.bottom});
-                                this.startGoalProgress(infra);
+                                // this.startGoalProgress(infra);
                             } else {
                                 console.log(`No ladder matching zone ID ${this._mapZoneId} found.`);
                             }
@@ -230,6 +230,7 @@ export default class ColonistData {
                 console.log(`Food source found in module ${foodModuleId} on floor ${foodFloor?._id}`);
                 break;
         }
+        this.startGoalProgress(infra);
     }
 
     // Called every minute by the master updater; checks and updates progress towards the completion of the current action

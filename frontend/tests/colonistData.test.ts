@@ -40,7 +40,7 @@ const cliffs = [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3, 4], [1, 2,
 
 describe("ColonistData", () => {
     // Create test instances
-    let colonistData = new ColonistData(1, 0);
+    const colonistData = new ColonistData(0, 32);
     const mockInfra = new Infrastructure();
     const mockMap = new Map();
     mockMap._data._mapData = flatTerrain;
@@ -52,6 +52,20 @@ describe("ColonistData", () => {
     mockInfra.addResourcesToModule(1001, [ "food", 100 ]);
     // Heights per column: 3, 4, 6 (max three columns shown)
     const unevenTerrain = [[1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1, 1, 1]];
+
+    // Reset functions
+    const resetColonistData = () => {
+        colonistData._x = 0;
+        colonistData._y = 32;
+        colonistData.resolveAction();
+        colonistData.clearActions();
+        colonistData.resolveGoal();
+        colonistData._needs = {
+            water: 0,
+            food: 0, 
+            rest: 0
+        }
+    }
 
     test("Defines updateNeeds()", () => {
         expect(typeof colonistData.updateNeeds).toBe("function");
@@ -101,7 +115,10 @@ describe("ColonistData", () => {
     })
 
     test("StartGoalProgress will set the first action in a pre-filled action stack to the current action", () => {
-        // Actions have already been added by the previous tests
+        // Setup test conditions
+        resetColonistData();
+        colonistData.addAction("drink", { x: 10, y: 32 }, 10, 1001);
+        colonistData.addAction("move", { x: 10, y: 32 }, 0, 0);
         colonistData.startGoalProgress(mockInfra);
         expect(colonistData._currentAction).toStrictEqual({
             type: "move",
@@ -119,16 +136,16 @@ describe("ColonistData", () => {
     })
 
     test("CheckGoalStatus method will resolve current goal and set a new one if there is no current action/action stack", () => {
+        colonistData._needs.food = 7;
         colonistData.checkGoalStatus(mockInfra, mockMap);
-        expect(colonistData._currentGoal).toBe("get-food"); // Will be set to get-food since we increased food need in prev test
+        expect(colonistData._currentGoal).toBe("get-food"); // Will be set to get-food since we made the colonist hungry
     })
 
     // ACTION-RELATED TESTS
 
     test("AddAction adds an action to the action stack", () => {
         // Clear action stack before commencing test
-        colonistData.clearActions();
-        colonistData.resolveAction();
+        resetColonistData();
         expect(colonistData._actionStack).toStrictEqual([]);
         colonistData.addAction("move", { x: 0, y: 0 }, 10, 0);
         expect(colonistData._actionStack).toStrictEqual([
@@ -170,9 +187,8 @@ describe("ColonistData", () => {
     })
 
     test("CheckActionStatus does not increment the time elapsed value for actions without a duration (duration = 0)", () => {
-        // Set new action first
-        colonistData.clearActions();
-        colonistData.resolveAction();
+        // Reset from previous test
+        resetColonistData();
         expect(colonistData._actionTimeElapsed).toBe(0);    // Validate reset
         colonistData.addAction("move", { x: 0, y: 0 });
         colonistData.startAction(mockInfra);
@@ -181,9 +197,7 @@ describe("ColonistData", () => {
     })
 
     test("CheckActionStatus resolves 'climb' action when colonist x and y position match action coords", () => {
-        // Setup test first
-        colonistData.clearActions();
-        colonistData.resolveAction();
+        resetColonistData();
         colonistData.addAction("climb", { x: 10, y: 32 }, 0, 1001);
         colonistData.startAction(mockInfra);
         // Verify that action is initiated
@@ -209,9 +223,8 @@ describe("ColonistData", () => {
     })
 
     test("CheckActionStatus resolves 'drink' action when colonist actionTimeElapsed value is equal to action duration", () => {
-        // Setup test first
-        colonistData.clearActions();
-        colonistData.resolveAction();
+        resetColonistData();
+        colonistData._x = 10;   // For action resolve tests, colonist must be standing at the module location to eat or drink
         colonistData.addAction("drink", { x: 10, y: 32 }, 10, 1001);
         colonistData.startAction(mockInfra);
         // Verify that action is initiated
@@ -237,9 +250,8 @@ describe("ColonistData", () => {
 
     test("CheckActionStatus resolves 'eat' action when colonist actionTimeElapsed value is equal to action duration", () => {
         // PART 1: Action is resolved when, and only when, its condition is met
-        // Setup test first
-        colonistData.clearActions();
-        colonistData.resolveAction();
+        resetColonistData();
+        colonistData._x = 10;
         colonistData.addAction("eat", { x: 10, y: 32 }, 10, 1001);
         colonistData.startAction(mockInfra);
         // Verify that action is initiated
@@ -280,9 +292,7 @@ describe("ColonistData", () => {
     })
 
     test("CheckActionStatus resolves 'move' action when colonist x position matches action coordinate x (y is ignored)", () => {
-        // Setup test first
-        colonistData.clearActions();
-        colonistData.resolveAction();
+        resetColonistData();
         colonistData.addAction("move", { x: 10, y: 32 });    // Only 2 arguments, type and coords, are needed for move action
         colonistData.startAction(mockInfra);
         // Verify that action is initiated
@@ -309,9 +319,7 @@ describe("ColonistData", () => {
     })
 
     test("StartAction sets movement destination when current action is 'climb'", () => {
-        // Setup test first
-        colonistData.clearActions();
-        colonistData.resolveAction();
+        resetColonistData();
         colonistData._movementDest = { x: 0, y: 0 };
         colonistData.addAction("climb", { x: 10, y: 32 }, 0, 1001);
         expect(colonistData._movementDest).toStrictEqual( { x: 0, y: 0 });   // Setting action does not set movement destination
@@ -320,9 +328,7 @@ describe("ColonistData", () => {
     })
 
     test("StartAction sets movement destination when current action is 'move'", () => {
-        // Setup test first
-        colonistData.clearActions();
-        colonistData.resolveAction();
+        resetColonistData();
         colonistData._movementDest = { x: 0, y: 0 };
         colonistData.addAction("move", { x: 10, y: 32 }, 0, 1001);
         expect(colonistData._movementDest).toStrictEqual( { x: 0, y: 0 });   // Setting action does not set movement destination
@@ -332,14 +338,12 @@ describe("ColonistData", () => {
 
    // Note: StartAction sequence for eat and drink actions are validated indirectly (but thoroughly) in checkActionStatus test
 
-   test("CheckForNextAction will either start the next action or do nothing at all (if there are no more actions)", () => {
-        // Setup test first
-        colonistData.clearActions();
-        colonistData.resolveAction();
-        colonistData._y = 32;   // Ensure colonist is in position to gain access to the storage module
+    test("CheckForNextAction will either start the next action or do nothing at all (if there are no more actions)", () => {
+        resetColonistData();
         // Check that action stack is empty and that no action is currently set
         expect(colonistData._actionStack.length).toBe(0);
         expect(colonistData._currentAction).toBe(null);
+        colonistData._x = 10;
         // Add 2 items to the action stack
         colonistData.addAction("drink", { x: 10, y: 32 }, 10, 1001);
         colonistData.addAction("move", { x: 10, y: 32 }, 0, 1001);
@@ -377,10 +381,10 @@ describe("ColonistData", () => {
             buildingId: 1001
         });
         expect(colonistData._actionStack).toStrictEqual([]);
-   })
+    })
 
-   test("ResolveAction sets current action to null and resets actionTimeElapsed to zero", () => {
-        // Setup test
+    test("ResolveAction sets current action to null and resets actionTimeElapsed to zero", () => {
+        resetColonistData();
         colonistData._currentAction = {
             type: "drink",
             coords: { x: 10, y: 32 },
@@ -391,22 +395,23 @@ describe("ColonistData", () => {
         colonistData.resolveAction();
         expect(colonistData._currentAction).toBe(null);
         expect(colonistData._actionTimeElapsed).toBe(0);
-   })
+    })
 
-   test("ClearActions sets action stack to empty array", () => {
+    test("ClearActions sets action stack to empty array", () => {
+        resetColonistData();
         // Setup test with fake actions
         colonistData.addAction("drink", { x: 10, y: 32 }, 10, 1001);
         colonistData.addAction("move", { x: 10, y: 32 }, 0, 1001);
         expect(colonistData._actionStack.length).toBe(2);   // Verify stack is populated first
         colonistData.clearActions();
         expect(colonistData._actionStack.length).toBe(0);
-   })
+    })
 
     // MOVEMENT-RELATED TESTS
 
     test("Colonist increases movement progress when moving towards destination", () => {
         // Reset current goal data before proceeding
-        colonistData = new ColonistData(1, 0);
+        resetColonistData();
         colonistData._currentGoal = "";
         colonistData.updateGoal(mockInfra, mockMap);
         // Tests resume
@@ -453,6 +458,32 @@ describe("ColonistData", () => {
         expect(colonistData._movementType).toBe("small-drop");
         expect(colonistData._facing).toBe("left");
     })
+
+    // GOAL ACTION STACK DETERMINATION (PATHFINDING) LOGIC TESTS
+
+    // Action Stack Determination will have several different test cases since it is a multipurpose pathfinding algorithm
+    test("DetermineActionsForGoal populates action stack with drink, move when module is on same ground zone as colonist", () => {
+        // Setup test conditions: Provision module, and ensure Colonist is on the same ground zone as the module
+        resetColonistData();
+        colonistData._needs.water = 10;
+        mockInfra._modules[0]._data.addResource(["water", 1000]);
+        colonistData.setGoal("get-water", mockInfra, mockMap);
+        // First action added to stack (drink) should be the only item left in the action stack
+        expect(colonistData._actionStack).toStrictEqual([{
+            type: "drink",
+            coords: { x: 10, y: 32 },
+            duration: 10,
+            buildingId: 1001
+        }])
+        // Last action added to stack (move) should be the current action
+        expect(colonistData._currentAction).toStrictEqual({
+            type: "move",
+            coords: { x: 10, y: 32 },
+            duration: 0,
+            buildingId: 0
+        })
+    });
+
 
     // TODO: Test updatePosition method
 
