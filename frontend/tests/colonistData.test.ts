@@ -2,10 +2,11 @@ import ColonistData from "../src/colonistData";
 import Infrastructure from "../src/infrastructure";
 import Map from "../src/map";
 import { ModuleInfo } from "../src/server_functions";
+import { ConnectorInfo } from "../src/server_functions";
 
 // DUMMY DATA
 
-// Test module data
+// Test Module Data
 const storageModuleInfo: ModuleInfo = {
     name: "Basic Storage",
     width: 4,
@@ -28,6 +29,21 @@ const storageModuleInfo: ModuleInfo = {
     ],
     crewCapacity: 1,
     shapes: []
+}
+
+// Test Connector Data
+const connectorInfo: ConnectorInfo = {
+    name: "Ladder",
+    type: "transport",
+    resourcesCarried: ["crew"],
+    maxFlowRate: 2,
+    buildCosts: [
+        ["money", 7500]
+    ],
+    maintenanceCosts: [],
+    vertical: true,
+    horizontal: false,
+    width: 1
 }
 
 // Dummy map data
@@ -56,7 +72,7 @@ describe("ColonistData", () => {
     // Reset functions
     const resetColonistData = () => {
         colonistData._x = 0;
-        colonistData._y = 32;
+        colonistData._y = 31;
         colonistData.resolveAction();
         colonistData.clearActions();
         colonistData.resolveGoal();
@@ -178,7 +194,7 @@ describe("ColonistData", () => {
         // Setup test
         colonistData.addAction("eat", { x: 10, y: 32 }, 5, 1001);
         colonistData._x = 10;   // Ensure the colonist is in position to consume resources
-        colonistData._y = 32;
+        colonistData._y = 31;
         // Start the action before checking the action status
         colonistData.startAction(mockInfra);
         expect(colonistData._actionTimeElapsed).toBe(0);
@@ -209,7 +225,7 @@ describe("ColonistData", () => {
         })
         // Verify that action is not resolved when colonist is not in the exact position
         colonistData._x = 10;
-        colonistData._y = 9;
+        colonistData._y = 31;
         colonistData.checkActionStatus(mockInfra);
         expect(colonistData._currentAction).toStrictEqual({
             type: "climb",
@@ -304,7 +320,7 @@ describe("ColonistData", () => {
         })
         // Verify that action is not resolved when colonist is not at the right x coordinate, even if y coord is matching
         colonistData._x = 9;
-        colonistData._y = 32;
+        colonistData._y = 31;
         colonistData.checkActionStatus(mockInfra);
         expect(colonistData._currentAction).toStrictEqual({
             type: "move",
@@ -459,9 +475,9 @@ describe("ColonistData", () => {
         expect(colonistData._facing).toBe("left");
     })
 
-    // GOAL ACTION STACK DETERMINATION (PATHFINDING) LOGIC TESTS
+    // GOAL ACTION STACK DETERMINATION (PATHFINDING) LOGIC TESTS (THERE ARE SEVERAL INDIVIDUAL CASES)
 
-    // Action Stack Determination will have several different test cases since it is a multipurpose pathfinding algorithm
+    // 1 - When module is on the same ground zone as colonist, actions are: move, consume
     test("DetermineActionsForGoal populates action stack with drink, move when module is on same ground zone as colonist", () => {
         // Setup test conditions: Provision module, and ensure Colonist is on the same ground zone as the module
         resetColonistData();
@@ -484,6 +500,51 @@ describe("ColonistData", () => {
         })
     });
 
+    // 2 - When module is on a non-ground floor that is connected to the ground via ladder, actions are: move, climb, move, consume
+
+    test("DetermineActionsForGoal populates action stack with drink, move, climb, move when module is on diff floor", () => {
+        resetColonistData();
+        colonistData._needs.water = 10;
+        // Add new module above the existing one, and provision it
+        mockInfra.addModule(10, 27, storageModuleInfo, mockMap._data._topography, mockMap._data._zones, 1002);
+        mockInfra.addResourcesToModule(1002, [ "water", 1000 ]);
+        // Deprovision the module on the ground floor
+        mockInfra._modules[0]._data.deductResource([ "water", 10000 ]);
+        // Add a connector that goes from the ground floor to the new module
+        mockInfra.addConnector({ x: 11, y: 32 }, { x: 11, y: 28 }, connectorInfo, mockMap, 2001);
+        // Run test
+        colonistData.setGoal("get-water");
+        colonistData.determineActionsForGoal(mockInfra, mockMap);
+        // Current action should be to move to the ladder
+        expect(colonistData._actionStack.length).toBe(3);
+        expect(colonistData._currentAction).toStrictEqual({
+            type: "move",
+            coords: { x: 11, y: 32 },
+            duration: 0,
+            buildingId: 0
+        })
+        // Action stack contains remaining actions in reverse order of execution (drink, move, climb)
+        expect(colonistData._actionStack).toStrictEqual([
+            {
+                type: "drink",
+                coords: { x: 10, y: 29 },
+                duration: 10,
+                buildingId: 1002
+            },
+            {
+                type: "move",
+                coords: { x: 10, y: 29 },
+                duration: 0,
+                buildingId: 0
+            },
+            {
+                type: "climb",
+                coords: { x: 11, y: 28 },   // NOTE: Climb action takes into account the Colonist's HEAD level, not FOOT level
+                duration: 0,
+                buildingId: 2001
+            }
+        ])
+    })
 
     // TODO: Test updatePosition method
 

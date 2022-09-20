@@ -169,7 +169,7 @@ export default class ColonistData {
                 break;
             case "get-water":
                 console.log("So thirsty...");
-                const waterSources = infra.findModulesWithResource(["water", 0 /*this._needs.water */]);
+                const waterSources = infra.findModulesWithResource(["water", this._needs.water]);
                 const waterModuleId = infra.findModuleNearestToLocation(waterSources, currentPosition);
                 const waterLocation = infra.findModuleLocationFromID(waterModuleId);
                 // Once module is found, add a 'drink' action to the stack (the last step is added first)
@@ -215,6 +215,8 @@ export default class ColonistData {
                             } else {
                                 console.log(`No ladder matching zone ID ${this._mapZoneId} found.`);
                             }
+                        } else {
+                            console.log(`No elevator connections found to floor ${waterFloor._id}`)
                         }
                     }
                 }
@@ -478,8 +480,8 @@ export default class ColonistData {
     consume = (resourceName: string, infra: Infrastructure) => {
         if (this._currentAction) {
             const modCoords = this._currentAction.coords;
-            // Ensure the colonist is standing in the right place
-            if (this._x === modCoords.x && this._y === modCoords.y) {
+            // Ensure the colonist is standing in the right place (which is their y position + 1 [for foot level])
+            if (this._x === modCoords.x && this._y + 1 === modCoords.y) {
                 // Find the module using its ID
                 const mod = infra.getModuleFromID(this._currentAction.buildingId);
                 // Call its resource-reduction method

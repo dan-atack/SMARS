@@ -169,6 +169,7 @@ export default class Infrastructure {
     findModulesWithResource = (resource: Resource) => {
         let mods: Module[] = [];  // Prepare to return the list of modules
         this._modules.forEach((mod) => {
+            const lifeSupport = mod._data._moduleInfo.type === "Life Support";  // TODO: Use this to restrict options further
             const hasCapacity = mod._data._resourceCapacity().includes(resource[0]);
             const inStock = mod._data.getResourceQuantity(resource[0]) >= resource[1];   // Compare needed vs available quantity
             if (hasCapacity && inStock) {
