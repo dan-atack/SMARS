@@ -336,6 +336,7 @@ export default class ColonistData {
     // MOVEMENT/POSITIONING METHODS
 
     updateMapZone = (map: Map) => {
+        // TODO: Change map zone ID to standingOnId, which can be either a number (indicating a floor) or a string (indicating a map zone)
         this._mapZoneId = map._data.getZoneIdForCoordinates({ x: this._x, y: this._y + 1 });    // Plus one to Y for foot level
     }
 

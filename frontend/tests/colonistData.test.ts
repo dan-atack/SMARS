@@ -500,7 +500,7 @@ describe("ColonistData", () => {
         })
     });
 
-    // 2 - When module is on a non-ground floor that is connected to the ground via ladder, actions are: move, climb, move, consume
+    // 2 - When Colonist is on ground and module is on non-ground floor that is connected to the ground via ladder, actions are: move, climb, move, consume
 
     test("DetermineActionsForGoal populates action stack with drink, move, climb, move when module is on diff floor", () => {
         resetColonistData();
@@ -545,6 +545,67 @@ describe("ColonistData", () => {
             }
         ])
     })
+
+    // 3 - When Colonist is on ground and module is on non-ground floor that is connected indirectly to the ground, actions are: move, climb, move, climb, move, consume
+    // test("DAFG populates act stack with move, climb, move, climb, move, drink when mod is on indirectly connected floor", () => {
+    //     // Basic setup: set colonist need, and create new module provisioned with needed resource, then add new connector
+    //     resetColonistData();
+    //     colonistData._needs.food = 10;
+    //     mockInfra.addModule(10, 24, storageModuleInfo, mockMap._data._topography, mockMap._data._zones, 1003);
+    //     mockInfra.addResourcesToModule(1003, ["food", 15]);
+    //     // Add a connector that goes from the 2nd story to the 3rd story but does not touch the ground
+    //     mockInfra.addConnector({ x: 12, y: 29 }, { x: 12, y: 25 }, connectorInfo, mockMap, 2002);
+    //     // Initiate test
+    //     colonistData.setGoal("get-food");
+    //     colonistData.determineActionsForGoal(mockInfra, mockMap);
+    //     // Expect 6 total actions - 5 in the stack and one current
+    //     expect(colonistData._actionStack.length).toBe(5);
+    //     expect(colonistData._currentAction).toStrictEqual({
+    //         type: "move",
+    //         coords: { x: 11, y: 32 },
+    //         duration: 0,
+    //         buildingId: 0
+    //     })
+    //     // Action stack contains remaining actions in reverse order of execution (eat, move, climb, move, climb)
+    //     expect(colonistData._actionStack).toStrictEqual([
+    //         {
+    //             type: "eat",
+    //             coords: { x: 10, y: 26 },
+    //             duration: 10,
+    //             buildingId: 1003
+    //         },
+    //         {
+    //             type: "move",
+    //             coords: { x: 10, y: 26 },
+    //             duration: 0,
+    //             buildingId: 0
+    //         },
+    //         {
+    //             type: "climb",
+    //             coords: { x: 12, y: 25 },   // NOTE: Climb action takes into account the Colonist's HEAD level, not FOOT level
+    //             duration: 0,
+    //             buildingId: 2002
+    //         },
+    //         {
+    //             type: "move",
+    //             coords: { x: 12, y: 29 },
+    //             duration: 0,
+    //             buildingId: 0
+    //         },
+    //         {
+    //             type: "climb",
+    //             coords: { x: 11, y: 28 },   // NOTE: Climb action takes into account the Colonist's HEAD level, not FOOT level
+    //             duration: 0,
+    //             buildingId: 2001
+    //         }
+    //     ])
+    // })
+
+    // 4 - When Colonist is on non-ground floor and module is on a different floor inside the base
+
+    // 5 - When Colonist is on non-ground floor and destination (no module) is somewhere outside of the base
+
+    // 6 - When Colonist is anywhere and a resource is not available, what should they do? Presumably wait a little while and then try again to find the needed resource? Make them do that.
 
     // TODO: Test updatePosition method
 

@@ -1666,13 +1666,19 @@ Features Added:
 
 62. Add new unit tests for all of the currently existing goal-determination functionality.
 
-### 63. Add new unit tests for all of the currently existing action-related functionality (except for the action stack determination logic - we'll tackle that in a moment).
+63. Add new unit tests for all of the currently existing action-related functionality (except for the action stack determination logic - we'll tackle that in a moment).
 
-### 64. Add new unit tests for the new movement logic (for resource consumption functionality).
+64. Add new unit tests for the new movement logic (for resource consumption functionality).
 
-### 65. Add new unit tests for the as-yet-to-be-developed action stack determination logic. Consider several precise scenarios, to be defined in advance on paper before going any further with the code for these operations.
+65. Add new unit tests for the as-yet-to-be-developed action stack determination logic. Consider several precise scenarios, to be defined in advance on paper before going any further with the code for these operations.
 
-### 62. Create a new file called ColonistActionLogic, and copy the current contents of the DetermineActionsForGoal method into it, translating things initially into a single large function that takes the Map and Infra objects as parameters, and then returns an array which will be given to the colonist as an action stack. This master function can then be broken down so that individual parts of the logic currently in it can be reused in multiple places, allowing the completion of the Colonist's basic pathfinding logic.
+### 66. Create an Infrastructure class method, findFloorFromCoordinate, which takes a set of coordinates and returns the Floor (if any) that is immediately under those coordinates.
+
+### 67. Have the Colonist class call that method with its detectTerrainBeneath check, and if the colonist is found to be standing on a floor instead of a map zone, make their standingOnId a number instead of a string and set it to the Floor's ID.
+
+### 68. Have the Colonist's startMovement method read the type of the standingOnId and set the height delta to zero for 'move' movements whenever it detects a number (i.e. a floor ID as opposed to a map zone ID). That should take care of the problem of colonists walking out of upper floors and acting as though they're on the ground... although they will still walk out of those floors probably... But let's not worry about that for now!
+
+### 69. Create a new file called ColonistActionLogic, and copy the current contents of the DetermineActionsForGoal method into it, translating things initially into a single large function that takes the Map and Infra objects as parameters, and then returns an array which will be given to the colonist as an action stack. This master function can then be broken down so that individual parts of the logic currently in it can be reused in multiple places, allowing the completion of the Colonist's basic pathfinding logic.
 
 ### 47. Also, add some new unit tests for the various action related functions; these will help to further clarify the new colonist decision/action/movement workflows as well as focusing the direction of the remaining efforts for this chapter.
 
