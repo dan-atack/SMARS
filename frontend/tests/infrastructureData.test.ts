@@ -376,6 +376,12 @@ describe("Infrastructure Data", () => {
         expect(infraData.getFloorFromModuleId(9004)).toBe(null);        // When the module is not found, return a null value
     })
 
+    // Returns pointer to the whole floor object as well
+    test("Can find the floor that is stood on at a pair of coordinates", () => {
+        console.log(infraData._floors);
+        expect(infraData.getFloorIdFromCoords({ x: 1, y: 8 })).toBe(1004);
+    })
+
     // Returns a pointer to the entire elevator object (which is just an id, x, top and bottom - all integers, incidentally)
     test("Can find an elevator from its ID", () => {
         expect(infraData.getElevatorFromId(9000)).toStrictEqual({ id: 9000, x: 1, top: 0, bottom: 20, groundZoneId: "" });    // Find the first elevator added in the 'add connectors to floors' test

@@ -436,7 +436,7 @@ describe("ColonistData", () => {
         colonistData._isMoving = true;
         colonistData._movementCost = 10;
         colonistData._movementProg = 0;
-        colonistData.handleMovement(mockMap, unevenTerrain);
+        colonistData.handleMovement(mockMap, mockInfra, unevenTerrain);
         expect(colonistData._movementProg).toBe(1);
     })
 
@@ -446,7 +446,7 @@ describe("ColonistData", () => {
         colonistData._x = 1;
         colonistData._movementDest = { x: 0, y: 0 };
         colonistData._isMoving = false;
-        colonistData.handleMovement(mockMap, flatTerrain);
+        colonistData.handleMovement(mockMap, mockInfra, flatTerrain);
         expect(colonistData._isMoving).toBe(true);
         expect(colonistData._movementType).toBe("walk");
     })
@@ -546,7 +546,58 @@ describe("ColonistData", () => {
         ])
     })
 
-    // 3 - When Colonist is on ground and module is on non-ground floor that is connected indirectly to the ground, actions are: move, climb, move, climb, move, consume
+    // 3 - When Colonist is on a non-ground floor and module is another non-ground floor that is connected to the current floor via ladder, actions are: move, climb, move, consume
+
+    // test("DetermineActionsForGoal populates action stack with drink, move, climb, move when module is on diff floor", () => {
+    //     resetColonistData();
+    //     colonistData._needs.water = 10;
+    //     // Add new module (a third storey), and provision it
+    //     mockInfra.addModule(10, 24, storageModuleInfo, mockMap._data._topography, mockMap._data._zones, 1003);
+    //     mockInfra.addResourcesToModule(1003, [ "water", 1000 ]);
+    //     // Deprovision the module on the second floor
+    //     mockInfra._modules[1]._data.deductResource([ "water", 10000 ]);
+    //     // Add a connector that goes all the way from the ground floor to the new module
+    //     mockInfra.addConnector({ x: 11, y: 32 }, { x: 11, y: 28 }, connectorInfo, mockMap, 2001);
+    //     // Move colonist to middle floor
+    //     colonistData._x = 10;
+    //     colonistData._y = 29;
+    //     // Validate colonist is detected on the second floor
+    //     expect(colonistData._mapZoneId).toBe(1002);
+    //     // Run test
+    //     colonistData.setGoal("get-water");
+    //     colonistData.determineActionsForGoal(mockInfra, mockMap);
+    //     // Current action should be to move to the ladder
+    //     expect(colonistData._actionStack.length).toBe(3);
+    //     expect(colonistData._currentAction).toStrictEqual({
+    //         type: "move",
+    //         coords: { x: 11, y: 32 },
+    //         duration: 0,
+    //         buildingId: 0
+    //     })
+    //     // Action stack contains remaining actions in reverse order of execution (drink, move, climb)
+    //     expect(colonistData._actionStack).toStrictEqual([
+    //         {
+    //             type: "drink",
+    //             coords: { x: 10, y: 29 },
+    //             duration: 10,
+    //             buildingId: 1002
+    //         },
+    //         {
+    //             type: "move",
+    //             coords: { x: 10, y: 29 },
+    //             duration: 0,
+    //             buildingId: 0
+    //         },
+    //         {
+    //             type: "climb",
+    //             coords: { x: 11, y: 28 },   // NOTE: Climb action takes into account the Colonist's HEAD level, not FOOT level
+    //             duration: 0,
+    //             buildingId: 2001
+    //         }
+    //     ])
+    // })
+
+    // 6 - ADVANCED TEST CASE: CODE NOT DEVELOPED YET - When Colonist is on ground and module is on non-ground floor that is connected indirectly to the ground, actions are: move, climb, move, climb, move, consume
     // test("DAFG populates act stack with move, climb, move, climb, move, drink when mod is on indirectly connected floor", () => {
     //     // Basic setup: set colonist need, and create new module provisioned with needed resource, then add new connector
     //     resetColonistData();
@@ -609,5 +660,17 @@ describe("ColonistData", () => {
 
     // TODO: Test updatePosition method
 
-    // TODO: Test detectTerrainBeneath method
+    test("Can detect when the colonist is standing on a floor vs on a map zone", () => {
+        resetColonistData();
+        // Colonist is on the ground
+        colonistData._x = 3;
+        colonistData._y = 31;   // Head is one above (lower integer) the feet, which are one higher than the topography value
+        colonistData.detectTerrainBeneath(mockMap, mockInfra);
+        expect(colonistData._standingOnId).toBe("0033");
+        // Colonist is on 2nd floor
+        colonistData._x = 10;
+        colonistData._y = 28;
+        colonistData.detectTerrainBeneath(mockMap, mockInfra);
+        expect(colonistData._standingOnId).toBe(1004);
+    })
 });

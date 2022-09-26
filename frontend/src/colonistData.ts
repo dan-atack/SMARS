@@ -17,10 +17,10 @@ export default class ColonistData {
     // Colonist data types
     _x: number;         // Colonists' x and y positions will be in terms of grid locations
     _y: number;
-    _mapZoneId: string; // To keep track of which map zone the colonist is standing on
-    _width: number;     // Colonists' width is in terms of grid spaces...
-    _height: number;    // Colonists' height is in terms of grid spaces...
-    _xOffset: number;   // ...The offset value, on the other hand, will be in terms of pixels, to allow for smoother scrolling
+    _standingOnId: string | number; // To keep track of which map zone (ID = string) or floor (ID = number)
+    _width: number;                 // Colonists' width is in terms of grid spaces...
+    _height: number;                // Colonists' height is in terms of grid spaces...
+    _xOffset: number;       // ...The offset value, on the other hand, will be in terms of pixels, to allow for smoother scrolling
     _yOffset: number;
     _needs: ColonistNeeds;          // Keep track of the colonist's needs to help them choose what to do with their lives
     _needThresholds: ColonistNeeds; // Separately keep track of the various thresholds for each type of need
@@ -39,7 +39,7 @@ export default class ColonistData {
     constructor(x: number, y: number, saveData?: ColonistSaveData) {
         this._x = x;
         this._y = y;
-        this._mapZoneId = "";
+        this._standingOnId = "";
         this._width = 1;
         this._height = 2;
         this._xOffset = 0;
@@ -75,9 +75,9 @@ export default class ColonistData {
 
     // AdjacentColumns is a subset of the map; just the column the colonist is on, plus one to the immediate right/left
     handleMinutelyUpdates = (adjacentColumns: number[][], infra: Infrastructure, map: Map) => {
-        this.checkActionStatus(infra);   // Update actions before goals
-        this.checkGoalStatus(infra, map);
-        this.handleMovement(map, adjacentColumns);
+        this.checkActionStatus(infra);              // First: Update actions before goals
+        this.checkGoalStatus(infra, map);           // Then update goals after actions
+        this.handleMovement(map, infra, adjacentColumns);  // Finally, take care of movement last
     }
 
     // NEEDS AND GOAL-ORIENTED METHODS
@@ -180,7 +180,7 @@ export default class ColonistData {
                 if (waterFloor !== null) {
                     // Does the floor have a ground zone?
                     waterFloor._groundFloorZones.forEach((zone) => {
-                        if (zone.id === this._mapZoneId.toString()) {
+                        if (zone.id === this._standingOnId.toString()) {
                             console.log(`Water source on floor ${waterFloor._id} is walkable from current map zone.`);
                             // this.startGoalProgress(infra);
                         } else {
@@ -204,7 +204,7 @@ export default class ColonistData {
                                 }
                             })
                             // If any do, find if any of them has the same ground zone as the colonist
-                            const ladderOfChoice = groundedElevators.find(ladder => ladder.groundZoneId === this._mapZoneId);
+                            const ladderOfChoice = groundedElevators.find(ladder => ladder.groundZoneId === this._standingOnId);
                             if (ladderOfChoice) {
                                 // If a ladder is found that has the same ground zone, tell the colonist to climb it!
                                 // Climb action needs all 4 args; coordinates = ladder.x and the height at which to get off
@@ -213,7 +213,7 @@ export default class ColonistData {
                                 this.addAction("move", { x: ladderOfChoice.x, y: ladderOfChoice.bottom});
                                 // this.startGoalProgress(infra);
                             } else {
-                                console.log(`No ladder matching zone ID ${this._mapZoneId} found.`);
+                                console.log(`No ladder matching zone ID ${this._standingOnId} found.`);
                             }
                         } else {
                             console.log(`No elevator connections found to floor ${waterFloor._id}`)
@@ -336,17 +336,25 @@ export default class ColonistData {
     // MOVEMENT/POSITIONING METHODS
 
     updateMapZone = (map: Map) => {
-        // TODO: Change map zone ID to standingOnId, which can be either a number (indicating a floor) or a string (indicating a map zone)
-        this._mapZoneId = map._data.getZoneIdForCoordinates({ x: this._x, y: this._y + 1 });    // Plus one to Y for foot level
+        this._standingOnId = map._data.getZoneIdForCoordinates({ x: this._x, y: this._y + 1 });    // Plus one to Y for foot level
+    }
+
+    updateFloorZone = (infra: Infrastructure) => {
+        const id = infra._data.getFloorIdFromCoords({ x: this._x, y: this._y + 1 });    // Plus one to Y for foot level
+        if (id) {
+            this._standingOnId = id;
+        } else {
+
+        }
     }
 
     // Movement Top-Level controller method: Initiates/continues a move based on what type of action is being performed
-    handleMovement = (map: Map, adjacentColumns: number[][]) => {
+    handleMovement = (map: Map, infra: Infrastructure, adjacentColumns: number[][]) => {
         // 0 - Check if non-movement (duration-based) action is taking place
         let otherAction = false;
         if (this._currentAction !== null) otherAction = this._currentAction.duration > this._actionTimeElapsed;
         // 1 - Check what colonist is standing on
-        this.detectTerrainBeneath(map);
+        this.detectTerrainBeneath(map, infra);
         // 2 - Conclude moves in progress
         if (this._isMoving) {
             this._movementProg ++;
@@ -463,16 +471,13 @@ export default class ColonistData {
         }
     }
 
-    // Ensures the colonist is always on the ground
-    detectTerrainBeneath = (map: Map) => {
+    // Ensures the colonist is always on the ground, whether on the map terrain or a floor inside the base
+    detectTerrainBeneath = (map: Map, infra: Infrastructure) => {
         this.updateMapZone(map);
-        
-        // const surfaceY = (constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH) - column.length;
-        // if (this._y + 2 < surfaceY) {
-        //     // Colonist is moved downwards if they're not standing on solid ground.
-        //     // TODO: Find a way to include the floors of modules in the definition of 'solid ground.'
-        //     this._y = surfaceY - 2;
-        // }
+        // If the colonist is not standing on a map zone, check what floor they are on (unless they are climbing a ladder)
+        if (this._standingOnId === "" && this._currentAction?.type !== "climb") {
+            this.updateFloorZone(infra);
+        }
     }
 
     // NON-MOVEMENT ACTIVITIES

@@ -337,6 +337,19 @@ export default class InfrastructureData {
         }
     }
 
+    // Takes a set of coordinates and returns just the ID of the floor (if any) that those coords stand atop of
+    getFloorIdFromCoords (coords: Coords) {
+        const floor = this._floors.find((fl) => {
+            return fl._elevation === coords.y && fl._leftSide <= coords.x && fl._rightSide >= coords.x;
+        })
+        if (floor !== undefined) {
+            return floor._id;
+        } else {
+            console.log(`Coordinates (${coords.x}, ${coords.y}) are not on any floor`);
+            return null;
+        }
+    }
+
     // Takes and elevator (ladder) ID and returns the data for that elevator
     getElevatorFromId (elevatorId: number) {
         const elevator = this._elevators.find((el) => el.id === elevatorId);

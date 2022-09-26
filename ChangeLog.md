@@ -1672,9 +1672,9 @@ Features Added:
 
 65. Add new unit tests for the as-yet-to-be-developed action stack determination logic. Consider several precise scenarios, to be defined in advance on paper before going any further with the code for these operations.
 
-### 66. Create an Infrastructure class method, findFloorFromCoordinate, which takes a set of coordinates and returns the Floor (if any) that is immediately under those coordinates.
+66. Create an Infrastructure class method, findFloorFromCoordinate, which takes a set of coordinates and returns the Floor (if any) that is immediately under those coordinates.
 
-### 67. Have the Colonist class call that method with its detectTerrainBeneath check, and if the colonist is found to be standing on a floor instead of a map zone, make their standingOnId a number instead of a string and set it to the Floor's ID.
+67. Have the Colonist class call that method with its detectTerrainBeneath check, and if the colonist is found to be standing on a floor instead of a map zone, make their standingOnId a number instead of a string and set it to the Floor's ID.
 
 ### 68. Have the Colonist's startMovement method read the type of the standingOnId and set the height delta to zero for 'move' movements whenever it detects a number (i.e. a floor ID as opposed to a map zone ID). That should take care of the problem of colonists walking out of upper floors and acting as though they're on the ground... although they will still walk out of those floors probably... But let's not worry about that for now!
 
