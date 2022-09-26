@@ -179,6 +179,7 @@ export default class Infrastructure {
                     mods.push(mod);
                 } else {
                     console.log(`Error retrieving resource data for module ${mod._data._id} (${mod._data._moduleInfo.name})`);
+                    return [];
                 }
             }
         });
@@ -198,7 +199,6 @@ export default class Infrastructure {
             }
         })
         if (nearestID !== 0) {
-            // console.log(`Nearest module for colonist at ${location.x}: ${nearestID}`);
             return nearestID;
         } else{
             console.log(`Error: No modules found near to coordinates ${location.x}, ${location.y}`);
