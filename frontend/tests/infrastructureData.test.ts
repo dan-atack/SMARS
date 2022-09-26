@@ -376,6 +376,12 @@ describe("Infrastructure Data", () => {
         expect(infraData.getFloorFromModuleId(9004)).toBe(null);        // When the module is not found, return a null value
     })
 
+    // Also returns pointer to the whole floor object
+    test("Can find a floor when provided with its ID", () => {
+        expect(infraData.getFloorFromId(1004)).toBeTruthy();    // Just make sure the floor exists
+        expect(infraData.getFloorFromId(9999)).toBe(null);      // Ensure that non-valid floor IDs return a null
+    })
+
     // Returns pointer to the whole floor object as well
     test("Can find the floor that is stood on at a pair of coordinates", () => {
         console.log(infraData._floors);

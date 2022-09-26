@@ -73,6 +73,7 @@ describe("ColonistData", () => {
     const resetColonistData = () => {
         colonistData._x = 0;
         colonistData._y = 31;
+        colonistData.stopMovement();
         colonistData.resolveAction();
         colonistData.clearActions();
         colonistData.resolveGoal();
@@ -474,6 +475,15 @@ describe("ColonistData", () => {
         expect(colonistData._movementType).toBe("small-drop");
         expect(colonistData._facing).toBe("left");
     })
+
+    // // Verifies that colonist will not interact with the map terrain if they are on a floor
+    // test("Colonist ignores terrain features when moving on a floor", () => {
+    //     colonistData.stopMovement();
+    //     colonistData._x = 10;
+    //     colonistData._y = 28;
+    //     colonistData._currentAction = { type: "move", coords: { x: 12, y: 28 }, duration: 0, buildingId: 0 };
+    //     colonistData._movementDest = { x: 12, y: 28 };
+    // })
 
     // GOAL ACTION STACK DETERMINATION (PATHFINDING) LOGIC TESTS (THERE ARE SEVERAL INDIVIDUAL CASES)
 

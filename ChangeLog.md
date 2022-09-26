@@ -1676,13 +1676,7 @@ Features Added:
 
 67. Have the Colonist class call that method with its detectTerrainBeneath check, and if the colonist is found to be standing on a floor instead of a map zone, make their standingOnId a number instead of a string and set it to the Floor's ID.
 
-### 68. Have the Colonist's startMovement method read the type of the standingOnId and set the height delta to zero for 'move' movements whenever it detects a number (i.e. a floor ID as opposed to a map zone ID). That should take care of the problem of colonists walking out of upper floors and acting as though they're on the ground... although they will still walk out of those floors probably... But let's not worry about that for now!
-
-### 69. Create a new file called ColonistActionLogic, and copy the current contents of the DetermineActionsForGoal method into it, translating things initially into a single large function that takes the Map and Infra objects as parameters, and then returns an array which will be given to the colonist as an action stack. This master function can then be broken down so that individual parts of the logic currently in it can be reused in multiple places, allowing the completion of the Colonist's basic pathfinding logic.
-
-### 47. Also, add some new unit tests for the various action related functions; these will help to further clarify the new colonist decision/action/movement workflows as well as focusing the direction of the remaining efforts for this chapter.
-
-### 96. Update the detectTerrainBeneath method and overhaul it completely so that it calls the determineMapZone method and also does a secondary check to see if the colonist is either a) climbing a ladder or b) on a module floor if they're not standing on the surface of whichever column they're currently in.
+### 68. Now that the Colonist can tell when they are standing on a floor as opposed to a map zone, add the logic that will enable them to determine how to get back to the ground/to another floor from that position. Create the first helper function that will go in our new ColonistMovementLogic helpers file: findElevatorToGround. It should take the Infra and Map classes as arguments, and return either the nearest elevator (or a pointer to it) or a NULL if no elevator is found.
 
 ### 97. Update the Infra Data unit tests in light of this refactoring, and add some new ones too since the Infra base class has a lot of methods that are currently untested!
 

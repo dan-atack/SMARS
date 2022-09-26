@@ -337,6 +337,17 @@ export default class InfrastructureData {
         }
     }
 
+    // Takes the ID for a floor itself and returns that floor
+    getFloorFromId (floorId: number) {
+        const floor = this._floors.find((fl) => fl._id === floorId);
+        if (floor !== undefined) {
+            return floor;
+        } else {
+            console.log(`Error: Floor with ID ${floorId} not found.`);
+            return null;
+        }
+    }
+
     // Takes a set of coordinates and returns just the ID of the floor (if any) that those coords stand atop of
     getFloorIdFromCoords (coords: Coords) {
         const floor = this._floors.find((fl) => {

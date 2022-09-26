@@ -1,5 +1,6 @@
 // The ColonistData class handles all of the data processing for the colonist class, without any of the rendering tasks
 import { ColonistSaveData, ColonistNeeds } from "./colonist";
+import { findElevatorToGround } from "./colonistMovementLogic";
 import { Coords } from "./connectorData";
 import { constants } from "./constants";
 import Infrastructure from "./infrastructure";  // Infra data info gets passed by population updater function
@@ -134,14 +135,14 @@ export default class ColonistData {
 
     // Clears the current action (if any) and starts progress towards a newly selected goal
     startGoalProgress = (infra: Infrastructure) => {
-        console.log(`Starting progress towards goal: ${this._currentGoal}`);
+        console.log(`Starting progress towards goal: ${this._currentGoal}.`);
         this.resolveAction();   // Ensure no previous actions are still in progress
         this.startAction(infra);
     }
 
     // Resets all goal-oriented values
     resolveGoal = () => {
-        console.log(`Goal resolved: ${this._currentGoal}`);
+        console.log(`Goal resolved: ${this._currentGoal}.`);
         this.setGoal("");
         this.resolveAction();
         this.clearActions();    // Ensure no actions remain if the goal is declared resolved
@@ -156,7 +157,7 @@ export default class ColonistData {
         const currentPosition = { x: this._x, y: this._y + 1 }; // Add 1 to colonist Y position to get 'foot level' value
         switch(this._currentGoal) {
             case "explore":
-                // Assign the colonist to walk to a nearby position
+                // First, randomly generate a position that is near (on the x axis that is) to the colonist's current location
                 const dir = Math.random() > 0.5;
                 const dist = Math.ceil(Math.random() * 10);
                 let dest = dir ? dist : -dist;
@@ -164,11 +165,22 @@ export default class ColonistData {
                 if (dest > map._data._columns.length - 1) {
                     dest = map._data._columns.length - 1;
                 }
+                // Then, add the movement action; if the colonist is on the ground, then this is the only action needed...
                 this.addAction("move", { x: dest, y: 0 });  // Y coordinate doesn't matter for move action
-                // this.startAction(infra);
+                // Finally, if the colonist is NOT on the ground, they need to get back down before trying to move
+                if (typeof this._standingOnId === "number") {
+                    // Find the closest elevator that goes to the ground floor:
+                    const elevator = findElevatorToGround(this._x, this._y, this._standingOnId, map, infra);
+                    if (elevator) {
+                        // If found, add order to climb nearest ladder down to the ground level (minus 1 for the feet)
+                        this.addAction("climb", { x: elevator.x, y: elevator.bottom - 1 }, 0, elevator.id);
+                        // If found, add order to move to nearest ladder (stack is created in reverse order)
+                        this.addAction("move", { x: elevator.x, y: this._y });
+                    }
+                }
                 break;
             case "get-water":
-                console.log("So thirsty...");
+                // console.log("So thirsty...");
                 const waterSources = infra.findModulesWithResource(["water", this._needs.water]);
                 const waterModuleId = infra.findModuleNearestToLocation(waterSources, currentPosition);
                 const waterLocation = infra.findModuleLocationFromID(waterModuleId);
@@ -322,10 +334,11 @@ export default class ColonistData {
         }
     }
 
-    // Completes the current action and resets all values related to the current action
+    // Completes the current action and resets all values related to the current action including the current move
     resolveAction = () => {
         this._currentAction = null;
         this._actionTimeElapsed = 0;
+        this.stopMovement();
     }
 
     // Resets the action stack to an empty array
@@ -344,15 +357,15 @@ export default class ColonistData {
         if (id) {
             this._standingOnId = id;
         } else {
-
+            console.log(`Error: Colonist at (${this._x}, ${this._y}) is not standing on anything!`);
         }
     }
 
     // Movement Top-Level controller method: Initiates/continues a move based on what type of action is being performed
     handleMovement = (map: Map, infra: Infrastructure, adjacentColumns: number[][]) => {
-        // 0 - Check if non-movement (duration-based) action is taking place
+        // 0 - Check if non-movement (duration-based) action is taking place (defined as duration > 0)
         let otherAction = false;
-        if (this._currentAction !== null) otherAction = this._currentAction.duration > this._actionTimeElapsed;
+        if (this._currentAction !== null) otherAction = this._currentAction.duration > 0;
         // 1 - Check what colonist is standing on
         this.detectTerrainBeneath(map, infra);
         // 2 - Conclude moves in progress
@@ -374,8 +387,13 @@ export default class ColonistData {
         if (this._currentAction) {
             switch (this._currentAction.type) {
                 case "climb":
-                    this._movementType = "climb-ladder";
-                    this._movementCost = 5; // It takes 5 time units to climb one segment of ladder
+                    // Determine if climb action is upwards or downwards
+                    if (this._movementDest.y > this._y) {
+                        this._movementType = "climb-ladder-down";
+                    } else {
+                        this._movementType = "climb-ladder-up";
+                    }
+                    this._movementCost = 5; // It takes 5 time units to climb one segment of ladder in either direction
                     break;
                 case "drink":
                     this._movementType = "drink";
@@ -465,8 +483,11 @@ export default class ColonistData {
             case "big-drop":
                 this._y += 2;
                 break;
-            case "climb-ladder":
+            case "climb-ladder-up":
                 this._y--;
+                break;
+            case "climb-ladder-down":
+                this._y++;
                 break;
         }
     }
@@ -480,7 +501,7 @@ export default class ColonistData {
         }
     }
 
-    // NON-MOVEMENT ACTIVITIES
+    // OTHER (NON-MOVEMENT) ACTIVITIES
 
     // Generic resource-consumption method (can be used for eating and drinking... and who knows what else, eh? ;)
     consume = (resourceName: string, infra: Infrastructure) => {
