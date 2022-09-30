@@ -1,6 +1,6 @@
 // The ColonistData class handles all of the data processing for the colonist class, without any of the rendering tasks
 import { ColonistSaveData, ColonistNeeds } from "./colonist";
-import { determineIfColonistIsOnSameSurfaceAsModule, findElevatorFromGroundToFloor, findElevatorToGround, findModulesWithResource } from "./colonistMovementLogic";
+import { determineIfColonistIsOnSameSurfaceAsModule, findElevatorFromGroundToFloor, findElevatorToGround, findModulesWithResource } from "./colonistActionLogic";
 import { Coords } from "./connectorData";
 import { constants } from "./constants";
 import Infrastructure from "./infrastructure";  // Infra data info gets passed by population updater function
@@ -100,8 +100,13 @@ export default class ColonistData {
             Object.keys(this._needs).forEach((need) => {
                 // @ts-ignore
                 if (this._needs[need] >= this._needThresholds[need]) {
-                    this.resolveGoal(); // Clear out the old goal information first
-                    this.setGoal(`get-${need}`, infra, map);
+                    // When setting new goal, clear out the current action - UNLESS it's a 'climb' action, in which case wait
+                    if (this._currentAction?.type !== "climb") {
+                        this.resolveAction();
+                        this.setGoal(`get-${need}`, infra, map);
+                    } else {
+                        console.log("Colonist is climbing - delaying new action start.");
+                    }
                 }
             })
         };
@@ -136,16 +141,15 @@ export default class ColonistData {
     // Clears the current action (if any) and starts progress towards a newly selected goal
     startGoalProgress = (infra: Infrastructure) => {
         console.log(`Starting progress towards goal: ${this._currentGoal}.`);
-        this.resolveAction();   // Ensure no previous actions are still in progress
         this.startAction(infra);
     }
 
     // Resets all goal-oriented values
     resolveGoal = () => {
+        this.resolveAction();     // Clear current action first
+        this.clearActions();    // Then clear out the rest of the action stack
         console.log(`Goal resolved: ${this._currentGoal}.`);
         this.setGoal("");
-        this.resolveAction();
-        this.clearActions();    // Ensure no actions remain if the goal is declared resolved
     }
 
     // ACTION-ORIENTED METHODS
@@ -214,14 +218,36 @@ export default class ColonistData {
                 }
                 break;
             case "get-food":    // Parallels the get-water case almost closely enough to be the same... but not quite!
-                console.log("Merry! I'm hungry!");
-                const foodSources = infra.findModulesWithResource(["food", this._needs.food]);
-                const foodModuleId = infra.findModuleNearestToLocation(foodSources, currentPosition);
-                const foodLocation = infra.findModuleLocationFromID(foodModuleId);
-                this.addAction("eat", foodLocation, this._needs.food, foodModuleId);
-                this.addAction("move", foodLocation);
-                const foodFloor = infra._data.getFloorFromModuleId(foodModuleId);
-                console.log(`Food source found in module ${foodModuleId} on floor ${foodFloor?._id}`);
+                // 1 - Find the location of the nearest module containing food
+                const foodMod = findModulesWithResource(["food", this._needs.food], currentPosition, infra);
+                if (foodMod) {
+                    // 2 - If a module is found, add 'eat' and 'move' actions to stack (if none is found, set a new goal)
+                    this.addAction("eat", foodMod.coords, this._needs.food, foodMod.id);
+                    this.addAction("move", foodMod.coords);      // Only 2 arguments needed for move actions
+                    // 3 - Find out which floor the module is on
+                    const foodFloor = infra._data.getFloorFromModuleId(foodMod.id);
+                    if (foodFloor !== null) {
+                        // 4 - Check if module is on the same surface as the colonist - if so, action stack is complete
+                        const sameZone = determineIfColonistIsOnSameSurfaceAsModule(foodFloor, this._standingOnId);
+                        // 5 - If the colonist is not on the same surface, find the nearest ladder to the target floor
+                        if (!sameZone) {
+                            console.log(`Food source is on floor ${foodFloor._id}. Colonist is not.`)
+                            // Find nearest elevator to target floor
+                            const elevator = findElevatorFromGroundToFloor(foodFloor, this._standingOnId.toString(), { x: this._x, y: this._y }, infra);
+                            if (elevator) {
+                                this.addAction("climb", { x: elevator.x, y: foodFloor._elevation - 1}, 0, elevator.id);
+                                this.addAction("move", { x: elevator.x, y: elevator.bottom});
+                            } else {
+                                console.log(`No elevator connections found to floor ${foodFloor._id}`)
+                            }
+                        }
+                    } else {
+                        console.log(`Error: Floor not found for module ${foodMod.id}`);
+                    }
+                } else {
+                    // TODO: If no acceptable modules are found, tell the colonist to wait a little while before looking again
+                    console.log(`Warning: No modules containing ${this._needs.water} water found.`);
+                }
                 break;
         }
         this.startGoalProgress(infra);

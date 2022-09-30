@@ -860,10 +860,10 @@ export default class Engine extends View {
         //     p5.text(`Floor 4 zones: ${this._infrastructure._data._floors[4]._groundFloorZones[0].id}`, 60, 200);
         // }
         if (this._population._colonists.length > 1) {
-            // p5.text(`Colonist 1 standing on: ${this._population._colonists[0]._data._standingOnId}`, 120, 160);
-            p5.text(`Colonist 1 destination: (${this._population._colonists[0]._data._movementDest.x}, ${this._population._colonists[0]._data._movementDest.y}`, 120, 180);
-            // p5.text(`Colonist 2 standing on: ${this._population._colonists[1]._data._standingOnId}`, 120, 200);
-            p5.text(`Colonist 2 destination: (${this._population._colonists[1]._data._movementDest.x}, ${this._population._colonists[1]._data._movementDest.y}`, 120, 220);
+            p5.text(`Colonist 1 water needs: ${this._population._colonists[0]._data._needs.water}`, 160, 160);
+            p5.text(`Colonist 1 food needs: ${this._population._colonists[0]._data._needs.food}`, 160, 180);
+            p5.text(`Colonist 2 water needs: ${this._population._colonists[1]._data._needs.water}`, 160, 200);
+            p5.text(`Colonist 2 food needs: ${this._population._colonists[1]._data._needs.food}`, 160, 220);
         }
         
     }

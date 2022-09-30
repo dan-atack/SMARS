@@ -80,5 +80,16 @@ export default class Floor {
         })
     }
 
+    // GETTER METHODS TO PROVIDE COLONISTS WITH PATHFINDING DATA
+
+    // Returns an array containing just the ground zone IDs (if any) that the floor is connected with
+    getFloorGroundZones = () => {
+        const zoneIds: string[] = [];
+        this._groundFloorZones.forEach((zone) => {
+            zoneIds.push(zone.id);
+        })
+        return zoneIds;
+    }
+
     // TODO: Add removal functions for Modules and Connectors
 }

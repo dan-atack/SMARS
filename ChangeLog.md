@@ -1678,6 +1678,8 @@ Features Added:
 
 68. Now that the Colonist can tell when they are standing on a floor as opposed to a map zone, add the logic that will enable them to determine how to get back to the ground/to another floor from that position. Create the first helper function that will go in our new ColonistMovementLogic helpers file: findElevatorToGround. It should take the Infra and Map classes as arguments, and return either the nearest elevator (or a pointer to it) or a NULL if no elevator is found.
 
+### 69. Having now developed a complete algorithm in the external colonistActionLogic file, add a new property to the colonist data class: needDelays - to temporarily tell a colonist to ignore a particular need if a module cannot be found that satisfies it. Depending on the outcome of the createConsumeActionStack function, a short or a long delay should be applied and then taken into consideration 
+
 ### 97. Update the Infra Data unit tests in light of this refactoring, and add some new ones too since the Infra base class has a lot of methods that are currently untested!
 
 ### 98. Give the Colonist class a unique ID field. Colonist IDs should be 8-character strings created by stringifying a random 8-digit number.
