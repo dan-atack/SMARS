@@ -70,6 +70,7 @@ export default class Population {
                 y: colonist._data._y,
                 needs: colonist._data._needs,
                 goal: colonist._data._currentGoal,
+                currentAction: colonist._data._currentAction,
                 actionStack: colonist._data._actionStack,
                 actionTimeElapsed: colonist._data._actionTimeElapsed,
                 isMoving: colonist._data._isMoving,

@@ -149,6 +149,7 @@ export default class Engine extends View {
         this.loadConnectorsFromSave(saveInfo.connectors);
         this._hasLanded = true;     // Landing sequence has to take place before saving is possible
         this._provisioned = true;   // Ditto for initial structure provisioning. If you're here already, God help ya.
+        this._sidebar.setDate(this._gameTime.sol, this._gameTime.year);   // Update sidebar date display to saved date
         this.createLoadGameModal(saveInfo.username);
     }
 

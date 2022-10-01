@@ -57,7 +57,7 @@ export default class ColonistData {
         };
         this._currentGoal = saveData ? saveData.goal : "explore"    // Load saved goal, or go exploring (for new colonists).
         this._actionStack = saveData?.actionStack ? saveData.actionStack : [];   // Load saved action stack or default to empty
-        this._currentAction = null;
+        this._currentAction = saveData?.currentAction ? saveData.currentAction : null;  // Load current action or default to null
         this._actionTimeElapsed = saveData ? saveData.actionTimeElapsed : 0;    // Load saved value or default to zero
         this._isMoving = saveData ? saveData.isMoving : false;      // Load saved status or colonists is at rest by default
         this._movementType = saveData ? saveData.movementType :  "" // Load name of movement type or default to no movement
@@ -366,6 +366,8 @@ export default class ColonistData {
             this._standingOnId = id;
         } else {
             console.log(`Error: Colonist at (${this._x}, ${this._y}) is not standing on anything!`);
+            // Drop the colonist down one level if they are not standing on anything ??
+            this._y++;
         }
     }
 
@@ -455,7 +457,9 @@ export default class ColonistData {
                     break;
             }
         } else {
-            console.log("Not moving due to: No value for current action.")
+            // If there is no current action but an attempt is made to initiate a move, reset the colonist's goal to unjam them
+            console.log("Not moving due to: No value for current action. Skipping to next action.");
+            this.resolveGoal();
         }
         // 2 - Initiate movement
         this._isMoving = true;

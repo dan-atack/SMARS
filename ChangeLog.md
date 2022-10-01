@@ -1521,22 +1521,22 @@ Not doing:
 
 ## Chapter Twenty-Nine: Colonist Movement in the Base (Difficulty Estimate: 7 For new colonist movement and decision logic, plus probably a new animation, plus unit tests and planning, AND some refactoring)
 
-Now that the game's resources are located in the modules, and the modules are on the map, the time has come to re-activate the colonists' needs, so that they gradually become hungry and thirsty throughout the day. As they do so, they will need to decide to acquire the resources necessary to reduce their needs, which they can now do by visiting the modules. Although they will not be able to actually satisfy their needs in this chapter, the Colonists will be given the ability to decide that they should satisfy a need, and that they must go to a specific location, often on a floor inside the base, to do so. This chapter will focus on the decision-making logic that will prioritize which resource to move towards, and the pathfinding logic needed to get to a location that is potentially far away and/or on a different level (floor) than the colonist is currently standing on. Hopefully the lessons learned so far about test-driven development and the use of flow-charts will aid in the development of these new features.
-
 ### July 22, 2022
+
+Now that the game's resources are located in the modules, and the modules are on the map, the time has come to re-activate the colonists' needs, so that they gradually become hungry and thirsty throughout the day. As they do so, they will need to decide to acquire the resources necessary to reduce their needs, which they can now do by visiting the modules. Although they will not be able to actually satisfy their needs in this chapter, the Colonists will be given the ability to decide that they should satisfy a need, and that they must go to a specific location, often on a floor inside the base, to do so. This chapter will focus on the decision-making logic that will prioritize which resource to move towards, and the pathfinding logic needed to get to a location that is potentially far away and/or on a different level (floor) than the colonist is currently standing on. Hopefully the lessons learned so far about test-driven development and the use of flow-charts will aid in the development of these new features.
 
 Exit Criteria:
 
 - [DONE] Colonists will become hungry and thirsty as their needs increase over time
-- Colonists will move toward a module that contains the resource/s they need when they become thirsty or hungry
-- Colonists can walk on Floors in the base as though they were on the ground
-- Colonists can climb up ladders to get to a Floor
-- Colonists can decide to climb up, or down a ladder to get to a module on another floor
-- Colonists can decide to walk up to a ladder
-- Colonists should always be aware of the ground level for the column they are in
-- There should be unit tests for everything before development (obviously now)
+- [DONE] Colonists will move toward a module that contains the resource/s they need when they become thirsty or hungry
+- [DONE] Colonists can walk on Floors in the base as though they were on the ground
+- [DONE] Colonists can climb up ladders to get to a Floor
+- [DONE] Colonists can decide to climb up, or down a ladder to get to a module on another floor
+- [DONE] Colonists can decide to walk up to a ladder
+- [DONE] Colonists should always be aware of the surface ID (whether map zone or floor) for the column they are in
+- [DONE] There should be unit tests for everything before development (obviously now)
 - The Colonist Decision and Movement Logic flowchart must be updated
-- Additional data about colonist movement/decisions added to save/load games so they resume what they were doing seamlessly
+- [DONE] Additional data about colonist movement/decisions added to save/load games so they resume what they were doing seamlessly
 
 Features Added:
 
@@ -1678,9 +1678,7 @@ Features Added:
 
 68. Now that the Colonist can tell when they are standing on a floor as opposed to a map zone, add the logic that will enable them to determine how to get back to the ground/to another floor from that position. Create the first helper function that will go in our new ColonistMovementLogic helpers file: findElevatorToGround. It should take the Infra and Map classes as arguments, and return either the nearest elevator (or a pointer to it) or a NULL if no elevator is found.
 
-### 69. Swap in the new consume action stack logic from the helpers file and have the colonist call it from the determineActionsForGoal method, in both the 'get-food' and 'get-water' cases. Rerun unit tests and then also run the game for a period of 2 in-game years as a final stress test. Then stick a fork in this chapter because it is DONE!!!
-
-### 97. Update the Infra Data unit tests in light of this refactoring, and add some new ones too since the Infra base class has a lot of methods that are currently untested!
+69. Swap in the new consume action stack logic from the helpers file and have the colonist call it from the determineActionsForGoal method, in both the 'get-food' and 'get-water' cases. Rerun unit tests and then also run the game for a period of 2 in-game years as a final stress test. Then stick a fork in this chapter because it is DONE!!!
 
 ### 98. Give the Colonist class a unique ID field. Colonist IDs should be 8-character strings created by stringifying a random 8-digit number.
 
