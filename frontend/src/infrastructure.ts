@@ -239,18 +239,6 @@ export default class Infrastructure {
         return resources;
     }
 
-    // Returns a list of life-support type modules containing a certain resource
-    getModulesWithResource = (resource: string) => {
-        const modules: Module[] = [];
-        this._modules.forEach((module) => {
-            // TODO: Separate conditions to increase readability and add a check for the resource quantity as well
-            if (module._data._resourceCapacity().includes(resource) && module._data._moduleInfo.type === "Life Support") {
-                modules.push(module);
-            }
-        })
-        return modules;
-    }
-
     // Basic oxygen loss calculator
     calculateModulesOxygenLoss = () => {
         const loss_rate = 1;

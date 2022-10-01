@@ -1,6 +1,6 @@
 // The ColonistData class handles all of the data processing for the colonist class, without any of the rendering tasks
 import { ColonistSaveData, ColonistNeeds } from "./colonist";
-import { determineIfColonistIsOnSameSurfaceAsModule, findElevatorFromGroundToFloor, findElevatorToGround, findModulesWithResource } from "./colonistActionLogic";
+import { createConsumeActionStack, determineIfColonistIsOnSameSurfaceAsModule, findElevatorFromGroundToFloor, findElevatorToGround, findModulesWithResource } from "./colonistActionLogic";
 import { Coords } from "./connectorData";
 import { constants } from "./constants";
 import Infrastructure from "./infrastructure";  // Infra data info gets passed by population updater function
@@ -165,7 +165,7 @@ export default class ColonistData {
                 const dir = Math.random() > 0.5;
                 const dist = Math.ceil(Math.random() * 10);
                 let dest = dir ? dist : -dist;
-                dest = Math.max(this._x + dest, 0);    // Ensure the colonist doesn't wander off the edge
+                dest = Math.max(this._x + dest, 1);    // Ensure the colonist doesn't wander off the edge
                 if (dest > map._data._columns.length - 1) {
                     dest = map._data._columns.length - 1;
                 }
@@ -186,68 +186,70 @@ export default class ColonistData {
                 }
                 break;
             case "get-water":
+                this._actionStack = createConsumeActionStack(currentPosition, this._standingOnId, ["water", this._needs.water], infra);
                 // 1 - Find the location of the nearest module containing water
-                const waterMod = findModulesWithResource(["water", this._needs.water], currentPosition, infra);
-                if (waterMod) {
-                    // 2 - If a module is found, add 'drink' and 'move' actions to stack (if none is found, set a new goal)
-                    this.addAction("drink", waterMod.coords, this._needs.water, waterMod.id);
-                    this.addAction("move", waterMod.coords);      // Only 2 arguments needed for move actions
-                    // 3 - Find out which floor the module is on
-                    const waterFloor = infra._data.getFloorFromModuleId(waterMod.id);
-                    if (waterFloor !== null) {
-                        // 4 - Check if module is on the same surface as the colonist - if so, action stack is complete
-                        const sameZone = determineIfColonistIsOnSameSurfaceAsModule(waterFloor, this._standingOnId);
-                        // 5 - If the colonist is not on the same surface, find the nearest ladder to the target floor
-                        if (!sameZone) {
-                            console.log(`Water source is on floor ${waterFloor._id}. Colonist is not.`)
-                            // Find nearest elevator to target floor
-                            const elevator = findElevatorFromGroundToFloor(waterFloor, this._standingOnId.toString(), { x: this._x, y: this._y }, infra);
-                            if (elevator) {
-                                this.addAction("climb", { x: elevator.x, y: waterFloor._elevation - 1}, 0, elevator.id);
-                                this.addAction("move", { x: elevator.x, y: elevator.bottom});
-                            } else {
-                                console.log(`No elevator connections found to floor ${waterFloor._id}`)
-                            }
-                        }
-                    } else {
-                        console.log(`Error: Floor not found for module ${waterMod.id}`);
-                    }
-                } else {
-                    // TODO: If no acceptable modules are found, tell the colonist to wait a little while before looking again
-                    console.log(`Warning: No modules containing ${this._needs.water} water found.`);
-                }
+                // const waterMod = findModulesWithResource(["water", this._needs.water], currentPosition, infra);
+                // if (waterMod) {
+                //     // 2 - If a module is found, add 'drink' and 'move' actions to stack (if none is found, set a new goal)
+                //     this.addAction("drink", waterMod.coords, this._needs.water, waterMod.id);
+                //     this.addAction("move", waterMod.coords);      // Only 2 arguments needed for move actions
+                //     // 3 - Find out which floor the module is on
+                //     const waterFloor = infra._data.getFloorFromModuleId(waterMod.id);
+                //     if (waterFloor !== null) {
+                //         // 4 - Check if module is on the same surface as the colonist - if so, action stack is complete
+                //         const sameZone = determineIfColonistIsOnSameSurfaceAsModule(waterFloor, this._standingOnId);
+                //         // 5 - If the colonist is not on the same surface, find the nearest ladder to the target floor
+                //         if (!sameZone) {
+                //             console.log(`Water source is on floor ${waterFloor._id}. Colonist is not.`)
+                //             // Find nearest elevator to target floor
+                //             const elevator = findElevatorFromGroundToFloor(waterFloor, this._standingOnId.toString(), { x: this._x, y: this._y }, infra);
+                //             if (elevator) {
+                //                 this.addAction("climb", { x: elevator.x, y: waterFloor._elevation - 1}, 0, elevator.id);
+                //                 this.addAction("move", { x: elevator.x, y: elevator.bottom});
+                //             } else {
+                //                 console.log(`No elevator connections found to floor ${waterFloor._id}`)
+                //             }
+                //         }
+                //     } else {
+                //         console.log(`Error: Floor not found for module ${waterMod.id}`);
+                //     }
+                // } else {
+                //     // TODO: If no acceptable modules are found, tell the colonist to wait a little while before looking again
+                //     console.log(`Warning: No modules containing ${this._needs.water} water found.`);
+                // }
                 break;
             case "get-food":    // Parallels the get-water case almost closely enough to be the same... but not quite!
+            this._actionStack = createConsumeActionStack(currentPosition, this._standingOnId, ["food", this._needs.food], infra);
                 // 1 - Find the location of the nearest module containing food
-                const foodMod = findModulesWithResource(["food", this._needs.food], currentPosition, infra);
-                if (foodMod) {
-                    // 2 - If a module is found, add 'eat' and 'move' actions to stack (if none is found, set a new goal)
-                    this.addAction("eat", foodMod.coords, this._needs.food, foodMod.id);
-                    this.addAction("move", foodMod.coords);      // Only 2 arguments needed for move actions
-                    // 3 - Find out which floor the module is on
-                    const foodFloor = infra._data.getFloorFromModuleId(foodMod.id);
-                    if (foodFloor !== null) {
-                        // 4 - Check if module is on the same surface as the colonist - if so, action stack is complete
-                        const sameZone = determineIfColonistIsOnSameSurfaceAsModule(foodFloor, this._standingOnId);
-                        // 5 - If the colonist is not on the same surface, find the nearest ladder to the target floor
-                        if (!sameZone) {
-                            console.log(`Food source is on floor ${foodFloor._id}. Colonist is not.`)
-                            // Find nearest elevator to target floor
-                            const elevator = findElevatorFromGroundToFloor(foodFloor, this._standingOnId.toString(), { x: this._x, y: this._y }, infra);
-                            if (elevator) {
-                                this.addAction("climb", { x: elevator.x, y: foodFloor._elevation - 1}, 0, elevator.id);
-                                this.addAction("move", { x: elevator.x, y: elevator.bottom});
-                            } else {
-                                console.log(`No elevator connections found to floor ${foodFloor._id}`)
-                            }
-                        }
-                    } else {
-                        console.log(`Error: Floor not found for module ${foodMod.id}`);
-                    }
-                } else {
-                    // TODO: If no acceptable modules are found, tell the colonist to wait a little while before looking again
-                    console.log(`Warning: No modules containing ${this._needs.water} water found.`);
-                }
+                // const foodMod = findModulesWithResource(["food", this._needs.food], currentPosition, infra);
+                // if (foodMod) {
+                //     // 2 - If a module is found, add 'eat' and 'move' actions to stack (if none is found, set a new goal)
+                //     this.addAction("eat", foodMod.coords, this._needs.food, foodMod.id);
+                //     this.addAction("move", foodMod.coords);      // Only 2 arguments needed for move actions
+                //     // 3 - Find out which floor the module is on
+                //     const foodFloor = infra._data.getFloorFromModuleId(foodMod.id);
+                //     if (foodFloor !== null) {
+                //         // 4 - Check if module is on the same surface as the colonist - if so, action stack is complete
+                //         const sameZone = determineIfColonistIsOnSameSurfaceAsModule(foodFloor, this._standingOnId);
+                //         // 5 - If the colonist is not on the same surface, find the nearest ladder to the target floor
+                //         if (!sameZone) {
+                //             console.log(`Food source is on floor ${foodFloor._id}. Colonist is not.`)
+                //             // Find nearest elevator to target floor
+                //             const elevator = findElevatorFromGroundToFloor(foodFloor, this._standingOnId.toString(), { x: this._x, y: this._y }, infra);
+                //             if (elevator) {
+                //                 this.addAction("climb", { x: elevator.x, y: foodFloor._elevation - 1}, 0, elevator.id);
+                //                 this.addAction("move", { x: elevator.x, y: elevator.bottom});
+                //             } else {
+                //                 console.log(`No elevator connections found to floor ${foodFloor._id}`)
+                //             }
+                //         }
+                //     } else {
+                //         console.log(`Error: Floor not found for module ${foodMod.id}`);
+                //     }
+                // } else {
+                //     // TODO: If no acceptable modules are found, tell the colonist to wait a little while before looking again
+                //     console.log(`Warning: No modules containing ${this._needs.water} water found.`);
+                // }
                 break;
         }
         this.startGoalProgress(infra);

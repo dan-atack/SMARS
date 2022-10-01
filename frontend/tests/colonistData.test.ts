@@ -523,7 +523,7 @@ describe("ColonistData", () => {
         // Add a connector that goes from the ground floor to the new module
         mockInfra.addConnector({ x: 11, y: 32 }, { x: 11, y: 28 }, connectorInfo, mockMap, 2001);
         // Run test
-        colonistData.setGoal("get-water");
+        colonistData.setGoal("get-water", mockInfra, mockMap);
         colonistData.determineActionsForGoal(mockInfra, mockMap);
         // Current action should be to move to the ladder
         expect(colonistData._actionStack.length).toBe(3);

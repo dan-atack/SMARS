@@ -10,18 +10,18 @@ import Module from "./module";
 // TOP LEVEL METHODS
 
 // Creates a full action stack for either the 'eat' or 'drink' colonist goals
-export const createConsumeActionStack = (colonistCoords: Coords, colonistStandingOn: string | number, resource: Resource, map: Map, infra: Infrastructure) => {
+export const createConsumeActionStack = (colonistCoords: Coords, colonistStandingOn: string | number, resource: Resource, infra: Infrastructure) => {
     // 0 - Determine action verb from the resource type (NOTE: This will need an upgrade when newer resources are added)
     const verb = resource[0] === "water" ? "drink" : "eat";
-    const stack: ColonistAction[] = [];
+    let stack: ColonistAction[] = [];
     let stackComplete = false;  // Do we need this??
     // 1 - Get the full list of modules containing the desired resource
-    const modules = infra.getModulesWithResource(resource[0]);
+    const modules = infra.findModulesWithResource(resource);
     // 2 - See if any of them are on the same surface as the colonist - if so, the process is already finished!
     const accessibleNow = findModulesOnSameSurface(resource, colonistStandingOn, infra);
     if (accessibleNow.length > 0) {
         // If any modules are on the same surface as the colonist, pick the closest one and move there (stack complete)
-        const nearestId = infra.findModuleNearestToLocation(modules, colonistCoords);
+        const nearestId = infra.findModuleNearestToLocation(accessibleNow, colonistCoords);
         const nearestCoords = infra.findModuleLocationFromID(nearestId);
         if (nearestId) {
             // Add eat/drink action
@@ -35,15 +35,19 @@ export const createConsumeActionStack = (colonistCoords: Coords, colonistStandin
         }
     // 3 - If however, none of the modules are on the same surface, start checking them for elevator/ladder access
     } else {
+        console.log(`${modules.length} modules for ${verb} found on other surface`);
         modules.forEach((mod) => {
+            console.log(`Trying module ${mod._data._id}`);
             // Find floor
             const floor = infra._data.getFloorFromModuleId(mod._data._id);
             // Does floor have elevators? --> If no, try next module
             // NOTE: Stop checking here if the stackComplete flag is set to true
             if ((!stackComplete) && floor && floor._connectors.length > 0) {
-                // If yes, add initial consume and move actions
-                stack.push(addAction(verb, { x: mod._data._x, y: mod._data._y }, resource[1], mod._data._id));
-                stack.push(addAction("move", { x: mod._data._x, y: mod._data._y }));
+                // If floor has elevators, start a fresh stack (clear out prev attempt) and add initial consume and move actions
+                const modCoords = infra.findModuleLocationFromID(mod._data._id);
+                stack = [];
+                stack.push(addAction(verb, { x: modCoords.x, y: modCoords.y }, resource[1], mod._data._id));
+                stack.push(addAction("move", { x: modCoords.x, y: modCoords.y }));
                 // Then loop thru elevators list
                 const elevatorIDs = floor._connectors;
                 elevatorIDs.forEach((elevId) => {
@@ -65,21 +69,12 @@ export const createConsumeActionStack = (colonistCoords: Coords, colonistStandin
                         stackComplete = true;
                         console.log(`STACK COMPLETE: Module ${mod._data._id} found on floor ${floor._id}. Climbing ladder ${elevId} from y = ${elevator.bottom} to ${floor._elevation}`);
                     }
-                    // Does it connect to either the ground or the colonist's current floor? --> if no, next elevator
-                    // NOTE: This only works if the colonist is on the ground, not on a floor!
-                    if (elevator && elevator.groundZoneId === colonistStandingOn || elevator) {
-                        // If yes add move and climb actions and return
-                        
-                    }
                 })
             }            
         })
     }
-    // 4 - If no modules are found, or none are accessible (including by ladder), return an empty list
-    // The colonist can then process that outcome in one of two ways: if the list is empty and their standingOnId is falsy,
-    // then they might be climbing a ladder in which case check back in 5 minutes - otherwise, if the list is just empty, it
-    // might indicate that the needed resource is actually unavailable for some reason, in which case tell them to try again
-    // in, say, an hour
+    // 4 - Finally, return the action stack for the colonist to start using it
+    return stack;
 }
 
 // Returns an elevator or a null if no acceptable elevator is found
