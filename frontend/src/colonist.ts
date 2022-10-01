@@ -12,6 +12,7 @@ export type ColonistNeeds = {
 };
 
 export type ColonistSaveData = {
+    id: number,
     x: number,
     y: number,
     needs: ColonistNeeds,
@@ -32,9 +33,9 @@ export default class Colonist {
     _p5: P5;
     _data: ColonistData;    // Data processing core, distinct from rendering-functions
 
-    constructor(p5: P5, x: number, y: number, saveData?: ColonistSaveData) {
+    constructor(p5: P5, id: number, x: number, y: number, saveData?: ColonistSaveData) {
         this._p5 = p5;
-        this._data = saveData ? new ColonistData(x, y, saveData) : new ColonistData(x, y);
+        this._data = saveData ? new ColonistData(id, x, y, saveData) : new ColonistData(id, x, y);
     }
 
     // FPM = game speed in frames per game minute (greater = slower) and sign = +1 for facing right, and -1 for facing left

@@ -8,16 +8,20 @@ export default class Population {
     // Population types:
     _p5: P5;
     _colonists: Colonist[];
-    _xOffset: number;           // Needed for colonist render functions
+    _colonistsCurrentSerial: number;    // Needed to individually tag colonists when they are created
+    _xOffset: number;                   // Needed for colonist render functions
 
     constructor(p5: P5) {
         this._p5 = p5;
-        this._colonists = [];       // Default population is zero.
-        this._xOffset = 0;          // Default position is the left edge of the world.
+        this._colonists = [];                   // Default population is zero.
+        this._colonistsCurrentSerial = 9000;    // Colonists are from the 9000 series!
+        this._xOffset = 0;                      // Default position is the left edge of the world.
     }
 
     addColonist = (x: number, y: number) => {
-        const colonist = new Colonist(this._p5, x, y);
+        const id = this._colonistsCurrentSerial;
+        const colonist = new Colonist(this._p5, id, x, y);
+        this._colonistsCurrentSerial++; // Increment ID number for the next colonist
         this._colonists.push(colonist);
     }
 
@@ -66,6 +70,7 @@ export default class Population {
         const colonistData: ColonistSaveData[] = [];
         this._colonists.forEach((colonist) => {
             const d: ColonistSaveData = {
+                id: colonist._data._id,
                 x: colonist._data._x,
                 y: colonist._data._y,
                 needs: colonist._data._needs,
@@ -87,9 +92,11 @@ export default class Population {
 
     loadColonistData = (data: ColonistSaveData[]) => {
         if (data) {
-            data.forEach((colonist) => {
-                const c = new Colonist(this._p5, colonist.x, colonist.y, colonist);
+            data.forEach((colonistData) => {
+                const c = new Colonist(this._p5, colonistData.id, colonistData.x, colonistData.y, colonistData);
                 this._colonists.push(c);
+                // Keep track of saved colonists' serials so that newer colonists can resume the series
+                this._colonistsCurrentSerial = colonistData.id + 1;
             });
         } else {
             console.log("No colonist data in save file.");

@@ -56,7 +56,7 @@ const cliffs = [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3, 4], [1, 2,
 
 describe("ColonistData", () => {
     // Create test instances
-    const colonistData = new ColonistData(0, 32);
+    const colonistData = new ColonistData(9000, 0, 32);
     const mockInfra = new Infrastructure();
     const mockMap = new Map();
     mockMap._data._mapData = flatTerrain;

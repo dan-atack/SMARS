@@ -16,6 +16,7 @@ export type ColonistAction = {
 
 export default class ColonistData {
     // Colonist data types
+    _id: number;        // Colonists will have a unique ID just like everything else
     _x: number;         // Colonists' x and y positions will be in terms of grid locations
     _y: number;
     _standingOnId: string | number; // To keep track of which map zone (ID = string) or floor (ID = number)
@@ -37,7 +38,8 @@ export default class ColonistData {
     _facing: string;                // Either "right" or "left"... until SMARS 3D is released, that is!
     _animationTick: number;         // Governs the progression of movement/activity animations
 
-    constructor(x: number, y: number, saveData?: ColonistSaveData) {
+    constructor(id: number, x: number, y: number, saveData?: ColonistSaveData) {
+        this._id = id;
         this._x = x;
         this._y = y;
         this._standingOnId = "";
@@ -105,7 +107,7 @@ export default class ColonistData {
                         this.resolveAction();
                         this.setGoal(`get-${need}`, infra, map);
                     } else {
-                        console.log("Colonist is climbing - delaying new action start.");
+                        console.log(`Colonist ${this._id} is climbing - delaying new action start.`);
                     }
                 }
             })
@@ -140,7 +142,7 @@ export default class ColonistData {
 
     // Clears the current action (if any) and starts progress towards a newly selected goal
     startGoalProgress = (infra: Infrastructure) => {
-        console.log(`Starting progress towards goal: ${this._currentGoal}.`);
+        console.log(`Colonist ${this._id} starting progress towards goal: ${this._currentGoal}.`);
         this.startAction(infra);
     }
 
@@ -148,7 +150,7 @@ export default class ColonistData {
     resolveGoal = () => {
         this.resolveAction();     // Clear current action first
         this.clearActions();    // Then clear out the rest of the action stack
-        console.log(`Goal resolved: ${this._currentGoal}.`);
+        console.log(`Colonist ${this._id} goal resolved: ${this._currentGoal}.`);
         this.setGoal("");
     }
 
@@ -181,7 +183,7 @@ export default class ColonistData {
                         // If found, add order to move to nearest ladder (stack is created in reverse order)
                         this.addAction("move", { x: elevator.x, y: this._y });
                     } else {
-                        console.log(`Colonist is trapped on floor ${this._standingOnId}!`);
+                        console.log(`Colonist ${this._id} is trapped on floor ${this._standingOnId}!`);
                     }
                 }
                 break;
@@ -314,19 +316,19 @@ export default class ColonistData {
             this._currentAction = action;
             switch(this._currentAction.type) {
                 case "climb":
-                    console.log(`Climbing ladder at ${this._currentAction.coords.x}`);
+                    console.log(`Colonist ${this._id} Climbing ladder at ${this._currentAction.coords.x}`);
                     this._movementDest = this._currentAction.coords;
                     break;
                 case "drink":
-                    console.log(`Drinking at ${this._currentAction.buildingId}`);
+                    console.log(`Colonist ${this._id} Drinking at ${this._currentAction.buildingId}`);
                     this.consume("water", infra);
                     break;
                 case "eat":
-                    console.log(`Eating at ${this._currentAction.buildingId}`);
+                    console.log(`Colonist ${this._id} Eating at ${this._currentAction.buildingId}`);
                     this.consume("food", infra);
                     break;
                 case "move":
-                    console.log(`Beginning movement to ${this._currentAction.coords.x}`);
+                    console.log(`Colonist ${this._id} Beginning movement to ${this._currentAction.coords.x}`);
                     this._movementDest = this._currentAction.coords;
                     break;
             }
@@ -365,7 +367,7 @@ export default class ColonistData {
         if (id) {
             this._standingOnId = id;
         } else {
-            console.log(`Error: Colonist at (${this._x}, ${this._y}) is not standing on anything!`);
+            console.log(`Error: Colonist ${this._id} at (${this._x}, ${this._y}) is not standing on anything!`);
             // Drop the colonist down one level if they are not standing on anything ??
             this._y++;
         }
@@ -458,7 +460,7 @@ export default class ColonistData {
             }
         } else {
             // If there is no current action but an attempt is made to initiate a move, reset the colonist's goal to unjam them
-            console.log("Not moving due to: No value for current action. Skipping to next action.");
+            console.log(`Colonist ${this._id} not moving due to: No value for current action. Auto-resolving current goal (${this._currentGoal}).`);
             this.resolveGoal();
         }
         // 2 - Initiate movement
@@ -536,7 +538,7 @@ export default class ColonistData {
                     this.resolveAction();
                 }
             } else {
-                console.log(`Error: Consume action failed due to: Colonist position (${this._x}, ${this._y}) does not match module location ${modCoords.x}, ${modCoords.y}.`);
+                console.log(`Error: Consume action for Colonist ${this._id} failed due to: Colonist position (${this._x}, ${this._y}) does not match module location ${modCoords.x}, ${modCoords.y}.`);
                 // Skip this action if the colonist was sent to the wrong coordinates
                 this.resolveAction();
             }

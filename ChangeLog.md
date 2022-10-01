@@ -1535,12 +1535,17 @@ Exit Criteria:
 - [DONE] Colonists can decide to walk up to a ladder
 - [DONE] Colonists should always be aware of the surface ID (whether map zone or floor) for the column they are in
 - [DONE] There should be unit tests for everything before development (obviously now)
-- The Colonist Decision and Movement Logic flowchart must be updated
 - [DONE] Additional data about colonist movement/decisions added to save/load games so they resume what they were doing seamlessly
+- Colonists should each have a unique ID that is stored with the rest of their save data
 
 Features Added:
 
--
+- Lots and lots of 'getter' methods added to Map, Floor and Infrastructure classes, to enable (relatively) easy pathfinding logic to be performed by Colonists
+- Added resource transaction methods for Module class, so that colonists can call them to consume module resources
+- Added external helper file to take care of Colonist pathfinding logic (for plotting a course of action to get to resources that are in the base, possibly on non-ground floors)
+- Added Colonist Action Stack and Current Action attributes to keep track of their action plans
+- Integrated colonist actions into save game data
+- Added new logic for Colonist surface detection to allow the Colonist to stand on floors, and to fall back to the ground if they somehow happen to become detached from it (although an exception is made if the Colonist is climbing a ladder)
 
 1. Add new properties to the Map Data class: topography (list of numbers representing elevations); zones (list of start/stop x values of regions of the map that are separated by an elevation gap of more than 2).
 
@@ -1680,7 +1685,7 @@ Features Added:
 
 69. Swap in the new consume action stack logic from the helpers file and have the colonist call it from the determineActionsForGoal method, in both the 'get-food' and 'get-water' cases. Rerun unit tests and then also run the game for a period of 2 in-game years as a final stress test. Then stick a fork in this chapter because it is DONE!!!
 
-### 98. Give the Colonist class a unique ID field. Colonist IDs should be 8-character strings created by stringifying a random 8-digit number.
+### 70. Give the Colonist class a unique ID field. Colonist IDs should be 8-character strings created by stringifying a random 8-digit number.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
