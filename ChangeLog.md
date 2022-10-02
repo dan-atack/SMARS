@@ -1536,7 +1536,7 @@ Exit Criteria:
 - [DONE] Colonists should always be aware of the surface ID (whether map zone or floor) for the column they are in
 - [DONE] There should be unit tests for everything before development (obviously now)
 - [DONE] Additional data about colonist movement/decisions added to save/load games so they resume what they were doing seamlessly
-- Colonists should each have a unique ID that is stored with the rest of their save data
+- [DONE] Colonists should each have a unique ID that is stored with the rest of their save data
 
 Features Added:
 
@@ -1685,7 +1685,9 @@ Features Added:
 
 69. Swap in the new consume action stack logic from the helpers file and have the colonist call it from the determineActionsForGoal method, in both the 'get-food' and 'get-water' cases. Rerun unit tests and then also run the game for a period of 2 in-game years as a final stress test. Then stick a fork in this chapter because it is DONE!!!
 
-### 70. Give the Colonist class a unique ID field. Colonist IDs should be 8-character strings created by stringifying a random 8-digit number.
+70. Give the Colonist class a unique ID field. Colonist IDs can be a 4 digit number starting at 9000 and be given by a simple population class counter.
+
+## Chapter Thirty:
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
