@@ -48,11 +48,6 @@ const connectorInfo: ConnectorInfo = {
 
 // Dummy map data
 const flatTerrain = [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]];
-const flatTopography = [33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33];
-const bumpyTerrain = [[1, 1, 1], [1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 4, 4], [1, 1, 1, 4], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1], [1], [1, 1], [1, 1], [1, 1, 1, 4], [1, 1, 1]];
-const bumpyTopography = [33, 33, 32, 31, 32, 33, 33, 33, 33, 33, 34, 35, 34, 34, 32, 33];
-const cliffs = [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3, 4], [1, 2, 3, 4, 5], [1, 2, 3, 4, 5, 6], [1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3, 4, 5], [1, 2, 3, 4], [1, 2, 3], [1, 2, 3], [1, 2, 3], ];
-
 
 describe("ColonistData", () => {
     // Create test instances
@@ -476,15 +471,6 @@ describe("ColonistData", () => {
         expect(colonistData._facing).toBe("left");
     })
 
-    // // Verifies that colonist will not interact with the map terrain if they are on a floor
-    // test("Colonist ignores terrain features when moving on a floor", () => {
-    //     colonistData.stopMovement();
-    //     colonistData._x = 10;
-    //     colonistData._y = 28;
-    //     colonistData._currentAction = { type: "move", coords: { x: 12, y: 28 }, duration: 0, buildingId: 0 };
-    //     colonistData._movementDest = { x: 12, y: 28 };
-    // })
-
     // GOAL ACTION STACK DETERMINATION (PATHFINDING) LOGIC TESTS (THERE ARE SEVERAL INDIVIDUAL CASES)
 
     // 1 - When module is on the same ground zone as colonist, actions are: move, consume
@@ -511,7 +497,6 @@ describe("ColonistData", () => {
     });
 
     // 2 - When Colonist is on ground and module is on non-ground floor that is connected to the ground via ladder, actions are: move, climb, move, consume
-
     test("DetermineActionsForGoal populates action stack with drink, move, climb, move when module is on diff floor", () => {
         resetColonistData();
         colonistData._needs.water = 10;
@@ -556,6 +541,42 @@ describe("ColonistData", () => {
         ])
     })
 
+    // 3 - When Colonist is on ground and module is on non-ground floor, and module has same x coordinate as connector, actions are: move, climb, consume (no need to move after finishing the climb action when the colonist is right there)
+    test("DAFG populates stack with drink, climb, move, when module on different floor with same x coordinate as ladder", () => {
+        resetColonistData();
+        colonistData._needs.water = 10;
+        // Using the same module as the previous test, add a connector that connects from the ground AND has the same x coordinate
+        mockInfra._connectors = []; // Clear out existing connectors first
+        mockInfra._data._elevators = [];
+        mockInfra.addConnector({ x: 10, y: 32 }, { x: 10, y: 28 }, connectorInfo, mockMap, 2002);
+        // Run test
+        colonistData.setGoal("get-water", mockInfra, mockMap);
+        colonistData.determineActionsForGoal(mockInfra, mockMap);
+        // Current action should be to move to the ladder
+        expect(colonistData._actionStack.length).toBe(2);   // Only 2 items should remain in the action stack
+        expect(colonistData._currentAction).toStrictEqual({
+            type: "move",
+            coords: { x: 10, y: 32 },
+            duration: 0,
+            buildingId: 0
+        })
+        // Action stack contains remaining actions in reverse order of execution (drink, move, climb)
+        expect(colonistData._actionStack).toStrictEqual([
+            {
+                type: "drink",
+                coords: { x: 10, y: 29 },
+                duration: 10,
+                buildingId: 1002
+            },
+            {
+                type: "climb",
+                coords: { x: 10, y: 28 },   // NOTE: Climb action takes into account the Colonist's HEAD level, not FOOT level
+                duration: 0,
+                buildingId: 2002
+            }
+        ])
+    })
+    
     // 3 - When Colonist is on a non-ground floor and module is another non-ground floor that is connected to the current floor via ladder, actions are: move, climb, move, consume
 
     // test("DetermineActionsForGoal populates action stack with drink, move, climb, move when module is on diff floor", () => {
@@ -595,61 +616,6 @@ describe("ColonistData", () => {
     //         {
     //             type: "move",
     //             coords: { x: 10, y: 29 },
-    //             duration: 0,
-    //             buildingId: 0
-    //         },
-    //         {
-    //             type: "climb",
-    //             coords: { x: 11, y: 28 },   // NOTE: Climb action takes into account the Colonist's HEAD level, not FOOT level
-    //             duration: 0,
-    //             buildingId: 2001
-    //         }
-    //     ])
-    // })
-
-    // 6 - ADVANCED TEST CASE: CODE NOT DEVELOPED YET - When Colonist is on ground and module is on non-ground floor that is connected indirectly to the ground, actions are: move, climb, move, climb, move, consume
-    // test("DAFG populates act stack with move, climb, move, climb, move, drink when mod is on indirectly connected floor", () => {
-    //     // Basic setup: set colonist need, and create new module provisioned with needed resource, then add new connector
-    //     resetColonistData();
-    //     colonistData._needs.food = 10;
-    //     mockInfra.addModule(10, 24, storageModuleInfo, mockMap._data._topography, mockMap._data._zones, 1003);
-    //     mockInfra.addResourcesToModule(1003, ["food", 15]);
-    //     // Add a connector that goes from the 2nd story to the 3rd story but does not touch the ground
-    //     mockInfra.addConnector({ x: 12, y: 29 }, { x: 12, y: 25 }, connectorInfo, mockMap, 2002);
-    //     // Initiate test
-    //     colonistData.setGoal("get-food");
-    //     colonistData.determineActionsForGoal(mockInfra, mockMap);
-    //     // Expect 6 total actions - 5 in the stack and one current
-    //     expect(colonistData._actionStack.length).toBe(5);
-    //     expect(colonistData._currentAction).toStrictEqual({
-    //         type: "move",
-    //         coords: { x: 11, y: 32 },
-    //         duration: 0,
-    //         buildingId: 0
-    //     })
-    //     // Action stack contains remaining actions in reverse order of execution (eat, move, climb, move, climb)
-    //     expect(colonistData._actionStack).toStrictEqual([
-    //         {
-    //             type: "eat",
-    //             coords: { x: 10, y: 26 },
-    //             duration: 10,
-    //             buildingId: 1003
-    //         },
-    //         {
-    //             type: "move",
-    //             coords: { x: 10, y: 26 },
-    //             duration: 0,
-    //             buildingId: 0
-    //         },
-    //         {
-    //             type: "climb",
-    //             coords: { x: 12, y: 25 },   // NOTE: Climb action takes into account the Colonist's HEAD level, not FOOT level
-    //             duration: 0,
-    //             buildingId: 2002
-    //         },
-    //         {
-    //             type: "move",
-    //             coords: { x: 12, y: 29 },
     //             duration: 0,
     //             buildingId: 0
     //         },

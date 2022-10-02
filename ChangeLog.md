@@ -1706,6 +1706,20 @@ Exit Criteria:
 - Console logs from the previous chapter should be, for the most part, commented-out/deleted
 - [STRETCH] Recombine the Map and Map Data classes, and update the Map Data unit tests to ensure they all still pass
 
+1. Create a unit test case for the Colonist Data class that expects a 3-part action stack if the coordinates for the consume action match the coordinates for the 'climb' action (in other words, drop the 'move' action between 'climb' and 'eat/drink').
+
+2. Update the logic for the createConsumeActionStack function so that it creates the entire action stack at the end of its route determination. Also, make it only add the first (chronologically last) move action if the colonist isn't already in position to eat/drink when they get off the ladder (i.e. only add the 'move' action if the ladder's x doesn't match the target module's).
+
+### 3. Create an animation sequence for the Colonist's 'eat' move. It should be a standard 10 frames long, with the colonist moving their hands up and inward towards their face and moving their head back and forth to mimick an eating motion.
+
+### 4. Create (or uncomment) a unit test where the Colonist is on a non-ground floor and needs to get down (to explore, say). Validate the action stack under such circumstances (should be 'move', 'climb', 'move'). Should the test indicate any deficiencies with the code, ensure that the code is fixed so it is able to deliver the desired result under all reasonable circumstances.
+
+### 5. Update the Infrastructure, Infrastructure Data and Colonist Data class unit test files to use the Cantina module for all test module data. This is in order to replace the Storage Room, which will be unable to satisfy the soon-to-be updated module resource finder method's stipulation that any resource containing module must also have the type 'Life Support' in order to qualify as a valid destination for a colonist to eat/drink at.
+
+### 6. Update the Infrastructure class's findModulesWithResource method so that it only returns modules that have the 'Life Support' type. Ensure that all unit tests and manual sanity checks pass before proceeding (obviously!)
+
+### 7. Go through the code and comment-out a good 80-90% of the console logs for the previous chapter, so that only major events are reported to the log.
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
