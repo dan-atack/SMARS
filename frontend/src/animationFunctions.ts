@@ -51,10 +51,11 @@ export const bodyAnimations = (movementType: string, fpm: number, tick: number, 
             ySpeeds = [0, 2, 0, 2, 0, 2, 0, 2, 0, 2];           // Y speeds must sum to 10
             break;
         case "drink":
-            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
-            frameRate = 0.1;
-            xSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];           // Body is still during drinking animation
-            ySpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        case "eat":                                             // Body is at rest during both eat and drink animations
+            keyframes = [0.5, 1];
+            frameRate = 0.5;
+            xSpeeds = [0, 0];
+            ySpeeds = [0, 0];
             break;
         default:
             keyframes = [0.5, 1];

@@ -560,7 +560,7 @@ describe("ColonistData", () => {
             duration: 0,
             buildingId: 0
         })
-        // Action stack contains remaining actions in reverse order of execution (drink, move, climb)
+        // Action stack contains remaining 2 actions in reverse order of execution (drink, climb)
         expect(colonistData._actionStack).toStrictEqual([
             {
                 type: "drink",
@@ -575,6 +575,29 @@ describe("ColonistData", () => {
                 buildingId: 2002
             }
         ])
+    })
+
+    // 4 - When Colonist is on the same surface as the target module, and is on the same x coordinate, the only action added to the stack is the consume action (i.e. if you're already there to drink, you don't have to move in order to eat)
+    test("DAFG populates stack with only 'drink' if colonist is on same surface and in same position as resource module", () => {
+        resetColonistData();
+        colonistData._needs.water = 10;
+        // Re-provision ground floor module
+        mockInfra.addResourcesToModule(1001, ["water", 1000]);
+        // Place the colonist in the same position as the resource module they will get the water from
+        colonistData._x = 10;
+        colonistData._y = 31;
+        colonistData.detectTerrainBeneath(mockMap, mockInfra);
+        // Run test
+        colonistData.setGoal("get-water", mockInfra, mockMap);
+        colonistData.determineActionsForGoal(mockInfra, mockMap);
+        // Since no move action is required the colonist should just begin the drink action immediately
+        expect(colonistData._currentAction).toStrictEqual({
+            type: "drink",
+            coords: { x: 10, y: 32 },
+            duration: 10,
+            buildingId: 1001
+        })
+        expect(colonistData._actionStack.length).toBe(0);   // No items should be left in the stack; only the current action
     })
     
     // 3 - When Colonist is on a non-ground floor and module is another non-ground floor that is connected to the current floor via ladder, actions are: move, climb, move, consume

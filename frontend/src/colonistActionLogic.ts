@@ -26,8 +26,10 @@ export const createConsumeActionStack = (colonistCoords: Coords, colonistStandin
         if (nearestId) {
             // Add eat/drink action
             stack.push(addAction(verb, { x: nearestCoords.x, y: nearestCoords.y }, resource[1], nearestId));
-            // Add single move action
-            stack.push(addAction("move", { x: nearestCoords.x, y: nearestCoords.y }));
+            // Add move action only if the colonist actually needs to move
+            if (colonistCoords.x !== nearestCoords.x) {
+                stack.push(addAction("move", { x: nearestCoords.x, y: nearestCoords.y }));
+            }
             stackComplete = true;
             // console.log(`STACK COMPLETE: Module ${nearestId} found on same surface as colonist: ${colonistStandingOn}`);
         } else {

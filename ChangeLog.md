@@ -1710,6 +1710,8 @@ Exit Criteria:
 
 2. Update the logic for the createConsumeActionStack function so that it creates the entire action stack at the end of its route determination. Also, make it only add the first (chronologically last) move action if the colonist isn't already in position to eat/drink when they get off the ladder (i.e. only add the 'move' action if the ladder's x doesn't match the target module's).
 
+### 3. Update the corresponding logic for when the colonist is already on the same surface and doesn't need to move (e.g. if they've just eaten and just need to stay in place to take a drink). Validate in-game and with a unit test.
+
 ### 3. Create an animation sequence for the Colonist's 'eat' move. It should be a standard 10 frames long, with the colonist moving their hands up and inward towards their face and moving their head back and forth to mimick an eating motion.
 
 ### 4. Create (or uncomment) a unit test where the Colonist is on a non-ground floor and needs to get down (to explore, say). Validate the action stack under such circumstances (should be 'move', 'climb', 'move'). Should the test indicate any deficiencies with the code, ensure that the code is fixed so it is able to deliver the desired result under all reasonable circumstances.
