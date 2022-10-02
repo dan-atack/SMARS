@@ -4,6 +4,9 @@ import { Coords } from "./connectorData";
 import { Resource } from "./economyData";
 import Floor from "./floor";
 import { constants } from "./constants";
+import { MapZone } from "./mapData";
+
+export type Elevator = { id: number, x: number, top: number, bottom: number, groundZoneId: string }
 
 export default class InfrastructureData {
     // Infra Data class is mostly a calculator for the Infra class to pass values to, so it stores very few of them itself
@@ -11,7 +14,7 @@ export default class InfrastructureData {
     _currentSerial: number;     // A crude but hopefully effective method of ID-ing structures as they're created
     _baseVolume: number[][];    // Works the same as the terrain map, but to keep track of the base's inner area
     _floors: Floor[];           // Floors are a formation of one or more modules, representing walkable surfaces within the base
-    _elevators: { id: number, x: number, top: number, bottom: number }[]    // Basic data to keep track of inter-floor connectors
+    _elevators: Elevator[]    // Basic data to keep track of inter-floor connectors
     _moduleResources: Resource[];   // The data that will be passed to the Economy class
 
     constructor() {
@@ -200,14 +203,14 @@ export default class InfrastructureData {
     // FLOOR-RELATED METHODS
 
     // Top-level update method for adding new modules
-    addModuleToFloors (moduleId: number, footprint: {floor: number, footprint: number[]}) {
+    addModuleToFloors (moduleId: number, footprint: {floor: number, footprint: number[]}, topography: number[], mapZones: MapZone[]) {
         const fp = footprint.footprint;
         const elev = footprint.floor;
         // Check if an existing floor can be added to; if not, create a new one
         const existingFloors = this.findFloorsAtElevation(elev);
         if (existingFloors.length === 0) {
             // Add a new floor
-            this.addNewFloor(elev, fp, moduleId);
+            this.addNewFloor(elev, fp, moduleId, topography, mapZones);
         } else {
             // Keep a list of how many floors the new module footprint is adjacent to
             let adjacents: Floor[] = [];
@@ -219,7 +222,7 @@ export default class InfrastructureData {
             })
             if (adjacents.length === 0) {
                 // Create a new floor if no existing floor is adjacent
-                this.addNewFloor(elev, fp, moduleId);
+                this.addNewFloor(elev, fp, moduleId, topography, mapZones);
             } else if (adjacents.length === 1) {
                 // Add module ID to existing floor is one is adjacent
                 adjacents[0].addModule(moduleId, fp);
@@ -231,13 +234,13 @@ export default class InfrastructureData {
     }
 
     // Top-level method for adding new connectors
-    addConnectorToFloors (connectorId: number, start: Coords, stop: Coords) {
+    addConnectorToFloors (connectorId: number, start: Coords, stop: Coords, groundZoneId: string) {
         // First, register the connector as an 'elevator' (inter-floor connection)
         const bottom = Math.max(start.y, stop.y);
         const top = Math.min(start.y, stop.y);
         const left = Math.min(start.x, stop.x);
         const right = Math.max(start.x, stop.x);
-        this._elevators.push({ id: connectorId, x: start.x, top: top, bottom: bottom });
+        this._elevators.push({ id: connectorId, x: start.x, top: top, bottom: bottom, groundZoneId: groundZoneId });
         // Check for floors intersected by a new connector; add the new connector to their list if they overlap
         this._floors.forEach((floor) => {
             const yMatch = floor._elevation >= top && floor._elevation <= bottom;
@@ -264,12 +267,13 @@ export default class InfrastructureData {
 
     // Intermediate-level Floor management methods
 
+    // Returns a list of floors
     findFloorsAtElevation (elevation: number) {
         return this._floors.filter((floor) => floor._elevation === elevation);
     }
 
     // Creates a new floor, initially comprised of a single module
-    addNewFloor (elevation: number, footprint: number[], moduleId: number) {
+    addNewFloor (elevation: number, footprint: number[], moduleId: number, topography: number[], mapZones: MapZone[]) {
         // Always update serial number first
         this.increaseSerialNumber();
         // Sort the footprint to ensure it goes from left to right
@@ -278,6 +282,11 @@ export default class InfrastructureData {
         f.addModule(moduleId, footprint);
         this._floors.push(f);
         this.addConnectorsToNewFloor(this._currentSerial, elevation, footprint);
+        // Determine if the new module is on the ground, and if so, add the zone info to its floor data
+        const groundFloorZones = this.determineFloorGroundZones(topography, mapZones, elevation, footprint);
+        if (groundFloorZones.length > 0) {
+            f.setGroundFloorZones(groundFloorZones);
+        }
     }
 
     // Deletes the second of two floors involved in a merger to avoid data duplication
@@ -314,5 +323,107 @@ export default class InfrastructureData {
             console.log(`Warning: Floor ${floorA === undefined ? floorId1 : floorId2} could not be found for merger.`);
         }   
     }
+
+    // FLOOR INFORMATION GETTERS
+    
+    // Takes a module ID and returns the floor that contains it
+    getFloorFromModuleId (moduleId: number) {
+        const floor = this._floors.find((fl) => fl._modules.includes(moduleId));
+        if (floor !== undefined) {
+            return floor;
+        } else {
+            console.log(`Error: No floor found containing module with ID ${moduleId}`);
+            return null;    // Always return null instead of undefined if the floor is not found
+        }
+    }
+
+    // Takes the ID for a floor itself and returns that floor
+    getFloorFromId (floorId: number) {
+        const floor = this._floors.find((fl) => fl._id === floorId);
+        if (floor !== undefined) {
+            return floor;
+        } else {
+            console.log(`Error: Floor with ID ${floorId} not found.`);
+            return null;
+        }
+    }
+
+    // Takes a set of coordinates and returns just the ID of the floor (if any) that those coords stand atop of
+    getFloorIdFromCoords (coords: Coords) {
+        const floor = this._floors.find((fl) => {
+            return fl._elevation === coords.y && fl._leftSide <= coords.x && fl._rightSide >= coords.x;
+        })
+        if (floor !== undefined) {
+            return floor._id;
+        } else {
+            console.log(`Coordinates (${coords.x}, ${coords.y}) are not on any floor`);
+            return null;
+        }
+    }
+
+    // Takes and elevator (ladder) ID and returns the data for that elevator
+    getElevatorFromId (elevatorId: number) {
+        const elevator = this._elevators.find((el) => el.id === elevatorId);
+        if (elevator !== undefined) {
+            return elevator;
+        } else {
+            console.log(`Error: No elevator with ID ${elevatorId} found.`);
+            return null;    // Always return null instead of undefined when something is missing
+        }
+    }
+
+    // Takes an elevator ID and a floor ID and returns a boolean for whether or not they meet
+    doesElevatorReachFloor (floorId: number, elevatorId: number) {
+        const floor = this._floors.find((fl) => fl._id === floorId);
+        const elevator = this._elevators.find((el) => el.id === elevatorId);
+        if (floor !== undefined && elevator !== undefined) {
+            if (floor._connectors.includes(elevatorId)) {
+                return true;
+            } else {
+                return false;
+            }
+        } else if (floor !== undefined) {
+            console.log(`Error: Could not find elevator with ID ${elevatorId}`);
+            return false;
+        } else {
+            console.log(`Error: Could not find Floor with ID ${floorId}`);
+            return false;
+        }
+    }
+
+    // Determines if a Floor is on the ground when it is created/expanded. A Floor can have 0 to many ground floor zones
+    determineFloorGroundZones (topography: number[], mapZones: MapZone[], elevation: number, footprint: number[]) {
+        const zones: MapZone[] = [];
+        const ids: string[] = [];       // Keep track of IDs of zones added
+        // Check each column in the footprint against the topography map
+        footprint.forEach((col) => {
+            if (topography[col] - 1 === elevation) {  // Floor elevation is one higher (lower!) than topography to be on top of it
+                // Find the zone that contains the current column
+                const zone = mapZones.find(function(z) {
+                    return z.leftEdge.x <= col && z.rightEdge.x >= col
+                })
+                // If the zones list does not already include this zone, then add it
+                if (zone !== undefined && !(ids.includes(zone.id))) {
+                    zones.push(zone);
+                    ids.push(zone.id);
+                }
+            }
+        })
+        return zones;
+    }
+
+    // TODO: Consider what happens if a floor is not on the ground level in its own columns (i.e. is over some kind of basement) but is flush with the ground level of the adjacent column/s
+    // isFloorFlushWithGround () {
+        
+        // E.G. Like this:
+        //
+        //
+        //          |    Floor    |
+        //----------===============--------
+        // Ground   | Lower Floor | Ground   
+
+    // }
+
+    
 
 }

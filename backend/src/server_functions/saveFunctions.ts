@@ -27,22 +27,34 @@ export type Resources = {       // ENSURE THIS IS KEPT IN SYNC WITH THE FRONTEND
 
 export type Resource = [ string, number ]   // New system: Each individual resource type is represented as a Resource, consisting of the resource's name and quantity (qty can thus be used either as a current quantity, or max capacity, depending on context)
 
-// Template for Colonist Save Info (copy from Colonist.ts):
+// Templates for Colonist Action Save Info (copied from ColonistData.ts)
+export type ColonistAction = {
+    type: string,       // Name of the type of action ('move', 'climb', 'eat' and 'drink' initially)
+    coords: Coords,     // Exact location the colonist needs to be at/move towards
+    duration: number,   // How long the action takes to perform (0 means the action happens immediately)
+    buildingId: number, // ID of the module/connector for 'climb' and 'consume' actions, e.g.
+}
+
+// Templates for Colonist Save Info (copied from Colonist.ts):
+export type ColonistNeeds = {
+    water: number,
+    food: number,
+    rest: number,
+};
 
 export type ColonistSaveData = {
     x: number,
     y: number,
-    needs: {
-        oxygen: number,
-        water: number,
-        food: number
-    },
+    needs: ColonistNeeds,
     goal: string,
+    currentAction: ColonistAction,
+    actionStack: ColonistAction[],
+    actionTimeElapsed: number,
     isMoving: boolean,
     movementType: string,
     movementCost: number,
     movementProg: number,
-    movementDest: number,
+    movementDest: Coords,
     facing: string
 };
 

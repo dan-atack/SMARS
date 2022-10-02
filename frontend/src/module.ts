@@ -5,26 +5,23 @@ import ModuleData from "./moduleData";
 import { constants } from "./constants";
 
 export default class Module {
-    // Block types:
-    _p5: P5;
+    // Module types:
     _data: ModuleData;      // Separate date class to enable unit tests
 
-    constructor(p5: P5, id: number, x: number, y: number, moduleInfo: ModuleInfo) {
-        this._p5 = p5;
+    constructor(id: number, x: number, y: number, moduleInfo: ModuleInfo) {
         this._data = new ModuleData(id, x, y, moduleInfo);
     }
 
-    render = (xOffset: number) => {    // TODO: Block gets y offset values as arguments to renderer
-        const p5 = this._p5;
+    render = (p5: P5, xOffset: number) => {    // TODO: Block gets y offset values as arguments to renderer
         this._data._xOffset = xOffset;    // Offset is in terms of pixels
         // HERE IS WHERE X AND Y COORDINATES AND WIDTH AND HEIGHT ARE CONVERTED TO PIXEL VALUES:
         const x = this._data._x * constants.BLOCK_WIDTH - this._data._xOffset;
         const y = this._data._y * constants.BLOCK_WIDTH - this._data._yOffset;
         const w = this._data._width * constants.BLOCK_WIDTH;
         const h = this._data._height * constants.BLOCK_WIDTH;
-        this._p5.fill(this._data._color);
-        this._p5.strokeWeight(2);
-        this._p5.stroke(constants.ALMOST_BLACK);
+        p5.fill(this._data._color);
+        p5.strokeWeight(2);
+        p5.stroke(constants.ALMOST_BLACK);
         if (this._data._moduleInfo.shapes != undefined) {
             this._data._moduleInfo.shapes.forEach((shape) => {
                 const p = shape.params;
@@ -50,11 +47,11 @@ export default class Module {
                     case "arc":
                         let mode: any;
                         if (shape.mode === "OPEN") {
-                            mode = this._p5.OPEN;
+                            mode = p5.OPEN;
                         } else if (shape.mode === "PIE") {
-                            mode = this._p5.PIE;
+                            mode = p5.PIE;
                         } else if (shape.mode = "CHORD") {
-                            mode = this._p5.CHORD;
+                            mode = p5.CHORD;
                         }
                         p5.arc(p[0] * b + x, p[1] * b + y, p[2] * b, p[3] * b, p[4], p[5], mode);
                         break;

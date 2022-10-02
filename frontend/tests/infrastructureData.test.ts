@@ -1,4 +1,5 @@
 import InfrastructureData from "../src/infrastructureData";
+import MapData, { MapZone } from "../src/mapData";
 import Floor from "../src/floor";   // To use for mockage, maybe??
 import { ModuleInfo } from "../src/server_functions";
 
@@ -78,6 +79,8 @@ const partlyBlockedCoords = [
     {x: 6, y: 28}
 ];
 // Terrain test data
+
+// Slightly lumpy map (one map zone only)
 const map1 = [
     [1, 1, 1, 1, 1, 1, 1],
     [1, 1, 1, 1, 1, 1, 1],
@@ -86,7 +89,67 @@ const map1 = [
     [1, 1, 1, 1, 1, 1],
     [1, 1, 1, 1, 1, 1, 1],
     [1, 1, 1, 1, 1, 1, 1, 3],
+];
+
+// Perfectly flat map (one map zone only)
+const map2 = [
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1]
+];
+
+// Map with a 'butte' dividing it into three zones
+const map3 = [
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1]
+];
+
+const map3Zones = [
+    { id: '0033', leftEdge: { x: 0, y: 33 }, rightEdge: { x: 7, y: 33 } },
+    {
+      id: '8030',
+      leftEdge: { x: 8, y: 30 },
+      rightEdge: { x: 11, y: 30 }
+    },
+    {
+      id: '12033',
+      leftEdge: { x: 12, y: 33 },
+      rightEdge: { x: 19, y: 33 }
+    }
 ]
+
+
 // Floor test data
 const footprintA = [0, 1, 2, 3];    // Left side
 const footprintB = [4, 5, 6, 7];    // Will link A and C
@@ -209,21 +272,21 @@ describe("Infrastructure Data", () => {
     test("Can decide whether to create, merge or expand floors when a new module is placed", () => {
         // Ensure the tests are starting clean
         expect(infraData._floors.length).toBe(0);
-        infraData.addModuleToFloors(9000, { floor: 8, footprint: footprintA});
+        infraData.addModuleToFloors(9000, { floor: 8, footprint: footprintA}, [], []);
         expect(infraData._floors.length).toBe(1);   // Create first module --> first floor also
-        infraData.addModuleToFloors(9001, { floor: 8, footprint: footprintC});
+        infraData.addModuleToFloors(9001, { floor: 8, footprint: footprintC}, [], []);
         expect(infraData._floors.length).toBe(2);   // Create second module a ways away --> second floor instance
-        infraData.addModuleToFloors(9002, { floor: 8, footprint: footprintD});
+        infraData.addModuleToFloors(9002, { floor: 8, footprint: footprintD}, [], []);
         expect(infraData._floors.length).toBe(2);   // Create third module in position to merge with second one
         expect(infraData._floors[1]._modules).toStrictEqual([9001, 9002]);
         expect(infraData._floors[1]._leftSide).toBe(8);
         expect(infraData._floors[1]._rightSide).toBe(15);
-        infraData.addModuleToFloors(9003, { floor: 8, footprint: footprintB});
+        infraData.addModuleToFloors(9003, { floor: 8, footprint: footprintB}, [], []);
         expect(infraData._floors.length).toBe(1);   // Create fourth module between first and second, merging into one big floor
         expect(infraData._floors[0]._modules).toStrictEqual([9000, 9001, 9002, 9003]);
         expect(infraData._floors[0]._leftSide).toBe(0);
         expect(infraData._floors[0]._rightSide).toBe(15);
-        infraData.addModuleToFloors(9004, { floor: 5, footprint: footprintA});
+        infraData.addModuleToFloors(9004, { floor: 5, footprint: footprintA}, [], []);
         expect(infraData._floors.length).toBe(2);   // Create a fifth module on another level, just because
     })
 
@@ -232,11 +295,11 @@ describe("Infrastructure Data", () => {
         infraData._floors = [];
         infraData.setSerialNumber(1000);
         expect(infraData._currentSerial).toBe(1000);
-        infraData.addNewFloor(5, footprintA, infraData._currentSerial);
+        infraData.addNewFloor(5, footprintA, infraData._currentSerial, [], []);
         expect(infraData._floors.length).toBe(1);
         expect(infraData._currentSerial).toBe(1001);    // Validate serial number augmentation
-        infraData.addNewFloor(5, footprintB, infraData._currentSerial);
-        infraData.addNewFloor(2, footprintB, infraData._currentSerial);
+        infraData.addNewFloor(5, footprintB, infraData._currentSerial, [], []);
+        infraData.addNewFloor(2, footprintB, infraData._currentSerial, [], []);
         expect(infraData._floors.length).toBe(3);
         expect(infraData._currentSerial).toBe(1003);
     })
@@ -265,9 +328,9 @@ describe("Infrastructure Data", () => {
         // Ensure no previous floors exist
         infraData._floors = [];
         // Add two new floors that are on the same level, but with a gulf between them
-        infraData.addNewFloor(5, footprintA, 9001);
+        infraData.addNewFloor(5, footprintA, 9001, [], []);
         expect(infraData._floors[0]._id).toBe(1001);
-        infraData.addNewFloor(5, footprintC, 9002);
+        infraData.addNewFloor(5, footprintC, 9002, [], []);
         expect(infraData._floors.length).toBe(2);
         expect(infraData._floors[0]._id).toBe(1001);
         expect(infraData._floors[1]._id).toBe(1002);
@@ -285,23 +348,99 @@ describe("Infrastructure Data", () => {
 
     test("Can add connectors to floors", () => {
         // Connector is added which intersects the existing floor (continuing from the previous test case)
-        infraData.addConnectorToFloors(9000, { x: 1, y: 0 }, { x: 1, y: 20 });
+        infraData.addConnectorToFloors(9000, { x: 1, y: 0 }, { x: 1, y: 20 }, "");
         expect(infraData._floors[0]._connectors).toStrictEqual([9000]);  // Floor has the connector's ID registered
-        infraData.addNewFloor(2, footprintA, 6000);
+        infraData.addNewFloor(2, footprintA, 6000, [], []);
         // TO IMPLEMENT: Every time a new floor is added, all connectors must be checked
         expect(infraData._floors[1]._connectors).toStrictEqual([9000]);     // Newly added floor gets existing connectors
-        infraData.addConnectorToFloors(9001, { x: 3, y: 0 }, { x: 3, y: 20 });
+        infraData.addConnectorToFloors(9001, { x: 3, y: 0 }, { x: 3, y: 20 }, "");
         // New connectors are added to all applicable floors
         expect(infraData._floors[0]._connectors).toStrictEqual([9000, 9001]);
         expect(infraData._floors[1]._connectors).toStrictEqual([9000, 9001]);   // Both floors get new connector
-        infraData.addNewFloor(8, footprintA, 6000);
-        // TO IMPLEMENT: All new floors get all applicable connectors
+        infraData.addNewFloor(8, footprintA, 6001, [], []);
+        // All new floors get all applicable connectors
         expect(infraData._floors[2]._connectors).toStrictEqual([9000, 9001]);   // New floor gets both existing connectors
-        infraData.addConnectorToFloors(9002, { x: 4, y: 0 }, { x: 4, y: 20 });
+        infraData.addConnectorToFloors(9002, { x: 4, y: 0 }, { x: 4, y: 20 }, "");
         // Connectors are only added to floors they intersect with
         expect(infraData._floors[2]._connectors).toStrictEqual([9000, 9001]);
         expect(infraData._floors[1]._connectors).toStrictEqual([9000, 9001]);
         expect(infraData._floors[0]._connectors).toStrictEqual([9000, 9001, 9002]); // Only floors that are in-bounds are connected
+    })
+
+    // Floor and Elevator (Ladder) Info methods - to be called by the Colonist to help with pathfinding
+
+    // Returns a pointer to the entire floor object
+    test("Can find the floor that contains a module with a given ID", () => {
+        expect(infraData.getFloorFromModuleId(9003)?._id).toBe(1001);   // Returns the whole object if found (in this case the mega-floor from the floor combiner test)
+        expect(infraData.getFloorFromModuleId(6001)?._id).toBe(1004);   // Finds the other, smaller floor added in the last test
+        expect(infraData.getFloorFromModuleId(9004)).toBe(null);        // When the module is not found, return a null value
+    })
+
+    // Also returns pointer to the whole floor object
+    test("Can find a floor when provided with its ID", () => {
+        expect(infraData.getFloorFromId(1004)).toBeTruthy();    // Just make sure the floor exists
+        expect(infraData.getFloorFromId(9999)).toBe(null);      // Ensure that non-valid floor IDs return a null
+    })
+
+    // Returns pointer to the whole floor object as well
+    test("Can find the floor that is stood on at a pair of coordinates", () => {
+        console.log(infraData._floors);
+        expect(infraData.getFloorIdFromCoords({ x: 1, y: 8 })).toBe(1004);
+    })
+
+    // Returns a pointer to the entire elevator object (which is just an id, x, top and bottom - all integers, incidentally)
+    test("Can find an elevator from its ID", () => {
+        expect(infraData.getElevatorFromId(9000)).toStrictEqual({ id: 9000, x: 1, top: 0, bottom: 20, groundZoneId: "" });    // Find the first elevator added in the 'add connectors to floors' test
+        expect(infraData.getElevatorFromId(9002)).toStrictEqual({ id: 9002, x: 4, top: 0, bottom: 20, groundZoneId: "" });    // Find other elevator
+        expect(infraData.getElevatorFromId(1000)).toBe(null);   // Always return null when something isn't found
+    })
+
+    // Returns true or false, depending on if the elevator ID is in the Floor's connectors list
+    test("Can determine if an elevator segment reaches a particular floor", () => {
+        expect(infraData.doesElevatorReachFloor(1001, 9000)).toBe(true);
+        expect(infraData.doesElevatorReachFloor(1001, 9001)).toBe(true);
+        expect(infraData.doesElevatorReachFloor(1001, 9002)).toBe(true);    // Big floor has all 3 connectors
+        expect(infraData.doesElevatorReachFloor(1003, 9000)).toBe(true);
+        expect(infraData.doesElevatorReachFloor(1003, 9001)).toBe(true);
+        expect(infraData.doesElevatorReachFloor(1003, 9002)).toBe(false);   // Smaller floor has only 2 connectors
+    })
+
+    // Returns true or false depending on whether a new Floor's elevation is at the map's surface level
+    test("Can determine if Floor is at ground level on flat map", () => {
+        // Create instance of Map Data class to provide topographical data for ground floor calculation
+        const topographicalMap = new MapData();
+        topographicalMap._mapData = map2;   // Use the flat map for starters
+        topographicalMap.updateTopographyAndZones();
+        const topo = topographicalMap._topography;
+        const zones = topographicalMap._zones;
+        expect(infraData.determineFloorGroundZones(topo, zones, 31, footprintA)).toStrictEqual([]);      // Too high - no zones
+        expect(infraData.determineFloorGroundZones(topo, zones, 33, footprintA)).toStrictEqual([]);      // Too low - no zones
+        expect(infraData.determineFloorGroundZones(topo, zones, 32, footprintB)).toStrictEqual([{id: "0033", leftEdge: {x: 0, y: 33}, rightEdge: {x: 15, y: 33}}]);   // On the ground = in the zone
+        // TODO: Write additional test cases using map3 (the butte) to evaluate more complicated scenarios
+    })
+
+    test("Can determine Floor's ground zone on uneven map", () => {
+        // Load map data for 'butte' shaped map
+        const topographicalMap = new MapData();
+        topographicalMap._mapData = map3;
+        topographicalMap.updateTopographyAndZones();
+        const topo = topographicalMap._topography;
+        const zones = topographicalMap._zones;
+        expect(topographicalMap._zones).toStrictEqual(map3Zones);   // Quick check to verify that map zones are updated correctly
+        expect(infraData.determineFloorGroundZones(topo, zones, 32, footprintA)).toStrictEqual([{ id: '0033', leftEdge: { x: 0, y: 33 }, rightEdge: { x: 7, y: 33 } }]);    // On the ground at the leftmost edge
+        expect(infraData.determineFloorGroundZones(topo, zones, 32, footprintB)).toStrictEqual([{ id: '0033', leftEdge: { x: 0, y: 33 }, rightEdge: { x: 7, y: 33 } }]);    // On the ground, flush with the left edge of the 'butte'
+        expect(infraData.determineFloorGroundZones(topo, zones, 32, footprintC)).toStrictEqual([]);    // Forbidden due to collision with the butte
+        expect(infraData.determineFloorGroundZones(topo, zones, 29, footprintC)).toStrictEqual([{
+            id: '8030',
+            leftEdge: { x: 8, y: 30 },
+            rightEdge: { x: 11, y: 30 }
+        }]);    // On the ground, on top of the butte
+        expect(infraData.determineFloorGroundZones(topo, zones, 32, footprintD)).toStrictEqual([{
+            id: '12033',
+            leftEdge: { x: 12, y: 33 },
+            rightEdge: { x: 19, y: 33 }
+        }]);    // On the ground, on right side of the butte
+        // TODO: Add a case where a floor bridges two zones??
     })
 
 })

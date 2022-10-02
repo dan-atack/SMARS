@@ -1,6 +1,5 @@
 // Top-level component for the game environment (as opposed to game interface, which is in game.ts)
 import P5 from "p5";
-import * as dotenv from "dotenv";
 // Components
 import View from "./view";
 import Sidebar from "./sidebar";
@@ -12,7 +11,6 @@ import Modal, { EventData } from "./modal";
 import Lander from "./lander";
 import MouseShadow from "./mouseShadow";
 // Helper/server functions
-import { convertResourceData } from "./engineHelpers";
 import { ModuleInfo, ConnectorInfo, getOneModule, getOneConnector } from "./server_functions";
 import { constants, modalData } from "./constants";
 // Types
@@ -77,8 +75,8 @@ export default class Engine extends View {
         this._sidebarExtended = true;   // Side bar can be partially hidden to expand map view - should this be here or in the SB itself??
         this._gameData = null;
         this._saveInfo = null;  // Saved game info is loaded from the Game module when it calls the setupSavedGame method
-        this._map = new Map(this._p5);
-        this._infrastructure = new Infrastructure(p5);
+        this._map = new Map();
+        this._infrastructure = new Infrastructure();
         this._economy = new Economy(p5);
         this._population = new Population(p5);
         this._modal = null;
@@ -127,7 +125,7 @@ export default class Engine extends View {
 
     setupNewGame = (gameData: GameData) => {
         this._gameData = gameData;  // gameData object only needs to be set for new games
-        this._map.setup(this._gameData.mapTerrain);
+        this._map.setup(this._p5, this._gameData.mapTerrain);
         this._economy._data.addMoney(this._gameData.startingResources[0][1]);
         this._horizontalOffset = this._map._data._maxOffset / 2;   // Put player in the middle of the map to start out
         this._infrastructure.setup(this._map._data._mapData.length);
@@ -137,7 +135,9 @@ export default class Engine extends View {
     setupSavedGame = (saveInfo: SaveInfo) => {
         this._saveInfo = saveInfo;
         this.setClock(saveInfo.game_time);
-        this._map.setup(this._saveInfo.terrain);
+        this._map.setup(this._p5, this._saveInfo.terrain);
+        // TODO: Extract the map expansion/sidebar pop-up (and the reverse) into a separate method
+        this._map.setExpanded(false);   // Map starts in 'expanded' mode by default, so it must tell it the sidebar is open
         this._economy._data.addMoney(saveInfo.resources[0][1]); // Reload money from save data
         // TODO: Update the economy's load sequence to re-load rate-of-change data instead of resource quantities
         // DON'T DO IT HERE THOUGH - Do it at the end of the loadModuleFromSave method (2 down from this one)
@@ -149,6 +149,7 @@ export default class Engine extends View {
         this.loadConnectorsFromSave(saveInfo.connectors);
         this._hasLanded = true;     // Landing sequence has to take place before saving is possible
         this._provisioned = true;   // Ditto for initial structure provisioning. If you're here already, God help ya.
+        this._sidebar.setDate(this._gameTime.sol, this._gameTime.year);   // Update sidebar date display to saved date
         this.createLoadGameModal(saveInfo.username);
     }
 
@@ -188,16 +189,15 @@ export default class Engine extends View {
 
     // Called by the above method, this will actually use the data from the backend to re-create loaded modules
     loadModuleFromSave = (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[], resources?: Resource[][]) => {
-        // console.log(resources);
         if (selectedBuilding != null) {
             locations.forEach((space, idx) => {
                 if (ids && resources) {     // Use saved serial number and resource data only if they exist
-                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, ids[idx]); // Create module with ID
+                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._data._topography, this._map._data._zones, ids[idx]); // Create module with ID
                     resources[idx].forEach((resource) => {
                         this._infrastructure.addResourcesToModule(ids[idx], resource);  // Provision with saved resources
                     })
                 } else {
-                    this._infrastructure.addModule(space[0], space[1], selectedBuilding);
+                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._data._topography, this._map._data._zones,);
                 }
             })
         }
@@ -248,9 +248,9 @@ export default class Engine extends View {
                 const start: Coords = space[0].start;
                 const stop: Coords = space[0].stop;
                 if (ids) {     // Use the saved serial number only if it is available
-                    this._infrastructure.addConnector(start, stop, selectedConnector, ids[idx]);
+                    this._infrastructure.addConnector(start, stop, selectedConnector,this._map, ids[idx]);
                 } else {
-                    this._infrastructure.addConnector(start, stop, selectedConnector);
+                    this._infrastructure.addConnector(start, stop, selectedConnector, this._map);
                 }
                 
             })
@@ -270,7 +270,7 @@ export default class Engine extends View {
                 const [gridX, gridY] = this.getMouseGridPosition(mouseX, mouseY);
                 switch (this.mouseContext) {
                     case "select":
-                        console.log("Select");
+                        console.log(`Select: ${gridX}, ${gridY}`);
                         break;
                     // NOTE: To add new building placement contexts, ensure case name is also added to setMouseContext method
                     case "placeModule":
@@ -450,7 +450,7 @@ export default class Engine extends View {
                 const affordable = this._economy._data.checkResources(this.selectedBuilding.buildCosts[0][1]);
                 const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._data._mapData);
                 if (clear && affordable) {
-                    this._infrastructure.addModule(x, y, this.selectedBuilding);
+                    this._infrastructure.addModule(x, y, this.selectedBuilding,  this._map._data._topography, this._map._data._zones,);
                     this._economy._data.subtractMoney(this.selectedBuilding.buildCosts[0][1]);
                 } else {
                     // TODO: Display this info to the player with an in-game message of some kind
@@ -482,7 +482,7 @@ export default class Engine extends View {
             const stop = this._mouseShadow._data._connectorStopCoords;
             const clear = this._infrastructure._data.checkConnectorEndpointPlacement(stop.x, stop.y, this._map._data._mapData);
             if (affordable && clear) {
-                this._infrastructure.addConnector(start, stop, this.selectedBuilding);
+                this._infrastructure.addConnector(start, stop, this.selectedBuilding, this._map);
                 this._economy._data.subtractMoney(cost);
             } else {
                 // TODO: Display this info to the player with an in-game message of some kind
@@ -545,7 +545,10 @@ export default class Engine extends View {
         const h20Coords = [[x + 6, y - 3]]
         const crewCoords = [[x, y]];
         const canCoords = [[x + 4, y]];
-        const antennaCoords = [[x, y - 8]]
+        const antennaCoords = [[x, y - 8]];
+        const ladderStart: Coords = { x: x + 4, y: y};
+        const ladderStop: Coords = { x: x + 4, y: y + 3};
+        const ladderCoords = [[{ start: ladderStart, stop: ladderStop }]];
         // Note: getModuleInfo can print many copies of the same module, hence the double-list for coords at the end there
         this.getModuleInfo(this.loadModuleFromSave, "modules", "Life Support", "Cantina", canCoords);
         this.getModuleInfo(this.loadModuleFromSave, "modules", "Life Support", "Crew Quarters", crewCoords);
@@ -553,6 +556,7 @@ export default class Engine extends View {
         this.getModuleInfo(this.loadModuleFromSave, "modules", "Storage", "Oxygen Tank", tankCoords);
         this.getModuleInfo(this.loadModuleFromSave, "modules", "Storage", "Water Tank", h20Coords);
         this.getModuleInfo(this.loadModuleFromSave, "modules", "Communications", "Comms Antenna", antennaCoords);
+        this.getConnectorInfo(this.loadConnectorFromSave, "connectors", "transport", "Ladder", ladderCoords);
         let rubbleCoords: number[][] = [];
         for (let i = 0; i < 8; i++) {
             rubbleCoords.push([x + i, rY]);
@@ -624,7 +628,7 @@ export default class Engine extends View {
             if (this._tick >= this.ticksPerMinute) {
                 this._tick = 0;     // Advance minutes
                 // Update colonists' locations each 'minute', and all of their other stats every hour
-                this._population.updateColonists(this._map._data._mapData, this._gameTime.minute === 0);
+                this._population.updateColonists(this._gameTime.minute === 0, this._infrastructure, this._map);
                 if (this._gameTime.minute < this._minutesPerHour - 1) {  // Minus one tells the minutes counter to reset to zero after 59
                     this._gameTime.minute ++;
                 } else {
@@ -837,8 +841,8 @@ export default class Engine extends View {
         if (this._animation) {
             this._animation.render(this._horizontalOffset);     // Render animation second
         }
-        this._map.render(this._horizontalOffset);               // Render map third
-        this._infrastructure.render(this._horizontalOffset);    // Render infrastructure fourth
+        this._map.render(this._p5, this._horizontalOffset);               // Render map third
+        this._infrastructure.render(this._p5, this._horizontalOffset);    // Render infrastructure fourth
         if (this.selectedBuilding && !this._infrastructure._data.isModule(this.selectedBuilding)) {
             this.renderMouseShadow(); // If placing a connector, render mouse shadow above the infra layer
         }
@@ -852,16 +856,16 @@ export default class Engine extends View {
         if (this._modal) {
             this._modal.render();
         }
-        if (this.selectedBuilding) p5.text(this.selectedBuilding.name, 60, 100);
-        // if (this._infrastructure._data._floors.length > 3) {
-        //     p5.text(this._infrastructure._data._floors[2]._modules, 60, 120);
-        //     p5.text(`ROOF ACCESS: ${this._infrastructure._data._floors[2]._connectors.length}`, 60, 180);
+        // if (this._infrastructure._data._floors.length > 4) {
+        //     p5.text(`Floor 4 modules: ${this._infrastructure._data._floors[4]._modules}`, 160, 180);
+        //     p5.text(`Floor 4 zones: ${this._infrastructure._data._floors[4]._groundFloorZones[0].id}`, 60, 200);
         // }
-        // if (this._infrastructure._data._elevators.length > 1) {
-        //     p5.text(`TOP: ${this._infrastructure._data._elevators[1].top}`, 60, 140);
-        //     p5.text(`BOTTOM: ${this._infrastructure._data._elevators[1].bottom}`, 60, 160);
-        //     p5.text(`ROOF ACCESS: ${this._infrastructure._data._floors[2]._connectors.length}`, 60, 180);
-        // }
+        if (this._population._colonists.length > 1) {
+            p5.text(`Colonist 1 water needs: ${this._population._colonists[0]._data._needs.water}`, 160, 160);
+            p5.text(`Colonist 1 food needs: ${this._population._colonists[0]._data._needs.food}`, 160, 180);
+            p5.text(`Colonist 2 water needs: ${this._population._colonists[1]._data._needs.water}`, 160, 200);
+            p5.text(`Colonist 2 food needs: ${this._population._colonists[1]._data._needs.food}`, 160, 220);
+        }
         
     }
 

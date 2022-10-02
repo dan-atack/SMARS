@@ -1519,23 +1519,175 @@ Not doing:
 
 29. Finally, fix it so that the cash rate of change is updated back to zero after every hour, like the other resources.
 
-## Chapter Twenty-Nine: Colonist Movement in the Base (Difficulty Estimate: 7 For new colonist movement and decision logic, plus probably a new animation, plus unit tests and planning)
-
-Now that the game's resources are located in the modules, and the modules are on the map, the time has come to re-activate the colonists' needs, so that they gradually become hungry and thirsty throughout the day. As they do so, they will need to decide to acquire the resources necessary to reduce their needs, which they can now do by visiting the modules. Although they will not be able to actually satisfy their needs in this chapter, the Colonists will be given the ability to decide that they should satisfy a need, and that they must go to a specific location, often on a floor inside the base, to do so. This chapter will focus on the decision-making logic that will prioritize which resource to move towards, and the pathfinding logic needed to get to a location that is potentially far away and/or on a different level (floor) than the colonist is currently standing on. Hopefully the lessons learned so far about test-driven development and the use of flow-charts will aid in the development of these new features.
+## Chapter Twenty-Nine: Colonist Movement in the Base (Difficulty Estimate: 7 For new colonist movement and decision logic, plus probably a new animation, plus unit tests and planning, AND some refactoring)
 
 ### July 22, 2022
 
+Now that the game's resources are located in the modules, and the modules are on the map, the time has come to re-activate the colonists' needs, so that they gradually become hungry and thirsty throughout the day. As they do so, they will need to decide to acquire the resources necessary to reduce their needs, which they can now do by visiting the modules. Although they will not be able to actually satisfy their needs in this chapter, the Colonists will be given the ability to decide that they should satisfy a need, and that they must go to a specific location, often on a floor inside the base, to do so. This chapter will focus on the decision-making logic that will prioritize which resource to move towards, and the pathfinding logic needed to get to a location that is potentially far away and/or on a different level (floor) than the colonist is currently standing on. Hopefully the lessons learned so far about test-driven development and the use of flow-charts will aid in the development of these new features.
+
 Exit Criteria:
 
-- Colonists will become hungry and thirsty as their needs increase over time
-- Colonists will move toward a module that contains the resource/s they need when they become thirsty or hungry
-- Colonists can walk on Floors in the base as though they were on the ground
-- Colonists can climb up ladders to get to a Floor
-- Colonists can decide to climb up, or down a ladder to get to a module on another floor
-- Colonists can decide to walk up to a ladder
-- Colonists should always be aware of the ground level for the column they are in
-- There should be unit tests for everything before development (obviously now)
-- The Colonist Decision and Movement Logic flowchart must be updated and memorized
+- [DONE] Colonists will become hungry and thirsty as their needs increase over time
+- [DONE] Colonists will move toward a module that contains the resource/s they need when they become thirsty or hungry
+- [DONE] Colonists can walk on Floors in the base as though they were on the ground
+- [DONE] Colonists can climb up ladders to get to a Floor
+- [DONE] Colonists can decide to climb up, or down a ladder to get to a module on another floor
+- [DONE] Colonists can decide to walk up to a ladder
+- [DONE] Colonists should always be aware of the surface ID (whether map zone or floor) for the column they are in
+- [DONE] There should be unit tests for everything before development (obviously now)
+- [DONE] Additional data about colonist movement/decisions added to save/load games so they resume what they were doing seamlessly
+- [DONE] Colonists should each have a unique ID that is stored with the rest of their save data
+
+Features Added:
+
+- Lots and lots of 'getter' methods added to Map, Floor and Infrastructure classes, to enable (relatively) easy pathfinding logic to be performed by Colonists
+- Added resource transaction methods for Module class, so that colonists can call them to consume module resources
+- Added external helper file to take care of Colonist pathfinding logic (for plotting a course of action to get to resources that are in the base, possibly on non-ground floors)
+- Added Colonist Action Stack and Current Action attributes to keep track of their action plans
+- Integrated colonist actions into save game data
+- Added new logic for Colonist surface detection to allow the Colonist to stand on floors, and to fall back to the ground if they somehow happen to become detached from it (although an exception is made if the Colonist is climbing a ladder)
+
+1. Add new properties to the Map Data class: topography (list of numbers representing elevations); zones (list of start/stop x values of regions of the map that are separated by an elevation gap of more than 2).
+
+2. Define the new Map Data class methods to be used, and create their shells in the Map Data class: determineTopography, determineZones, walkableFromLocation.
+
+3. Create unit tests for the determineTopography method, which will be run at the Map class's creation and kept in the topography property. Topography will be a list of numbers, each one representing the map's surface elevation for the column of that index.
+
+4. Create unit tests for the determineZones method. It will run after the topography is established, and create a list of start/stop locations for every section of the map that is separated from the column next to it by an elevation drop (or increase) of greater than 2 grid spaces.
+
+5. Create unit tests for the walkableFromLocation method. It will take four arguments: startX, startY, destX and destY, and use them to calculate whether a destination can be walked to from a given start (i.e. are they in the same 'zone', and does the destination's elevation match the topography for its location).
+
+6. Write, and test the code for the determineTopography method. See above for an explanation of how it should work.
+
+7. Write, and test the code for the determineZones method. See above for an explanation of how it should work.
+
+8. Write and test the code for the walkableFromLocation method. See above for an explanation of how it should work.
+
+9. Create the placeholder for the new Infra class method: getModulesWithResource.
+
+10. Since this one sadly cannot be tested, just go right on and write the code for the getModulesWithResources method. It should take one argument for the resource type name, and return any module that A) has the resource in question and B) is of the type 'life support.'
+
+11. Create the placeholders for the new Infra Data class methods: getFloorFromModuleId, getElevatorFromId, doesElevatorReachFloor, and isFloorOnGround.
+
+12. Add a unit test for the getFloorFromModuleId method. As the name implies, it should take a module ID as its argument and return a pointer to the Floor that holds that ID in its modules list.
+
+13. Add a unit test for the getElevatorFromId method. It should take a single argument, the ID of an elevator (connector) and return a pointer to the Elevator in question. The Colonist will use it, possibly in a for-each situation, to get info about all of the elevator ID's contained in the return from the function in the previous step.
+
+14. Add a unit test for the doesElevatorReachFloor method. It should take a floor ID and and elevator ID, and return true if the elevator ID is found in that Floor's connectors list. The colonist will use this to find out if a connection exists between the floor they are currently standing on and the destination floor. Functionally, it is the equivalent of the Map Data class's walkableFromLocation method, in that it returns true if the colonist is able to walk directly to a connector from their present location.
+
+15. Lastly, for the Infra class at least, create the unit test(s) for the isFloorOnGround method. Unlike the others, this will be called at the moment a floor is created, by using the map data class's (newly-added) determineTopography method, as well as the Floor's elevation data. This will determine if a newly-created Floor is considered the 'ground floor' or not, and set that boolean accordingly.
+
+16. Create the code for getFloorFromModuleID and test it. See above for an explanation of how it should work.
+
+17. Create the code for geElevatorFromId and test it. See above for an explanation of how it should work.
+
+18. Create the code for doesElevatorReachFloor and test it. See above for an explanation of how it should work.
+
+19. Add an ID field, this time a unique string given by combining its left side x and y coordinates, to each map zone that gets created during the Map Data class's topographical/zone determination method. This will enable to ground logic for the Infra Data/Floor class's ground floor status determination make more sense, since it is not just a question of WHETHER a floor is grounded, but of which ZONE (if any) a floor rests upon (and thus can be accessed from via walking).
+
+20. Create the code for determineFloorGroundZones method and test it. See above for an explanation of how it should work. In addition to what is said there, consider too that a floor could become grounded after its creation, if it is extended to overlap with higher terrain on one side or the other of its original edges (e.g. when building out from the middle of a crater). In this case it would be necessary to check each time a module is added whether it (and by extension the whole floor) touches the surface of some zone on the map. Revise the unit tests for this method first to reflect this possibility. Ultimately the Infra Data class should have this method, but then call a new Floor class method when it has determined which Zones (if any) the Floor touches.
+
+21. Plug the determineFloorGroundZones method into the Infrastructure / Infra Data class's new module creation sequence, so that each time a new module is added a test will be performed to see whether it is on the ground, and the appropriate Zone data added to the Floor's groundFloorZones list as appropriate.
+
+22. Add a sneaky temporary text render to the Engine to show that the integration of the Floor Zone calculation has been successfully implemented.
+
+23. Develop the Floor class's new setGroundZones method (unit test first) to allow it to be passed a list of map zones and then add only the ones not already in present in that Floor's ground zones list.
+
+24. Enable the Colonist Data class's updateNeeds method as part of the updateNeedsAndGoals routine. Check that the colonists do indeed become thirsty when this method call is enabled.
+
+25. Add a new field for the Colonist Data class: actionStack. This will be an array of objects (new type alert!) with the shape { type: string, location: Coords, duration: number, buildingID: number }. The type string will go into a new switch case method that will be added to the CheckGoalStatus method; location will be a set of coordinates; duration will be the length in minutes that an action will take to complete (movement actions will use 0), and buildingID will be an optional value representing the ID of the module/connector that is the target of an action such as 'work' or 'consume' (again, 0 will be used when this value is not needed).
+
+26. Next, create another new field for the colonist for activityTimeElapsed, which will be the amount of minutes that have passed while doing the current activity (if its duration is more than 0).
+
+27. Update the Engine's call to the Population class's updateColonists method to pass it a link to the Infrastructure class, so that it can pass that to individual colonists to use its methods.
+
+28. Pass down the pointer to the Infra class instance all the way to the Colonist data class, so that its various goal status determination/updater methods can all use it. Ensure the setGoal and determineActionsForGoal methods can both accept an Infra parameter.
+
+29. Add a call to the determineActionsForGoal method from the get-water case in the setGoal method, and in the action determinator method have it console log the ID's of any modules that contain water (making use of one of our newly added methods adder earlier in this chapter).
+
+30. Remove P5 from the constructor of the Infrastructure class; replace both uses of it (there are only 2, one for module creation and one for connector creation) by passing the Engine's P5 instance to those method calls rather than using them in the Infra base class's constructor.
+
+31. Grand re-factor, Part I: to finally untie the Gordian knot wherein classes have a base and data version, have the Engine pass down its P5 instance to the following classes, so that they and their data sub-class can be combined into a single class. Start by refactoring the following classes such that they will have P5 passed as an argument to their render methods. Classes to refactor to use this technique: Module/ModuleData, Infrastructure/InfrastructureData, and finally Connector/ConnectorData That is all (for now).
+
+32. Grand re-factor, Part II: Go through the unit tests for the newly recombined classes and ensure they work in the new context. Do not rewire them if it's not needed to get a 'green' build!
+
+33. Grand re-factor, Part III: Ensure the game works as it did before, then proceed to revise the ensuing instructions so that we can benefit from the combination of the Infra/Infra Data classes and finally find out (and unit test the logic for finding out) which module is closest to the colonist's coordinates! Also, create a technical debt section to this log file, and add the grand refactoring to it in some detail (classes remaining, unit tests to combine/update, etc).
+
+34. Alter the Infra class's findModulesWithResource method to accept an additional argument for the quantity being sought. The current model returns all modules with a capacity to hold a resource, whereas we want something that actually contains enough of whatever it is to be useful to a hungry/thirsty colonist, say.
+
+35. Add a new ModuleData method (and unit test) that takes a resource name and returns the quantity (if any) of that resource contained in the module. This will be a useful helper function to the Infra method described above.
+
+36. Create a new Infrastructure method, findModuleNearestToLocation, that takes an array of modules and a set of coordinates (the colonist's location) and compares each module's location to the colonist's location. The ID of the closest module (that also contains the selected resource in a desired amount) is returned. Initially, only the X value should be evaluated for proximity. Unit test first, now that you can!
+
+37. Use the outcome of the aforementioned method to get the ID of the nearest module that contains the desired resource. Now is the last best chance to also add the module's "dispenser" role, by the way - unless you don't mind colonists drinking out of the water tank directly. Addendum: For now, they can in fact drink from the water tank.
+
+38. Plug the module ID for the needed resource into the Infra Data class's findFloorFromModuleId method, to find the Floor ID that the Colonist will need to travel to. Console log the floor's ID.
+
+39. More importantly, now that the colonist has chosen a module to travel towards in search of resources, they can add the first item to their action stack: The action that will tell them to consume the resources at that module. This action item should look something exactly like this (using drinking water as an example) : { type: "drink", coords: { x: 10, y: 0 }, duration: (1 minute per unit of thirst), buildingId: 1007 }. When the colonist arrives at the chosen module, it will verify the coordinates, then execute a drink action lasting one minute for every unit of thirst (so that they will leave with no thirst). Adding items to the action stack will require its own method, addAction, so let's go ahead and create that, plus a simple unit test, before moving on to the rest of the code for dealing with actions, along with goals.
+
+40. We can also add a second item to the action stack (which is executed in reverse order, so that this will happen immediately BEFORE the step added in the previous item). This will be the instruction to move towards the target module, and since movement is an immediate action, only the first two values need to be provided: { type: "move", coords: { module coordinates }, duration: 0, buildingId: 0 }. When the time comes, the actions resolver will read this as a movement type action and simply set the colonist's movementDestination to the appropriate column, since the next action added to the stack will be the one that brings the colonist to the floor containing the target module. Before we get to that though...
+
+41. Add a new method (and unit test) to the Map Data class, to retrieve the ID of a map zone when given a single set of coordinates.
+
+42. The colonist will call this method every minute, so the time has now come to pass the map data to the Population updater method in the Engine. Do this by adding an updateMapZone method to the Colonist class, which takes the map class and gets a zone ID from it by passing it the colonist's coordinates. Test in-game by re-writing the p5 text element that's currently showing the colonists' current goal to show their current map zone ID instead.
+
+43. Fix Colonist Data class unit tests after recent refactoring of goal-setting methods.
+
+44. Remove P5 from the map base class, and pass it to the render function. Cross this off the tech debt list once completed.
+
+45. Next, from the retrieved Floor data, see if it has a ground floor zone, and if so, check if its ID matches the ID of the ground zone the colonist is standing on (they will have to have a property for the ground zone ID this way, but at least they don't have to also carry around the topography info!). If it is, then that means the Colonist can begin walking towards the module right away! If not, it means they will have to find a ladder... Test this by temporarily removing the need for a module to actually contain more than zero of the desired resource, and placing some empty store rooms on the ground, and seeing if the colonists will go for them (or at least, have them console log if they detect that they are in the same zone as the storage modules).
+
+46. If a resource-bearing module is not on the ground in the same zone as the colonist, look up whether it's got any connectors (elevators) attached. Log their IDs if it does.
+
+47. Update the Infra base class's addConnector method such that when a transport type Connector is placed it can determine its bottom point, and then use that to find if it has a ground floor zone. Add a groundFloorZone property to the Connector class, and make it a singular tense, since a ladder/elevator cannot be grounded in more than one zone (if any). Pass the Map to the addConnector method in the Engine to allow it to use the mapData class's getZoneIdFromCoordinates function.
+
+48. Add the creation of a ladder to the Engine's initial base structure creation method.
+
+49. For each elevator ID in a non-walkable Floor's elevators list, check if it has a ground zone ID. If any elevator has a ground floor ID, check if that matches the Colonist's current ground zone ID. If none of them do, then we'll have to tell the Colonist to clear their action stack and try looking for another module that contains their needed resource. But we'll get back to that in a moment...
+
+50. If, on the other hand, an elevator DOES have a ground zone ID, then compare it to the Colonist's current ground zone. If they match, then we can add two new actions to the action stack: one telling the Colonist to climb the ladder, and another to tell them to move towards it. Then at that point we can start the action stack. If, however, there are ladders which have ground zone IDs but the colonist isn't in the right zone, then we'll have to think of how to handle that. Oy yoy yoy!
+
+51. At this point, we should have all we need to determine the way to a floor that is removed by one elevator from the colonist's position, and the actions needed to get there from the current position. Phew! Take a moment to savour this triumph, before going in for some major refactoring and unit testing.
+
+52. Change the code for the Colonist's checkGoalStatus method, so that instead of looking at whether the Colonist is at their movementDestination, instead it checks if there are any actions left in the action stack/current action. If there is no current action and the stack is empty then the current goal must be completed and it is time to pick a new one.
+
+53. Next, take the 'explore' determination calculations and pass them to the determineActionsForGoal method, so that setGoal becomes a very minimal setter method with a single call to the action determinator. Place all code for the exploration movement destination determination into the action determinator.
+
+54. Once the code for setting the exploration goal has been transplanted, update it so that instead of setting the movementDestination, it creates a one-action stack and then begins it.
+
+55. Next we'll update how the movementDestination gets interpreted by the handleMovement method, to allow movements other than walking/climbing across the map to be considered, starting with climbing a ladder. We'll have to start by upgrading movementDest from a single number representing an x value to a fully-fledged set of Coordinates. Next, we'll stipulate that when the current action is "move" that the y value doesn't need to be considered by the startMovement method. Then the startMovement method will be divided into a higher-level switch case where it looks at the action type, and then its existing switch case for determining types of movement over the terrain can be called in the "move" case only.
+
+56. Complete the drinking sequence by having the Colonist's startMovement case for 'drink' set the movementType to 'drink' and set the movementCost value to 1 unit of time per point of thirst. For the heck of it, do the same thing for 'eat' while we're at it.
+
+57. Next, tell the checkActionStatus method to check actionTimeElapsed against the current action's duration when the current action is 'drink' or 'eat' and so that the action (And hopefully the goal) is resolved when the Colonist has finished eating/drinking their fill.
+
+58. Also, tell the checkActionStatus method to start increasing the actionTimeElapsed value by one per cycle when the current action's duration is greater than zero, so that when the Colonist is performing an activity with a set duration value they start making progress towards it once they start.
+
+59. Update the resolveAction cases for 'eat' and 'drink' so that they reduce the need for the appropriate resource by the amount consumed by the Colonist (we can just set the need back to zero for the first implementation).
+
+60. Colonist class gets two new methods: eat and drink, which will be called by the startAction method, and which will initiate eating/drinking after verifying that the Colonist is in the right place. They will also call the Module Data class's deductResource method, which checks if a quantity of a given resource is available and reduces it by that amount if possible. If the resource is unavailable, or available in a smaller quantity than requested, it should return the amount of the resource that was available (if any) while reducing its supply to zero. As a bonus, use the return value to reset the duration value of the colonist's eat/drink action and then have the functions described in the previous step use that value instead, so the Colonist isn't filled up if the module doesn't have all of the needed amount of the a resource.
+
+61. At this point sadly it would be foolhardy to go any further without attending to the existing unit tests for the Colonist/ColonistData class and trying to either tidy them up or just get rid of a bunch of them frankly. Addendum: They weren't in such poor shape after all, although a fair few modifications were needed. The real challenge now will be adding tests for all the newly added functionality in this chapter.
+
+62. Add new unit tests for all of the currently existing goal-determination functionality.
+
+63. Add new unit tests for all of the currently existing action-related functionality (except for the action stack determination logic - we'll tackle that in a moment).
+
+64. Add new unit tests for the new movement logic (for resource consumption functionality).
+
+65. Add new unit tests for the as-yet-to-be-developed action stack determination logic. Consider several precise scenarios, to be defined in advance on paper before going any further with the code for these operations.
+
+66. Create an Infrastructure class method, findFloorFromCoordinate, which takes a set of coordinates and returns the Floor (if any) that is immediately under those coordinates.
+
+67. Have the Colonist class call that method with its detectTerrainBeneath check, and if the colonist is found to be standing on a floor instead of a map zone, make their standingOnId a number instead of a string and set it to the Floor's ID.
+
+68. Now that the Colonist can tell when they are standing on a floor as opposed to a map zone, add the logic that will enable them to determine how to get back to the ground/to another floor from that position. Create the first helper function that will go in our new ColonistMovementLogic helpers file: findElevatorToGround. It should take the Infra and Map classes as arguments, and return either the nearest elevator (or a pointer to it) or a NULL if no elevator is found.
+
+69. Swap in the new consume action stack logic from the helpers file and have the colonist call it from the determineActionsForGoal method, in both the 'get-food' and 'get-water' cases. Rerun unit tests and then also run the game for a period of 2 in-game years as a final stress test. Then stick a fork in this chapter because it is DONE!!!
+
+70. Give the Colonist class a unique ID field. Colonist IDs can be a 4 digit number starting at 9000 and be given by a simple population class counter.
+
+## Chapter Thirty:
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
@@ -1555,7 +1707,7 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ### 4. [1: UX / Inaccurate info display] Save game dates seem to be from a different time zone?!
 
-### 5. [3: UX / Inaccurate info display] Economy save data should really include the previous value/rate of change numbers so the player doesn't have to wait an hour for an Economy update. Also, consider how to show rates of change that occur less frequently than every hour (like colonist meals).
+### 5. [3: UX / Inaccurate info display] Economy save data should really include the previous value/rate of change numbers so the player doesn't have to wait an hour for an Economy update. Also, consider how to show rates of change that occur less frequently than every hour (like colonist meals). This could still be a highly data-driven game.
 
 ### 6. [1: UX / Animation glitch] When the game speed is adjusted, it can cause moving colonists' animations to disappear for a moment before reappearing. Solve that one, if you dare!
 
@@ -1567,9 +1719,29 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ### 10. [1: UX / Gameplay] Restrict the base's baseVolume area to only include modules that have the pressurized trait set to true. This would limit the ability to build certain connectors starting or ending in such modules (and potentially have other "cool" consequences too).
 
-### 11. [8: Major Gameplay issue] Loaded games do not allow the player to scroll all the way to the far right of the map; the section underneath the sidebar becomes unreachable when the player saves and then subsequently reloads the game.
+11. [8: Major Gameplay issue] Loaded games do not allow the player to scroll all the way to the far right of the map; the section underneath the sidebar becomes unreachable when the player saves and then subsequently reloads the game.
 
 12. [5: Save Data Completeness] Although currently not doing much, save game files do not contain the game's map type or difficulty level data - both fields contain a blank string.
+
+## Technical Debt Issues:
+
+### 1. Refactoring needed to enable widespread unit testing of Engine subcomponents. Component classes to refactor (by removing P5 from the class attributes and making it an argument to the render method instead):
+
+### - Colonist/ColonistData
+
+### - Block (no data class exists yet - not a high priority)
+
+### - MouseShadow/MouseShadowData (also not a top priority)
+
+### 2. Refactor unit tests for classes that have already been refactored in this way:
+
+### - Infrastructure/InfrastructureData
+
+### - Module/ModuleData
+
+### - Connector/ConnectorData
+
+### - Map/MapData
 
 # Annex A: Advanced Concepts
 
@@ -1580,6 +1752,8 @@ As the game matures, it will be more and more desirable to separate features tha
 ### 2. Add ability to merge overlapping connectors (analogous to how floors are combined, only vertically).
 
 ### 3. Add ability for Connector renderer to operate like module renderer (using shapes data).
+
+### 4. Add a "roles" property to the Module Info type description (and thus to all existing modules in the DB) that contains a list of at least one string describing the role that a module plays (e.g. 'storage', 'dispensary', 'rest', 'science', etc.). This will help colonists figure out which module to go to when they have jobs, as well as restrict where resources can be accessed by colonists (so they have to eat at the cantina instead of being able to visit the store room instead, for instance).
 
 ### Exit Criteria for backend save/load game chapter:
 

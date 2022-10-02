@@ -132,4 +132,11 @@ describe("ModuleData", () => {
             ["equipment", 0]
         ]);
     });
+
+    test("Can return resource quantities when given a resource name", () => {
+        expect(moduleData.getResourceQuantity("water")).toBe(0);        // Returns zero if none of the resource is present
+        expect(moduleData.getResourceQuantity("minerals")).toBe(0);     // Also returns zero if resource capacity does not exist
+        moduleData.addResource(["water", 500]);
+        expect(moduleData.getResourceQuantity("water")).toBe(500);      // Returns the quantity of a resource if it is available
+    })
 })

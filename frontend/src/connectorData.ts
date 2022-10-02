@@ -1,5 +1,4 @@
 // The ConnectorData class handles all of the data processing for the Connector class, without any of the rendering tasks
-import { constants } from "./constants";
 import { ConnectorInfo } from "./server_functions";
 
 // Useful shorthand / standardization technique
@@ -18,6 +17,7 @@ export default class ConnectorData {
     _rightEdge: number;
     _connectorInfo: ConnectorInfo;
     _thickness: number;     // Width and height for connectors will vary based on length, which will be determined when the connector is placed, and thickness (which will be added soon to the connectorInfo's object shape in the backend).
+    _groundZoneId: string;   // Keeps track of whether a transit-style connector is on the ground
     _xOffset: number;   // The offset value, on the other hand, will be in terms of pixels, to allow for smoother scrolling
     _yOffset: number;
 
@@ -46,8 +46,14 @@ export default class ConnectorData {
         this._leftEdge = Math.min(start.x, stop.x);
         this._rightEdge = Math.max(start.x, stop.x);
         this._thickness = this._connectorInfo.width;   // All dimensions (including segment coords) are in terms of grid positions
+        this._groundZoneId = "";
         this._xOffset = 0;
         this._yOffset = 0;
+    }
+
+    // For transport type connectors, see if they touch the ground and record the zone data if so
+    setGroundZoneId = (id: string) => {
+        this._groundZoneId = id;
     }
 
 }

@@ -1,8 +1,9 @@
 // The Colonist class represents the individual Smartian colonist. That's... something about a... giant leap... damn!
 import P5 from "p5";
-import ColonistData from "./colonistData";
+import ColonistData, { ColonistAction } from "./colonistData";
 import { constants } from "./constants";
 import { bodyAnimations, headAnimations, handAnimations, footAnimations } from "./animationFunctions";
+import { Coords } from "./connectorData";
 
 export type ColonistNeeds = {
     water: number,
@@ -11,15 +12,19 @@ export type ColonistNeeds = {
 };
 
 export type ColonistSaveData = {
+    id: number,
     x: number,
     y: number,
     needs: ColonistNeeds,
     goal: string,
+    currentAction: ColonistAction | null,
+    actionStack: ColonistAction[],
+    actionTimeElapsed: number,
     isMoving: boolean,
     movementType: string,
     movementCost: number,
     movementProg: number,
-    movementDest: number,
+    movementDest: Coords,
     facing: string
 };
 
@@ -28,9 +33,9 @@ export default class Colonist {
     _p5: P5;
     _data: ColonistData;    // Data processing core, distinct from rendering-functions
 
-    constructor(p5: P5, x: number, y: number, saveData?: ColonistSaveData) {
+    constructor(p5: P5, id: number, x: number, y: number, saveData?: ColonistSaveData) {
         this._p5 = p5;
-        this._data = saveData ? new ColonistData(x, y, saveData) : new ColonistData(x, y);
+        this._data = saveData ? new ColonistData(id, x, y, saveData) : new ColonistData(id, x, y);
     }
 
     // FPM = game speed in frames per game minute (greater = slower) and sign = +1 for facing right, and -1 for facing left

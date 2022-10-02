@@ -1,29 +1,48 @@
 // The ColonistData class handles all of the data processing for the colonist class, without any of the rendering tasks
 import { ColonistSaveData, ColonistNeeds } from "./colonist";
+import { createConsumeActionStack, determineIfColonistIsOnSameSurfaceAsModule, findElevatorFromGroundToFloor, findElevatorToGround, findModulesWithResource } from "./colonistActionLogic";
+import { Coords } from "./connectorData";
 import { constants } from "./constants";
+import Infrastructure from "./infrastructure";  // Infra data info gets passed by population updater function
+import { Elevator } from "./infrastructureData";
+import Map from "./map";
+
+export type ColonistAction = {
+    type: string,       // Name of the type of action ('move', 'climb', 'eat' and 'drink' initially)
+    coords: Coords,     // Exact location the colonist needs to be at/move towards
+    duration: number,   // How long the action takes to perform (0 means the action happens immediately)
+    buildingId: number, // ID of the module/connector for 'climb' and 'consume' actions, e.g.
+}
 
 export default class ColonistData {
     // Colonist data types
+    _id: number;        // Colonists will have a unique ID just like everything else
     _x: number;         // Colonists' x and y positions will be in terms of grid locations
     _y: number;
-    _width: number;     // Colonists' width is in terms of grid spaces...
-    _height: number;    // Colonists' height is in terms of grid spaces...
-    _xOffset: number;   // ...The offset value, on the other hand, will be in terms of pixels, to allow for smoother scrolling
+    _standingOnId: string | number; // To keep track of which map zone (ID = string) or floor (ID = number)
+    _width: number;                 // Colonists' width is in terms of grid spaces...
+    _height: number;                // Colonists' height is in terms of grid spaces...
+    _xOffset: number;       // ...The offset value, on the other hand, will be in terms of pixels, to allow for smoother scrolling
     _yOffset: number;
     _needs: ColonistNeeds;          // Keep track of the colonist's needs to help them choose what to do with their lives
     _needThresholds: ColonistNeeds; // Separately keep track of the various thresholds for each type of need
     _currentGoal: string;           // String name of the Colonist's current goal (e.g. "get food", "get rest", "explore", etc.)
+    _actionStack: ColonistAction[]; // Actions, from last to first, that the colonist will perform to achieve their current goal
+    _currentAction: ColonistAction | null; // The individual action that is currently being undertaken (if any)
+    _actionTimeElapsed: number;     // The amount of time, in minutes, that has elapsed performing the current action
     _isMoving: boolean;             // Is the colonist currently trying to get somewhere?
     _movementType: string           // E.g. walk, climb-up, climb-down, etc. (used to control animations)
     _movementCost: number;          // The cost, in units of time (and perhaps later, 'exertion') for the current movement
     _movementProg: number;          // The amount of time and/or exertion expended towards the current movement cost
-    _movementDest: number;          // The x value of the current destination for the colonist's movement
+    _movementDest: Coords;          // The coordinates of the current destination for the colonist's movement
     _facing: string;                // Either "right" or "left"... until SMARS 3D is released, that is!
     _animationTick: number;         // Governs the progression of movement/activity animations
 
-    constructor(x: number, y: number, saveData?: ColonistSaveData) {
+    constructor(id: number, x: number, y: number, saveData?: ColonistSaveData) {
+        this._id = id;
         this._x = x;
         this._y = y;
+        this._standingOnId = "";
         this._width = 1;
         this._height = 2;
         this._xOffset = 0;
@@ -33,27 +52,38 @@ export default class ColonistData {
             food: 0,
             rest: 0
         };
-        this._needThresholds = {                    // The higher the threshold, the longer a colonist can go without
+        this._needThresholds = {    // The higher the threshold, the longer a colonist can go without; 1 unit = 1 hour
             water: 4,
             food: 6,
-            rest: 8
+            rest: 1000
         };
         this._currentGoal = saveData ? saveData.goal : "explore"    // Load saved goal, or go exploring (for new colonists).
+        this._actionStack = saveData?.actionStack ? saveData.actionStack : [];   // Load saved action stack or default to empty
+        this._currentAction = saveData?.currentAction ? saveData.currentAction : null;  // Load current action or default to null
+        this._actionTimeElapsed = saveData ? saveData.actionTimeElapsed : 0;    // Load saved value or default to zero
         this._isMoving = saveData ? saveData.isMoving : false;      // Load saved status or colonists is at rest by default
         this._movementType = saveData ? saveData.movementType :  "" // Load name of movement type or default to no movement
         this._movementCost = saveData ? saveData.movementCost : 0;  // Load value or default to zero
         this._movementProg = saveData ? saveData.movementProg : 0;  // Load value or default to zero
-        this._movementDest = saveData ? saveData.movementDest : this._x + 1; // Load destination or go one to the right
+        this._movementDest = saveData ? saveData.movementDest : { x: this._x + 1, y: this._y }; // Load destination or go right
         this._facing = saveData ? saveData.facing : "right";        // Let's not make this a political issue, Terry.
         this._animationTick = 0;                                    // By default, no animation is playing
     }
 
     // Handles hourly updates to the colonist's needs and priorities (goals)
-    updateNeedsAndGoals = (maxColumns: number) => {
-        // TODO: Only introduce need-based goal-setting when they are possible to fulfill
-        // this.updateNeeds();
-        this.updateGoal(maxColumns);
+    handleHourlyUpdates = (infra: Infrastructure, map: Map) => {
+        this.updateNeeds();
+        this.updateGoal(infra, map);
     }
+
+    // AdjacentColumns is a subset of the map; just the column the colonist is on, plus one to the immediate right/left
+    handleMinutelyUpdates = (adjacentColumns: number[][], infra: Infrastructure, map: Map) => {
+        this.checkActionStatus(infra);              // First: Update actions before goals
+        this.checkGoalStatus(infra, map);           // Then update goals after actions
+        this.handleMovement(map, infra, adjacentColumns);  // Finally, take care of movement last
+    }
+
+    // NEEDS AND GOAL-ORIENTED METHODS
 
     // This may take arguments some day, like how much the Colonist has exerted himself since the last update
     updateNeeds = () => {
@@ -64,77 +94,292 @@ export default class ColonistData {
     }
 
     // Checks whether any needs have exceeded their threshold and assigns a new goal if so; otherwise sets goal to 'explore'
-    updateGoal = (maxColumns: number) => {
+    updateGoal = (infra: Infrastructure, map: Map) => {
+        // 1 - Determine needs-based (first priority) goals
         // If the colonist has no current goal, or is set to exploring, check if any needs have reached their thresholds
+        // TODO: Revamp this logic to check for needs in a separate sub-method, and to include other tasks that can be overridden
         if (this._currentGoal === "explore" || this._currentGoal === "") {
             Object.keys(this._needs).forEach((need) => {
                 // @ts-ignore
                 if (this._needs[need] >= this._needThresholds[need]) {
-                    this.setGoal(`get-${need}`);
+                    // When setting new goal, clear out the current action - UNLESS it's a 'climb' action, in which case wait
+                    if (this._currentAction?.type !== "climb") {
+                        this.resolveAction();
+                        this.setGoal(`get-${need}`, infra, map);
+                    } else {
+                        console.log(`Colonist ${this._id} is climbing - delaying new action start.`);
+                    }
                 }
             })
         };
-        // If no goal has been set, tell them to go exploring
+        // 2- Determine job-related (second priority) goal if no needs-based goal has been set
+        // If no goal has been set, tell them to go exploring; otherwise use the goal determined above
+        // TODO: When colonists can have jobs, revamp this logic to check for non-exploration jobs before defaulting to explore
         if (this._currentGoal === "") {
-            this.setGoal("explore", maxColumns);
+            this.setGoal("explore", infra, map);
         };
     }
 
     // Takes a string naming the current goal, and uses that to set the destination (and sets that string as the current goal)
     // Also takes optional parameter when setting the "explore" goal, to ensure the colonist isn't sent off the edge of the world
-    setGoal = (goal: string, maxColumns?: number) => {
+    setGoal = (goal: string, infra?: Infrastructure, map?: Map) => {
         this._currentGoal = goal;
-        switch(this._currentGoal) {
-            case "explore":
-                // Assign the colonist to walk to a nearby position
-                const dir = Math.random() > 0.5;
-                const dist = Math.ceil(Math.random() * 10);
-                const dest = dir ? dist : -dist;
-                this._movementDest = Math.max(this._x + dest, 0);    // Ensure the colonist doesn't wander off the edge
-                if (maxColumns && this._movementDest > maxColumns) {
-                    this._movementDest = maxColumns;
-                }
-                break;
-            case "get-water":
-                break;
-            case "get-food":
-                break;
+        if (infra && map) {
+            this.determineActionsForGoal(infra, map);
+        } else if (this._currentGoal !== "") {
+            console.log(`Error: Infra/Map data missing for non-empty colonist goal: ${this._currentGoal}`);
         }
+    }
+
+    // Determines if a colonist has reached their destination, and if so, what to do next
+    checkGoalStatus = (infra: Infrastructure, map: Map) => {
+        // New way: Check if the colonist has no actions remaining - if so, they have resolved their current goal
+        if (this._actionStack.length === 0 && this._currentAction === null) {
+            this.resolveGoal();
+            this.updateGoal(infra, map);
+        }
+    }
+
+    // Clears the current action (if any) and starts progress towards a newly selected goal
+    startGoalProgress = (infra: Infrastructure) => {
+        console.log(`Colonist ${this._id} starting progress towards goal: ${this._currentGoal}.`);
+        this.startAction(infra);
     }
 
     // Resets all goal-oriented values
     resolveGoal = () => {
+        this.resolveAction();     // Clear current action first
+        this.clearActions();    // Then clear out the rest of the action stack
+        console.log(`Colonist ${this._id} goal resolved: ${this._currentGoal}.`);
         this.setGoal("");
-        this._movementDest = this._x;
     }
 
-    // Determines if a colonist has reached their destination, and if so, what to do next
-    checkGoalStatus = (terrain: number[][], maxColumns: number) => {
-        // Check if colonist is at their destination and update their goal if so...
-        if (this._x === this._movementDest) {
-            // If the goal was to explore, check if any needs have become urgent enough to make them the new goal
-            if (this._currentGoal === "explore") {
-                this.resolveGoal();
-                this.updateGoal(maxColumns);
-            } else {
-                // console.log(`Arrived at destination for goal ${this._currentGoal}. Interact with building now?`);
-                // TODO: Resolve goal for non-exploration cases!
+    // ACTION-ORIENTED METHODS
+    // (Actions are individual tasks, such as 'move to x', or 'consume a resource' which collectively form a single GOAL)
+
+    // Top Level Action Creation Method: determines the individual actions to be performed to achieve the current goal
+    determineActionsForGoal = (infra: Infrastructure, map: Map) => {
+        this.clearActions();    // Ensure the action stack is empty before adding to it
+        const currentPosition = { x: this._x, y: this._y + 1 }; // Add 1 to colonist Y position to get 'foot level' value
+        switch(this._currentGoal) {
+            case "explore":
+                // First, randomly generate a position that is near (on the x axis that is) to the colonist's current location
+                const dir = Math.random() > 0.5;
+                const dist = Math.ceil(Math.random() * 10);
+                let dest = dir ? dist : -dist;
+                dest = Math.max(this._x + dest, 1);    // Ensure the colonist doesn't wander off the edge
+                if (dest > map._data._columns.length - 1) {
+                    dest = map._data._columns.length - 1;
+                }
+                // Then, add the movement action; if the colonist is on the ground, then this is the only action needed...
+                this.addAction("move", { x: dest, y: 0 });  // Y coordinate doesn't matter for move action
+                // Finally, if the colonist is NOT on the ground, they need to get back down before trying to move
+                if (typeof this._standingOnId === "number") {
+                    // Find the closest elevator that goes to the ground floor:
+                    const elevator = findElevatorToGround(this._x, this._standingOnId, map, infra);
+                    if (elevator) {
+                        // If found, add order to climb nearest ladder down to the ground level (minus 1 for the feet)
+                        this.addAction("climb", { x: elevator.x, y: elevator.bottom - 1 }, 0, elevator.id);
+                        // If found, add order to move to nearest ladder (stack is created in reverse order)
+                        this.addAction("move", { x: elevator.x, y: this._y });
+                    } else {
+                        console.log(`Colonist ${this._id} is trapped on floor ${this._standingOnId}!`);
+                    }
+                }
+                break;
+            case "get-water":
+                this._actionStack = createConsumeActionStack(currentPosition, this._standingOnId, ["water", this._needs.water], infra);
+                // 1 - Find the location of the nearest module containing water
+                // const waterMod = findModulesWithResource(["water", this._needs.water], currentPosition, infra);
+                // if (waterMod) {
+                //     // 2 - If a module is found, add 'drink' and 'move' actions to stack (if none is found, set a new goal)
+                //     this.addAction("drink", waterMod.coords, this._needs.water, waterMod.id);
+                //     this.addAction("move", waterMod.coords);      // Only 2 arguments needed for move actions
+                //     // 3 - Find out which floor the module is on
+                //     const waterFloor = infra._data.getFloorFromModuleId(waterMod.id);
+                //     if (waterFloor !== null) {
+                //         // 4 - Check if module is on the same surface as the colonist - if so, action stack is complete
+                //         const sameZone = determineIfColonistIsOnSameSurfaceAsModule(waterFloor, this._standingOnId);
+                //         // 5 - If the colonist is not on the same surface, find the nearest ladder to the target floor
+                //         if (!sameZone) {
+                //             console.log(`Water source is on floor ${waterFloor._id}. Colonist is not.`)
+                //             // Find nearest elevator to target floor
+                //             const elevator = findElevatorFromGroundToFloor(waterFloor, this._standingOnId.toString(), { x: this._x, y: this._y }, infra);
+                //             if (elevator) {
+                //                 this.addAction("climb", { x: elevator.x, y: waterFloor._elevation - 1}, 0, elevator.id);
+                //                 this.addAction("move", { x: elevator.x, y: elevator.bottom});
+                //             } else {
+                //                 console.log(`No elevator connections found to floor ${waterFloor._id}`)
+                //             }
+                //         }
+                //     } else {
+                //         console.log(`Error: Floor not found for module ${waterMod.id}`);
+                //     }
+                // } else {
+                //     // TODO: If no acceptable modules are found, tell the colonist to wait a little while before looking again
+                //     console.log(`Warning: No modules containing ${this._needs.water} water found.`);
+                // }
+                break;
+            case "get-food":    // Parallels the get-water case almost closely enough to be the same... but not quite!
+            this._actionStack = createConsumeActionStack(currentPosition, this._standingOnId, ["food", this._needs.food], infra);
+                // 1 - Find the location of the nearest module containing food
+                // const foodMod = findModulesWithResource(["food", this._needs.food], currentPosition, infra);
+                // if (foodMod) {
+                //     // 2 - If a module is found, add 'eat' and 'move' actions to stack (if none is found, set a new goal)
+                //     this.addAction("eat", foodMod.coords, this._needs.food, foodMod.id);
+                //     this.addAction("move", foodMod.coords);      // Only 2 arguments needed for move actions
+                //     // 3 - Find out which floor the module is on
+                //     const foodFloor = infra._data.getFloorFromModuleId(foodMod.id);
+                //     if (foodFloor !== null) {
+                //         // 4 - Check if module is on the same surface as the colonist - if so, action stack is complete
+                //         const sameZone = determineIfColonistIsOnSameSurfaceAsModule(foodFloor, this._standingOnId);
+                //         // 5 - If the colonist is not on the same surface, find the nearest ladder to the target floor
+                //         if (!sameZone) {
+                //             console.log(`Food source is on floor ${foodFloor._id}. Colonist is not.`)
+                //             // Find nearest elevator to target floor
+                //             const elevator = findElevatorFromGroundToFloor(foodFloor, this._standingOnId.toString(), { x: this._x, y: this._y }, infra);
+                //             if (elevator) {
+                //                 this.addAction("climb", { x: elevator.x, y: foodFloor._elevation - 1}, 0, elevator.id);
+                //                 this.addAction("move", { x: elevator.x, y: elevator.bottom});
+                //             } else {
+                //                 console.log(`No elevator connections found to floor ${foodFloor._id}`)
+                //             }
+                //         }
+                //     } else {
+                //         console.log(`Error: Floor not found for module ${foodMod.id}`);
+                //     }
+                // } else {
+                //     // TODO: If no acceptable modules are found, tell the colonist to wait a little while before looking again
+                //     console.log(`Warning: No modules containing ${this._needs.water} water found.`);
+                // }
+                break;
+        }
+        this.startGoalProgress(infra);
+    }
+
+    // Called every minute by the master updater; checks and updates progress towards the completion of the current action
+    checkActionStatus = (infra: Infrastructure) => {
+        if (this._currentAction) {
+            // 1 - Increase action elapsed time if the current action has a duration value
+            if (this._currentAction.duration > 0) {
+                this._actionTimeElapsed++;
+            }
+            // 2 - Check for action completion conditions depending on action type
+            switch (this._currentAction.type) {
+                case "climb":
+                    if (this._x === this._currentAction.coords.x && this._y === this._currentAction.coords.y) {
+                        this.resolveAction();
+                        this.checkForNextAction(infra);
+                    }
+                    break;
+                case "drink":
+                    if (this._actionTimeElapsed >= this._currentAction.duration) {
+                        this._needs.water -= this._currentAction.duration;  // Reduce water need by 1/unit of time spent drinking
+                        this.resolveAction();
+                        this.checkForNextAction(infra);
+                    }
+                    break;
+                case "eat":
+                    if (this._actionTimeElapsed >= this._currentAction.duration) {
+                        this._needs.food -= this._currentAction.duration;   // Reduce food need by 1/unit of time spent eating
+                        this.resolveAction();
+                        this.checkForNextAction(infra);
+                    }
+                    break;
+                case "move":
+                    if (this._x === this._currentAction.coords.x) {
+                        this.resolveAction();
+                        this.checkForNextAction(infra);
+                    }
+                    break;
+                // Housekeeping: Keep options in sync with startAction and startMovement methods and animationFunctions.ts
+            }
+        }
+        
+    }
+
+    // Adds a new action to the end of the action stack
+    addAction = (type: string, location: Coords, duration?: number, buildingId?: number) => {
+        const action: ColonistAction = {
+            type: type,
+            coords: location,
+            duration: duration ? duration : 0,
+            buildingId: buildingId ? buildingId : 0
+        }
+        this._actionStack.push(action);     // Add the action to the end of the action stack, so last added is first executed
+    }
+
+    // Pops the last item off of the action stack and initiates it
+    startAction = (infra: Infrastructure) => {
+        const action = this._actionStack.pop();
+        if (action !== undefined) {
+            this._currentAction = action;
+            switch(this._currentAction.type) {
+                case "climb":
+                    console.log(`Colonist ${this._id} Climbing ladder at ${this._currentAction.coords.x}`);
+                    this._movementDest = this._currentAction.coords;
+                    break;
+                case "drink":
+                    console.log(`Colonist ${this._id} Drinking at ${this._currentAction.buildingId}`);
+                    this.consume("water", infra);
+                    break;
+                case "eat":
+                    console.log(`Colonist ${this._id} Eating at ${this._currentAction.buildingId}`);
+                    this.consume("food", infra);
+                    break;
+                case "move":
+                    console.log(`Colonist ${this._id} Beginning movement to ${this._currentAction.coords.x}`);
+                    this._movementDest = this._currentAction.coords;
+                    break;
             }
         } else {
-            // ...Otherwise, initiate movement sequence
-            this.handleMovement(terrain);
+            console.log('Error: Unable to start action because the action stack is empty.')
         }
     }
 
-    // Movement controller method: Takes a small terrain sample and 'fpm' which is short for 'frames per minute'
-    handleMovement = (terrain: number[][]) => {
-        // Colonists are passed an array of 2-3 columns: The one they're in, and the ones to the left and to the right
-        // By default, the middle (second) column is the colonist's current position
-        let currentColumn = 1;
-        // If the colonist is at the right-most edge, then they are standing on column zero
-        if (terrain.length === 2 && this._x === 0) currentColumn = 0;
+    // Advances to the next action in the stack, if there is one
+    checkForNextAction = (infra: Infrastructure) => {
+        if (this._actionStack.length > 0) {
+            this.startAction(infra);     // If there are more actions to be taken, start the next one
+        }
+    }
+
+    // Completes the current action and resets all values related to the current action including the current move
+    resolveAction = () => {
+        this._currentAction = null;
+        this._actionTimeElapsed = 0;
+        this.stopMovement();
+    }
+
+    // Resets the action stack to an empty array
+    clearActions = () => {
+        this._actionStack = [];
+    }
+
+    // MOVEMENT/POSITIONING METHODS
+
+    updateMapZone = (map: Map) => {
+        this._standingOnId = map._data.getZoneIdForCoordinates({ x: this._x, y: this._y + 1 });    // Plus one to Y for foot level
+    }
+
+    updateFloorZone = (infra: Infrastructure) => {
+        const id = infra._data.getFloorIdFromCoords({ x: this._x, y: this._y + 1 });    // Plus one to Y for foot level
+        if (id) {
+            this._standingOnId = id;
+        } else {
+            console.log(`Error: Colonist ${this._id} at (${this._x}, ${this._y}) is not standing on anything!`);
+            // Drop the colonist down one level if they are not standing on anything ??
+            this._y++;
+        }
+    }
+
+    // Movement Top-Level controller method: Initiates/continues a move based on what type of action is being performed
+    handleMovement = (map: Map, infra: Infrastructure, adjacentColumns: number[][]) => {
+        // 0 - Check if non-movement (duration-based) action is taking place (defined as duration > 0)
+        let otherAction = false;
+        if (this._currentAction !== null) otherAction = this._currentAction.duration > 0;
         // 1 - Check what colonist is standing on
-        this.detectTerrainBeneath(terrain[currentColumn]);
+        this.detectTerrainBeneath(map, infra);
         // 2 - Conclude moves in progress
         if (this._isMoving) {
             this._movementProg ++;
@@ -142,50 +387,83 @@ export default class ColonistData {
                 this.updatePosition();
                 this.stopMovement();
             }
-        // 3 - If no movement is currently taking place and the colonist is not at their destination, start a new move
-        } else if (this._x !== this._movementDest) {
-            this.startMovement(terrain, currentColumn);
+        // 3 - If no move is currently in progress and colonist is not at destination or has other type of action, start new move
+        } else if (this._x !== this._movementDest.x || this._y !== this._movementDest.y || otherAction) {
+            this.startMovement(adjacentColumns);
         }
     }
 
     // Determines what type of move is needed next (walking, climbing, etc) and initiates it
-    startMovement = (terrain: number[][], currentColumn: number) => {
-        // Determine direction
-        const dir = this._x > this._movementDest ? "left" : "right";
-        this._facing = dir;
-        // Determine movement type by comparing current height to height of target column
-        const currentHeight = terrain[currentColumn].length;
-        const destHeight = dir === "right" ? terrain[currentColumn + 1].length : terrain[currentColumn - 1].length;
-        const delta = currentHeight - destHeight;
-        switch (delta) {
-            // Jumping down from either 1 or 2 blocks takes the same movement
-            case 2:
-                this._movementType = "big-drop";
-                this._movementCost = 5;
-                break;
-            case 1:
-                this._movementType = "small-drop";
-                this._movementCost = 3;
-                break;
-            case 0:
-                this._movementType = "walk";
-                this._movementCost = 1;
-                break;
-            case -1:
-                this._movementType = "small-climb";
-                this._movementCost = 5;
-                break;
-            case -2:
-                this._movementType = "big-climb";
-                this._movementCost = 10;
-                break;
-            default:
-                // Abort movement if terrain is too steep
-                this.stopMovement();
-                this.setGoal("explore");   // Reset colonist goal if they reach an impassable obstacle.
-                break;
+    startMovement = (adjacentColumns: number[][]) => {
+        // 1 - Determine movement type and cost
+        if (this._currentAction) {
+            switch (this._currentAction.type) {
+                case "climb":
+                    // Determine if climb action is upwards or downwards
+                    if (this._movementDest.y > this._y) {
+                        this._movementType = "climb-ladder-down";
+                    } else {
+                        this._movementType = "climb-ladder-up";
+                    }
+                    this._movementCost = 5; // It takes 5 time units to climb one segment of ladder in either direction
+                    break;
+                case "drink":
+                    this._movementType = "drink";
+                    this._movementCost = this._currentAction.duration;  // Drink time depends on thirst level
+                    break;
+                case "eat":
+                    this._movementType = "eat";
+                    this._movementCost = this._currentAction.duration;  // Eating time depends on hunger level
+                    break;
+                case "move":
+                    // A - Determine direction
+                    // Colonists are passed an array of 2-3 columns: The one they're in, and the ones to the left and to the right
+                    // By default, the middle (second) column is the colonist's current position
+                    let currentColumn = 1;
+                    // If the colonist is at the right-most edge, then they are standing on column zero
+                    if (adjacentColumns.length === 2 && this._x === 0) currentColumn = 0;
+                    const dir = this._x >= this._movementDest.x ? "left" : "right";
+                    this._facing = dir;
+                    // B - Determine movement type by comparing current height to height of target column
+                    const currentHeight = adjacentColumns[currentColumn].length;
+                    const destHeight = dir === "right" ? adjacentColumns[currentColumn + 1].length : adjacentColumns[currentColumn - 1].length;
+                    const delta = currentHeight - destHeight;
+                    switch (delta) {
+                        // Jumping down from either 1 or 2 blocks takes the same movement
+                        case 2:
+                            this._movementType = "big-drop";
+                            this._movementCost = 5;
+                            break;
+                        case 1:
+                            this._movementType = "small-drop";
+                            this._movementCost = 3;
+                            break;
+                        case 0:
+                            this._movementType = "walk";
+                            this._movementCost = 1;
+                            break;
+                        case -1:
+                            this._movementType = "small-climb";
+                            this._movementCost = 5;
+                            break;
+                        case -2:
+                            this._movementType = "big-climb";
+                            this._movementCost = 10;
+                            break;
+                        default:
+                            // Abort movement if terrain is too steep
+                            this.stopMovement();
+                            this.resolveGoal();
+                            break;
+                        }
+                    break;
+            }
+        } else {
+            // If there is no current action but an attempt is made to initiate a move, reset the colonist's goal to unjam them
+            console.log(`Colonist ${this._id} not moving due to: No value for current action. Auto-resolving current goal (${this._currentGoal}).`);
+            this.resolveGoal();
         }
-        // Start new move
+        // 2 - Initiate movement
         this._isMoving = true;
     }
 
@@ -200,12 +478,12 @@ export default class ColonistData {
 
     // Update colonist position (x AND y) when movement is completed
     updatePosition = () => {
-        // Horizontal position changes regardless of movement type
-        if (this._movementType) {
+        // Horizontal position changes only if current action type is "move"
+        if (this._movementType && this._currentAction && this._currentAction.type === "move") {
             this._facing === "right" ? this._x++ : this._x--;
             this._animationTick = 0;    // Reset animation sequence tick immediately after horizontal translation
         }
-        // Only moves with a vertical component are considered here (no case for 'walk' since it's horizontal only)
+        // Only moves with a vertical component are considered here (no case for 'walk' since it's horizontal only, but climbing a ladder - which is not technically a 'move' movement - does change your Y value)
         switch (this._movementType) {
             case "small-climb":
                 this._y--;
@@ -219,16 +497,52 @@ export default class ColonistData {
             case "big-drop":
                 this._y += 2;
                 break;
+            case "climb-ladder-up":
+                this._y--;
+                break;
+            case "climb-ladder-down":
+                this._y++;
+                break;
         }
     }
 
-    // Ensures the colonist is always on the ground
-    detectTerrainBeneath(column: number[]) {
-        const surfaceY = (constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH) - column.length;
-        if (this._y + 2 < surfaceY) {
-            // Colonist is moved downwards if they're not standing on solid ground.
-            // TODO: Find a way to include the floors of modules in the definition of 'solid ground.'
-            this._y = surfaceY - 2;
+    // Ensures the colonist is always on the ground, whether on the map terrain or a floor inside the base
+    detectTerrainBeneath = (map: Map, infra: Infrastructure) => {
+        this.updateMapZone(map);
+        // If the colonist is not standing on a map zone, check what floor they are on (unless they are climbing a ladder)
+        if (this._standingOnId === "" && this._currentAction?.type !== "climb") {
+            this.updateFloorZone(infra);
         }
     }
+
+    // OTHER (NON-MOVEMENT) ACTIVITIES
+
+    // Generic resource-consumption method (can be used for eating and drinking... and who knows what else, eh? ;)
+    consume = (resourceName: string, infra: Infrastructure) => {
+        if (this._currentAction) {
+            const modCoords = this._currentAction.coords;
+            // Ensure the colonist is standing in the right place (which is their y position + 1 [for foot level])
+            if (this._x === modCoords.x && this._y + 1 === modCoords.y) {
+                // Find the module using its ID
+                const mod = infra.getModuleFromID(this._currentAction.buildingId);
+                // Call its resource-reduction method
+                if (mod) {
+                    // Resource is immediately removed from the module; colonist 'gets' it when they complete the action
+                    const consumed = mod._data.deductResource([resourceName, this._currentAction.duration]);  // Duration = qty taken
+                    if (consumed < this._currentAction.duration) {
+                        this._currentAction.duration = consumed;    // Since the module's deductResources method returns a number representing the amount of resource dispensed, we can see if it contained less than the required amount and reduce the action duration (and eventual amount of need relieved) if so
+                    }
+                } else {
+                    console.log(`Error: Module ${this._currentAction.buildingId} not found.`);
+                    // Skip this action if the module is not found
+                    this.resolveAction();
+                }
+            } else {
+                console.log(`Error: Consume action for Colonist ${this._id} failed due to: Colonist position (${this._x}, ${this._y}) does not match module location ${modCoords.x}, ${modCoords.y}.`);
+                // Skip this action if the colonist was sent to the wrong coordinates
+                this.resolveAction();
+            }
+        }
+    }
+
 }

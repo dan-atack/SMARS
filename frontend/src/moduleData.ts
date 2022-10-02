@@ -43,6 +43,17 @@ export default class ModuleData {
         return r;
     }
 
+    // Takes a resource name and returns the quantity, if any, of that resource if it is present in the module
+    getResourceQuantity (resource: string) {
+        let qty = 0;
+        this._resources.forEach((res) => {
+            if (res[0] === resource) {
+                qty = res[1];
+            }
+        })
+        return qty;
+    }
+
     // Try to add a resource and return the quantity actually added
     addResource (resource: Resource) {
         // Check if resource is in the module's capacity list
@@ -66,7 +77,7 @@ export default class ModuleData {
                 }
             }
         } else {
-            console.log(`Cannot add resource ${resource[0]} to module ${this._moduleInfo.name} ${this._id}`);
+            // console.log(`Cannot add resource ${resource[0]} to module ${this._moduleInfo.name} ${this._id}`);
             return 0;   // Always return the quantity added
         }
     }
@@ -87,10 +98,12 @@ export default class ModuleData {
                     this._resources.find(res => res[0] === resource[0])[1] = 0;
                     return currentQty;
                 }
+            } else {
+                return 0;
             }
         }
         else {
-            console.log(`Cannot find resource ${resource[0]} in module ${this._moduleInfo.name} ${this._id}`);
+            // console.log(`Cannot find resource ${resource[0]} in module ${this._moduleInfo.name} ${this._id}`);
             return 0;
         }
     }

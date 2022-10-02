@@ -1,4 +1,5 @@
 // The Floor represents a single walkable surface within the base, and accompanying information about the modules that comprise it
+import { MapZone } from "./mapData";
 import { constants } from "./constants";
 
 export default class Floor {
@@ -9,7 +10,7 @@ export default class Floor {
     _elevation: number;         // Grid location of the floor's altitude, on the y-axis
     _modules: number[];         // List of UIDs all the modules that form this floor
     _connectors: number[];      // List of UIDs of all the transit connectors that intersect with this floor
-    _groundFloor: boolean;      // Set to true if this is the ground floor; if so, no connectors are needed to access this floor
+    _groundFloorZones: MapZone[] // A list of zero to several map zones that the Floor sits upon
 
     // To create a floor we need the floor's ID and elevation only; we can add its first module after construction by calling the add module method
     constructor(id: number, elevation: number) {
@@ -19,7 +20,7 @@ export default class Floor {
         this._elevation = elevation;
         this._modules = [];
         this._connectors = [];
-        this._groundFloor = false;
+        this._groundFloorZones = [];
     }
 
     // Take a list of columns' indices and uses them to redetermine the position of the right/left edges
@@ -66,6 +67,28 @@ export default class Floor {
 
     addConnector = (connectorId: number) => {
         this._connectors.push(connectorId);
+    }
+
+    setGroundFloorZones = (zones: MapZone[]) => {
+        zones.forEach((zone) => {
+            if (this._groundFloorZones.find((z) => {
+                return zone.id === zone.id
+            }) === undefined) {
+                // console.log(`Added map zone with ID ${zone.id} to Floor ${this._id} ground zones list.`);
+                this._groundFloorZones.push(zone);  // Only add the new zone if it is not found in the existing list
+            }
+        })
+    }
+
+    // GETTER METHODS TO PROVIDE COLONISTS WITH PATHFINDING DATA
+
+    // Returns an array containing just the ground zone IDs (if any) that the floor is connected with
+    getFloorGroundZones = () => {
+        const zoneIds: string[] = [];
+        this._groundFloorZones.forEach((zone) => {
+            zoneIds.push(zone.id);
+        })
+        return zoneIds;
     }
 
     // TODO: Add removal functions for Modules and Connectors

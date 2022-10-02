@@ -38,6 +38,24 @@ export const bodyAnimations = (movementType: string, fpm: number, tick: number, 
             xSpeeds = [1, 2, 1, 1, 1, 1, 1, 0];
             ySpeeds = [0, 2, 3, 4, 5, 3, -1, 0];
             break;
+        case "climb-ladder-up":
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];           // X speeds must sum to 0
+            ySpeeds = [0, -2, 0, -2, 0, -2, 0, -2, 0, -2];      // Y speeds must sum to -10
+            break;
+        case "climb-ladder-down":
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];           // X speeds must sum to 0
+            ySpeeds = [0, 2, 0, 2, 0, 2, 0, 2, 0, 2];           // Y speeds must sum to 10
+            break;
+        case "drink":
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];           // Body is still during drinking animation
+            ySpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            break;
         default:
             keyframes = [0.5, 1];
             frameRate = 0.5;
@@ -94,6 +112,24 @@ export const headAnimations = (movementType: string, fpm: number, tick: number, 
             frameRate = 0.125;
             xSpeeds = [1, 2, 2, 1, 1, 1, 1, -1];
             ySpeeds = [1, 3, 3, 4, 5, 2, -2, 0];
+            break;
+        case "climb-ladder-up":
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xSpeeds = [1, -1, 0, 0, 1, -1, 0, 0, 1, -1];        // X speeds must sum to 0
+            ySpeeds = [0, -2, 0, -2, 0, -2, 0, -2, 0, -2];      // Y speeds must sum to -10
+            break;
+        case "climb-ladder-down":
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xSpeeds = [1, -1, 0, 0, 1, -1, 0, 0, 1, -1];        // X speeds must sum to 0
+            ySpeeds = [0, 2, 0, 2, 0, 2, 0, 2, 0, 2];           // Y speeds must sum to 10
+            break;
+        case "drink":
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xSpeeds = [-1, -1, 0, 0, 0, 0, 0, 0, 0, 2];           // Head tilts slightly back and down during drinking animation
+            ySpeeds = [1, 0, 0, 0, 0, 0, 0, 0, 0, -1];
             break;
         default:
             keyframes = [0.5, 1];
@@ -165,6 +201,30 @@ export const handAnimations = (movementType: string, fpm: number, tick: number, 
             yrSpeeds = [0, 2, 3, 4, 5, 3, -2, 1];       // Y values sum to 16
             xlSpeeds = [1, 0, 0, 0, 3, 2, 2, 0];
             ylSpeeds = [4, 3, 0, 0, 5, 4, 1, -1];
+            break;
+        case "climb-ladder-up":
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xlSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];                              // X values sum to 0
+            ylSpeeds = [-1, -1, 0, 0, -2, -1, 0, 0, -2, -3];                        // Y values sum to -10
+            xrSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            yrSpeeds = [0, 0, -2, -1, 0, 0, -2, -2, 0, -3];
+            break;
+        case "climb-ladder-down":
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xlSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];                              // X values sum to 0
+            ylSpeeds = [1, 1, 0, 0, 2, 1, 0, 0, 2, 3];                              // Y values sum to 10
+            xrSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            yrSpeeds = [0, 0, 2, 1, 0, 0, 2, 2, 0, 3];
+            break;
+        case "drink":
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xlSpeeds = [-1, -1, 0, 0, 0, 0, 0, 0, 0, 2];           // Left hand moves in slightly then is still during drinking
+            ylSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            xrSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];           // Right hand is raised above the head
+            yrSpeeds = [-2, -2, 0, 0, 0, 0, 0, 0, 2, 2];
             break;
         case "boogie":
             // TODO: Add Easter Egg
@@ -259,6 +319,30 @@ export const footAnimations = (movementType: string, fpm: number, tick: number, 
             yrSpeeds = [0, 1, 4, 5, 4, 2, 0, 0];
             xlSpeeds = [2, 2, 1, 1, 1, 1, 0, 0];
             ylSpeeds = [0, 3, 4, 5, 4, 0, 0, 0];
+            break;
+        case "climb-ladder-up":
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xlSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];                              // X values sum to 0
+            ylSpeeds = [-1, 0, 0, 0, -2, -3, 0, 0, -4, 0];                          // Y values sum to -10
+            xrSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            yrSpeeds = [0, 0, -2, -1, 0, 0, -3, -3, 0, -1];
+            break;
+        case "climb-ladder-down":
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xlSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];                              // X values sum to 0
+            ylSpeeds = [1, 0, 0, 0, 2, 3, 0, 0, 4, 0];                              // Y values sum to 10
+            xrSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            yrSpeeds = [0, 0, 2, 1, 0, 0, 3, 3, 0, 1];
+            break;
+        case "drink":
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xlSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];           // Feet are completely still during drinking
+            ylSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            xrSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            yrSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
             break;
         default:
             keyframes = [0.5, 1];
