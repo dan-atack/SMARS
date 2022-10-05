@@ -16,7 +16,7 @@ export const createConsumeActionStack = (colonistCoords: Coords, colonistStandin
     let stack: ColonistAction[] = [];
     let stackComplete = false;  // Do we need this??
     // 1 - Get the full list of modules containing the desired resource
-    const modules = infra.findModulesWithResource(resource);
+    const modules = infra.findModulesWithResource(resource, true);
     // 2 - See if any of them are on the same surface as the colonist - if so, the process is already finished!
     const accessibleNow = findModulesOnSameSurface(resource, colonistStandingOn, infra);
     if (accessibleNow.length > 0) {
@@ -163,7 +163,7 @@ export const findElevatorFromGroundToFloor = (floor: Floor, standingOnId: string
 
 // Returns a module ID and coordinates OR a null if no module with the desired resource is found
 export const findModulesWithResource = (resource: Resource, currentPosition: Coords, infra: Infrastructure) => {
-    const modules = infra.findModulesWithResource(resource);
+    const modules = infra.findModulesWithResource(resource, true);
     const nearestModuleId = infra.findModuleNearestToLocation(modules, currentPosition);
     if (nearestModuleId !== 0) {
         const nearestModuleLocation = infra.findModuleLocationFromID(nearestModuleId);
@@ -176,7 +176,7 @@ export const findModulesWithResource = (resource: Resource, currentPosition: Coo
 
 // Returns a list of all the modules that contain a resource and that are on the same floor or ground zone as the colonist
 export const findModulesOnSameSurface = (resource: Resource, standingOn: string | number, infra: Infrastructure) => {
-    const modules = infra.findModulesWithResource(resource);
+    const modules = infra.findModulesWithResource(resource, true);
     const accessibles: Module[] = []; // Keep a list of just the modules that are on the same surface (floor/zone) as the colonist
     modules.forEach((mod) => {
         const floor = infra._data.getFloorFromModuleId(mod._data._id);

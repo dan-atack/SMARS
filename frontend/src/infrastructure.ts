@@ -166,13 +166,16 @@ export default class Infrastructure {
     }
 
     // Returns array of modules when given a resource tuple (name and quantity sought, in this case)
-    findModulesWithResource = (resource: Resource) => {
+    // UPDATE: Can optionally be given second argument, lifeSupp, which is a boolean for when a colonist is looking for food/water
+    findModulesWithResource = (resource: Resource, lifeSupp?: boolean) => {
         let mods: Module[] = [];  // Prepare to return the list of modules
         this._modules.forEach((mod) => {
-            const lifeSupport = mod._data._moduleInfo.type === "Life Support";  // TODO: Use this to restrict options further
+            let lifeSupport = mod._data._moduleInfo.type === "Life Support";
+            // If no value for lifeSupp is provided, then ignore Life Support as a criteria (set to be true no matter what)
+            if (lifeSupp === undefined) lifeSupport = true;
             const hasCapacity = mod._data._resourceCapacity().includes(resource[0]);
             const inStock = mod._data.getResourceQuantity(resource[0]) >= resource[1];   // Compare needed vs available quantity
-            if (hasCapacity && inStock) {
+            if (hasCapacity && inStock && lifeSupport) {
                 // console.log(`Module ${mod._data._moduleInfo.name} contains at least ${resource[1]} ${resource[0]}`);
                 const r = mod._data._resources.find((res) => res[0] === resource[0]);
                 if (r !== undefined) {

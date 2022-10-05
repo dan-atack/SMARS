@@ -1714,11 +1714,11 @@ Exit Criteria:
 
 4. Create an animation sequence for the Colonist's 'eat' move. It should be a standard 10 frames long, with the colonist moving their hands up and inward towards their face and moving their head back and forth to mimick an eating motion.
 
-### 5. Create a unit test where the Colonist is on a non-ground floor and needs to get down (to explore, say). Validate the action stack under such circumstances (should be 'move', 'climb', 'move'). Fix any issues with the code that arise from this test.
+5. Create a unit test where the Colonist is on a non-ground floor and needs to get down (to explore, say). Validate the action stack under such circumstances (should be 'move', 'climb', 'move'). Fix any issues with the code that arise from this test.
 
-### 6. Update the Infrastructure, Infrastructure Data and Colonist Data class unit test files to use the Cantina module for all test module data. This is in order to replace the Storage Room, which will be unable to satisfy the soon-to-be updated module resource finder method's stipulation that any resource containing module must also have the type 'Life Support' in order to qualify as a valid destination for a colonist to eat/drink at.
+6. Update the Infrastructure and Colonist Data class unit test files to use the Cantina module for all test module data. This is in order to replace the Storage Room, which will be unable to satisfy the soon-to-be updated module resource finder method's stipulation that any resource containing module must also have the type 'Life Support' in order to qualify as a valid destination for a colonist to eat/drink at.
 
-### 7. Update the Infrastructure class's findModulesWithResource method so that it only returns modules that have the 'Life Support' type. Ensure that all unit tests and manual sanity checks pass before proceeding (obviously!)
+### 7. Update the Infrastructure class's findModulesWithResource method so that it can take a second, optional parameter called lifeSupp, which is a boolean that tells it to only returns modules that have the 'Life Support' type. Ensure that all unit tests and manual sanity checks pass before proceeding (obviously!)
 
 ### 8. Go through the code and comment-out a good 80-90% of the console logs for the previous chapter, so that only major events are reported to the log.
 

@@ -31,6 +31,28 @@ const storageModuleInfo: ModuleInfo = {
     shapes: []
 }
 
+const cantinaModuleInfo: ModuleInfo = {
+    name: "Cantina",
+    width: 4,
+    height: 3,
+    type: "Life Support",
+    pressurized: true,
+    columnStrength: 10,
+    durability: 100,
+    buildCosts:[
+        ["money", 100000]
+    ],
+    maintenanceCosts: [
+        ["power", 1]
+    ],
+    storageCapacity: [
+        ["food", 5000],
+        ["water", 5000]
+    ],
+    crewCapacity: 2,
+    shapes: []
+}
+
 // Test Connector Data
 const connectorInfo: ConnectorInfo = {
     name: "Ladder",
@@ -57,7 +79,7 @@ describe("ColonistData", () => {
     mockMap._data._mapData = flatTerrain;
     mockMap._data.updateTopographyAndZones();
     mockInfra._data.setup(mockMap._data._mapData.length);
-    mockInfra.addModule(10, 30, storageModuleInfo, mockMap._data._topography, mockMap._data._zones, 1001);
+    mockInfra.addModule(10, 30, cantinaModuleInfo, mockMap._data._topography, mockMap._data._zones, 1001);
     // Provision test module with resources
     mockInfra.addResourcesToModule(1001, [ "water", 100 ]);
     mockInfra.addResourcesToModule(1001, [ "food", 100 ]);
@@ -501,7 +523,7 @@ describe("ColonistData", () => {
         resetColonistData();
         colonistData._needs.water = 10;
         // Add new module above the existing one, and provision it
-        mockInfra.addModule(10, 27, storageModuleInfo, mockMap._data._topography, mockMap._data._zones, 1002);
+        mockInfra.addModule(10, 27, cantinaModuleInfo, mockMap._data._topography, mockMap._data._zones, 1002);
         mockInfra.addResourcesToModule(1002, [ "water", 1000 ]);
         // Deprovision the module on the ground floor
         mockInfra._modules[0]._data.deductResource([ "water", 10000 ]);
