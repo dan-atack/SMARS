@@ -62,11 +62,11 @@ export const createConsumeActionStack = (colonistCoords: Coords, colonistStandin
                         stack.push(addAction("climb", { x: elevator.x, y: floor._elevation - 1 }, 0, elevator.id));
                         stack.push(addAction("move", { x: elevator.x, y: elevator.bottom }));
                         stackComplete = true;
-                        console.log(`STACK COMPLETE: Module ${mod._data._id} found on floor ${floor._id}. Walking across map zone ${elevator.groundZoneId} to climb ladder ${elevId} from y = ${elevator.bottom} to ${floor._elevation}`);
+                        console.log(`STACK COMPLETE: ${mod._data._moduleInfo.name} ${mod._data._id} found on floor ${floor._id}. Walking across map zone ${elevator.groundZoneId} to climb ladder ${elevId} from (${elevator.x}, ${elevator.bottom}) to (${elevator.x}, ${floor._elevation})`);
                     }
                     // If elevator reaches the (non-ground) floor the colonist is on, get on at floor's height (stack complete)
-                    const sameFloor = infra._data._floors.find((floor) => floor._connectors.includes(elevId));
-                    if ((!stackComplete) && elevator && sameFloor) {
+                    const reachesFloor = infra._data._floors.find((floor) => floor._connectors.includes(colonistStandingOn as number));
+                    if ((!stackComplete) && elevator && reachesFloor) {
                         // Only add the second 'move' if the module is at a different x coordinate than the ladder
                         if (modCoords.x !== elevator.x) {
                             stack.push(addAction("move", { x: modCoords.x, y: modCoords.y }));
@@ -74,7 +74,7 @@ export const createConsumeActionStack = (colonistCoords: Coords, colonistStandin
                         stack.push(addAction("climb", { x: elevator.x, y: floor._elevation - 1 }, 0, elevator.id));
                         stack.push(addAction("move", { x: elevator.x, y: elevator.bottom }));
                         stackComplete = true;
-                        console.log(`STACK COMPLETE: Module ${mod._data._id} found on floor ${floor._id}. Walking across floor ${floor._id} to climb ladder ${elevId} from y = ${elevator.bottom} to ${floor._elevation}`);
+                        console.log(`STACK COMPLETE: ${mod._data._moduleInfo.name} ${mod._data._id} found on floor ${floor._id}. Walking across floor ${floor._id} to climb ladder ${elevId} from (${elevator.x}, ${elevator.bottom}) to (${elevator.x}, ${floor._elevation})`);
                     }
                 })
             }            
@@ -85,7 +85,7 @@ export const createConsumeActionStack = (colonistCoords: Coords, colonistStandin
 }
 
 // Returns an elevator or a null if no acceptable elevator is found
-export const findElevatorToGround = (x: number, floorId: number, map: Map, infra: Infrastructure) => {
+export const findElevatorToGround = (x: number, floorId: number, infra: Infrastructure) => {
     const floor = infra._data.getFloorFromId(floorId);
     if (floor) {
         // Get elevators list for current floor

@@ -1710,17 +1710,19 @@ Exit Criteria:
 
 2. Update the logic for the createConsumeActionStack function so that it creates the entire action stack at the end of its route determination. Also, make it only add the first (chronologically last) move action if the colonist isn't already in position to eat/drink when they get off the ladder (i.e. only add the 'move' action if the ladder's x doesn't match the target module's).
 
-### 3. Update the corresponding logic for when the colonist is already on the same surface and doesn't need to move (e.g. if they've just eaten and just need to stay in place to take a drink). Validate in-game and with a unit test.
+3. Update the corresponding logic for when the colonist is already on the same surface and doesn't need to move (e.g. if they've just eaten and just need to stay in place to take a drink). Validate in-game and with a unit test.
 
-### 3. Create an animation sequence for the Colonist's 'eat' move. It should be a standard 10 frames long, with the colonist moving their hands up and inward towards their face and moving their head back and forth to mimick an eating motion.
+4. Create an animation sequence for the Colonist's 'eat' move. It should be a standard 10 frames long, with the colonist moving their hands up and inward towards their face and moving their head back and forth to mimick an eating motion.
 
-### 4. Create (or uncomment) a unit test where the Colonist is on a non-ground floor and needs to get down (to explore, say). Validate the action stack under such circumstances (should be 'move', 'climb', 'move'). Should the test indicate any deficiencies with the code, ensure that the code is fixed so it is able to deliver the desired result under all reasonable circumstances.
+### 5. Create a unit test where the Colonist is on a non-ground floor and needs to get down (to explore, say). Validate the action stack under such circumstances (should be 'move', 'climb', 'move'). Fix any issues with the code that arise from this test.
 
-### 5. Update the Infrastructure, Infrastructure Data and Colonist Data class unit test files to use the Cantina module for all test module data. This is in order to replace the Storage Room, which will be unable to satisfy the soon-to-be updated module resource finder method's stipulation that any resource containing module must also have the type 'Life Support' in order to qualify as a valid destination for a colonist to eat/drink at.
+### 6. Update the Infrastructure, Infrastructure Data and Colonist Data class unit test files to use the Cantina module for all test module data. This is in order to replace the Storage Room, which will be unable to satisfy the soon-to-be updated module resource finder method's stipulation that any resource containing module must also have the type 'Life Support' in order to qualify as a valid destination for a colonist to eat/drink at.
 
-### 6. Update the Infrastructure class's findModulesWithResource method so that it only returns modules that have the 'Life Support' type. Ensure that all unit tests and manual sanity checks pass before proceeding (obviously!)
+### 7. Update the Infrastructure class's findModulesWithResource method so that it only returns modules that have the 'Life Support' type. Ensure that all unit tests and manual sanity checks pass before proceeding (obviously!)
 
-### 7. Go through the code and comment-out a good 80-90% of the console logs for the previous chapter, so that only major events are reported to the log.
+### 8. Go through the code and comment-out a good 80-90% of the console logs for the previous chapter, so that only major events are reported to the log.
+
+### 9. Get QA to validate that the bugs discovered (phantom ladder climbing/window jumping colonists) have in fact been resolved.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
@@ -1755,6 +1757,10 @@ As the game matures, it will be more and more desirable to separate features tha
 11. [8: Major Gameplay issue] Loaded games do not allow the player to scroll all the way to the far right of the map; the section underneath the sidebar becomes unreachable when the player saves and then subsequently reloads the game.
 
 12. [5: Save Data Completeness] Although currently not doing much, save game files do not contain the game's map type or difficulty level data - both fields contain a blank string.
+
+### 13. [8: Major Gameplay issue] In some circumstances, colonists who have just begun an 'explore' goal will have an action stack that tells them to jump off of a floor.
+
+### 14. [8: Major Gameplay issue] In some circumstances, colonists will climb empty space (in the observed instance, the place where the climb action took place was in between two actual ladders) as though it were an actual ladder.
 
 ## Technical Debt Issues:
 

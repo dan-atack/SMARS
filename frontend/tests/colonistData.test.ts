@@ -599,6 +599,32 @@ describe("ColonistData", () => {
         })
         expect(colonistData._actionStack.length).toBe(0);   // No items should be left in the stack; only the current action
     })
+
+    // 5 - Colonist is on non-ground floor and wants to resume exploring the surface, actions are: move, climb, move (to explore goal)
+    test("Explore goal will lead to action stack: [move?, climb, move] if colonist is on non-ground floor", () => {
+        resetColonistData();
+        // Place colonist on the 2nd floor of the base
+        colonistData._x = 12;
+        colonistData._y = 28;
+        colonistData.detectTerrainBeneath(mockMap, mockInfra);
+        // Set goal
+        colonistData.setGoal("explore", mockInfra, mockMap);
+        colonistData.determineActionsForGoal(mockInfra, mockMap);
+        // Since the explore goal determines a random point, just check the current action, stack length, and climb action
+        expect(colonistData._currentAction).toStrictEqual({
+            type: "move",
+            coords: { x: 10, y: 28 },
+            duration: 0,
+            buildingId: 0
+        });
+        expect(colonistData._actionStack.length).toBe(2);
+        expect(colonistData._actionStack[1]).toStrictEqual({
+            type: "climb",
+            coords: { x: 10, y: 31 },
+            duration: 0,
+            buildingId: 2002
+        })
+    })
     
     // 3 - When Colonist is on a non-ground floor and module is another non-ground floor that is connected to the current floor via ladder, actions are: move, climb, move, consume
 

@@ -176,7 +176,7 @@ export default class ColonistData {
                 // Finally, if the colonist is NOT on the ground, they need to get back down before trying to move
                 if (typeof this._standingOnId === "number") {
                     // Find the closest elevator that goes to the ground floor:
-                    const elevator = findElevatorToGround(this._x, this._standingOnId, map, infra);
+                    const elevator = findElevatorToGround(this._x, this._standingOnId, infra);
                     if (elevator) {
                         // If found, add order to climb nearest ladder down to the ground level (minus 1 for the feet)
                         this.addAction("climb", { x: elevator.x, y: elevator.bottom - 1 }, 0, elevator.id);

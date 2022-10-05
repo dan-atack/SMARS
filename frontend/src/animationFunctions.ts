@@ -132,6 +132,12 @@ export const headAnimations = (movementType: string, fpm: number, tick: number, 
             xSpeeds = [-1, -1, 0, 0, 0, 0, 0, 0, 0, 2];           // Head tilts slightly back and down during drinking animation
             ySpeeds = [1, 0, 0, 0, 0, 0, 0, 0, 0, -1];
             break;
+        case "eat":
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xSpeeds = [-1, -1, 0, 1, -1, 1, -1, 1, -1, 2];           // Head tilts back and forth during eating animation
+            ySpeeds = [0, 0, 0, 1, -1, 1, -1, 1, -1, 0];
+            break;
         default:
             keyframes = [0.5, 1];
             frameRate = 0.5;
@@ -226,6 +232,14 @@ export const handAnimations = (movementType: string, fpm: number, tick: number, 
             ylSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
             xrSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];           // Right hand is raised above the head
             yrSpeeds = [-2, -2, 0, 0, 0, 0, 0, 0, 2, 2];
+            break;
+        case "eat":                                         // Both hands move up and inward as if holding up food to be eaten
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xlSpeeds = [1, 1, 0, 0, 0, 0, 0, 0, 0, 2];      // Left hand inwards = positive
+            ylSpeeds = [-1, -1, 0, 0, 0, 0, 0, 0, 0, 2];
+            xrSpeeds = [-1, -1, 0, 0, 0, 0, 0, 0, 0, 2];    // Right hand inwards = negative
+            yrSpeeds = [-1, -1, 0, 0, 0, 0, 0, 0, 0, 2];    // Both hands (and everything else) upward = negative
             break;
         case "boogie":
             // TODO: Add Easter Egg
@@ -338,12 +352,13 @@ export const footAnimations = (movementType: string, fpm: number, tick: number, 
             yrSpeeds = [0, 0, 2, 1, 0, 0, 3, 3, 0, 1];
             break;
         case "drink":
-            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
-            frameRate = 0.1;
-            xlSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];           // Feet are completely still during drinking
-            ylSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-            xrSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-            yrSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        case "eat":
+            keyframes = [0.5, 1];
+            frameRate = 0.5;
+            xlSpeeds = [0, 0];           // Feet are completely still during drinking and eating
+            ylSpeeds = [0, 0];
+            xrSpeeds = [0, 0];
+            yrSpeeds = [0, 0];
             break;
         default:
             keyframes = [0.5, 1];
