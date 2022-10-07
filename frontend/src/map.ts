@@ -26,7 +26,7 @@ export default class Map {
     }
 
     // The Engine passes the H-offset (V-offset coming soon) value here so that the blocks' positions are updated with every render; if the sidebar is open then compact = true, causing a smaller area of the map to be shown:
-    render = (p5: P5, horizontalOffset: number) => {
+    render = (horizontalOffset: number) => {
         this._data._horizontalOffset = horizontalOffset;
         // Only render one screen width's worth, taking horizontal offset into account:
         const leftEdge = Math.floor(this._data._horizontalOffset / constants.BLOCK_WIDTH);    // Edges are in terms of columns

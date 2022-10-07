@@ -166,10 +166,10 @@ export default class MapData {
             if (zStart === zFinish && destY + 1 === this._topography[destX]) {
                 return true     // Return true if start and destination are in the same zone, and destination is at ground level
             } else if (zStart === zFinish) {
-                console.log(`Elevation ${destY} not reachable at destination ${destX}`);
+                // console.log(`Elevation ${destY} not reachable at destination ${destX}`);
                 return false;
             } else {
-                console.log(`Column ${startX} is in different zone than column ${destX}`);
+                // console.log(`Column ${startX} is in different zone than column ${destX}`);
                 return false;
             }
         } else {

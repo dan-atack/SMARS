@@ -1718,11 +1718,13 @@ Exit Criteria:
 
 6. Update the Infrastructure and Colonist Data class unit test files to use the Cantina module for all test module data. This is in order to replace the Storage Room, which will be unable to satisfy the soon-to-be updated module resource finder method's stipulation that any resource containing module must also have the type 'Life Support' in order to qualify as a valid destination for a colonist to eat/drink at.
 
-### 7. Update the Infrastructure class's findModulesWithResource method so that it can take a second, optional parameter called lifeSupp, which is a boolean that tells it to only returns modules that have the 'Life Support' type. Ensure that all unit tests and manual sanity checks pass before proceeding (obviously!)
+7. Update the Infrastructure class's findModulesWithResource method so that it can take a second, optional parameter called lifeSupp, which is a boolean that tells it to only returns modules that have the 'Life Support' type. Ensure that all unit tests and manual sanity checks pass before proceeding (obviously!)
 
-### 8. Go through the code and comment-out a good 80-90% of the console logs for the previous chapter, so that only major events are reported to the log.
+8. Go through the code and comment-out a good 80-90% of the console logs for the previous chapter, so that only major events are reported to the log.
 
-### 9. Get QA to validate that the bugs discovered (phantom ladder climbing/window jumping colonists) have in fact been resolved.
+9. Add/fix the outcome for the Colonist's Action Logic where the colonist is on a (non-ground) floor and finds resources on another (non-ground) floor and has to move towards them. Add a unit test as well, of course.
+
+### 10. Finally, we do need to have some kind of system in place for when a resource truly isn't available, to prevent the colonist from freezing up in the event of a scarcity. I recommend adding an additional trait, needsAvailable, to keep track of missed attempts at finding any of their needs. That way, if a colonist runs the get-water/get-food sequence and recieves and empty list, they can set the needsUnmet for that need to 0 (default value of 1 means that the resource is accessible, as far as the colonist knows). Then, the updateGoal method's first needs-based section can check for that value when preparing to set the goal to get-(need), and skip that need if the value is zero. In order to ensure the Colonist occasionally checks again, we can reset the availablilty value to 1 with each hourly update. I suppose we'll want to unit test this too, consarnit.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

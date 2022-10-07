@@ -26,6 +26,7 @@ export default class ColonistData {
     _yOffset: number;
     _needs: ColonistNeeds;          // Keep track of the colonist's needs to help them choose what to do with their lives
     _needThresholds: ColonistNeeds; // Separately keep track of the various thresholds for each type of need
+    _needsAvailable: ColonistNeeds; // Also, keep track of whether any needs are unavailable (0 = unavailable, 1 = available)
     _currentGoal: string;           // String name of the Colonist's current goal (e.g. "get food", "get rest", "explore", etc.)
     _actionStack: ColonistAction[]; // Actions, from last to first, that the colonist will perform to achieve their current goal
     _currentAction: ColonistAction | null; // The individual action that is currently being undertaken (if any)
@@ -57,6 +58,11 @@ export default class ColonistData {
             food: 6,
             rest: 1000
         };
+        this._needsAvailable = {    // Set to 1 for available, 0 for unavailable; resets every hour
+            water: 1,
+            food: 1,
+            rest: 1
+        };
         this._currentGoal = saveData ? saveData.goal : "explore"    // Load saved goal, or go exploring (for new colonists).
         this._actionStack = saveData?.actionStack ? saveData.actionStack : [];   // Load saved action stack or default to empty
         this._currentAction = saveData?.currentAction ? saveData.currentAction : null;  // Load current action or default to null
@@ -73,6 +79,7 @@ export default class ColonistData {
     // Handles hourly updates to the colonist's needs and priorities (goals)
     handleHourlyUpdates = (infra: Infrastructure, map: Map) => {
         this.updateNeeds();
+        this.resetNeedAvailabilities();
         this.updateGoal(infra, map);
     }
 
@@ -93,15 +100,22 @@ export default class ColonistData {
         this._needs.rest += 1;
     }
 
+    // Tells the colonist to assume that all needs can be checked for again
+    resetNeedAvailabilities = () => {
+        this._needsAvailable.food = 1;
+        this._needsAvailable.water = 1;
+        this._needsAvailable.rest = 1;
+    }
+
     // Checks whether any needs have exceeded their threshold and assigns a new goal if so; otherwise sets goal to 'explore'
     updateGoal = (infra: Infrastructure, map: Map) => {
         // 1 - Determine needs-based (first priority) goals
         // If the colonist has no current goal, or is set to exploring, check if any needs have reached their thresholds
-        // TODO: Revamp this logic to check for needs in a separate sub-method, and to include other tasks that can be overridden
         if (this._currentGoal === "explore" || this._currentGoal === "") {
             Object.keys(this._needs).forEach((need) => {
+                // Check each need to see if it has A) crossed its threshold and B) is still believed to be available
                 // @ts-ignore
-                if (this._needs[need] >= this._needThresholds[need]) {
+                if (this._needs[need] >= this._needThresholds[need] && this._needsAvailable[need]) {
                     // When setting new goal, clear out the current action - UNLESS it's a 'climb' action, in which case wait
                     if (this._currentAction?.type !== "climb") {
                         this.resolveAction();
@@ -189,69 +203,13 @@ export default class ColonistData {
                 break;
             case "get-water":
                 this._actionStack = createConsumeActionStack(currentPosition, this._standingOnId, ["water", this._needs.water], infra);
-                // 1 - Find the location of the nearest module containing water
-                // const waterMod = findModulesWithResource(["water", this._needs.water], currentPosition, infra);
-                // if (waterMod) {
-                //     // 2 - If a module is found, add 'drink' and 'move' actions to stack (if none is found, set a new goal)
-                //     this.addAction("drink", waterMod.coords, this._needs.water, waterMod.id);
-                //     this.addAction("move", waterMod.coords);      // Only 2 arguments needed for move actions
-                //     // 3 - Find out which floor the module is on
-                //     const waterFloor = infra._data.getFloorFromModuleId(waterMod.id);
-                //     if (waterFloor !== null) {
-                //         // 4 - Check if module is on the same surface as the colonist - if so, action stack is complete
-                //         const sameZone = determineIfColonistIsOnSameSurfaceAsModule(waterFloor, this._standingOnId);
-                //         // 5 - If the colonist is not on the same surface, find the nearest ladder to the target floor
-                //         if (!sameZone) {
-                //             console.log(`Water source is on floor ${waterFloor._id}. Colonist is not.`)
-                //             // Find nearest elevator to target floor
-                //             const elevator = findElevatorFromGroundToFloor(waterFloor, this._standingOnId.toString(), { x: this._x, y: this._y }, infra);
-                //             if (elevator) {
-                //                 this.addAction("climb", { x: elevator.x, y: waterFloor._elevation - 1}, 0, elevator.id);
-                //                 this.addAction("move", { x: elevator.x, y: elevator.bottom});
-                //             } else {
-                //                 console.log(`No elevator connections found to floor ${waterFloor._id}`)
-                //             }
-                //         }
-                //     } else {
-                //         console.log(`Error: Floor not found for module ${waterMod.id}`);
-                //     }
-                // } else {
-                //     // TODO: If no acceptable modules are found, tell the colonist to wait a little while before looking again
-                //     console.log(`Warning: No modules containing ${this._needs.water} water found.`);
-                // }
+                // If no action stack was returned, assume that water is temporarily unavailable
+                if (this._actionStack.length === 0) this._needsAvailable.water = 0;
                 break;
             case "get-food":    // Parallels the get-water case almost closely enough to be the same... but not quite!
             this._actionStack = createConsumeActionStack(currentPosition, this._standingOnId, ["food", this._needs.food], infra);
-                // 1 - Find the location of the nearest module containing food
-                // const foodMod = findModulesWithResource(["food", this._needs.food], currentPosition, infra);
-                // if (foodMod) {
-                //     // 2 - If a module is found, add 'eat' and 'move' actions to stack (if none is found, set a new goal)
-                //     this.addAction("eat", foodMod.coords, this._needs.food, foodMod.id);
-                //     this.addAction("move", foodMod.coords);      // Only 2 arguments needed for move actions
-                //     // 3 - Find out which floor the module is on
-                //     const foodFloor = infra._data.getFloorFromModuleId(foodMod.id);
-                //     if (foodFloor !== null) {
-                //         // 4 - Check if module is on the same surface as the colonist - if so, action stack is complete
-                //         const sameZone = determineIfColonistIsOnSameSurfaceAsModule(foodFloor, this._standingOnId);
-                //         // 5 - If the colonist is not on the same surface, find the nearest ladder to the target floor
-                //         if (!sameZone) {
-                //             console.log(`Food source is on floor ${foodFloor._id}. Colonist is not.`)
-                //             // Find nearest elevator to target floor
-                //             const elevator = findElevatorFromGroundToFloor(foodFloor, this._standingOnId.toString(), { x: this._x, y: this._y }, infra);
-                //             if (elevator) {
-                //                 this.addAction("climb", { x: elevator.x, y: foodFloor._elevation - 1}, 0, elevator.id);
-                //                 this.addAction("move", { x: elevator.x, y: elevator.bottom});
-                //             } else {
-                //                 console.log(`No elevator connections found to floor ${foodFloor._id}`)
-                //             }
-                //         }
-                //     } else {
-                //         console.log(`Error: Floor not found for module ${foodMod.id}`);
-                //     }
-                // } else {
-                //     // TODO: If no acceptable modules are found, tell the colonist to wait a little while before looking again
-                //     console.log(`Warning: No modules containing ${this._needs.water} water found.`);
-                // }
+                // If no action stack was returned, assume that food is temporarily unavailable
+                if (this._actionStack.length === 0) this._needsAvailable.food = 0;
                 break;
         }
         this.startGoalProgress(infra);
@@ -316,19 +274,19 @@ export default class ColonistData {
             this._currentAction = action;
             switch(this._currentAction.type) {
                 case "climb":
-                    console.log(`Colonist ${this._id} Climbing ladder at ${this._currentAction.coords.x}`);
+                    // console.log(`Colonist ${this._id} Climbing ladder at ${this._currentAction.coords.x}`);
                     this._movementDest = this._currentAction.coords;
                     break;
                 case "drink":
-                    console.log(`Colonist ${this._id} Drinking at ${this._currentAction.buildingId}`);
+                    // console.log(`Colonist ${this._id} Drinking at ${this._currentAction.buildingId}`);
                     this.consume("water", infra);
                     break;
                 case "eat":
-                    console.log(`Colonist ${this._id} Eating at ${this._currentAction.buildingId}`);
+                    // console.log(`Colonist ${this._id} Eating at ${this._currentAction.buildingId}`);
                     this.consume("food", infra);
                     break;
                 case "move":
-                    console.log(`Colonist ${this._id} Beginning movement to ${this._currentAction.coords.x}`);
+                    // console.log(`Colonist ${this._id} Beginning movement to ${this._currentAction.coords.x}`);
                     this._movementDest = this._currentAction.coords;
                     break;
             }

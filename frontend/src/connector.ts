@@ -80,7 +80,6 @@ export default class Connector {
         } else {
             this.renderDuct(p5);
         }
-        // p5.text(this._data._length, 20, 160);
     }
 
 }

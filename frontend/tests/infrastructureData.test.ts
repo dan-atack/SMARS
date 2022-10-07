@@ -443,4 +443,8 @@ describe("Infrastructure Data", () => {
         // TODO: Add a case where a floor bridges two zones??
     })
 
+    test("Can get a list of floors that are connected to an elevator (ladder) from the elevator's ID", () => {
+        expect(infraData.getFloorsFromElevatorId(9000).length).toBe(3);
+    })
+
 })

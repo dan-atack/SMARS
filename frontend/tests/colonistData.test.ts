@@ -90,6 +90,7 @@ describe("ColonistData", () => {
     const resetColonistData = () => {
         colonistData._x = 0;
         colonistData._y = 31;
+        colonistData.detectTerrainBeneath(mockMap, mockInfra);
         colonistData.stopMovement();
         colonistData.resolveAction();
         colonistData.clearActions();
@@ -531,7 +532,6 @@ describe("ColonistData", () => {
         mockInfra.addConnector({ x: 11, y: 32 }, { x: 11, y: 28 }, connectorInfo, mockMap, 2001);
         // Run test
         colonistData.setGoal("get-water", mockInfra, mockMap);
-        colonistData.determineActionsForGoal(mockInfra, mockMap);
         // Current action should be to move to the ladder
         expect(colonistData._actionStack.length).toBe(3);
         expect(colonistData._currentAction).toStrictEqual({
@@ -573,7 +573,6 @@ describe("ColonistData", () => {
         mockInfra.addConnector({ x: 10, y: 32 }, { x: 10, y: 28 }, connectorInfo, mockMap, 2002);
         // Run test
         colonistData.setGoal("get-water", mockInfra, mockMap);
-        colonistData.determineActionsForGoal(mockInfra, mockMap);
         // Current action should be to move to the ladder
         expect(colonistData._actionStack.length).toBe(2);   // Only 2 items should remain in the action stack
         expect(colonistData._currentAction).toStrictEqual({
@@ -611,7 +610,6 @@ describe("ColonistData", () => {
         colonistData.detectTerrainBeneath(mockMap, mockInfra);
         // Run test
         colonistData.setGoal("get-water", mockInfra, mockMap);
-        colonistData.determineActionsForGoal(mockInfra, mockMap);
         // Since no move action is required the colonist should just begin the drink action immediately
         expect(colonistData._currentAction).toStrictEqual({
             type: "drink",
@@ -631,7 +629,6 @@ describe("ColonistData", () => {
         colonistData.detectTerrainBeneath(mockMap, mockInfra);
         // Set goal
         colonistData.setGoal("explore", mockInfra, mockMap);
-        colonistData.determineActionsForGoal(mockInfra, mockMap);
         // Since the explore goal determines a random point, just check the current action, stack length, and climb action
         expect(colonistData._currentAction).toStrictEqual({
             type: "move",
@@ -647,65 +644,72 @@ describe("ColonistData", () => {
             buildingId: 2002
         })
     })
-    
-    // 3 - When Colonist is on a non-ground floor and module is another non-ground floor that is connected to the current floor via ladder, actions are: move, climb, move, consume
 
-    // test("DetermineActionsForGoal populates action stack with drink, move, climb, move when module is on diff floor", () => {
-    //     resetColonistData();
-    //     colonistData._needs.water = 10;
-    //     // Add new module (a third storey), and provision it
-    //     mockInfra.addModule(10, 24, storageModuleInfo, mockMap._data._topography, mockMap._data._zones, 1003);
-    //     mockInfra.addResourcesToModule(1003, [ "water", 1000 ]);
-    //     // Deprovision the module on the second floor
-    //     mockInfra._modules[1]._data.deductResource([ "water", 10000 ]);
-    //     // Add a connector that goes all the way from the ground floor to the new module
-    //     mockInfra.addConnector({ x: 11, y: 32 }, { x: 11, y: 28 }, connectorInfo, mockMap, 2001);
-    //     // Move colonist to middle floor
-    //     colonistData._x = 10;
-    //     colonistData._y = 29;
-    //     // Validate colonist is detected on the second floor
-    //     expect(colonistData._mapZoneId).toBe(1002);
-    //     // Run test
-    //     colonistData.setGoal("get-water");
-    //     colonistData.determineActionsForGoal(mockInfra, mockMap);
-    //     // Current action should be to move to the ladder
-    //     expect(colonistData._actionStack.length).toBe(3);
-    //     expect(colonistData._currentAction).toStrictEqual({
-    //         type: "move",
-    //         coords: { x: 11, y: 32 },
-    //         duration: 0,
-    //         buildingId: 0
-    //     })
-    //     // Action stack contains remaining actions in reverse order of execution (drink, move, climb)
-    //     expect(colonistData._actionStack).toStrictEqual([
-    //         {
-    //             type: "drink",
-    //             coords: { x: 10, y: 29 },
-    //             duration: 10,
-    //             buildingId: 1002
-    //         },
-    //         {
-    //             type: "move",
-    //             coords: { x: 10, y: 29 },
-    //             duration: 0,
-    //             buildingId: 0
-    //         },
-    //         {
-    //             type: "climb",
-    //             coords: { x: 11, y: 28 },   // NOTE: Climb action takes into account the Colonist's HEAD level, not FOOT level
-    //             duration: 0,
-    //             buildingId: 2001
-    //         }
-    //     ])
-    // })
+    // 6 - Colonist is on non-ground floor and module is on another non-ground floor. Actions are: consume, move, climb, move
+    test("DetermineActionsForGoal populates action stack with drink, move, climb, move when module is on diff floor", () => {
+        resetColonistData();
+        // Place colonist on the 2nd floor of the base
+        colonistData._x = 12;
+        colonistData._y = 28;
+        colonistData.detectTerrainBeneath(mockMap, mockInfra);
+        colonistData._needs.water = 10;
+        // Add new module above the existing ones (on the 3rd floor), and provision it, then deprovision other modules
+        mockInfra.addModule(10, 24, cantinaModuleInfo, mockMap._data._topography, mockMap._data._zones, 1003);
+        mockInfra.addResourcesToModule(1003, [ "water", 1000 ]);
+        mockInfra._modules[0]._data.deductResource([ "water", 10000 ]);
+        mockInfra._modules[1]._data.deductResource([ "water", 10000 ]);
+        // Add a connector that goes from the 2nd floor to the 3rd
+        mockInfra.addConnector({ x: 13, y: 32 }, { x: 13, y: 24 }, connectorInfo, mockMap, 2003);
+        // Run test: colonist should move to the ladder and then climb it to the 3rd floor
+        colonistData.setGoal("get-water", mockInfra, mockMap);
+        // Current action should be to move to the ladder
+        expect(colonistData._actionStack.length).toBe(3);
+        expect(colonistData._currentAction).toStrictEqual({
+            type: "move",
+            coords: { x: 13, y: 29 },
+            duration: 0,
+            buildingId: 0
+        })
+        // Action stack contains remaining actions in reverse order of execution (drink, move, climb)
+        expect(colonistData._actionStack).toStrictEqual([
+            {
+                type: "drink",
+                coords: { x: 10, y: 26 },
+                duration: 10,
+                buildingId: 1003
+            },
+            {
+                type: "move",
+                coords: { x: 10, y: 26 },
+                duration: 0,
+                buildingId: 0
+            },
+            {
+                type: "climb",
+                coords: { x: 13, y: 25 },   // NOTE: Climb action takes into account the Colonist's HEAD level, not FOOT level
+                duration: 0,
+                buildingId: 2003
+            }
+        ])
+    })
 
-    // 4 - When Colonist is on non-ground floor and module is on a different floor inside the base
+    // 7 - If no action stack is returned for a get-(need) determination, colonist should ignore that need for the next hour
+    test("Colonist ignores unavailable resource when action stack determination output is empty", () => {
+        resetColonistData();
+        // Make the colonist thirsty...
+        colonistData._needs.water = 10;
+        // ... But deprovision water modules so that they cannot slake their thirst
+        mockInfra._modules[2]._data.deductResource([ "water", 10000 ]);
+        // Tell colonist to fetch water when there isn't any
+        colonistData.setGoal("get-water", mockInfra, mockMap);
+        expect(colonistData._actionStack.length).toBe(0);
+        expect(colonistData._needsAvailable.water).toBe(0);
+        // Also, check that the availability is reset to 1 after the hourly update
+        colonistData.handleHourlyUpdates(mockInfra, mockMap);
+        expect(colonistData._needsAvailable.water).toBe(1);
+    })
 
-    // 5 - When Colonist is on non-ground floor and destination (no module) is somewhere outside of the base
-
-    // 6 - When Colonist is anywhere and a resource is not available, what should they do? Presumably wait a little while and then try again to find the needed resource? Make them do that.
-
-    // TODO: Test updatePosition method
+    // TODO: Test updatePosition method!!!
 
     test("Can detect when the colonist is standing on a floor vs on a map zone", () => {
         resetColonistData();

@@ -4,7 +4,6 @@ import { Resource } from "./economyData";
 import Floor from "./floor";
 import Infrastructure from "./infrastructure";
 import { Elevator } from "./infrastructureData";
-import Map from "./map";
 import Module from "./module";
 
 // TOP LEVEL METHODS
@@ -43,9 +42,8 @@ export const createConsumeActionStack = (colonistCoords: Coords, colonistStandin
             // Does floor have elevators? --> If no, try next module
             // NOTE: Stop checking here if the stackComplete flag is set to true
             if ((!stackComplete) && floor && floor._connectors.length > 0) {
-                // If floor has elevators, start a fresh stack (clear out prev attempt) and add initial consume action
+                // If floor has elevators, start a fresh stack by adding initial consume action
                 const modCoords = infra.findModuleLocationFromID(mod._data._id);
-                stack = [];
                 stack.push(addAction(verb, { x: modCoords.x, y: modCoords.y }, resource[1], mod._data._id));
                 // Then loop thru elevators list
                 const elevatorIDs = floor._connectors;
@@ -62,22 +60,26 @@ export const createConsumeActionStack = (colonistCoords: Coords, colonistStandin
                         stack.push(addAction("climb", { x: elevator.x, y: floor._elevation - 1 }, 0, elevator.id));
                         stack.push(addAction("move", { x: elevator.x, y: elevator.bottom }));
                         stackComplete = true;
-                        console.log(`STACK COMPLETE: ${mod._data._moduleInfo.name} ${mod._data._id} found on floor ${floor._id}. Walking across map zone ${elevator.groundZoneId} to climb ladder ${elevId} from (${elevator.x}, ${elevator.bottom}) to (${elevator.x}, ${floor._elevation})`);
+                        // console.log(`STACK COMPLETE: ${mod._data._moduleInfo.name} ${mod._data._id} found on floor ${floor._id}. Walking across map zone ${elevator.groundZoneId} to climb ladder ${elevId} from (${elevator.x}, ${elevator.bottom}) to (${elevator.x}, ${floor._elevation})`);
                     }
                     // If elevator reaches the (non-ground) floor the colonist is on, get on at floor's height (stack complete)
-                    const reachesFloor = infra._data._floors.find((floor) => floor._connectors.includes(colonistStandingOn as number));
+                    // Better stated, find which floor/s include this elevator's ID, and check each of their ID against the colonist's standingon as a number. So you got it half right.
+                    const floors = infra._data.getFloorsFromElevatorId(elevId);
+                    const reachesFloor = floors.find((floor) => floor._id === colonistStandingOn as number);
                     if ((!stackComplete) && elevator && reachesFloor) {
                         // Only add the second 'move' if the module is at a different x coordinate than the ladder
                         if (modCoords.x !== elevator.x) {
                             stack.push(addAction("move", { x: modCoords.x, y: modCoords.y }));
                         }
                         stack.push(addAction("climb", { x: elevator.x, y: floor._elevation - 1 }, 0, elevator.id));
-                        stack.push(addAction("move", { x: elevator.x, y: elevator.bottom }));
+                        stack.push(addAction("move", { x: elevator.x, y: colonistCoords.y }));
                         stackComplete = true;
-                        console.log(`STACK COMPLETE: ${mod._data._moduleInfo.name} ${mod._data._id} found on floor ${floor._id}. Walking across floor ${floor._id} to climb ladder ${elevId} from (${elevator.x}, ${elevator.bottom}) to (${elevator.x}, ${floor._elevation})`);
+                        // console.log(`STACK COMPLETE: ${mod._data._moduleInfo.name} ${mod._data._id} found on floor ${floor._id}. Walking across floor ${floor._id} to climb ladder ${elevId} from (${elevator.x}, ${elevator.bottom}) to (${elevator.x}, ${floor._elevation})`);
                     }
                 })
-            }            
+            }
+            // Reset stack length to zero here if it only contains the initial consume action (no connection was found to the target floor)
+            if (stack.length === 1) stack = [];          
         })
     }
     // 4 - Finally, return the action stack for the colonist to start using it

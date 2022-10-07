@@ -841,7 +841,7 @@ export default class Engine extends View {
         if (this._animation) {
             this._animation.render(this._horizontalOffset);     // Render animation second
         }
-        this._map.render(this._p5, this._horizontalOffset);               // Render map third
+        this._map.render(this._horizontalOffset);               // Render map third
         this._infrastructure.render(this._p5, this._horizontalOffset);    // Render infrastructure fourth
         if (this.selectedBuilding && !this._infrastructure._data.isModule(this.selectedBuilding)) {
             this.renderMouseShadow(); // If placing a connector, render mouse shadow above the infra layer
@@ -856,17 +856,12 @@ export default class Engine extends View {
         if (this._modal) {
             this._modal.render();
         }
-        // if (this._infrastructure._data._floors.length > 4) {
-        //     p5.text(`Floor 4 modules: ${this._infrastructure._data._floors[4]._modules}`, 160, 180);
-        //     p5.text(`Floor 4 zones: ${this._infrastructure._data._floors[4]._groundFloorZones[0].id}`, 60, 200);
+        // if (this._population._colonists.length > 1) {
+        //     p5.text(`Colonist 1 water needs: ${this._population._colonists[0]._data._needs.water}`, 160, 160);
+        //     p5.text(`Colonist 1 food needs: ${this._population._colonists[0]._data._needs.food}`, 160, 180);
+        //     p5.text(`Colonist 2 water needs: ${this._population._colonists[1]._data._needs.water}`, 160, 200);
+        //     p5.text(`Colonist 2 food needs: ${this._population._colonists[1]._data._needs.food}`, 160, 220);
         // }
-        if (this._population._colonists.length > 1) {
-            p5.text(`Colonist 1 water needs: ${this._population._colonists[0]._data._needs.water}`, 160, 160);
-            p5.text(`Colonist 1 food needs: ${this._population._colonists[0]._data._needs.food}`, 160, 180);
-            p5.text(`Colonist 2 water needs: ${this._population._colonists[1]._data._needs.water}`, 160, 200);
-            p5.text(`Colonist 2 food needs: ${this._population._colonists[1]._data._needs.food}`, 160, 220);
-        }
-        
     }
 
 }
