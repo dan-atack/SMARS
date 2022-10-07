@@ -361,6 +361,14 @@ export default class InfrastructureData {
         }
     }
 
+    // Takes an elevator ID and returns all of the Floors that have that ID in their connectors list
+    getFloorsFromElevatorId (elevatorId: number) {
+        const floors = this._floors.filter((fl) => {
+            return fl._connectors.includes(elevatorId);
+        })
+        return floors;
+    }
+
     // Takes and elevator (ladder) ID and returns the data for that elevator
     getElevatorFromId (elevatorId: number) {
         const elevator = this._elevators.find((el) => el.id === elevatorId);

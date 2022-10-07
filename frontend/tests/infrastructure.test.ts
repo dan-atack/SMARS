@@ -52,6 +52,28 @@ const storageModuleInfo: ModuleInfo = {
     shapes: []
 }
 
+const cantinaModuleInfo: ModuleInfo = {
+    name: "Cantina",
+    width: 4,
+    height: 3,
+    type: "Life Support",
+    pressurized: true,
+    columnStrength: 10,
+    durability: 100,
+    buildCosts:[
+        ["money", 100000]
+    ],
+    maintenanceCosts: [
+        ["power", 1]
+    ],
+    storageCapacity: [
+        ["food", 5000],
+        ["water", 5000]
+    ],
+    crewCapacity: 2,
+    shapes: []
+}
+
 // Fake terrain data (TODO: Create a Map class instance here to pass legitimate topography and zone data to the Infra tests)
 const mockography = [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10];
 const zonesData = [
@@ -69,13 +91,16 @@ describe("Infrastructure base class", () => {
         infra.addModule(4, 25, landerModuleInfo, mockography, zonesData, 1000);
         infra.addModule(8, 25, storageModuleInfo, mockography, zonesData, 1001);
         infra.addModule(12, 25, storageModuleInfo, mockography, zonesData, 1002);
-        expect(infra._modules.length).toBe(3);
+        infra.addModule(8, 22, cantinaModuleInfo, mockography, zonesData, 1003);
+        expect(infra._modules.length).toBe(4);
     })
 
     test("Can provision a module with a resource", () => {
-        infra.addResourcesToModule(1000, [ "water", 500 ]);     // Should NOT be able to add water to a lander module
-        infra.addResourcesToModule(1001, [ "water", 500 ]);     // Should be able to add water to storage module
-        infra.addResourcesToModule(1002, [ "water", 1000000 ])   // Should only be able to fill up to max capacity
+        infra.addResourcesToModule(1000, [ "water", 500 ]);         // Should NOT be able to add water to a lander module
+        infra.addResourcesToModule(1001, [ "water", 500 ]);         // Should be able to add water to storage module
+        infra.addResourcesToModule(1002, [ "water", 1000000 ])      // Should only be able to fill up to max capacity
+        infra.addResourcesToModule(1003, [ "water", 500 ]);         // Provision the cantina with food and water for later tests
+        infra.addResourcesToModule(1003, [ "food", 500 ]);
         expect(infra._modules[0]._data._resources).toStrictEqual([
             [ "power", 0 ]
         ]);
@@ -91,17 +116,26 @@ describe("Infrastructure base class", () => {
             ["water", 10000],
             ["equipment", 0]
         ]);
+        expect(infra._modules[3]._data._resources).toStrictEqual([
+            ["food", 500],
+            ["water", 500]
+        ])
     })
     
-    test("Can find module/s with a particular resource", () => {
-        // Just check that the ID of the module returned is correct
-        expect(infra.findModulesWithResource(["water", 10])[0]._data._id).toBe(1001);   // Finds water in the storage module
-        expect(infra.findModulesWithResource(["food", 10])).toStrictEqual([]);          // Does not find any modules with food
+    // NOTE: There are now two varieties of this test, one with the optional 'lifeSupp' parameter, and one without
+    test("Can find module/s with a particular resource (Life Support not specified)", () => {
+        // All modules, except the Lander, should contain some water...
+        expect(infra.findModulesWithResource(["water", 10]).length).toBe(3);
+        // However, only one of them, the Cantina, is of the type 'Life Support'
+        expect(infra.findModulesWithResource(["water", 10], true).length).toBe(1);
+        // Only one module has food, and it is also the cantina (so we should get the same list whether or not we specify)
+        expect(infra.findModulesWithResource(["food", 10]).length).toStrictEqual(1);
+        expect(infra.findModulesWithResource(["food", 10], true).length).toStrictEqual(1);
     })
 
     test("Can find the module nearest to a set of coordinates", () => {
         const mods = infra.findModulesWithResource(["water", 10]);
-        expect(mods.length).toBe(2);                                        // Two modules contain water
+        expect(mods.length).toBe(3);                                        // Three modules now contain water
         expect(infra.findModuleNearestToLocation(mods, { x: 0, y: 10})).toBe(1001);     // Expect rightmost module to be nearest
         expect(infra.findModuleNearestToLocation(mods, { x: 15, y: 10})).toBe(1002);    // Expect leftmost module to be nearest
     })

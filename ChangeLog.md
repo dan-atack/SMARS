@@ -1521,9 +1521,11 @@ Not doing:
 
 ## Chapter Twenty-Nine: Colonist Movement in the Base (Difficulty Estimate: 7 For new colonist movement and decision logic, plus probably a new animation, plus unit tests and planning, AND some refactoring)
 
+### Addendum to difficulty estimate/chapter description: Difficulty was way higher than estimate due to chapter goals being insufficiently defined and too broad for a single chapter!
+
 ### July 22, 2022
 
-Now that the game's resources are located in the modules, and the modules are on the map, the time has come to re-activate the colonists' needs, so that they gradually become hungry and thirsty throughout the day. As they do so, they will need to decide to acquire the resources necessary to reduce their needs, which they can now do by visiting the modules. Although they will not be able to actually satisfy their needs in this chapter, the Colonists will be given the ability to decide that they should satisfy a need, and that they must go to a specific location, often on a floor inside the base, to do so. This chapter will focus on the decision-making logic that will prioritize which resource to move towards, and the pathfinding logic needed to get to a location that is potentially far away and/or on a different level (floor) than the colonist is currently standing on. Hopefully the lessons learned so far about test-driven development and the use of flow-charts will aid in the development of these new features.
+Now that the game's resources are located in the modules, and the modules are on the map, the time has come to re-activate the colonists' needs, so that they gradually become hungry and thirsty throughout the day. As they do so, they will need to decide to acquire the resources necessary to reduce their needs, which they can now do by visiting the modules. The Colonists will be given the ability to decide that they should satisfy a need, as well as formulate an action plan to accomplish this. The actions that will initially comprise a Colonist's action stack will be things like "go to a specific location (often on a floor inside the base)" or "eat at a particular module", and so forth. This chapter will focus on the decision-making logic that will prioritize which resource to move towards, and the pathfinding logic needed to get to a location that is potentially far away and/or on a different level (floor) than the colonist is currently standing on. Hopefully the lessons learned so far about test-driven development and the use of flow-charts will aid in the development of these new features.
 
 Exit Criteria:
 
@@ -1687,7 +1689,42 @@ Features Added:
 
 70. Give the Colonist class a unique ID field. Colonist IDs can be a 4 digit number starting at 9000 and be given by a simple population class counter.
 
-## Chapter Thirty:
+## Chapter Thirty: Colonist Movement in the Base, Part II - Code Cleanup (Difficulty Estimate: 3)
+
+### October 2, 2022
+
+Since the last chapter was clearly a massive over-reach in terms of adding far too much complexity/new features at the same time (while simultaneously having a less-than-fully-developed game plan for how to implement everything), we now need to dedicate an entire new chapter to cleaning up the mess that was made during its implementation. This chapter should be relatively quick, since it will just aim to tidy up the code base and take care of a couple of lingering details that were omitted for the dev team's sanity from the previous installment. In particular, this chapter will take care of refining the Colonists' action stack logic, adding and updating some unit test cases for the Colonist Data class, and creating an eating animation to go with the ones made during the last chapter for climbing and drinking. By the end of this chapter we just want to have the whole eating/drinking/intra-base movement sequence sorted out and looking polished, and the game's architecture in good order before proceeding to the next feature increment.
+
+Exit Criteria:
+
+- Colonist Action Logic's createConsumeActionStack function is updated to eliminate unnecessary movement actions when the Colonist can step right off of a ladder into the coordinates of a resource-containing module
+- Colonists have a movement animation for the 'eat' action
+- New unit test created for scenario where colonist is on a floor and needs to descend
+- New specification for Infrastructure class's findModulesWithResources method: It should now only return modules that have the type 'Life Support'
+- Colonist Data unit tests should all be updated to use the Cantina module data instead of the storage room
+- Some Infra/Infra data unit tests should also be updated to use the cantina module data
+- Console logs from the previous chapter should be, for the most part, commented-out/deleted
+- [STRETCH] Recombine the Map and Map Data classes, and update the Map Data unit tests to ensure they all still pass
+
+1. Create a unit test case for the Colonist Data class that expects a 3-part action stack if the coordinates for the consume action match the coordinates for the 'climb' action (in other words, drop the 'move' action between 'climb' and 'eat/drink').
+
+2. Update the logic for the createConsumeActionStack function so that it creates the entire action stack at the end of its route determination. Also, make it only add the first (chronologically last) move action if the colonist isn't already in position to eat/drink when they get off the ladder (i.e. only add the 'move' action if the ladder's x doesn't match the target module's).
+
+3. Update the corresponding logic for when the colonist is already on the same surface and doesn't need to move (e.g. if they've just eaten and just need to stay in place to take a drink). Validate in-game and with a unit test.
+
+4. Create an animation sequence for the Colonist's 'eat' move. It should be a standard 10 frames long, with the colonist moving their hands up and inward towards their face and moving their head back and forth to mimick an eating motion.
+
+5. Create a unit test where the Colonist is on a non-ground floor and needs to get down (to explore, say). Validate the action stack under such circumstances (should be 'move', 'climb', 'move'). Fix any issues with the code that arise from this test.
+
+6. Update the Infrastructure and Colonist Data class unit test files to use the Cantina module for all test module data. This is in order to replace the Storage Room, which will be unable to satisfy the soon-to-be updated module resource finder method's stipulation that any resource containing module must also have the type 'Life Support' in order to qualify as a valid destination for a colonist to eat/drink at.
+
+7. Update the Infrastructure class's findModulesWithResource method so that it can take a second, optional parameter called lifeSupp, which is a boolean that tells it to only returns modules that have the 'Life Support' type. Ensure that all unit tests and manual sanity checks pass before proceeding (obviously!)
+
+8. Go through the code and comment-out a good 80-90% of the console logs for the previous chapter, so that only major events are reported to the log.
+
+9. Add/fix the outcome for the Colonist's Action Logic where the colonist is on a (non-ground) floor and finds resources on another (non-ground) floor and has to move towards them. Add a unit test as well, of course.
+
+10. Finally, we do need to have some kind of system in place for when a resource truly isn't available, to prevent the colonist from freezing up in the event of a scarcity. I recommend adding an additional trait, needsAvailable, to keep track of missed attempts at finding any of their needs. That way, if a colonist runs the get-water/get-food sequence and recieves and empty list, they can set the needsUnmet for that need to 0 (default value of 1 means that the resource is accessible, as far as the colonist knows). Then, the updateGoal method's first needs-based section can check for that value when preparing to set the goal to get-(need), and skip that need if the value is zero. In order to ensure the Colonist occasionally checks again, we can reset the availablilty value to 1 with each hourly update. I suppose we'll want to unit test this too, consarnit.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
@@ -1722,6 +1759,10 @@ As the game matures, it will be more and more desirable to separate features tha
 11. [8: Major Gameplay issue] Loaded games do not allow the player to scroll all the way to the far right of the map; the section underneath the sidebar becomes unreachable when the player saves and then subsequently reloads the game.
 
 12. [5: Save Data Completeness] Although currently not doing much, save game files do not contain the game's map type or difficulty level data - both fields contain a blank string.
+
+### 13. [8: Major Gameplay issue] In some circumstances, colonists who have just begun an 'explore' goal will have an action stack that tells them to jump off of a floor.
+
+### 14. [8: Major Gameplay issue] In some circumstances, colonists will climb empty space (in the observed instance, the place where the climb action took place was in between two actual ladders) as though it were an actual ladder.
 
 ## Technical Debt Issues:
 
