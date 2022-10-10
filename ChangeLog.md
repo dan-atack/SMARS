@@ -1697,14 +1697,13 @@ Since the last chapter was clearly a massive over-reach in terms of adding far t
 
 Exit Criteria:
 
-- Colonist Action Logic's createConsumeActionStack function is updated to eliminate unnecessary movement actions when the Colonist can step right off of a ladder into the coordinates of a resource-containing module
-- Colonists have a movement animation for the 'eat' action
-- New unit test created for scenario where colonist is on a floor and needs to descend
-- New specification for Infrastructure class's findModulesWithResources method: It should now only return modules that have the type 'Life Support'
-- Colonist Data unit tests should all be updated to use the Cantina module data instead of the storage room
-- Some Infra/Infra data unit tests should also be updated to use the cantina module data
-- Console logs from the previous chapter should be, for the most part, commented-out/deleted
-- [STRETCH] Recombine the Map and Map Data classes, and update the Map Data unit tests to ensure they all still pass
+- [DONE] Colonist Action Logic's createConsumeActionStack function is updated to eliminate unnecessary movement actions when the Colonist can step right off of a ladder into the coordinates of a resource-containing module
+- [DONE] Colonists have a movement animation for the 'eat' action
+- [DONE] New unit test created for scenario where colonist is on a floor and needs to descend
+- [DONE] New specification for Infrastructure class's findModulesWithResources method: It should now take an optional boolean argument that tells it to only return modules that have the type 'Life Support'
+- [DONE] Colonist Data unit tests should all be updated to use the Cantina module data instead of the storage room
+- [DONE] Some Infra/Infra data unit tests should also be updated to use the cantina module data
+- [DONE] Console logs from the previous chapter should be, for the most part, commented-out/deleted
 
 1. Create a unit test case for the Colonist Data class that expects a 3-part action stack if the coordinates for the consume action match the coordinates for the 'climb' action (in other words, drop the 'move' action between 'climb' and 'eat/drink').
 
@@ -1724,7 +1723,34 @@ Exit Criteria:
 
 9. Add/fix the outcome for the Colonist's Action Logic where the colonist is on a (non-ground) floor and finds resources on another (non-ground) floor and has to move towards them. Add a unit test as well, of course.
 
-10. Finally, we do need to have some kind of system in place for when a resource truly isn't available, to prevent the colonist from freezing up in the event of a scarcity. I recommend adding an additional trait, needsAvailable, to keep track of missed attempts at finding any of their needs. That way, if a colonist runs the get-water/get-food sequence and recieves and empty list, they can set the needsUnmet for that need to 0 (default value of 1 means that the resource is accessible, as far as the colonist knows). Then, the updateGoal method's first needs-based section can check for that value when preparing to set the goal to get-(need), and skip that need if the value is zero. In order to ensure the Colonist occasionally checks again, we can reset the availablilty value to 1 with each hourly update. I suppose we'll want to unit test this too, consarnit.
+10. Finally, we do need to have some kind of system in place for when a resource truly isn't available, to prevent the colonist from freezing up in the event of a scarcity. I recommend adding an additional trait, needsAvailable, to keep track of missed attempts at finding any of their needs. That way, if a colonist runs the get-water/get-food sequence and recieves and empty list, they can set the needsUnmet for that need to 0 (default value of 1 means that the resource is accessible, as far as the colonist knows). Then, the updateGoal method's first needs-based section can check for that value when preparing to set the goal to get-(need), and skip that need if the value is zero. In order to ensure the Colonist occasionally checks again, we can reset the availablilty value to 1 with each hourly update. I suppose we'll want to unit test this too.
+
+## Chapter Thirty-One: The Inspect Tool (Difficulty Estimate: 3 For New Mouse Shadow, Click Handler and Sidebar Display)
+
+### October 10, 2022
+
+In order to give the player (not to mention the developer) a better picture of what is going on in the game's world, we will need a tool that can be used to 'inspect' in-game entities and display some vital stats about them in the Sidebar's details area. The Inspect Tool will be selectable from the Sidebar, using the button currently labeled 'select,' and will turn the mouse cursor shadow into a little magnifying glass. When the mouse is clicked over the game's world area, the Engine's mouse context handler will call a series of functions to determine which in-game object, if any, has been clicked, and print out some information about it to the Sidebar's details area, replacing the minimap display in the lower half of the Sidebar.
+
+Exit Criteria:
+
+- The player can select the Inspect Tool from the Sidebar and see a little magnifying glass as the mouse cursor shadow when they move the cursor over the game world.
+- When the mouse is clicked on an in-game entity, the Sidebar's DetailsArea will show information about that entity based on what type of thing it is:
+- For Colonists, we should see their ID, their current goal, current action, action stack length and the value/threshold for each of their needs.
+- For Connectors, we should see their ID, name and type, as well as top and bottom coordinates and, in the case of conduit-type connectors, the resources they can transport (from the connector data).
+- For Modules we should see their ID, name and type, as well as what resources (if any) are contained and what the max capacity is for each, as well as the module's colonist capacity and whether it is pressurized.
+- For Map tiles, we should see the name, resource type, hitpoints and yield info, which represents how much of the resource can be extracted by a single 'mine' action (when that gets implemented, that is).
+- Engine should keep track of the currently selected entity and display its info in the details area of the sidebar.
+- The player can unselect the current entity by any of the following means: A) Clicking another in-game entity, B) Clicking another sidebar button, C) Clicking the Inspect button again (which will keep the mouse context in 'inspect' mode but clear the data for the currently selected object).
+
+1. In the Sidebar class, rename the 'Select' button to 'Inspect' and in the Engine, change the mouse context handler case name to reflect this as well ('select' and 'inspect' are lowercase for the mouse context handler).
+
+2. Do a 'find in all files' for the word 'select' to ensure that any calls to the mouse context setter from outside the Engine use the updated terminology.
+
+### 3. Combine the MouseShadow/MouseShadowData classes, and fix any unit tests that this might break, as well as ensuring all game functionality is unaffected.
+
+### 4. Add an optional boolean parameter called 'inspectMode' to the MouseShadow class's constructor, and have that set a corresponding attribute, this.\_inspectMode. This will be read at render time to tell the MouseShadow to show the image of a magnifying glass instead.
+
+### 5. Create the actual P5 shapes that the MouseShadow will use when it is in Inspect mode, and validate the tool's 'look and feel' in-game.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

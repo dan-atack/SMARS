@@ -89,7 +89,7 @@ export default class Engine extends View {
         this._mouseInScrollRange = 0;   // Counts how many frames have passed with the mouse within scroll distance of the edge
         this._scrollThreshold = 10;     // Controls the number of frames that must pass before the map starts to scroll
         this._fastScrollThreshold = 60; // Number of frames to pass before fast scroll begins
-        this.mouseContext = "select"    // Default mouse context is the user wants to select what they click on (if they click on the map)
+        this.mouseContext = "inspect"    // Default mouse context allows user to select ('inspect') whatever they click on
         this.selectedBuilding = null;   // There is no building info selected by default.
         this.selectedBuildingCategory = "";  // Keep track of whether the selected building is a module or connector
         // Time-keeping:
@@ -269,24 +269,20 @@ export default class Engine extends View {
             if (mouseX > 0 && mouseX < constants.SCREEN_WIDTH && mouseY > 0 && mouseY < constants.SCREEN_HEIGHT) {
                 const [gridX, gridY] = this.getMouseGridPosition(mouseX, mouseY);
                 switch (this.mouseContext) {
-                    case "select":
-                        console.log(`Select: ${gridX}, ${gridY}`);
+                    case "inspect":
+                        console.log(`Inspecting object at (${gridX}, ${gridY})`);
                         break;
-                    // NOTE: To add new building placement contexts, ensure case name is also added to setMouseContext method
                     case "placeModule":
-                        console.log("Place Module.");
                         this.handleModulePlacement(gridX, gridY);
                         break;
                     case "connectorStart":
-                        console.log("Connector Start.");
                         this.handleConnectorStartPlacement(gridX, gridY)
                         break;
                     case "connectorStop":
-                        console.log("Connector Stop.");
                         this.handleConnectorStopPlacement();
                         break;
                     case "resource":
-                        console.log("Resource");
+                        console.log("Resource Mode selected.");
                         break;
                     case "modal":
                         this._modal?.handleClicks(mouseX, mouseY);
@@ -671,8 +667,7 @@ export default class Engine extends View {
         }
         if (this._waitTime <= 0) {
             // Resolve wait by resetting mouse context and possibly calling additional functions
-            // console.log(`Wait period over at ${new Date()}`);
-            this.setMouseContext("select");
+            this.setMouseContext("inspect");
             this.resolveWaitPeriod();
         }
     }
@@ -711,7 +706,7 @@ export default class Engine extends View {
             resolutions: [
                 {
                     text: "The feeling is mutual.",
-                    outcomes: [["set-mouse-context", "select"]]
+                    outcomes: [["set-mouse-context", "inspect"]]
                 } 
             ]
         }
@@ -727,7 +722,7 @@ export default class Engine extends View {
             resolutions: [
                 {
                     text: "How time flies!",
-                    outcomes: [["set-mouse-context", "select"], ["add-money", 50000]]
+                    outcomes: [["set-mouse-context", "inspect"], ["add-money", 50000]]
                 }
             ]
         }

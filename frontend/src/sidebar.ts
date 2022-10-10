@@ -80,14 +80,14 @@ export default class Sidebar {
         // Construction, resources and map options buttons:
         const build = new Button(this._p5, "BUILD", this._position + 4, this._mapButtonsY, this.handleBuild, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 24);
         const resource = new Button(this._p5, "RESOURCE", this._position + this._viewButtonWidth + 12, this._mapButtonsY, this.handleResource, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
-        const select = new Button(this._p5, "SELECT", this._position + 4, this._mapButtonsY + this._viewButtonHeight + 8, this.handleSelect, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 24);
+        const inspect = new Button(this._p5, "INSPECT", this._position + 4, this._mapButtonsY + this._viewButtonHeight + 8, this.handleInspect, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 24);
         const overlays = new Button(this._p5, "OVERLAYS", this._position + this._viewButtonWidth + 12, this._mapButtonsY + this._viewButtonHeight + 8, this.handleOverlays, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
         // Game speed adjustment buttons:
         const pause = new Button(this._p5, "||", this._gameSpeedButtonX, this._gameSpeedButtonY, this.handlePause, this._gameSpeedButtonWidth, this._gameSpeedButtonWidth, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
         const slow = new Button(this._p5, ">", this._gameSpeedButtonX + this._gameSpeedButtonMargin, this._gameSpeedButtonY, this.handleSlow, this._gameSpeedButtonWidth, this._gameSpeedButtonWidth, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
         const fast = new Button(this._p5, ">>", this._gameSpeedButtonX + 2 * this._gameSpeedButtonMargin, this._gameSpeedButtonY, this.handleFast, this._gameSpeedButtonWidth + 8, this._gameSpeedButtonWidth, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
         const blazing = new Button(this._p5, ">>>", this._gameSpeedButtonX + 3 * this._gameSpeedButtonMargin + 8, this._gameSpeedButtonY, this.handleBlazing, this._gameSpeedButtonWidth + 16, this._gameSpeedButtonWidth, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
-        this._buttons = [earth, industry, tech, population, build, resource, select, overlays];
+        this._buttons = [earth, industry, tech, population, build, resource, inspect, overlays];
         this._gameSpeedButtons = [pause, slow, fast, blazing];
     }
 
@@ -137,8 +137,8 @@ export default class Sidebar {
         this._buttons[5].setSelected(true);
     }
 
-    handleSelect = () => {
-        this.setMouseContext("select");
+    handleInspect = () => {
+        this.setMouseContext("inspect");
         this.resetSelectedButton();
         this._buttons[6].setSelected(true);
     }
@@ -152,7 +152,7 @@ export default class Sidebar {
     handleMenuButton = () => {
         this.setMenuOpen(true);
         this.switchScreen("inGameMenu");
-        this.setMouseContext("select");     // Reset mouse context if menu is opened
+        this.setMouseContext("inspect");     // Reset mouse context if menu is opened
     }
 
     // Handlers for game-speed adjustments

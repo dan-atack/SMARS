@@ -18,7 +18,7 @@ export default class MouseShadow {
         this._data.setWidthAndHeight(x, y, h, v);
     }
 
-    // Takes up to 5 parameters: x and y (mouse coords) + offset are mandatory
+    // Takes 3 parameters: x and y (mouse coords) + offset
     // Vertical and Horizontal are optional booleans to help with stretching a connector shadow
     render = (x: number, y: number, xOffset: number) => {
         const p5 = this._p5;

@@ -31,7 +31,7 @@ export default class BuildingChip extends Button {
             // If building is already selected, clicking its chip again deselects it:
             if (this._selected) {
                 this.setBuildingSelection(null);
-                this.setMouseContext("select");
+                this.setMouseContext("inspect");
                 this.setSelected(false);
             } else {        // Otherwise set this building as the selection and set mouse context
                 this.setBuildingSelection(this.buildingData);

@@ -135,7 +135,7 @@ export default class DetailsArea {
     // If the actual building is selected, keep the building options but deselect current building and change mouse context
     handleCancelBuilding = () => {
         this.setBuildingSelection(null);
-        this.setMouseContext("select");
+        this.setMouseContext("inspect");
         this._optionButtons.forEach((button) => {
             button.setSelected(false);
         })
@@ -205,7 +205,7 @@ export default class DetailsArea {
         const p5 = this._p5;
         p5.textSize(22);
         p5.fill(constants.GREEN_TERMINAL);
-        p5.text("Select", this._x + (this._width / 2), this._yExtended + 64);
+        p5.text("Inspect", this._x + (this._width / 2), this._yExtended + 64);
         p5.text(`${this._buildTypeSelection} ${this._buildCategorySelection}:`, this._x + (this._width / 2), this._yExtended + 88);
         this._backButton.render();  // Render back button to return to building categories menu
         // Render individual building options:

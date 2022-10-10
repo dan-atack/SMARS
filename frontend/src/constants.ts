@@ -54,7 +54,7 @@ export const modalData: EventData[] = [
       resolutions: [
           {
               text: "Yes I'm sure!",
-              outcomes: [["set-mouse-context", "select"], ["start-landing-sequence", 1]]
+              outcomes: [["set-mouse-context", "inspect"], ["start-landing-sequence", 1]]
           },
           {
             text: "No, go back!",
@@ -69,7 +69,7 @@ export const modalData: EventData[] = [
       resolutions: [
          {
             text: "Hallelujah!",
-            outcomes: [["set-mouse-context", "select"], ["provision-base-structures", 1]]
+            outcomes: [["set-mouse-context", "inspect"], ["provision-base-structures", 1]]
          }
       ]
    },
