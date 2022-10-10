@@ -376,6 +376,10 @@ export default class Engine extends View {
         this._mouseShadow = new MouseShadow(w, h);
     }
 
+    createInspectToolMouseShadow = () => {
+        this._mouseShadow = new MouseShadow(1, 1, true);
+    }
+
     destroyMouseShadow = () => {
         this._mouseShadow = null;
     }
@@ -413,6 +417,10 @@ export default class Engine extends View {
         // Ensure there is no mouse shadow if no structure is selected
         if (this.selectedBuilding === null) {
             this.destroyMouseShadow();
+        }
+        // Last, check if the mouse context has been set to 'inspect' and tell it to do the magnifying glass image if so
+        if (this.mouseContext === "inspect") {
+            this.createInspectToolMouseShadow();
         }
     }
 
@@ -778,6 +786,8 @@ export default class Engine extends View {
             this.renderBuildingShadow();
         } else if (this.mouseContext === "landing") {
             this.renderLandingPath();
+        } else if (this.mouseContext === "inspect") {
+            this.renderInspectTool();
         }
     }
 
@@ -822,6 +832,17 @@ export default class Engine extends View {
         }    
     }
 
+    // For rendering the inspect tool
+    renderInspectTool = () => {
+        // Only render the Inspect Tool if mouse is over the map area (not the sidebar) and there is no modal
+        if (this._p5.mouseX < constants.SCREEN_WIDTH - this._sidebar._width && !this._modal && this._mouseShadow) {
+            let [x, y] = this.getMouseGridPosition(this._p5.mouseX, this._p5.mouseY);
+            x = x * constants.BLOCK_WIDTH;
+            y = y * constants.BLOCK_WIDTH;
+            this._mouseShadow.render(this._p5, x, y, this._horizontalOffset);
+        }
+    }
+
     render = () => {
         this.advanceClock();        // Always try to advance the clock; it will halt itself if the game is paused
         if (this.mouseContext === "wait") {
@@ -844,6 +865,9 @@ export default class Engine extends View {
         // Don't render sidebar until the player has chosen a landing site
         if (this._hasLanded) {
             this._sidebar.render(this._gameTime.minute, this._gameTime.hour, this._gameTime.cycle);
+        }
+        if (this.mouseContext === "inspect") {
+            this.renderMouseShadow();
         }
         if (this._modal) {
             this._modal.render();

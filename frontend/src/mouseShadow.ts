@@ -16,25 +16,22 @@ export default class MouseShadow {
     _connectorStopCoords: Coords | null;
     _deltaX: number;    // Used to help quickly determine a connector's length
     _deltaY: number;
+    _inspectMode: boolean;  // Used to indicate whether the mouse cursor should show the 'inspect tool' animation
 
     // W and H are both given in terms of columns, not pixels
-    constructor(w: number, h: number) {
+    constructor(w: number, h: number, inspectMode?: boolean) {
         this._x = 0;    // No inputs are given to construct a mouse shadow; only needed for rendering
         this._y = 0;
-        this._w = w * constants.BLOCK_WIDTH;       // All values are in terms of pixels
+        this._inspectMode = inspectMode || false;   // Unless provided, assume the mouse is not in inspect mode
+        this._w = w * constants.BLOCK_WIDTH;        // All values are in terms of pixels
         this._h = h * constants.BLOCK_WIDTH;
         this._color = constants.BLUEGREEN_CRYSTAL;
         this._xOffset = 0;
-        this._locked = false;       // By default the shadow is free-floating
+        this._locked = false;                       // By default the shadow is free-floating
         this._connectorStartCoords = null;          // Confusingly, these are in terms of grid locations
         this._connectorStopCoords = null;
         this._deltaX = 0;
         this._deltaY = 0;
-    }
-
-    setPosition (x: number, y: number) {
-        this._x = x;
-        this._y = y;
     }
 
     // Used for 'stretching' a connector from its start point to a second set of coords
@@ -98,6 +95,11 @@ export default class MouseShadow {
             this._connectorStartCoords = coords;
         }
     }
+    
+    setPosition (x: number, y: number) {
+        this._x = x;
+        this._y = y;
+    }
 
     setColor (valid: boolean) {
         if (valid) {
@@ -119,6 +121,22 @@ export default class MouseShadow {
         if (!this._locked) {
             this.setPosition(x, y);       // If the shadow is not locked, allow it to move
         }
-        p5.rect(this._x - this._xOffset, this._y, this._w, this._h);
+        // If the mouse is in inspect mode, show a little magnifying glass; otherwise show a rectangle
+        if (this._inspectMode) {
+            const centerX = this._x - this._xOffset + constants.BLOCK_WIDTH / 2;
+            const centerY = this._y + constants.BLOCK_WIDTH / 2;
+            const rad = constants.BLOCK_WIDTH / 2;
+            p5.noFill();
+            p5.stroke(constants.GRAY_DARKER);
+            p5.strokeWeight(5);
+            p5.ellipse(centerX, centerY, this._w + constants.BLOCK_WIDTH / 4);
+            p5.line(centerX + rad, centerY + rad, centerX + rad * 2, centerY + rad * 2);
+            p5.strokeWeight(2);
+            p5.stroke(constants.ALMOST_BLACK);
+            p5.ellipse(centerX, centerY, this._w + rad);
+            p5.ellipse(centerX, centerY, this._w);
+        } else {
+            p5.rect(this._x - this._xOffset, this._y, this._w, this._h);
+        }
     }
 }

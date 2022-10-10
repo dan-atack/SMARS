@@ -1748,9 +1748,11 @@ Exit Criteria:
 
 3. Combine the MouseShadow/MouseShadowData classes, and fix any unit tests that this might break, as well as ensuring all game functionality is unaffected.
 
-### 4. Add an optional boolean parameter called 'inspectMode' to the MouseShadow class's constructor, and have that set a corresponding attribute, this.\_inspectMode. This will be read at render time to tell the MouseShadow to show the image of a magnifying glass instead.
+4. Add an optional boolean parameter called 'inspectMode' to the MouseShadow class's constructor, and have that set a corresponding attribute, this.\_inspectMode. This will be read at render time to tell the MouseShadow to show the image of a magnifying glass instead.
 
-### 5. Create the actual P5 shapes that the MouseShadow will use when it is in Inspect mode, and validate the tool's 'look and feel' in-game.
+5. Tell the Engine to create a new mouse shadow with the inspectMode boolean set to true whenever the mouse context is set to 'inspect.' Validate in-game.
+
+6. Create the actual P5 shapes that the MouseShadow will use when it is in Inspect mode, and validate the tool's 'look and feel' in-game.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
