@@ -1746,7 +1746,7 @@ Exit Criteria:
 
 2. Do a 'find in all files' for the word 'select' to ensure that any calls to the mouse context setter from outside the Engine use the updated terminology.
 
-### 3. Combine the MouseShadow/MouseShadowData classes, and fix any unit tests that this might break, as well as ensuring all game functionality is unaffected.
+3. Combine the MouseShadow/MouseShadowData classes, and fix any unit tests that this might break, as well as ensuring all game functionality is unaffected.
 
 ### 4. Add an optional boolean parameter called 'inspectMode' to the MouseShadow class's constructor, and have that set a corresponding attribute, this.\_inspectMode. This will be read at render time to tell the MouseShadow to show the image of a magnifying glass instead.
 

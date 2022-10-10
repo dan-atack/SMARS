@@ -373,7 +373,7 @@ export default class Engine extends View {
         if (this.selectedBuilding != null && this._infrastructure._data.isModule(this.selectedBuilding)) {
             h = this.selectedBuilding.height;
         }
-        this._mouseShadow = new MouseShadow(this._p5, w, h);
+        this._mouseShadow = new MouseShadow(w, h);
     }
 
     destroyMouseShadow = () => {
@@ -386,16 +386,16 @@ export default class Engine extends View {
         if (this.selectedBuilding && this._mouseShadow && x >= 0) {   // Only check if a building is selected and a mouse shadow exists
             if (this._infrastructure._data.isModule(this.selectedBuilding)) {    // If we have a module, check its placement
                 const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._data._mapData);
-                this._mouseShadow._data.setColor(clear);
-            } else if (!this._mouseShadow._data._connectorStartCoords) { // If we have a Connector with NO start coords
+                this._mouseShadow.setColor(clear);
+            } else if (!this._mouseShadow._connectorStartCoords) { // If we have a Connector with NO start coords
                 // If no start coords exist, this is the start placement
                 const clear = this._infrastructure._data.checkConnectorEndpointPlacement(x, y, this._map._data._mapData);
-                this._mouseShadow._data.setColor(clear);
-            } else if (this._mouseShadow._data._connectorStopCoords) {
-                const xStop = this._mouseShadow._data._connectorStopCoords.x;
-                const yStop = this._mouseShadow._data._connectorStopCoords.y;
+                this._mouseShadow.setColor(clear);
+            } else if (this._mouseShadow._connectorStopCoords) {
+                const xStop = this._mouseShadow._connectorStopCoords.x;
+                const yStop = this._mouseShadow._connectorStopCoords.y;
                 const clear = this._infrastructure._data.checkConnectorEndpointPlacement(xStop, yStop, this._map._data._mapData);
-                this._mouseShadow._data.setColor(clear);
+                this._mouseShadow.setColor(clear);
             }
         }
     }
@@ -461,7 +461,7 @@ export default class Engine extends View {
     handleConnectorStartPlacement = (x: number, y: number) => {
         // Ensure start location is valid
         if (this._infrastructure._data.checkConnectorEndpointPlacement(x, y, this._map._data._mapData)) {
-            this._mouseShadow?._data.setLocked(true, {x: x, y: y});   // Lock the shadow's position when start location is chosen
+            this._mouseShadow?.setLocked(true, {x: x, y: y});   // Lock the shadow's position when start location is chosen
             this.setMouseContext("connectorStop");
         }
     }
@@ -469,13 +469,13 @@ export default class Engine extends View {
     // Completes the purchase and placement of a new connector
     handleConnectorStopPlacement = () => {
         // Ensure there is a building selected, and that it's not a module
-        if (this.selectedBuilding != null && !this._infrastructure._data.isModule(this.selectedBuilding) && this._mouseShadow?._data._connectorStopCoords != null && this._mouseShadow._data._connectorStartCoords) {
+        if (this.selectedBuilding != null && !this._infrastructure._data.isModule(this.selectedBuilding) && this._mouseShadow?._connectorStopCoords != null && this._mouseShadow._connectorStartCoords) {
             const baseCost = this.selectedBuilding.buildCosts[0][1];    // Get just the number
-            const len = Math.max(this._mouseShadow._data._deltaX, this._mouseShadow._data._deltaY) + 1;
+            const len = Math.max(this._mouseShadow._deltaX, this._mouseShadow._deltaY) + 1;
             const cost = baseCost * len;  // Multiply cost by units of length
             const affordable = this._economy._data.checkResources(cost); // NOTE: THIS ASSUMES COST IS ONLY EVER IN TERMS OF MONEY
-            const start = this._mouseShadow._data._connectorStartCoords;
-            const stop = this._mouseShadow._data._connectorStopCoords;
+            const start = this._mouseShadow._connectorStartCoords;
+            const stop = this._mouseShadow._connectorStopCoords;
             const clear = this._infrastructure._data.checkConnectorEndpointPlacement(stop.x, stop.y, this._map._data._mapData);
             if (affordable && clear) {
                 this._infrastructure.addConnector(start, stop, this.selectedBuilding, this._map);
@@ -755,14 +755,11 @@ export default class Engine extends View {
                         this.provisionInitialStructures();
                         break;
                     case "set-mouse-context":
-                        // console.log(`Setting mouse context: ${outcome[1]}`);
                         this.setMouseContext(outcome[1].toString());
                         break;
                     case "add-money":
-                        // console.log(`Adding money: ${outcome[1]}`);
                         if (typeof outcome[1] === "number") this._economy._data.addMoney(outcome[1]);
                         break;
-                        // TODO: Add other cases as they are invented
                     default:
                         console.log(`Unrecognized modal resolution code: ${outcome[0]}`);
                 }
@@ -812,13 +809,13 @@ export default class Engine extends View {
             y = y * constants.BLOCK_WIDTH;
             if (this.selectedBuilding !== null) {
                 if (this._infrastructure._data.isModule(this.selectedBuilding)) {
-                    this._mouseShadow.render(x, y, this._horizontalOffset);
+                    this._mouseShadow.render(this._p5, x, y, this._horizontalOffset);
                 } else {
                     if (this.mouseContext === "connectorStart") {
-                        this._mouseShadow.render(x, y, this._horizontalOffset);
+                        this._mouseShadow.render(this._p5, x, y, this._horizontalOffset);
                     } else if (this.mouseContext === "connectorStop") {
                         this._mouseShadow.resizeForConnector(x, y, this.selectedBuilding.horizontal, this.selectedBuilding.vertical);
-                        this._mouseShadow.render(x, y, this._horizontalOffset);
+                        this._mouseShadow.render(this._p5, x, y, this._horizontalOffset);
                     }
                 }
             }
