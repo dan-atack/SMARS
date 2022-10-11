@@ -11,7 +11,7 @@ export default class Connector {
 
     constructor(id: number, start: Coords, stop: Coords, connectorInfo: ConnectorInfo) {
         this._data = new ConnectorData(id, start, stop, connectorInfo);
-        this._color = constants.EGGSHELL    // Default value for now; in the future modules will be of no specific color: ;
+        this._color = constants.EGGSHELL    // Default value for now; in the future connectors will have custom colours
     }
 
     renderLadder = (p5: P5) => {

@@ -78,7 +78,7 @@ export default class Engine extends View {
         this._map = new Map();
         this._infrastructure = new Infrastructure();
         this._economy = new Economy(p5);
-        this._population = new Population(p5);
+        this._population = new Population();
         this._modal = null;
         this._animation = null;
         this._mouseShadow = null;
@@ -270,7 +270,7 @@ export default class Engine extends View {
                 const [gridX, gridY] = this.getMouseGridPosition(mouseX, mouseY);
                 switch (this.mouseContext) {
                     case "inspect":
-                        console.log(`Inspecting object at (${gridX}, ${gridY})`);
+                        this.handleInspect({ x: gridX, y: gridY });
                         break;
                     case "placeModule":
                         this.handleModulePlacement(gridX, gridY);
@@ -425,7 +425,7 @@ export default class Engine extends View {
     }
 
     // Used for placing buildings and anything else that needs to 'snap to' the grid (returns values in grid locations)
-    getMouseGridPosition(mouseX: number, mouseY: number) {
+    getMouseGridPosition = (mouseX: number, mouseY: number) => {
         // Calculate X position with the offset included to prevent wonkiness
         const mouseGridX = Math.floor((mouseX + this._horizontalOffset) / constants.BLOCK_WIDTH)
         const mouseGridY = Math.floor(mouseY / constants.BLOCK_WIDTH)
@@ -435,6 +435,11 @@ export default class Engine extends View {
         // TODO: ADD vertical offset calculation
         // Return coordinates as a tuple:
         return [gridX, gridY];
+    }
+
+    // Takes the mouse coordinates and looks for an in-game entity at that location
+    handleInspect = (coords: Coords) => {
+        console.log(`Inspecting object at (${coords.x}, ${coords.y})`);
     }
 
     //// STRUCTURE PLACEMENT METHODS ////
@@ -860,7 +865,7 @@ export default class Engine extends View {
             this.renderMouseShadow(); // If placing a connector, render mouse shadow above the infra layer
         }
         this._economy.render();
-        this._population.render(this._horizontalOffset, this.ticksPerMinute, this.gameOn);
+        this._population.render(this._p5, this._horizontalOffset, this.ticksPerMinute, this.gameOn);
         this.handleMouseScroll();   // Every frame, check for mouse scrolling
         // Don't render sidebar until the player has chosen a landing site
         if (this._hasLanded) {

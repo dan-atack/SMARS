@@ -1733,7 +1733,7 @@ In order to give the player (not to mention the developer) a better picture of w
 
 Exit Criteria:
 
-- The player can select the Inspect Tool from the Sidebar and see a little magnifying glass as the mouse cursor shadow when they move the cursor over the game world.
+- [DONE] The player can select the Inspect Tool from the Sidebar and see a little magnifying glass as the mouse cursor shadow when they move the cursor over the game world.
 - When the mouse is clicked on an in-game entity, the Sidebar's DetailsArea will show information about that entity based on what type of thing it is:
 - For Colonists, we should see their ID, their current goal, current action, action stack length and the value/threshold for each of their needs.
 - For Connectors, we should see their ID, name and type, as well as top and bottom coordinates and, in the case of conduit-type connectors, the resources they can transport (from the connector data).
@@ -1753,6 +1753,22 @@ Exit Criteria:
 5. Tell the Engine to create a new mouse shadow with the inspectMode boolean set to true whenever the mouse context is set to 'inspect.' Validate in-game.
 
 6. Create the actual P5 shapes that the MouseShadow will use when it is in Inspect mode, and validate the tool's 'look and feel' in-game.
+
+7. Add a new Engine method in the mouse handlers section, handleInspect, which will be called by the mouse click handler when the mouse context is 'inspect.' Initially it can do the job of console logging the grid coordinates which is currently performed by the click handler itself. This method should recieve the X and Y coordinates pair as a single argument so that it can print them, but also so that it can use them for what comes next...
+
+8. Before adding anything to the Population class, take a moment to remove P5 from both it, and the Colonist class. Run the unit tests and do a manual sanity check before proceeding.
+
+### 8. Write a new method for the Population class, getColonistFromCoords, to take a pair of coordinates, and use them to check each Colonist's location and return a pointer to the colonist (if any) that matches the input. Be sure to allow for clicks on the Colonist's feet or head. It should return a null if no colonist is found at the selected coordinates. We can unit test this, so let's do that, creating the inaugural Population tests file in the process.
+
+### 9. Have the Engine's handleInspect method call the Population class's getColonistFromCoords method whenever a click is registered, and if it turns up an answer, console log it. Otherwise just print something like 'No colonist found at X, Y, moving on to the Infra class.' The idea is that this method will go through all of the various types of in-game entities in a particular order (Population, Connectors, Modules, Map Blocks) and report back as soon as it hits something (if indeed it does hit anything at all).
+
+### 10. Next, write a method for the Infrastructure (base) class, which will findConnectorFromCoords by looping through the connectors list until it finds one that overlaps with the given coordinates. Only on connector should be returned by this process, so the issue of overlapping connectors should be a consideration here. If no connector is found, return a null. Again, unit test first before implementing - unit tests should account for whatever solution is used to deal with overlapping Connectors.
+
+### 11. Next write another Infrastructure method, findModuleFromCoords, that finds a module from a provided set of coordinates and returns the result. Since Modules, unlike Connectors, cannot overlap with each other, this should be a simpler process than the previous case. Unit tests first, naturally.
+
+### 12. Then, before doing the Map inspect handler, combine the Map and Map Data classes, again ensuring that all unit tests and manual sanity checks pass before proceeding.
+
+### 13. Then, make a new method for the now-unified Map class, that returns the Block info (if any) for the selected coordinates. Can probably do this pretty efficiently by getting the column from the X value and then doing a find for the Block that has a matching Y value. Unit test first, as always (NOTE that to fully unit test this it might be necessary to quickly decouple P5 from the Block's constructor).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

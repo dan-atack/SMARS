@@ -130,6 +130,8 @@ export default class MouseShadow {
             p5.stroke(constants.GRAY_DARKER);
             p5.strokeWeight(5);
             p5.ellipse(centerX, centerY, this._w + constants.BLOCK_WIDTH / 4);
+            p5.stroke(constants.GRAY_METEOR);
+            p5.strokeWeight(7);
             p5.line(centerX + rad, centerY + rad, centerX + rad * 2, centerY + rad * 2);
             p5.strokeWeight(2);
             p5.stroke(constants.ALMOST_BLACK);

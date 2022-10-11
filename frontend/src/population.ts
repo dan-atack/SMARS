@@ -6,21 +6,21 @@ import Map from "./map";
 
 export default class Population {
     // Population types:
-    _p5: P5;
     _colonists: Colonist[];
     _colonistsCurrentSerial: number;    // Needed to individually tag colonists when they are created
     _xOffset: number;                   // Needed for colonist render functions
 
-    constructor(p5: P5) {
-        this._p5 = p5;
+    constructor() {
         this._colonists = [];                   // Default population is zero.
         this._colonistsCurrentSerial = 9000;    // Colonists are from the 9000 series!
         this._xOffset = 0;                      // Default position is the left edge of the world.
     }
 
+    // SECTION 1: TOP LEVEL 
+
     addColonist = (x: number, y: number) => {
         const id = this._colonistsCurrentSerial;
-        const colonist = new Colonist(this._p5, id, x, y);
+        const colonist = new Colonist(id, x, y);
         this._colonistsCurrentSerial++; // Increment ID number for the next colonist
         this._colonists.push(colonist);
     }
@@ -93,7 +93,7 @@ export default class Population {
     loadColonistData = (data: ColonistSaveData[]) => {
         if (data) {
             data.forEach((colonistData) => {
-                const c = new Colonist(this._p5, colonistData.id, colonistData.x, colonistData.y, colonistData);
+                const c = new Colonist(colonistData.id, colonistData.x, colonistData.y, colonistData);
                 this._colonists.push(c);
                 // Keep track of saved colonists' serials so that newer colonists can resume the series
                 this._colonistsCurrentSerial = colonistData.id + 1;
@@ -104,10 +104,10 @@ export default class Population {
     }
 
     // Gets horizontal offset and fps (game speed) data from the Engine's render method
-    render = (xOffset: number, fps: number, gameOn: boolean) => {
+    render = (p5: P5, xOffset: number, fps: number, gameOn: boolean) => {
         this._xOffset = xOffset;
         this._colonists.forEach((colonist) => {
-            colonist.render(this._xOffset, fps, gameOn);
+            colonist.render(p5, this._xOffset, fps, gameOn);
         })
     }
 
