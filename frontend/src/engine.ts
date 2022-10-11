@@ -439,7 +439,8 @@ export default class Engine extends View {
 
     // Takes the mouse coordinates and looks for an in-game entity at that location
     handleInspect = (coords: Coords) => {
-        console.log(`Inspecting object at (${coords.x}, ${coords.y})`);
+        // console.log(`Inspecting object at (${coords.x}, ${coords.y})`);
+        this._population.getColonistDataFromCoords(coords);
     }
 
     //// STRUCTURE PLACEMENT METHODS ////
@@ -597,12 +598,6 @@ export default class Engine extends View {
     updateEconomyDisplay = () => {
         const rs = this._infrastructure.getAllBaseResources();
         this._economy._data.updateResources(rs);
-        // RESOURCE CONSUMPTION - TO BE A NEW METHOD, OBVIOUSLY
-        // const leakage = this._infrastructure.calculateModulesOxygenLoss();
-        // const { air, water, food } = this._population.calculatePopulationResourceConsumption(this._gameTime.hour);
-        // this._economy._data.updateResource("oxygen", air + leakage);
-        // this._economy._data.updateResource("water", water);
-        // this._economy._data.updateResource("food", food);
     }
 
     //// GAMESPEED AND TIME METHODS ////

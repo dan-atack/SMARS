@@ -1,6 +1,7 @@
 // The Population class is the disembodied list of all your colonists, and the functions for updating them.
 import P5 from "p5";
 import Colonist, { ColonistSaveData } from "./colonist";
+import { Coords } from "./connectorData";
 import Infrastructure from "./infrastructure";
 import Map from "./map";
 
@@ -16,7 +17,7 @@ export default class Population {
         this._xOffset = 0;                      // Default position is the left edge of the world.
     }
 
-    // SECTION 1: TOP LEVEL 
+    // SECTION 1: ADDING POPULATION (COLONSTS)
 
     addColonist = (x: number, y: number) => {
         const id = this._colonistsCurrentSerial;
@@ -25,13 +26,15 @@ export default class Population {
         this._colonists.push(colonist);
     }
 
+    // SECTION 2: COLONIST UPDATERS
+
     // Master updater function for controlling all individual colonist updater methods:
     // Needs terrain info for position updates (every minute), and a boolean for whether to update colonists' needs (every hour)
     updateColonists = (needs: boolean, infra: Infrastructure, map: Map) => {
         // Every minute:
         this.handleColonistMinutelyUpdates(infra, map);              // Should happen once every minute
         // Every hour:
-        if (needs) this.updateColonistNeedsAndGoals(infra, map);      // Should happen once every hour
+        if (needs) this.handleColonistHourlyUpdates(infra, map);      // Should happen once every hour
     }
 
     // Passes terrain info to each colonist and then checks if they have achieved their current goal
@@ -52,19 +55,19 @@ export default class Population {
         })
     }
 
-    updateColonistNeedsAndGoals = (infra: Infrastructure, map: Map) => {
+    handleColonistHourlyUpdates = (infra: Infrastructure, map: Map) => {
         this._colonists.forEach((colonist) => {
             colonist._data.handleHourlyUpdates(infra, map);
         })
     }
 
-    calculatePopulationResourceConsumption = (hour: number) => {
-        const air = this._colonists.length;
-        const water = this._colonists.length;
-        let food = 0;
-        if (hour % 8 === 0) food = this._colonists.length;
-        return { air, water, food };
+    // SECTION 3: COLONIST INFO API (GETTER FUNCTIONS)
+
+    getColonistDataFromCoords = (coords: Coords) => {
+        console.log(`Searching for Colonist at (${coords.x}, ${coords.y})`);
     }
+
+    // SECTION 4: COLONIST SAVE/LOAD DATA MANAGEMENT
 
     prepareColonistSaveData = () => {
         const colonistData: ColonistSaveData[] = [];

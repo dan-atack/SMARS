@@ -1804,21 +1804,25 @@ As the game matures, it will be more and more desirable to separate features tha
 
 12. [5: Save Data Completeness] Although currently not doing much, save game files do not contain the game's map type or difficulty level data - both fields contain a blank string.
 
-### 13. [8: Major Gameplay issue] In some circumstances, colonists who have just begun an 'explore' goal will have an action stack that tells them to jump off of a floor.
+13. [8: Major Gameplay issue] In some circumstances, colonists who have just begun an 'explore' goal will have an action stack that tells them to jump off of a floor, with the false belief that they are stuck up there (even when a ladder to the surface is available).
 
-### 14. [8: Major Gameplay issue] In some circumstances, colonists will climb empty space (in the observed instance, the place where the climb action took place was in between two actual ladders) as though it were an actual ladder.
+14. [8: Major Gameplay issue] In some circumstances, colonists will climb empty space (in the observed instance, the place where the climb action took place was in between two actual ladders) as though it were an actual ladder.
 
 ## Technical Debt Issues:
 
 ### 1. Refactoring needed to enable widespread unit testing of Engine subcomponents. Component classes to refactor (by removing P5 from the class attributes and making it an argument to the render method instead):
 
-### - Colonist/ColonistData
+- Colonist/ColonistData
+
+- Population (no unit tests had been made due to P5! Hurray, now we can add them all!!!)
 
 ### - Block (no data class exists yet - not a high priority)
 
 ### - MouseShadow/MouseShadowData (also not a top priority)
 
 ### 2. Refactor unit tests for classes that have already been refactored in this way:
+
+- MouseShadow/MouseShadowData
 
 ### - Infrastructure/InfrastructureData
 
@@ -1834,11 +1838,11 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ### 1. Add a new Infra Data class method to calculate a list of coordinate pairs for each individual section of a proposed Connector. This will be used to detect collisions with the terrain - the one possible obstacle to creating a new Connector (gravity/indoors criteria don't apply to in-between segments). We'll need a getConnectorSegments method that is updated by the Engine's validateMouseLocationForPlacement method (which will also need to be upgraded to note the difference between a new connector's start/stop phases).
 
-### 2. Add ability to merge overlapping connectors (analogous to how floors are combined, only vertically).
+### 2. Add ability to merge overlapping connectors (analogous to how floors are combined, only vertically... as well as in multi-line segments??).
 
 ### 3. Add ability for Connector renderer to operate like module renderer (using shapes data).
 
-### 4. Add a "roles" property to the Module Info type description (and thus to all existing modules in the DB) that contains a list of at least one string describing the role that a module plays (e.g. 'storage', 'dispensary', 'rest', 'science', etc.). This will help colonists figure out which module to go to when they have jobs, as well as restrict where resources can be accessed by colonists (so they have to eat at the cantina instead of being able to visit the store room instead, for instance).
+### 4. Add a "roles" property to the Module Info type description (and thus to all existing modules in the DB) that contains a list of at least one string describing the role that a module plays (e.g. 'storage', 'dispensary', 'rest', 'science', etc.). This will help colonists figure out which module to go to when they have jobs, as well as restrict where resources can be accessed by colonists (so they have to eat at the cantina instead of being able to visit the store room instead, for instance). Addendum: This might not be the way things eventually end up going, but it's worth keeping around for consideration.
 
 ### Exit Criteria for backend save/load game chapter:
 
