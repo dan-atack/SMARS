@@ -439,8 +439,8 @@ export default class Engine extends View {
 
     // Takes the mouse coordinates and looks for an in-game entity at that location
     handleInspect = (coords: Coords) => {
-        // console.log(`Inspecting object at (${coords.x}, ${coords.y})`);
-        this._population.getColonistDataFromCoords(coords);
+        const pop = this._population.getColonistDataFromCoords(coords);
+        if (pop) console.log(pop);
     }
 
     //// STRUCTURE PLACEMENT METHODS ////

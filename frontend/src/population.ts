@@ -17,7 +17,7 @@ export default class Population {
         this._xOffset = 0;                      // Default position is the left edge of the world.
     }
 
-    // SECTION 1: ADDING POPULATION (COLONSTS)
+    // SECTION 1: ADDING POPULATION (COLONISTS)
 
     addColonist = (x: number, y: number) => {
         const id = this._colonistsCurrentSerial;
@@ -65,6 +65,17 @@ export default class Population {
 
     getColonistDataFromCoords = (coords: Coords) => {
         console.log(`Searching for Colonist at (${coords.x}, ${coords.y})`);
+        const colonists = this._colonists.filter((col) => {
+            return col._data._x === coords.x && (col._data._y === coords.y || col._data._y === coords.y - 1)
+        });
+        if (colonists.length === 1) {
+            return colonists[0];
+        } else if (colonists.length > 1) {
+            console.log(`Warning: Found ${colonists.length} colonists at location (${coords.x}, ${coords.y})!`)
+            return null;
+        } else {
+            return null;    // If no colonist is found return a null
+        }
     }
 
     // SECTION 4: COLONIST SAVE/LOAD DATA MANAGEMENT
