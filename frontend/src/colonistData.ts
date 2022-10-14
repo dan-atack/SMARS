@@ -1,7 +1,7 @@
 // The ColonistData class handles all of the data processing for the colonist class, without any of the rendering tasks
 import { ColonistSaveData, ColonistNeeds } from "./colonist";
 import { createConsumeActionStack, determineIfColonistIsOnSameSurfaceAsModule, findElevatorFromGroundToFloor, findElevatorToGround, findModulesWithResource } from "./colonistActionLogic";
-import { Coords } from "./connectorData";
+import { Coords } from "./connector";
 import { constants } from "./constants";
 import Infrastructure from "./infrastructure";  // Infra data info gets passed by population updater function
 import { Elevator } from "./infrastructureData";

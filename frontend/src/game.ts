@@ -134,10 +134,10 @@ export default class Game extends Screen {
         });
         this._engine._infrastructure._connectors.forEach((con) => {
             const stats = {
-                id: con._data._id,
-                name: con._data._connectorInfo.name,
-                type: con._data._connectorInfo.type,
-                segments: con._data._segments,
+                id: con._id,
+                name: con._connectorInfo.name,
+                type: con._connectorInfo.type,
+                segments: con._segments,
             }
             connectorData.push(stats);
         })

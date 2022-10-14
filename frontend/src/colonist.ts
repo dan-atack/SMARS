@@ -3,7 +3,7 @@ import P5 from "p5";
 import ColonistData, { ColonistAction } from "./colonistData";
 import { constants } from "./constants";
 import { bodyAnimations, headAnimations, handAnimations, footAnimations } from "./animationFunctions";
-import { Coords } from "./connectorData";
+import { Coords } from "./connector";
 
 export type ColonistNeeds = {
     water: number,

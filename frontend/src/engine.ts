@@ -16,7 +16,7 @@ import { constants, modalData } from "./constants";
 // Types
 import { ConnectorSaveInfo, ModuleSaveInfo, SaveInfo, GameTime } from "./saveGame";
 import { GameData } from "./newGameSetup";
-import { Coords } from "./connectorData";
+import { Coords } from "./connector";
 import { Resource } from "./economyData";
 
 // TODO: Load Environment variables

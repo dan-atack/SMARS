@@ -1,7 +1,7 @@
 // The Population class is the disembodied list of all your colonists, and the functions for updating them.
 import P5 from "p5";
 import Colonist, { ColonistSaveData } from "./colonist";
-import { Coords } from "./connectorData";
+import { Coords } from "./connector";
 import Infrastructure from "./infrastructure";
 import Map from "./map";
 

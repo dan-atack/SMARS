@@ -1,6 +1,6 @@
 // The MouseShadow class will be used to help with the placement of new base structures
 import P5 from "p5";
-import { Coords } from "./connectorData";
+import { Coords } from "./connector";
 import { constants } from "./constants";
 
 export default class MouseShadow {

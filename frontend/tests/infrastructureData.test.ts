@@ -1,6 +1,5 @@
 import InfrastructureData from "../src/infrastructureData";
-import MapData, { MapZone } from "../src/mapData";
-import Floor from "../src/floor";   // To use for mockage, maybe??
+import MapData from "../src/mapData";
 import { ModuleInfo } from "../src/server_functions";
 
 // DUMMY DATA:

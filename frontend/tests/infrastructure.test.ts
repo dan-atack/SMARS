@@ -1,9 +1,6 @@
 import Infrastructure from "../src/infrastructure";
 import InfrastructureData from "../src/infrastructureData";
 import { ModuleInfo } from "../src/server_functions";
-import P5 from "p5";
-
-jest.mock("p5");
 
 // TEST DATA
 

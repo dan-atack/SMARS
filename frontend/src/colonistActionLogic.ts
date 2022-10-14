@@ -1,5 +1,5 @@
 import { ColonistAction } from "./colonistData";
-import { Coords } from "./connectorData";
+import { Coords } from "./connector";
 import { Resource } from "./economyData";
 import Floor from "./floor";
 import Infrastructure from "./infrastructure";

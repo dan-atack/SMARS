@@ -6,7 +6,7 @@ import Connector from "./connector";
 import { ConnectorInfo, ModuleInfo } from "./server_functions";
 import { constants } from "./constants";
 import { Resource } from "./economyData";
-import { Coords } from "./connectorData";
+import { Coords } from "./connector";
 import { MapZone } from "./mapData";
 import Map from "./map";
 
@@ -57,8 +57,8 @@ export default class Infrastructure {
             const coords: Coords = { x: start.x, y: bottom };
             const zoneId = map._data.getZoneIdForCoordinates(coords);
             // Add the zone ID regardless of whether it's found (adds "" if connector is not grounded)
-            this._data.addConnectorToFloors(c._data._id, start, stop, zoneId);
-            c._data.setGroundZoneId(zoneId);
+            this._data.addConnectorToFloors(c._id, start, stop, zoneId);
+            c.setGroundZoneId(zoneId);
         }
         // Update Serial number generator if its current serial is lower than the serial being loaded
         if (serial && serial > this._data._currentSerial) {
@@ -257,6 +257,12 @@ export default class Infrastructure {
         }
     }
 
+    getConnectorFromCoords = (coords: Coords) => {
+        const connector = this._connectors.find((con) => {
+            
+        })
+    }
+
     // Returns the whole module when given its ID
     getModuleFromID = (moduleId: number) => {
         const m = this._modules.find(mod => mod._data._id === moduleId);
@@ -284,7 +290,7 @@ export default class Infrastructure {
         });
         this._connectors.forEach((connector) => {
             // TODO: Check which side is nearest to the left/right sides, using a Connector Data method
-            if (connector._data._rightEdge >= leftEdge && connector._data._leftEdge < rightEdge) {
+            if (connector._rightEdge >= leftEdge && connector._leftEdge < rightEdge) {
                 connector.render(p5, this._horizontalOffset);
             }
         });

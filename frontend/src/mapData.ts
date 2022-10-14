@@ -3,7 +3,7 @@
 import P5 from 'p5';
 import { constants } from "./constants";
 import Block from "./block";
-import { Coords } from './connectorData';
+import { Coords } from './connector';
 
 export type MapZone = {         // If the map contains obstacles for colonist movement, it will be broken into 'zones'
     id: string;                 // You gotta have an ID for everything now...
