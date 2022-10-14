@@ -64,15 +64,11 @@ export default class Population {
     // SECTION 3: COLONIST INFO API (GETTER FUNCTIONS)
 
     getColonistDataFromCoords = (coords: Coords) => {
-        console.log(`Searching for Colonist at (${coords.x}, ${coords.y})`);
-        const colonists = this._colonists.filter((col) => {
+        const colonists = this._colonists.find((col) => {
             return col._data._x === coords.x && (col._data._y === coords.y || col._data._y === coords.y - 1)
         });
-        if (colonists.length === 1) {
-            return colonists[0];
-        } else if (colonists.length > 1) {
-            console.log(`Warning: Found ${colonists.length} colonists at location (${coords.x}, ${coords.y})!`)
-            return null;
+        if (colonists) {
+            return colonists;
         } else {
             return null;    // If no colonist is found return a null
         }

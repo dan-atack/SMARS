@@ -29,6 +29,8 @@ export default class Infrastructure {
         this._data.setup(mapWidth)
     }
 
+    // SECTION 1 - ADDING MODULES AND CONNECTORS
+
     // Args: x and y coords and the moduleInfo, plus now the map topography and zone data for ground floor determination. Serial is optional (used for loading modules from a save file)
     addModule = (x: number, y: number, moduleInfo: ModuleInfo, topography: number[], mapZones: MapZone[], serial?: number) => {
         // Whenever a serial number is to be used, update it BEFORE passing it to a constructor:
@@ -63,6 +65,8 @@ export default class Infrastructure {
             this._data.setSerialNumber(serial + 1);
         }
     }
+
+    // SECTION 2 - VALIDATING MODULE / CONNECTOR PLACEMENT
 
     // Top level module placement checker: Calls sub-routines from the data class
     checkModulePlacement = (x: number, y: number, moduleInfo: ModuleInfo, terrain: number[][]) => {
@@ -153,7 +157,7 @@ export default class Infrastructure {
         }
     }
 
-    // ECONOMIC / RESOURCE-RELATED METHODS
+    // SECTION 3 - ECONOMIC / RESOURCE-RELATED METHODS
 
     // Looks up a module and passes it the given resource data
     addResourcesToModule = (moduleId: number, resource: Resource) => {
@@ -164,6 +168,25 @@ export default class Infrastructure {
             console.log(`Unable to add ${resource[1]} ${resource[0]} to module ${moduleId}. Module ID was not found.`);
         }
     }
+
+    // Top-level module resource calculator - returns all resource data to the Economy class to amalgamate it
+    getAllBaseResources = () => {
+        const resources: Resource[] = [];
+        this._modules.forEach((mod) => {
+            mod._data._resources.forEach((res) => {
+                resources.push(res);
+            })
+        })
+        return resources;
+    }
+
+    // Basic oxygen loss calculator
+    calculateModulesOxygenLoss = () => {
+        const loss_rate = 1;
+        return loss_rate * this._modules.length;   
+    }
+
+    // SECTION 4 - INFRASTRUCTURE INFO API (GETTER FUNCTIONS)
 
     // Returns array of modules when given a resource tuple (name and quantity sought, in this case)
     // UPDATE: Can optionally be given second argument, lifeSupp, which is a boolean for when a colonist is looking for food/water
@@ -220,32 +243,29 @@ export default class Infrastructure {
         }
     }
 
+    // Returns the module, if there is one, that occupies the given coordinates
+    getModuleFromCoords = (coords: Coords) => {
+        const module = this._modules.find((mod) => {
+            const xRange = mod._data._x <= coords.x && mod._data._x + mod._data._width > coords.x;
+            const yRange = mod._data._y <= coords.y && mod._data._y + mod._data._height > coords.y;
+            return xRange && yRange;
+        })
+        if (module) {
+            return module;
+        } else {
+            return null;
+        }
+    }
+
     // Returns the whole module when given its ID
     getModuleFromID = (moduleId: number) => {
         const m = this._modules.find(mod => mod._data._id === moduleId);
         if (m !== undefined) {
-            return m;  // Add height minus 1 to y value to find floor height
+            return m;       // Add height minus 1 to y value to find floor height
         } else {
             console.log(`Error: Module data not found for module with ID ${moduleId}`);
             return null;    // Always return a null rather than an undefined in case of an error
         }
-    }
-
-    // Top-level module resource calculator - returns all resource data to the Economy class to amalgamate it
-    getAllBaseResources = () => {
-        const resources: Resource[] = [];
-        this._modules.forEach((mod) => {
-            mod._data._resources.forEach((res) => {
-                resources.push(res);
-            })
-        })
-        return resources;
-    }
-
-    // Basic oxygen loss calculator
-    calculateModulesOxygenLoss = () => {
-        const loss_rate = 1;
-        return loss_rate * this._modules.length;   
     }
 
     render = (p5: P5, horizontalOffset: number) => {
