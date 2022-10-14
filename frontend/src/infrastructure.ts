@@ -259,8 +259,15 @@ export default class Infrastructure {
 
     getConnectorFromCoords = (coords: Coords) => {
         const connector = this._connectors.find((con) => {
-            
+            const xMatch = con._leftEdge <= coords.x && con._rightEdge >= coords.x;
+            const yMatch = con._top <= coords.y && con._bottom >= coords.y;
+            return xMatch && yMatch;
         })
+        if (connector) {
+            return connector;
+        } else {
+            return null;
+        }
     }
 
     // Returns the whole module when given its ID

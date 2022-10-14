@@ -17,6 +17,8 @@ export default class Connector {
     _orientation: string;   // "vertical" or "horizontal"
     _leftEdge: number;      // To help with Infra class's rendering cutoff
     _rightEdge: number;
+    _top: number;           // In GRID spaces
+    _bottom: number;
     _connectorInfo: ConnectorInfo;
     _thickness: number;     // Width and height for connectors will vary based on length, which will be determined when the connector is placed, and thickness (which will be added soon to the connectorInfo's object shape in the backend).
     _groundZoneId: string;   // Keeps track of whether a transit-style connector is on the ground
@@ -48,6 +50,8 @@ export default class Connector {
         }
         this._leftEdge = Math.min(start.x, stop.x);
         this._rightEdge = Math.max(start.x, stop.x);
+        this._top = Math.min(start.y, stop.y);
+        this._bottom = Math.max(start.y, stop.y);
         this._thickness = this._connectorInfo.width;   // All dimensions (including segment coords) are in terms of grid positions
         this._groundZoneId = "";
         this._xOffset = 0;
@@ -80,7 +84,6 @@ export default class Connector {
     }
 
     renderDuct = (p5: P5) => {
-        const bw = constants.BLOCK_WIDTH;
         // Endpoint coordinates
         const startX = this._segments[0].start.x * constants.BLOCK_WIDTH - this._xOffset;
         const startY = this._segments[0].start.y * constants.BLOCK_WIDTH - this._yOffset;

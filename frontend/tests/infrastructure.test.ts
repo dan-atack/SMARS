@@ -1,6 +1,7 @@
 import Infrastructure from "../src/infrastructure";
 import InfrastructureData from "../src/infrastructureData";
-import { ModuleInfo } from "../src/server_functions";
+import Map from "../src/map";
+import { ConnectorInfo, ModuleInfo } from "../src/server_functions";
 
 // TEST DATA
 
@@ -71,6 +72,34 @@ const cantinaModuleInfo: ModuleInfo = {
     shapes: []
 }
 
+const ladderData: ConnectorInfo = {
+    name: "Ladder",
+    type: "transport",
+    resourcesCarried: ["crew"],
+    maxFlowRate: 2,
+    buildCosts: [
+        ["money", 7500]
+    ],
+    maintenanceCosts: [],
+    vertical: true,
+    horizontal: false,
+    width: 1
+}
+
+const airVentData: ConnectorInfo = {
+    name: "Air Vent",
+    type: "conduit",
+    resourcesCarried: ["air"],
+    maxFlowRate: 1,
+    buildCosts:[
+        ["money", 10000]
+    ],
+    maintenanceCosts: [],
+    vertical: true,
+    horizontal: true,
+    width: 1
+}
+
 // Fake terrain data (TODO: Create a Map class instance here to pass legitimate topography and zone data to the Infra tests)
 const mockography = [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10];
 const zonesData = [
@@ -82,6 +111,8 @@ describe("Infrastructure base class", () => {
     const infra = new Infrastructure();
     infra._data = new InfrastructureData();  // Necessary... for now
     infra._data.setup(mockography.length);                  // Setup Infra data with the width of the 'map' being used
+    
+    const mockMap = new Map();
 
     test("Can add new modules", () => {
         // Add three modules, to be reused in subsequent tests
@@ -155,6 +186,24 @@ describe("Infrastructure base class", () => {
         expect(infra.getModuleFromCoords({x: 8, y: 24})?._data._id).toBe(1003);     // Inside (bottom left corner)
         expect(infra.getModuleFromCoords({x: 8, y: 25})?._data._id).toBe(1001);     // Too low (other module)
         expect(infra.getModuleFromCoords({x: 7, y: 24})).toBe(null);                // Too far left
+    })
+
+    test("Can find a Connector that overlaps a set of coordinates", () => {
+        // Setup: Add two connectors that overlap at one point, (8, 25)
+        infra.addConnector({ x: 8, y: 27 }, { x: 8, y: 22}, airVentData, mockMap, 2000);     
+        infra.addConnector({ x: 6, y: 25 }, { x: 10, y: 25}, airVentData, mockMap, 2001);
+        // Vertical
+        expect(infra.getConnectorFromCoords({ x: 8, y: 27 })?._id).toBe(2000);      // Top
+        expect(infra.getConnectorFromCoords({ x: 8, y: 22 })?._id).toBe(2000);      // Bottom
+        expect(infra.getConnectorFromCoords({ x: 8, y: 28 })).toBe(null);           // Too high
+        expect(infra.getConnectorFromCoords({ x: 7, y: 27 })).toBe(null);           // Off side
+        // Horizontal
+        expect(infra.getConnectorFromCoords({ x: 6, y: 25 })?._id).toBe(2001);      // Left
+        expect(infra.getConnectorFromCoords({ x: 10, y: 25 })?._id).toBe(2001);     // Right
+        expect(infra.getConnectorFromCoords({ x: 10, y: 24 })).toBe(null);          // Too high
+        expect(infra.getConnectorFromCoords({ x: 11, y: 25 })).toBe(null);          // Off side
+        // Intersection - picks the first Connector in the list
+        expect(infra.getConnectorFromCoords({ x: 8, y: 25 })?._id).toBe(2000);
     })
 
 })
