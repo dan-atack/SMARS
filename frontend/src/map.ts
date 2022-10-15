@@ -31,6 +31,8 @@ export default class Map {
         this._expanded = true;  // By default the map is expanded
     }
 
+    // SECTION 1 - INITIAL SETUP & DISPLAY WIDTH SETTING MANAGEMENT
+
     setup = (mapData: number[][]) => {
         this._mapData = mapData;
         if (this._expanded) {
@@ -62,32 +64,7 @@ export default class Map {
         }
     }
 
-    // For a given stretch of columns, do they all have the same height? Returns true for yes, false for no
-    determineFlatness = (start: number, stop: number) => {
-        // Ensure this works with numbers going from lower to higher, or vice versa
-        const ascending = start < stop;
-        let height = 0; // Set this value with the first column to be tested; if any other column is different, return false
-        for (let i = start; ascending ? i < stop : i > stop; ascending ? i++ : i--) {
-            // Ensure column selection is not outside the map edges:
-            if (i >= 0 && i < this._mapData.length) {
-                // Set the first column as the measure to compare against
-                if (i === start) {
-                    height = this._mapData[i].length;
-                } else {
-                    if (this._mapData[i].length != height) {
-                        // Area is not flat
-                        // TODO: Upgrade this method's return to include failure messages
-                        return false;
-                    }
-                }
-            } else {
-                // Placement is out of bounds
-                // TODO: Upgrade this method's return to include failure messages
-                return false;
-            }
-        }
-        return true;    // If the method gets this far without returning false, the terrain is level
-    }
+    // SECTION 2 - TOPOGRAPHY AND ZONE BOUNDARY DETERMINATION
 
     // Top-level terrain zone/topography determinator
     updateTopographyAndZones = () => {
@@ -151,6 +128,35 @@ export default class Map {
         return z;
     }
 
+    // SECTION 3 - TERRAIN CONSTRAINT HELPERS FOR OTHER CLASSES
+
+    // For a given stretch of columns, do they all have the same height? Returns true for yes, false for no
+    determineFlatness = (start: number, stop: number) => {
+        // Ensure this works with numbers going from lower to higher, or vice versa
+        const ascending = start < stop;
+        let height = 0; // Set this value with the first column to be tested; if any other column is different, return false
+        for (let i = start; ascending ? i < stop : i > stop; ascending ? i++ : i--) {
+            // Ensure column selection is not outside the map edges:
+            if (i >= 0 && i < this._mapData.length) {
+                // Set the first column as the measure to compare against
+                if (i === start) {
+                    height = this._mapData[i].length;
+                } else {
+                    if (this._mapData[i].length != height) {
+                        // Area is not flat
+                        // TODO: Upgrade this method's return to include failure messages
+                        return false;
+                    }
+                }
+            } else {
+                // Placement is out of bounds
+                // TODO: Upgrade this method's return to include failure messages
+                return false;
+            }
+        }
+        return true;    // If the method gets this far without returning false, the terrain is level
+    }
+
     // Takes two sets of coordinates and determines if they are A) both on the surface and B) both in the same Zone
     walkableFromLocation = (startX: number, startY: number, destX: number, destY: number) => {
         if (this._topography[startX] === startY + 1) {  // The correct starting height should be one unit above the surface level
@@ -175,6 +181,8 @@ export default class Map {
         }
     }
 
+    // SECTION 4 - MAP INFO API (GETTER FUNCTIONS)
+
     // Returns the zone ID for a set of coordinates on the map's surface
     getZoneIdForCoordinates = (coords: Coords) => {
         if (this._topography[coords.x] === coords.y + 1) {   // Valid height is one above surface level
@@ -188,10 +196,24 @@ export default class Map {
                 return "";
             }
         } else {
-            // Coordinates are not at surface level
-            return "";
+            return "";  // Coordinates are not at surface level
         }
+    }
 
+    // Returns the Block data for a set of coordinates for the Engine's Inspect tool
+    getBlockForCoords = (coords: Coords) => {
+        const col = this._columns[coords.x];
+        if (col) {
+            const block = col.find(bl => bl._y === coords.y);
+            if (block) {
+                return block;   // Block exists at coordinates
+            } else {
+                return null;    // No block found
+            }
+        } else {
+            console.log(`Error: Column ${coords.x} not located.`);  // Column not found (throw error warning)
+            return null;
+        };
     }
 
     // The Engine passes the H-offset (V-offset coming soon) value here so that the blocks' positions are updated with every render; if the sidebar is open then compact = true, causing a smaller area of the map to be shown:

@@ -1770,7 +1770,17 @@ Exit Criteria:
 
 14. Then, before doing the Map inspect handler, combine the Map and Map Data classes, again ensuring that all unit tests and manual sanity checks pass before proceeding.
 
-### 13. Then, make a new method for the now-unified Map class, that returns the Block info (if any) for the selected coordinates. Can probably do this pretty efficiently by getting the column from the X value and then doing a find for the Block that has a matching Y value. Unit test first, as always (NOTE that to fully unit test this it might be necessary to quickly decouple P5 from the Block's constructor).
+15. Then, make a new method for the now-unified Map class, that returns the Block info (if any) for the selected coordinates. Can probably do this pretty efficiently by getting the column from the X value and then doing a find within the column for the Block that has a matching Y value. Unit test first, as always (NOTE that to fully unit test this it will be necessary to quickly decouple P5 from the Block's constructor).
+
+### 16. Integrate the four newly developed coordinate-finder methods into the Engine's handleInspect method, so that it will first select a Colonist, then a Connector, then a Module, and finally a Block if none of the above have already been selected. The object, if any, that is selected by the Inspect tool will be stored under a new Engine property, inspecting, which will be able to be either a null, or a Block, a Colonist, a Module or a Connector, and which natually will start out as a null. Validate that this logic is working in the console log before proceeding. Also, if the player clicks in the air, that should deselect the current item (i.e. set the inspect property to null), as should any change to the mouse context.
+
+### 17. Next, rather than overcrowding the DetailsArea component, which is already geared to be the building options menu, create a new component class, InspectDisplay, to handle the Inspect tool's visual output. Structure it so that its constructor takes no arguments, and give it skeleton methods for setup, updateInspectData, and render - making sure that the render method can accept P5 as an argument so that we can easily integrate unit tests for this class.
+
+### 18. In the DetailsArea component, add a field for inspectData, which can be a simple boolean that gets set by the Engine when an object is selected with the Inspect tool.
+
+### 19. Import the InspectDisplay class into the DetailsArea component and create an instance of it in the DA's constructor. Then, add a condition to the DA's renderer so that when the inspectData field is set to true, it renders the InspectDisplay component instead of the Minimap.
+
+### 20. Next, add a method for the DA to updateInspectDisplay, which will be called by the Engine when it sets the boolean inspectDisplay to true or false, and which will simply call the InspectDisplay component's own updateInspectData method.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
@@ -1830,9 +1840,9 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ### - Module/ModuleData
 
-### - Connector/ConnectorData
+- Connector/ConnectorData
 
-### - Map/MapData
+- Map/MapData
 
 # Annex A: Advanced Concepts
 

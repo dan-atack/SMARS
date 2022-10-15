@@ -17,7 +17,7 @@ const connectorInfo: ConnectorInfo = { "name" : "Air Vent", "type" : "conduit", 
 //     expect(connectorData).toHaveBeenCalledTimes(1);
 // })
 
-describe("ConnectorData", () => {
+describe("Connector", () => {
 
     const connector = new Connector(ids[0], start, stop1, connectorInfo);
     const connectorDataHorizontal = new Connector(ids[1], start, stop2, connectorInfo);

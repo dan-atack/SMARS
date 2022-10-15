@@ -7,7 +7,7 @@ export default class Block {
     _x: number;     // Blocks' x and y positions will be in terms of grid locations to act as fixed reference points
     _y: number;
     _type: number;
-    _blockData: BlockData | undefined;      // Undefined is allowed just in case the type does not match an entry in the blocktionary
+    _blockData: BlockData
     _width: number;
     _xOffset: number;   // The offset value, on the other hand, will be in terms of pixels, to allow for smoother scrolling
     _yOffset: number;
@@ -19,7 +19,8 @@ export default class Block {
         this._x = x;
         this._y = y;
         this._type = type;
-        this._blockData = blocks.find((block) => block.type === this._type);
+        const bd = blocks.find((block) => block.type === this._type);
+        this._blockData = bd || blocks[0];  // Default to block type 0 if data is not found for the given block type
         this._width = constants.BLOCK_WIDTH;
         this._xOffset = 0;
         this._yOffset = 0;
