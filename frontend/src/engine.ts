@@ -10,6 +10,11 @@ import Population from "./population";
 import Modal, { EventData } from "./modal";
 import Lander from "./lander";
 import MouseShadow from "./mouseShadow";
+// Component shapes for Inspect Tool
+import Block from "./block";
+import Colonist from "./colonist";
+import Connector from "./connector";
+import Module from "./module";
 // Helper/server functions
 import { ModuleInfo, ConnectorInfo, getOneModule, getOneConnector } from "./server_functions";
 import { constants, modalData } from "./constants";
@@ -47,6 +52,7 @@ export default class Engine extends View {
     mouseContext: string;       // Mouse context tells the Engine's click handler what to do when the mouse is pressed.
     selectedBuilding: ModuleInfo | ConnectorInfo | null;    // Data storage for when the user is about to place a new structure
     selectedBuildingCategory: string    // String name of the selected building category (if any)
+    inspecting: Colonist | Connector | Module | Block | null;   // Pointer to the current item being inspected, if any
     // In-game time control
     gameOn: boolean;            // If the game is on then the time ticker advances; if not it doesn't
     _tick: number;              // Updated every frame; keeps track of when to advance the game's clock
@@ -92,6 +98,7 @@ export default class Engine extends View {
         this.mouseContext = "inspect"    // Default mouse context allows user to select ('inspect') whatever they click on
         this.selectedBuilding = null;   // There is no building info selected by default.
         this.selectedBuildingCategory = "";  // Keep track of whether the selected building is a module or connector
+        this.inspecting = null;         // Keep track of selected item; default is null
         // Time-keeping:
         // TODO: Make the clock its own component, to de-clutter the Engine.
         this.gameOn = true;             // By default the game is on when the Engine starts
@@ -406,6 +413,7 @@ export default class Engine extends View {
 
     // Given to various sub-components, this dictates how the mouse will behave when clicked in different situations
     setMouseContext = (value: string) => {
+        this.inspecting = null;     // Reset inspect data
         this.mouseContext = value;
         // Only update the selected building if the mouse context is 'placeModule' or 'connectorStart'
         if (this.mouseContext === "placeModule" || this.mouseContext === "connectorStart") {
@@ -439,13 +447,18 @@ export default class Engine extends View {
 
     // Takes the mouse coordinates and looks for an in-game entity at that location
     handleInspect = (coords: Coords) => {
-        console.log(coords);
-        const pop = this._population.getColonistDataFromCoords(coords);
-        if (pop) {
-            console.log(pop._data._id);
+        if (this._population.getColonistDataFromCoords(coords)) {                   // First check for Colonists
+            this.inspecting = this._population.getColonistDataFromCoords(coords);
+        } else if (this._infrastructure.getConnectorFromCoords(coords)) {           // Next, check for Connectors
+            this.inspecting = this._infrastructure.getConnectorFromCoords(coords);
+        } else if (this._infrastructure.getModuleFromCoords(coords)) {              // Then, check for Modules
+            this.inspecting = this._infrastructure.getModuleFromCoords(coords);
+        } else if (this._map.getBlockForCoords(coords)) {                           // Finally, check for terrain Blocks
+            this.inspecting = this._map.getBlockForCoords(coords);
         } else {
-            console.log(this._infrastructure.getConnectorFromCoords(coords));
+            this.inspecting = null;
         }
+        console.log(this.inspecting);
     }
 
     //// STRUCTURE PLACEMENT METHODS ////
