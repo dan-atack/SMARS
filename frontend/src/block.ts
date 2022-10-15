@@ -4,7 +4,6 @@ import { constants, blocks, BlockData } from "./constants";
 
 export default class Block {
     // Block types:
-    _p5: P5;
     _x: number;     // Blocks' x and y positions will be in terms of grid locations to act as fixed reference points
     _y: number;
     _type: number;
@@ -16,8 +15,7 @@ export default class Block {
     _maxHp: number          // Initial block toughness
     _currentHp: number      // Current block toughness (block is worn down by mining or removing it)
 
-    constructor(p5: P5, x: number, y: number, type: number) {
-        this._p5 = p5;
+    constructor(x: number, y: number, type: number) {
         this._x = x;
         this._y = y;
         this._type = type;
@@ -31,14 +29,14 @@ export default class Block {
         this._currentHp = this._blockData?.hp || 100;
     }
 
-    render = (xOffset: number) => {    // TODO: Block gets y offset values as arguments to renderer
+    render = (p5: P5, xOffset: number) => {    // TODO: Block gets y offset values as arguments to renderer
         this._xOffset = xOffset;
         const x = this._x * this._width - this._xOffset;
         const y = this._y * this._width - this._yOffset;
-        this._p5.fill(this._color);
-        this._p5.strokeWeight(2);
-        this._p5.stroke(constants.ALMOST_BLACK);
-        this._p5.rect(x, y, this._width, this._width);
+        p5.fill(this._color);
+        p5.strokeWeight(2);
+        p5.stroke(constants.ALMOST_BLACK);
+        p5.rect(x, y, this._width, this._width);
     }
 
 }

@@ -4,7 +4,7 @@ import { Coords } from "./connector";
 import { Resource } from "./economyData";
 import Floor from "./floor";
 import { constants } from "./constants";
-import { MapZone } from "./mapData";
+import { MapZone } from "./map";
 
 export type Elevator = { id: number, x: number, top: number, bottom: number, groundZoneId: string }
 

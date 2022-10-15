@@ -1764,11 +1764,11 @@ Exit Criteria:
 
 11. Before proceeding, remove P5 from the Connector class, and recombine it with the connector data class. Ensure all dependencies in other modules are updated and all unit tests/sanity checks passing before proceeding.
 
-### 10. Next, write a method for the Infrastructure (base) class, which will findConnectorFromCoords by looping through the connectors list until it finds one that overlaps with the given coordinates. Only one connector should be returned by this process, so the issue of overlapping connectors should be a consideration here... as in fact it was for the Colonists, so perhaps a similar solution (just use the 'find' method on the array to return the first Connector that matches the given coordinates) can be employed here. If no connector is found, return a null. Again, unit test first before implementing - unit tests should account for whatever solution is used to deal with overlapping Connectors.
+12. Next, write a method for the Infrastructure (base) class, which will findConnectorFromCoords by looping through the connectors list until it finds one that overlaps with the given coordinates. Only one connector should be returned by this process, so the issue of overlapping connectors should be a consideration here... as in fact it was for the Colonists, so perhaps a similar solution (just use the 'find' method on the array to return the first Connector that matches the given coordinates) can be employed here. If no connector is found, return a null. Again, unit test first before implementing - unit tests should account for whatever solution is used to deal with overlapping Connectors.
 
-11. Next write another Infrastructure method, findModuleFromCoords, that finds a module from a provided set of coordinates and returns the result. Since Modules, unlike Connectors, cannot overlap with each other, this should be a simpler process than the previous case. Unit tests first, naturally.
+13. Next write another Infrastructure method, findModuleFromCoords, that finds a module from a provided set of coordinates and returns the result. Since Modules, unlike Connectors, cannot overlap with each other, this should be a simpler process than the previous case. Unit tests first, naturally.
 
-### 12. Then, before doing the Map inspect handler, combine the Map and Map Data classes, again ensuring that all unit tests and manual sanity checks pass before proceeding.
+14. Then, before doing the Map inspect handler, combine the Map and Map Data classes, again ensuring that all unit tests and manual sanity checks pass before proceeding.
 
 ### 13. Then, make a new method for the now-unified Map class, that returns the Block info (if any) for the selected coordinates. Can probably do this pretty efficiently by getting the column from the X value and then doing a find for the Block that has a matching Y value. Unit test first, as always (NOTE that to fully unit test this it might be necessary to quickly decouple P5 from the Block's constructor).
 
@@ -1812,7 +1812,7 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ## Technical Debt Issues:
 
-### 1. Refactoring needed to enable widespread unit testing of Engine subcomponents. Component classes to refactor (by removing P5 from the class attributes and making it an argument to the render method instead):
+### 1. Refactoring needed to enable widespread unit testing of Engine subcomponents classes. Classes to refactor (by removing P5 from the class attributes and making it an argument to the render method instead, and/or recombining the base and data versions of the class):
 
 - Colonist/ColonistData
 
@@ -1820,7 +1820,7 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ### - Block (no data class exists yet - not a high priority)
 
-### - MouseShadow/MouseShadowData (also not a top priority)
+- MouseShadow/MouseShadowData (also not a top priority)
 
 ### 2. Refactor unit tests for classes that have already been refactored in this way:
 

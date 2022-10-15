@@ -7,7 +7,7 @@ import { ConnectorInfo, ModuleInfo } from "./server_functions";
 import { constants } from "./constants";
 import { Resource } from "./economyData";
 import { Coords } from "./connector";
-import { MapZone } from "./mapData";
+import { MapZone } from "./map";
 import Map from "./map";
 
 export default class Infrastructure {
@@ -55,7 +55,7 @@ export default class Infrastructure {
             // Determine if the ladder/elevator touches a ground zone
             const bottom = Math.max(start.y, stop.y);   // Bottom has higher y value
             const coords: Coords = { x: start.x, y: bottom };
-            const zoneId = map._data.getZoneIdForCoordinates(coords);
+            const zoneId = map.getZoneIdForCoordinates(coords);
             // Add the zone ID regardless of whether it's found (adds "" if connector is not grounded)
             this._data.addConnectorToFloors(c._id, start, stop, zoneId);
             c.setGroundZoneId(zoneId);

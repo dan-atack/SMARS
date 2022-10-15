@@ -76,10 +76,10 @@ describe("ColonistData", () => {
     const colonistData = new ColonistData(9000, 0, 32);
     const mockInfra = new Infrastructure();
     const mockMap = new Map();
-    mockMap._data._mapData = flatTerrain;
-    mockMap._data.updateTopographyAndZones();
-    mockInfra._data.setup(mockMap._data._mapData.length);
-    mockInfra.addModule(10, 30, cantinaModuleInfo, mockMap._data._topography, mockMap._data._zones, 1001);
+    mockMap._mapData = flatTerrain;
+    mockMap.updateTopographyAndZones();
+    mockInfra._data.setup(mockMap._mapData.length);
+    mockInfra.addModule(10, 30, cantinaModuleInfo, mockMap._topography, mockMap._zones, 1001);
     // Provision test module with resources
     mockInfra.addResourcesToModule(1001, [ "water", 100 ]);
     mockInfra.addResourcesToModule(1001, [ "food", 100 ]);
@@ -524,7 +524,7 @@ describe("ColonistData", () => {
         resetColonistData();
         colonistData._needs.water = 10;
         // Add new module above the existing one, and provision it
-        mockInfra.addModule(10, 27, cantinaModuleInfo, mockMap._data._topography, mockMap._data._zones, 1002);
+        mockInfra.addModule(10, 27, cantinaModuleInfo, mockMap._topography, mockMap._zones, 1002);
         mockInfra.addResourcesToModule(1002, [ "water", 1000 ]);
         // Deprovision the module on the ground floor
         mockInfra._modules[0]._data.deductResource([ "water", 10000 ]);
@@ -654,7 +654,7 @@ describe("ColonistData", () => {
         colonistData.detectTerrainBeneath(mockMap, mockInfra);
         colonistData._needs.water = 10;
         // Add new module above the existing ones (on the 3rd floor), and provision it, then deprovision other modules
-        mockInfra.addModule(10, 24, cantinaModuleInfo, mockMap._data._topography, mockMap._data._zones, 1003);
+        mockInfra.addModule(10, 24, cantinaModuleInfo, mockMap._topography, mockMap._zones, 1003);
         mockInfra.addResourcesToModule(1003, [ "water", 1000 ]);
         mockInfra._modules[0]._data.deductResource([ "water", 10000 ]);
         mockInfra._modules[1]._data.deductResource([ "water", 10000 ]);

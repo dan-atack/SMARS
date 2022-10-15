@@ -119,31 +119,31 @@ export default class Engine extends View {
         this.currentView = true;
         this._sidebar.setup();
         this.selectedBuilding = null;
-        this._sidebar._detailsArea._minimap.updateTerrain(this._map._data._mapData);
+        this._sidebar._detailsArea._minimap.updateTerrain(this._map._mapData);
         // Sidebar minimap display - does it only need it during 'setup' or does it also need occasional updates?
     }
 
     setupNewGame = (gameData: GameData) => {
         this._gameData = gameData;  // gameData object only needs to be set for new games
-        this._map.setup(this._p5, this._gameData.mapTerrain);
+        this._map.setup(this._gameData.mapTerrain);
         this._economy._data.addMoney(this._gameData.startingResources[0][1]);
-        this._horizontalOffset = this._map._data._maxOffset / 2;   // Put player in the middle of the map to start out
-        this._infrastructure.setup(this._map._data._mapData.length);
+        this._horizontalOffset = this._map._maxOffset / 2;   // Put player in the middle of the map to start out
+        this._infrastructure.setup(this._map._mapData.length);
         this.createNewGameModal();
     }
 
     setupSavedGame = (saveInfo: SaveInfo) => {
         this._saveInfo = saveInfo;
         this.setClock(saveInfo.game_time);
-        this._map.setup(this._p5, this._saveInfo.terrain);
+        this._map.setup(this._saveInfo.terrain);
         // TODO: Extract the map expansion/sidebar pop-up (and the reverse) into a separate method
         this._map.setExpanded(false);   // Map starts in 'expanded' mode by default, so it must tell it the sidebar is open
         this._economy._data.addMoney(saveInfo.resources[0][1]); // Reload money from save data
         // TODO: Update the economy's load sequence to re-load rate-of-change data instead of resource quantities
         // DON'T DO IT HERE THOUGH - Do it at the end of the loadModuleFromSave method (2 down from this one)
         this._economy._data.setResourceChangeRates();           // Reset money rate-of-change indicator
-        this._horizontalOffset = this._map._data._maxOffset / 2;
-        this._infrastructure.setup(this._map._data._mapData.length);
+        this._horizontalOffset = this._map._maxOffset / 2;
+        this._infrastructure.setup(this._map._mapData.length);
         this._population.loadColonistData(saveInfo.colonists);
         this.loadModulesFromSave(saveInfo.modules);
         this.loadConnectorsFromSave(saveInfo.connectors);
@@ -192,12 +192,12 @@ export default class Engine extends View {
         if (selectedBuilding != null) {
             locations.forEach((space, idx) => {
                 if (ids && resources) {     // Use saved serial number and resource data only if they exist
-                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._data._topography, this._map._data._zones, ids[idx]); // Create module with ID
+                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._topography, this._map._zones, ids[idx]); // Create module with ID
                     resources[idx].forEach((resource) => {
                         this._infrastructure.addResourcesToModule(ids[idx], resource);  // Provision with saved resources
                     })
                 } else {
-                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._data._topography, this._map._data._zones,);
+                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._topography, this._map._zones,);
                 }
             })
         }
@@ -354,9 +354,9 @@ export default class Engine extends View {
         if (this._scrollingLeft && this._horizontalOffset > 0) {
             this._mouseInScrollRange > this._fastScrollThreshold ? this._horizontalOffset -= 2 : this._horizontalOffset--;
             this._horizontalOffset = Math.max(this._horizontalOffset, 0);   // Ensure scroll does not go too far left
-        } else if (this._scrollingRight && this._horizontalOffset < this._map._data._maxOffset){
+        } else if (this._scrollingRight && this._horizontalOffset < this._map._maxOffset){
             this._mouseInScrollRange > this._fastScrollThreshold ? this._horizontalOffset += 2 : this._horizontalOffset++;
-            this._horizontalOffset = Math.min(this._horizontalOffset, this._map._data._maxOffset);   // Ensure scroll does not go too far right
+            this._horizontalOffset = Math.min(this._horizontalOffset, this._map._maxOffset);   // Ensure scroll does not go too far right
         }
     }
 
@@ -389,16 +389,16 @@ export default class Engine extends View {
         // TODO: Improve the way this prevents out-of-bounds exceptions
         if (this.selectedBuilding && this._mouseShadow && x >= 0) {   // Only check if a building is selected and a mouse shadow exists
             if (this._infrastructure._data.isModule(this.selectedBuilding)) {    // If we have a module, check its placement
-                const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._data._mapData);
+                const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._mapData);
                 this._mouseShadow.setColor(clear);
             } else if (!this._mouseShadow._connectorStartCoords) { // If we have a Connector with NO start coords
                 // If no start coords exist, this is the start placement
-                const clear = this._infrastructure._data.checkConnectorEndpointPlacement(x, y, this._map._data._mapData);
+                const clear = this._infrastructure._data.checkConnectorEndpointPlacement(x, y, this._map._mapData);
                 this._mouseShadow.setColor(clear);
             } else if (this._mouseShadow._connectorStopCoords) {
                 const xStop = this._mouseShadow._connectorStopCoords.x;
                 const yStop = this._mouseShadow._connectorStopCoords.y;
-                const clear = this._infrastructure._data.checkConnectorEndpointPlacement(xStop, yStop, this._map._data._mapData);
+                const clear = this._infrastructure._data.checkConnectorEndpointPlacement(xStop, yStop, this._map._mapData);
                 this._mouseShadow.setColor(clear);
             }
         }
@@ -463,9 +463,9 @@ export default class Engine extends View {
             if (this._infrastructure._data.isModule(this.selectedBuilding)) {
                 // ASSUMES CASH IS THE ONLY KIND OF COST
                 const affordable = this._economy._data.checkResources(this.selectedBuilding.buildCosts[0][1]);
-                const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._data._mapData);
+                const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._mapData);
                 if (clear && affordable) {
-                    this._infrastructure.addModule(x, y, this.selectedBuilding,  this._map._data._topography, this._map._data._zones,);
+                    this._infrastructure.addModule(x, y, this.selectedBuilding,  this._map._topography, this._map._zones,);
                     this._economy._data.subtractMoney(this.selectedBuilding.buildCosts[0][1]);
                 } else {
                     // TODO: Display this info to the player with an in-game message of some kind
@@ -479,7 +479,7 @@ export default class Engine extends View {
     // Locks the mouse cursor into place at the start location of a new connector (X and Y are already gridified)
     handleConnectorStartPlacement = (x: number, y: number) => {
         // Ensure start location is valid
-        if (this._infrastructure._data.checkConnectorEndpointPlacement(x, y, this._map._data._mapData)) {
+        if (this._infrastructure._data.checkConnectorEndpointPlacement(x, y, this._map._mapData)) {
             this._mouseShadow?.setLocked(true, {x: x, y: y});   // Lock the shadow's position when start location is chosen
             this.setMouseContext("connectorStop");
         }
@@ -495,7 +495,7 @@ export default class Engine extends View {
             const affordable = this._economy._data.checkResources(cost); // NOTE: THIS ASSUMES COST IS ONLY EVER IN TERMS OF MONEY
             const start = this._mouseShadow._connectorStartCoords;
             const stop = this._mouseShadow._connectorStopCoords;
-            const clear = this._infrastructure._data.checkConnectorEndpointPlacement(stop.x, stop.y, this._map._data._mapData);
+            const clear = this._infrastructure._data.checkConnectorEndpointPlacement(stop.x, stop.y, this._map._mapData);
             if (affordable && clear) {
                 this._infrastructure.addConnector(start, stop, this.selectedBuilding, this._map);
                 this._economy._data.subtractMoney(cost);
@@ -522,7 +522,7 @@ export default class Engine extends View {
         if (flat) {
             this.createModal(false, modalData[0]);
             this._landingSiteCoords[0] = gridX - 4; // Set landing site location to the left edge of the landing area
-            this._landingSiteCoords[1] = (constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH) - this._map._data._columns[gridX].length;
+            this._landingSiteCoords[1] = (constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH) - this._map._columns[gridX].length;
         }    
     }
 
@@ -859,7 +859,7 @@ export default class Engine extends View {
         if (this._animation) {
             this._animation.render(this._horizontalOffset);     // Render animation second
         }
-        this._map.render(this._horizontalOffset);               // Render map third
+        this._map.render(p5, this._horizontalOffset);               // Render map third
         this._infrastructure.render(this._p5, this._horizontalOffset);    // Render infrastructure fourth
         if (this.selectedBuilding && !this._infrastructure._data.isModule(this.selectedBuilding)) {
             this.renderMouseShadow(); // If placing a connector, render mouse shadow above the infra layer

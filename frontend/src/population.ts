@@ -40,7 +40,7 @@ export default class Population {
     // Passes terrain info to each colonist and then checks if they have achieved their current goal
     handleColonistMinutelyUpdates = (infra: Infrastructure, map: Map) => {
         // For each colonist, isolate the 3 terrain columns around them:
-        const terrain = map._data._mapData;
+        const terrain = map._mapData;
         this._colonists.forEach((colonist) => {
             let cols: number[][] = [terrain[colonist._data._x]];
             // If colonist is next to the right or left edge of the map, only return 2 columns:

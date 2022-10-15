@@ -1,10 +1,8 @@
 // The ColonistData class handles all of the data processing for the colonist class, without any of the rendering tasks
 import { ColonistSaveData, ColonistNeeds } from "./colonist";
-import { createConsumeActionStack, determineIfColonistIsOnSameSurfaceAsModule, findElevatorFromGroundToFloor, findElevatorToGround, findModulesWithResource } from "./colonistActionLogic";
+import { createConsumeActionStack, findElevatorToGround } from "./colonistActionLogic";
 import { Coords } from "./connector";
-import { constants } from "./constants";
 import Infrastructure from "./infrastructure";  // Infra data info gets passed by population updater function
-import { Elevator } from "./infrastructureData";
 import Map from "./map";
 
 export type ColonistAction = {
@@ -182,8 +180,8 @@ export default class ColonistData {
                 const dist = Math.ceil(Math.random() * 10);
                 let dest = dir ? dist : -dist;
                 dest = Math.max(this._x + dest, 1);    // Ensure the colonist doesn't wander off the edge
-                if (dest > map._data._columns.length - 1) {
-                    dest = map._data._columns.length - 1;
+                if (dest > map._columns.length - 1) {
+                    dest = map._columns.length - 1;
                 }
                 // Then, add the movement action; if the colonist is on the ground, then this is the only action needed...
                 this.addAction("move", { x: dest, y: 0 });  // Y coordinate doesn't matter for move action
@@ -317,7 +315,7 @@ export default class ColonistData {
     // MOVEMENT/POSITIONING METHODS
 
     updateMapZone = (map: Map) => {
-        this._standingOnId = map._data.getZoneIdForCoordinates({ x: this._x, y: this._y + 1 });    // Plus one to Y for foot level
+        this._standingOnId = map.getZoneIdForCoordinates({ x: this._x, y: this._y + 1 });    // Plus one to Y for foot level
     }
 
     updateFloorZone = (infra: Infrastructure) => {
