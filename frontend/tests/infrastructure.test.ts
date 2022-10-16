@@ -129,22 +129,22 @@ describe("Infrastructure base class", () => {
         infra.addResourcesToModule(1002, [ "water", 1000000 ])      // Should only be able to fill up to max capacity
         infra.addResourcesToModule(1003, [ "water", 500 ]);         // Provision the cantina with food and water for later tests
         infra.addResourcesToModule(1003, [ "food", 500 ]);
-        expect(infra._modules[0]._data._resources).toStrictEqual([
+        expect(infra._modules[0]._resources).toStrictEqual([
             [ "power", 0 ]
         ]);
-        expect(infra._modules[1]._data._resources).toStrictEqual([
+        expect(infra._modules[1]._resources).toStrictEqual([
             ["oxygen", 0],
             ["food", 0],
             ["water", 500],
             ["equipment", 0]
         ]);
-        expect(infra._modules[2]._data._resources).toStrictEqual([
+        expect(infra._modules[2]._resources).toStrictEqual([
             ["oxygen", 0],
             ["food", 0],
             ["water", 10000],
             ["equipment", 0]
         ]);
-        expect(infra._modules[3]._data._resources).toStrictEqual([
+        expect(infra._modules[3]._resources).toStrictEqual([
             ["food", 500],
             ["water", 500]
         ])
@@ -171,20 +171,20 @@ describe("Infrastructure base class", () => {
     test("Can find the module that contains a set of coordinates", () => {
         // Test each corner of the storage module at (8, 22) (4 x 3 width times height), inside and out
         // Top left corner
-        expect(infra.getModuleFromCoords({x: 8, y: 22})?._data._id).toBe(1003);     // Inside (top left corner)
+        expect(infra.getModuleFromCoords({x: 8, y: 22})?._id).toBe(1003);     // Inside (top left corner)
         expect(infra.getModuleFromCoords({x: 8, y: 21})).toBe(null);                // Too high
         expect(infra.getModuleFromCoords({x: 7, y: 22})).toBe(null);                // Too far left
         // Top right corner
-        expect(infra.getModuleFromCoords({x: 11, y: 22})?._data._id).toBe(1003);    // Inside (top right corner)
+        expect(infra.getModuleFromCoords({x: 11, y: 22})?._id).toBe(1003);    // Inside (top right corner)
         expect(infra.getModuleFromCoords({x: 11, y: 21})).toBe(null);               // Too high
         expect(infra.getModuleFromCoords({x: 12, y: 22})).toBe(null);               // Too far right
         // Bottom right corner
-        expect(infra.getModuleFromCoords({x: 11, y: 24})?._data._id).toBe(1003);    // Inside (bottom right corner)
-        expect(infra.getModuleFromCoords({x: 11, y: 25})?._data._id).toBe(1001);    // Too low (other module)
+        expect(infra.getModuleFromCoords({x: 11, y: 24})?._id).toBe(1003);    // Inside (bottom right corner)
+        expect(infra.getModuleFromCoords({x: 11, y: 25})?._id).toBe(1001);    // Too low (other module)
         expect(infra.getModuleFromCoords({x: 12, y: 23})).toBe(null);               // Too far right
         // Bottom left corner
-        expect(infra.getModuleFromCoords({x: 8, y: 24})?._data._id).toBe(1003);     // Inside (bottom left corner)
-        expect(infra.getModuleFromCoords({x: 8, y: 25})?._data._id).toBe(1001);     // Too low (other module)
+        expect(infra.getModuleFromCoords({x: 8, y: 24})?._id).toBe(1003);     // Inside (bottom left corner)
+        expect(infra.getModuleFromCoords({x: 8, y: 25})?._id).toBe(1001);     // Too low (other module)
         expect(infra.getModuleFromCoords({x: 7, y: 24})).toBe(null);                // Too far left
     })
 

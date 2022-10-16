@@ -458,7 +458,7 @@ export default class Engine extends View {
         } else {
             this.inspecting = null;
         }
-        console.log(this.inspecting);
+        this._sidebar._detailsArea.setInspectData(this.inspecting);
     }
 
     //// STRUCTURE PLACEMENT METHODS ////
@@ -599,8 +599,8 @@ export default class Engine extends View {
         if (this._infrastructure._modules.length >= startingStructureCount) {
             this._infrastructure._modules.forEach((mod) => {
                 // Default for now is to just indiscriminately fill 'em all up
-                mod._data._moduleInfo.storageCapacity.forEach((resource) =>  {
-                    mod._data.addResource(resource);
+                mod._moduleInfo.storageCapacity.forEach((resource) =>  {
+                    mod.addResource(resource);
                 })
             });
             this.updateEconomyDisplay();    // Update economy display so that the player can see what they have right away

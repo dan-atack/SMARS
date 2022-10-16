@@ -1,4 +1,4 @@
-import ModuleData from "../src/moduleData";
+import Module from "../src/module";
 import { ModuleInfo } from "../src/server_functions";
 
 // Module Info data
@@ -45,8 +45,8 @@ const noStoreModuleInfo: ModuleInfo = {
     shapes: []                  // Shapes data not needed for unit tests
 };
 
-const moduleData = new ModuleData(9000, 10, 10, storageModuleInfo);
-const emptyModule = new ModuleData(9001, 20, 20, noStoreModuleInfo);
+const moduleData = new Module(9000, 10, 10, storageModuleInfo);
+const emptyModule = new Module(9001, 20, 20, noStoreModuleInfo);
 
 describe("ModuleData", () => {
 

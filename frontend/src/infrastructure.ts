@@ -42,7 +42,7 @@ export default class Infrastructure {
         this._data.updateBaseVolume(area);
         // Update base floor data
         const footprint = this._data.calculateModuleFootprint(area);
-        this._data.addModuleToFloors(m._data._id, footprint, topography, mapZones);
+        this._data.addModuleToFloors(m._id, footprint, topography, mapZones);
     }
 
     // Args: start and stop coords, and the connectorInfo. Serial is optional for loading connectors from a save file
@@ -100,7 +100,7 @@ export default class Infrastructure {
         let collisions: number[][] = [];
         this._modules.forEach((mod) => {
             // TODO: Improve efficiency by only checking modules with the same X coordinates?
-            const modArea = this._data.calculateModuleArea(mod._data._moduleInfo, mod._data._x, mod._data._y);
+            const modArea = this._data.calculateModuleArea(mod._moduleInfo, mod._x, mod._y);
             modArea.forEach((coordPair) => {
                 moduleArea.forEach((coords) => {
                     if (coordPair.x === coords.x && coordPair.y === coords.y) {
@@ -126,7 +126,7 @@ export default class Infrastructure {
         const {floor, footprint} = this._data.calculateModuleFootprint(moduleArea);
         // Check each column of each existing module to see if its 'roof' (y-value) is one level below the 'floor' of the proposed new module
         this._modules.forEach((mod) => {
-            const modArea = this._data.calculateModuleArea(mod._data._moduleInfo, mod._data._x, mod._data._y);
+            const modArea = this._data.calculateModuleArea(mod._moduleInfo, mod._x, mod._y);
             const fp: number[] = [];
             modArea.forEach((pair) => {
                 if (!fp.includes(pair.x)) {
@@ -136,8 +136,8 @@ export default class Infrastructure {
             fp.forEach((column) => {
                 footprint.forEach((col) => {
                     // Basic column strength check
-                    const canSupport = mod._data._moduleInfo.columnStrength > 0;
-                    if (column === col && mod._data._y - floor === 1 && canSupport) {
+                    const canSupport = mod._moduleInfo.columnStrength > 0;
+                    if (column === col && mod._y - floor === 1 && canSupport) {
                         supportedColumns.push(col);
                     }
                 })
@@ -161,9 +161,9 @@ export default class Infrastructure {
 
     // Looks up a module and passes it the given resource data
     addResourcesToModule = (moduleId: number, resource: Resource) => {
-        const m = this._modules.find(mod => mod._data._id === moduleId);
+        const m = this._modules.find(mod => mod._id === moduleId);
         if (m !== undefined) {
-            m._data.addResource(resource);
+            m.addResource(resource);
         } else {
             console.log(`Unable to add ${resource[1]} ${resource[0]} to module ${moduleId}. Module ID was not found.`);
         }
@@ -173,7 +173,7 @@ export default class Infrastructure {
     getAllBaseResources = () => {
         const resources: Resource[] = [];
         this._modules.forEach((mod) => {
-            mod._data._resources.forEach((res) => {
+            mod._resources.forEach((res) => {
                 resources.push(res);
             })
         })
@@ -193,18 +193,18 @@ export default class Infrastructure {
     findModulesWithResource = (resource: Resource, lifeSupp?: boolean) => {
         let mods: Module[] = [];  // Prepare to return the list of modules
         this._modules.forEach((mod) => {
-            let lifeSupport = mod._data._moduleInfo.type === "Life Support";
+            let lifeSupport = mod._moduleInfo.type === "Life Support";
             // If no value for lifeSupp is provided, then ignore Life Support as a criteria (set to be true no matter what)
             if (lifeSupp === undefined) lifeSupport = true;
-            const hasCapacity = mod._data._resourceCapacity().includes(resource[0]);
-            const inStock = mod._data.getResourceQuantity(resource[0]) >= resource[1];   // Compare needed vs available quantity
+            const hasCapacity = mod._resourceCapacity().includes(resource[0]);
+            const inStock = mod.getResourceQuantity(resource[0]) >= resource[1];   // Compare needed vs available quantity
             if (hasCapacity && inStock && lifeSupport) {
                 // console.log(`Module ${mod._data._moduleInfo.name} contains at least ${resource[1]} ${resource[0]}`);
-                const r = mod._data._resources.find((res) => res[0] === resource[0]);
+                const r = mod._resources.find((res) => res[0] === resource[0]);
                 if (r !== undefined) {
                     mods.push(mod);
                 } else {
-                    console.log(`Error retrieving resource data for module ${mod._data._id} (${mod._data._moduleInfo.name})`);
+                    console.log(`Error retrieving resource data for module ${mod._id} (${mod._moduleInfo.name})`);
                     return [];
                 }
             }
@@ -218,10 +218,10 @@ export default class Infrastructure {
         let distance = 1000000;         // Use an impossibly large value for the default
         modules.forEach((mod) => {
             // Compare each module's coords to the given location (x values only for now)
-            const deltaX = Math.abs(mod._data._x - location.x);
+            const deltaX = Math.abs(mod._x - location.x);
             if (deltaX < distance) {
                 distance = deltaX;  // If current module is closer than the previous distance, its delta x is the new value
-                nearestID = mod._data._id;  // And its ID is kept as the default return for this function
+                nearestID = mod._id;  // And its ID is kept as the default return for this function
             }
         })
         if (nearestID !== 0) {
@@ -234,9 +234,9 @@ export default class Infrastructure {
 
     // Returns a module's coordinates when given a unique ID
     findModuleLocationFromID = (moduleId: number) => {
-        const m = this._modules.find(mod => mod._data._id === moduleId);
+        const m = this._modules.find(mod => mod._id === moduleId);
         if (m !== undefined) {
-            return { x: m._data._x, y: m._data._y + m._data._height - 1 };  // Add height minus 1 to y value to find floor height
+            return { x: m._x, y: m._y + m._height - 1 };  // Add height minus 1 to y value to find floor height
         } else {
             console.log(`Error: Module location data not found for module with ID ${moduleId}`);
             return { x: 0, y: 0 };
@@ -246,8 +246,8 @@ export default class Infrastructure {
     // Returns the module, if there is one, that occupies the given coordinates
     getModuleFromCoords = (coords: Coords) => {
         const module = this._modules.find((mod) => {
-            const xRange = mod._data._x <= coords.x && mod._data._x + mod._data._width > coords.x;
-            const yRange = mod._data._y <= coords.y && mod._data._y + mod._data._height > coords.y;
+            const xRange = mod._x <= coords.x && mod._x + mod._width > coords.x;
+            const yRange = mod._y <= coords.y && mod._y + mod._height > coords.y;
             return xRange && yRange;
         })
         if (module) {
@@ -272,7 +272,7 @@ export default class Infrastructure {
 
     // Returns the whole module when given its ID
     getModuleFromID = (moduleId: number) => {
-        const m = this._modules.find(mod => mod._data._id === moduleId);
+        const m = this._modules.find(mod => mod._id === moduleId);
         if (m !== undefined) {
             return m;       // Add height minus 1 to y value to find floor height
         } else {
@@ -287,12 +287,12 @@ export default class Infrastructure {
         const leftEdge = Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH);    // Edges are in terms of columns
         const rightEdge = Math.floor(this._horizontalOffset + constants.WORLD_VIEW_WIDTH) / constants.BLOCK_WIDTH;
         this._modules.forEach((module) => {
-            if (module._data._x + module._data._width >= leftEdge && module._data._x < rightEdge) {
+            if (module._x + module._width >= leftEdge && module._x < rightEdge) {
                 module.render(p5, this._horizontalOffset);
 
-                module._data._isRendered = true;
+                module._isRendered = true;
             } else {
-                module._data._isRendered = false;
+                module._isRendered = false;
             }
         });
         this._connectors.forEach((connector) => {

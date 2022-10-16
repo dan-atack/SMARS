@@ -38,13 +38,13 @@ export const createConsumeActionStack = (colonistCoords: Coords, colonistStandin
     } else {
         modules.forEach((mod) => {
             // Find floor
-            const floor = infra._data.getFloorFromModuleId(mod._data._id);
+            const floor = infra._data.getFloorFromModuleId(mod._id);
             // Does floor have elevators? --> If no, try next module
             // NOTE: Stop checking here if the stackComplete flag is set to true
             if ((!stackComplete) && floor && floor._connectors.length > 0) {
                 // If floor has elevators, start a fresh stack by adding initial consume action
-                const modCoords = infra.findModuleLocationFromID(mod._data._id);
-                stack.push(addAction(verb, { x: modCoords.x, y: modCoords.y }, resource[1], mod._data._id));
+                const modCoords = infra.findModuleLocationFromID(mod._id);
+                stack.push(addAction(verb, { x: modCoords.x, y: modCoords.y }, resource[1], mod._id));
                 // Then loop thru elevators list
                 const elevatorIDs = floor._connectors;
                 elevatorIDs.forEach((elevId) => {
@@ -181,7 +181,7 @@ export const findModulesOnSameSurface = (resource: Resource, standingOn: string 
     const modules = infra.findModulesWithResource(resource, true);
     const accessibles: Module[] = []; // Keep a list of just the modules that are on the same surface (floor/zone) as the colonist
     modules.forEach((mod) => {
-        const floor = infra._data.getFloorFromModuleId(mod._data._id);
+        const floor = infra._data.getFloorFromModuleId(mod._id);
         // Add modules that are: on floor with same ID as colonist is standing on, OR on floor with a ground zone ID that matches
         if (floor && (floor._id === standingOn || floor.getFloorGroundZones().includes(standingOn as string))){
             accessibles.push(mod);

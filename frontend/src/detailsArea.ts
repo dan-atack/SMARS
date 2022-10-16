@@ -3,6 +3,12 @@ import P5 from "p5";
 import Button from "./button";
 import BuildingChip from "./buildingChip";
 import Minimap from "./minimap";
+import InspectDisplay from "./inspectDisplay";
+// Inspect Display Data types
+import Block from "./block";
+import Colonist from "./colonist";
+import Connector from "./connector";
+import Module from "./module";
 // Types and functions from 'Server functions' file (for backend connectivity)
 import { getStructureTypes, getStructures, ModuleInfo, ConnectorInfo } from "./server_functions";
 import { constants } from "./constants";
@@ -32,8 +38,10 @@ export default class DetailsArea {
     _typeButtons: Button[];             // Second-level buttons: building TYPE options (habitation, transport, etc.)
     _optionButtons: BuildingChip[];     // Third-level buttons: actual building options (sorted by type)
     _backButton: Button;                // Button to return from the building options list to the building categories list
-    // Minimap
-    _minimap: Minimap;
+    // Minimap / Inspect area
+    _inspectDisplay: InspectDisplay;    // Component
+    _minimap: Minimap;                  // Component
+    _inspectData: boolean;              // Switch to turn on the inspect display if there is data to show
     // TODO: add _currentOption as new component type, buildingDetails, which shows an image of a building and all of its info
     setOpen: (status: boolean) => void; // Alerts the sidebar that the details area has been closed (so it can reshow its own buttons)
     setMouseContext: (value: string) => void;   // Updater for the Engine's mouse context when a building is selected
@@ -64,7 +72,9 @@ export default class DetailsArea {
         this._typeButtons = [];
         this._optionButtons = [];
         this._backButton = new Button(p5, "BACK", this._x, this._buttonY + 4 * this._buttonMargin, this.handleBack, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG);
+        this._inspectDisplay = new InspectDisplay(this._x, this._y);
         this._minimap = new Minimap(p5, this._x + 24, this._y + 256, []);
+        this._inspectData = false;      // By default there is no inspect data to display
         this.setOpen = setOpen;
         this.setMouseContext = setMouseContext;
         this.getStructureTypes = getStructureTypes;
@@ -239,6 +249,30 @@ export default class DetailsArea {
         p5.textAlign(p5.CENTER, p5.CENTER);
     }
 
+    // INSPECT DISPLAY CONTROLS
+
+    setInspectData = (data: Block | Colonist | Connector | Module | null) => {
+        this._inspectDisplay.updateSelection(data);
+        if (data) {
+            this._inspectData = true;
+        } else {
+            this._inspectData = false;
+        }
+    }
+
+    // RENDERING ZONE
+
+    renderMinimap = (p5: P5) => {
+        p5.fill(constants.GREEN_TERMINAL);
+        p5.textAlign(p5.CENTER, p5.CENTER);
+        p5.text("Minimap", this._x + (this._width / 2), this._y + 64);
+        this._minimap.render();
+    }
+
+    renderInspectDisplay = (p5: P5) => {
+        this._inspectDisplay.render(p5);
+    }
+
     render = () => {
         const p5 = this._p5;
         p5.fill(constants.BLUEGREEN_DARK);
@@ -253,12 +287,13 @@ export default class DetailsArea {
             } else {
                 this.showCategoryOptions();
             }
-        } else {    // If Details Area is not extended, show it with normal height and display the Minimap in the middle of it
+        } else {    // If Details Area is not extended, show it at normal height and display either Minimap or Inspect Display
             p5.rect(this._x, this._y, this._width, this._normalHeight, 8, 8, 8, 8);
-            p5.fill(constants.GREEN_TERMINAL);
-            p5.textAlign(p5.CENTER, p5.CENTER);
-            p5.text("Minimap", this._x + (this._width / 2), this._y + 64);
-            this._minimap.render();
+            if (this._inspectData) {
+                this.renderInspectDisplay(p5);
+            } else {
+                this.renderMinimap(p5);
+            }
         }
     }
 }

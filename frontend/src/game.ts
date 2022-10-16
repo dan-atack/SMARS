@@ -123,12 +123,12 @@ export default class Game extends Screen {
         const connectorData: ConnectorSaveInfo[] = [];
         this._engine._infrastructure._modules.forEach((mod) => {
             const stats = {
-                id: mod._data._id,
-                name: mod._data._moduleInfo.name,
-                type: mod._data._moduleInfo.type,
-                x: mod._data._x,
-                y: mod._data._y,
-                resources: mod._data._resources
+                id: mod._id,
+                name: mod._moduleInfo.name,
+                type: mod._moduleInfo.type,
+                x: mod._x,
+                y: mod._y,
+                resources: mod._resources
             }
             moduleData.push(stats);
         });

@@ -313,11 +313,11 @@ describe("ColonistData", () => {
         colonistData.clearActions();
         colonistData.resolveAction();
         colonistData._needs.food = 10;
-        mockInfra._modules[0]._data.deductResource(["food", 10000]);    // Ensure module is empty
-        mockInfra._modules[0]._data.addResource(["food", 5]);           // Provision with slightly fewer resources than are needed
+        mockInfra._modules[0].deductResource(["food", 10000]);    // Ensure module is empty
+        mockInfra._modules[0].addResource(["food", 5]);           // Provision with slightly fewer resources than are needed
         colonistData.addAction("eat", { x: 10, y: 32 }, 10, 1001);
         colonistData.startAction(mockInfra);
-        expect(mockInfra._modules[0]._data.getResourceQuantity("food")).toBe(0);    // Colonist takes everything there is to take
+        expect(mockInfra._modules[0].getResourceQuantity("food")).toBe(0);    // Colonist takes everything there is to take
         expect(colonistData._currentAction?.duration).toBe(5);      // Reduce duration since it takes less time to eat less food
         // Fast forward to the end of the action
         colonistData._actionTimeElapsed = 4;
@@ -501,7 +501,7 @@ describe("ColonistData", () => {
         // Setup test conditions: Provision module, and ensure Colonist is on the same ground zone as the module
         resetColonistData();
         colonistData._needs.water = 10;
-        mockInfra._modules[0]._data.addResource(["water", 1000]);
+        mockInfra._modules[0].addResource(["water", 1000]);
         colonistData.setGoal("get-water", mockInfra, mockMap);
         // First action added to stack (drink) should be the only item left in the action stack
         expect(colonistData._actionStack).toStrictEqual([{
@@ -527,7 +527,7 @@ describe("ColonistData", () => {
         mockInfra.addModule(10, 27, cantinaModuleInfo, mockMap._topography, mockMap._zones, 1002);
         mockInfra.addResourcesToModule(1002, [ "water", 1000 ]);
         // Deprovision the module on the ground floor
-        mockInfra._modules[0]._data.deductResource([ "water", 10000 ]);
+        mockInfra._modules[0].deductResource([ "water", 10000 ]);
         // Add a connector that goes from the ground floor to the new module
         mockInfra.addConnector({ x: 11, y: 32 }, { x: 11, y: 28 }, connectorInfo, mockMap, 2001);
         // Run test
@@ -656,8 +656,8 @@ describe("ColonistData", () => {
         // Add new module above the existing ones (on the 3rd floor), and provision it, then deprovision other modules
         mockInfra.addModule(10, 24, cantinaModuleInfo, mockMap._topography, mockMap._zones, 1003);
         mockInfra.addResourcesToModule(1003, [ "water", 1000 ]);
-        mockInfra._modules[0]._data.deductResource([ "water", 10000 ]);
-        mockInfra._modules[1]._data.deductResource([ "water", 10000 ]);
+        mockInfra._modules[0].deductResource([ "water", 10000 ]);
+        mockInfra._modules[1].deductResource([ "water", 10000 ]);
         // Add a connector that goes from the 2nd floor to the 3rd
         mockInfra.addConnector({ x: 13, y: 32 }, { x: 13, y: 24 }, connectorInfo, mockMap, 2003);
         // Run test: colonist should move to the ladder and then climb it to the 3rd floor
@@ -699,7 +699,7 @@ describe("ColonistData", () => {
         // Make the colonist thirsty...
         colonistData._needs.water = 10;
         // ... But deprovision water modules so that they cannot slake their thirst
-        mockInfra._modules[2]._data.deductResource([ "water", 10000 ]);
+        mockInfra._modules[2].deductResource([ "water", 10000 ]);
         // Tell colonist to fetch water when there isn't any
         colonistData.setGoal("get-water", mockInfra, mockMap);
         expect(colonistData._actionStack.length).toBe(0);

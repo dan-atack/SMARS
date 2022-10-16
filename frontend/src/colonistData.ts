@@ -484,7 +484,7 @@ export default class ColonistData {
                 // Call its resource-reduction method
                 if (mod) {
                     // Resource is immediately removed from the module; colonist 'gets' it when they complete the action
-                    const consumed = mod._data.deductResource([resourceName, this._currentAction.duration]);  // Duration = qty taken
+                    const consumed = mod.deductResource([resourceName, this._currentAction.duration]);  // Duration = qty taken
                     if (consumed < this._currentAction.duration) {
                         this._currentAction.duration = consumed;    // Since the module's deductResources method returns a number representing the amount of resource dispensed, we can see if it contained less than the required amount and reduce the action duration (and eventual amount of need relieved) if so
                     }
