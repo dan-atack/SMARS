@@ -38,6 +38,7 @@ export const constants = {
     GREEN_TERMINAL: "#0FFF13",
     GREEN_MODULE: "#22B14C",
     GREEN_DARK: "#023803",
+    GREEN_DARKER: "#012400",
     BLUEGREEN_CRYSTAL: "#00F2BA",
     BLUEGREEN_DARK: "#052E26",
     BLUE_BG: "#00004F",
@@ -88,7 +89,7 @@ export type BlockData = {
 export const blocks: BlockData[] = [
      {
         type: 1,
-        name: "rock",
+        name: "Rock",
         color: constants.RED_ROCK,
         resource: "minerals",
         hp: 300,
@@ -96,7 +97,7 @@ export const blocks: BlockData[] = [
      },
      {
         type: 2,
-        name: "sand",
+        name: "Sand",
         color: constants.BROWN_SAND,
         resource: "minerals",
         hp: 100,
@@ -104,7 +105,7 @@ export const blocks: BlockData[] = [
      },
      {
         type: 3,
-        name: "ice",
+        name: "Ice",
         color: constants.BLUE_ICE,
         resource: "water",
         hp: 200,
@@ -112,7 +113,7 @@ export const blocks: BlockData[] = [
      },
      {
         type: 4,
-        name: "iron_ore",
+        name: "Iron Ore",
         color: constants.GRAY_IRON_ORE,
         resource: "minerals",
         hp: 500,
@@ -120,7 +121,7 @@ export const blocks: BlockData[] = [
      },
      {
         type: 5,
-        name: "dry_ice",
+        name: "Dry Ice",
         color: constants.GRAY_DRY_ICE,
         resource: "carbon",
         hp: 150,
@@ -128,7 +129,7 @@ export const blocks: BlockData[] = [
      },
      {
         type: 6,
-        name: "meteor",
+        name: "Meteor",
         color: constants.GRAY_METEOR,
         resource: "carbon",
         hp: 300,
@@ -136,7 +137,7 @@ export const blocks: BlockData[] = [
      },
      {
         type: 7,
-        name: "frozen_mud",
+        name: "Frozen Mud",
         color: constants.BROWN_MUD,
         resource: "water",
         hp: 250,
@@ -144,7 +145,7 @@ export const blocks: BlockData[] = [
      },
      {
          type: 8,
-         name: "crystal",
+         name: "Crystal",
          color: constants.BLUEGREEN_CRYSTAL,
          resource: "minerals",
          hp: 1000,

@@ -92,11 +92,11 @@ describe("Map", () => {
     test("Returns the Block at a given pair of non-surface coordinates", () => {
         mapTest.setup(cliffs);
         // Inspect the block at the top of the cliff, and all points around it
-        expect(mapTest.getBlockForCoords({ x: 6, y: 30 })?._blockData.name).toBe("meteor");     // Cliff top block type = Meteor
+        expect(mapTest.getBlockForCoords({ x: 6, y: 30 })?._blockData.name).toBe("Meteor");     // Cliff top block type = Meteor
         expect(mapTest.getBlockForCoords({ x: 6, y: 29 })).toBe(null);                          // One above = empty
         expect(mapTest.getBlockForCoords({ x: 5, y: 30 })).toBe(null);                          // One to the right = empty
         expect(mapTest.getBlockForCoords({ x: 7, y: 30 })).toBe(null);                          // One to the left = empty
-        expect(mapTest.getBlockForCoords({ x: 6, y: 31 })?._blockData.name).toBe("dry_ice");    // One below block type = Dry Ice
+        expect(mapTest.getBlockForCoords({ x: 6, y: 31 })?._blockData.name).toBe("Dry Ice");    // One below block type = Dry Ice
     })
 
 })

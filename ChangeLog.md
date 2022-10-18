@@ -1784,6 +1784,16 @@ Exit Criteria:
 
 21. Merge the Module and ModuleData classes to help the Inspect Display identify modules without having to descend into their data class.
 
+22. Fill out the Inspect display formatting for Block data, adding a few more InspectDisplay position attributes to use for convenience (halfway down mark, 1/4 and 3/4 marks, etc.). Data to display for Blocks: name (type), resource, yield, HP/Max HP.
+
+### 23. Fill out the Inspect display formatting for Colonist data. Data to display: ID, need levels, current goal, current action.
+
+#### 24. Fill out the Inspect display formatting for Module data. Data to display: name (type), ID, resources contained/maximum, pressurization status, durability, current condition (A placeholder which can be filled with the string '100%' for now).
+
+### 25. Fill out the Inspect display formatting for Connector data. Data to display: name (type), ID, resources carried, whether it can be vertical/horizontal... And if you're really feeling plucky, see the item below and then add a list of floors reached when that's done!
+
+### 26. STRETCH: Integrate the 'elevators' data from the connectorData field into the data for the actual Connectors array in the Infrastructure base class... And if this is the catalyst that leads to that great merger, then undertake it boldly, and do a triumphant unit test/sanity check run when it's over!
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
@@ -1830,9 +1840,15 @@ As the game matures, it will be more and more desirable to separate features tha
 
 - Population (no unit tests had been made due to P5! Hurray, now we can add them all!!!)
 
-### - Block (no data class exists yet - not a high priority)
+- Block (no data class exists yet - not a high priority)
 
 - MouseShadow/MouseShadowData (also not a top priority)
+
+### - Colonist/ColonistData
+
+### - Infrastructure/InfrastructureData (the big one)
+
+### - Economy/EconomyData
 
 ### 2. Refactor unit tests for classes that have already been refactored in this way:
 
@@ -1840,7 +1856,7 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ### - Infrastructure/InfrastructureData
 
-### - Module/ModuleData
+- Module/ModuleData
 
 - Connector/ConnectorData
 

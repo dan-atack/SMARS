@@ -277,6 +277,7 @@ export default class DetailsArea {
         const p5 = this._p5;
         p5.fill(constants.BLUEGREEN_DARK);
         p5.strokeWeight(2);
+        p5.stroke(constants.ALMOST_BLACK);
         if (this._isExtended) { // If building option is selected from sidebar menu, expand the details area
             p5.rect(this._x, this._yExtended, this._width, this._extendedHeight, 8, 8, 8, 8);
             // If type is selected show building options; else show type options; else show category options
