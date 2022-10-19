@@ -1786,9 +1786,9 @@ Exit Criteria:
 
 22. Fill out the Inspect display formatting for Block data, adding a few more InspectDisplay position attributes to use for convenience (halfway down mark, 1/4 and 3/4 marks, etc.). Data to display for Blocks: name (type), resource, yield, HP/Max HP.
 
-### 23. Fill out the Inspect display formatting for Colonist data. Data to display: ID, need levels, current goal, current action.
+23. Fill out the Inspect display formatting for Colonist data. Data to display: ID, need levels, current goal, current action.
 
-#### 24. Fill out the Inspect display formatting for Module data. Data to display: name (type), ID, resources contained/maximum, pressurization status, durability, current condition (A placeholder which can be filled with the string '100%' for now).
+#### 24. Fill out the Inspect display formatting for Module data. Data to display: name (type), ID, resources contained/maximum, pressurization status, durability.
 
 ### 25. Fill out the Inspect display formatting for Connector data. Data to display: name (type), ID, resources carried, whether it can be vertical/horizontal... And if you're really feeling plucky, see the item below and then add a list of floors reached when that's done!
 

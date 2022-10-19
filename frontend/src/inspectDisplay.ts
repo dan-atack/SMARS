@@ -112,7 +112,29 @@ export default class InspectDisplay {
     }
 
     displayModuleData = (p5: P5) => {
-        p5.text("Module Details", this._center, this._headers[0]);
+        if (this._currentSelection && this.isModule(this._currentSelection)) {
+            const mod = this._currentSelection;   // For convenience
+            p5.textSize(20);
+            p5.text(`${mod._moduleInfo.name} (ID: ${mod._id})`, this._center, this._headers[0]);
+            p5.textSize(18);
+            p5.textAlign(p5.LEFT);
+            p5.text(`Pressurized: ${mod._moduleInfo.pressurized}`, this._textAlignleft, this._headers[1]);
+            p5.text(`Durability: ${mod._moduleInfo.durability}`, this._textAlignleft, this._headers[2]);
+            p5.text(`Resources:`, this._textAlignleft, this._headers[3]);
+            p5.text("Type", this._textAlignleft, this._headers[4]);
+            p5.text("/         Quantity", this._left1Q, this._headers[4]);
+            p5.text("/  Max", this._left3Q, this._headers[4]);
+            mod._resources.forEach((res, idx) => {
+                p5.text(res[0], this._textAlignleft, this._headers[5] + idx * 20);
+                p5.text((res[1] / 100).toFixed(2), this._center, this._headers[5] + idx * 20);
+            });
+            mod._moduleInfo.storageCapacity.forEach((res, idx) => {
+                p5.text(`/  ${(res[1] / 100).toFixed(0)}`, this._left3Q, this._headers[5] + idx * 20);
+            })
+        } else {
+            p5.fill(constants.RED_ERROR);
+            p5.text("Warning: Module Data Missing", this._center, this._headers[0]);
+        }
     }
 
     displayBlockData = (p5: P5) => {
@@ -155,5 +177,6 @@ export default class InspectDisplay {
                     p5.text("Warning: Inspect Data Missing", this._center, this._headers[0]);
             }
         }
+        p5.textAlign(p5.CENTER);    // Reset this after displaying so other text elements don't jump around
     }
 }
