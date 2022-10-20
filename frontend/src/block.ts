@@ -4,11 +4,10 @@ import { constants, blocks, BlockData } from "./constants";
 
 export default class Block {
     // Block types:
-    _p5: P5;
     _x: number;     // Blocks' x and y positions will be in terms of grid locations to act as fixed reference points
     _y: number;
     _type: number;
-    _blockData: BlockData | undefined;      // Undefined is allowed just in case the type does not match an entry in the blocktionary
+    _blockData: BlockData
     _width: number;
     _xOffset: number;   // The offset value, on the other hand, will be in terms of pixels, to allow for smoother scrolling
     _yOffset: number;
@@ -16,12 +15,12 @@ export default class Block {
     _maxHp: number          // Initial block toughness
     _currentHp: number      // Current block toughness (block is worn down by mining or removing it)
 
-    constructor(p5: P5, x: number, y: number, type: number) {
-        this._p5 = p5;
+    constructor(x: number, y: number, type: number) {
         this._x = x;
         this._y = y;
         this._type = type;
-        this._blockData = blocks.find((block) => block.type === this._type);
+        const bd = blocks.find((block) => block.type === this._type);
+        this._blockData = bd || blocks[0];  // Default to block type 0 if data is not found for the given block type
         this._width = constants.BLOCK_WIDTH;
         this._xOffset = 0;
         this._yOffset = 0;
@@ -31,14 +30,14 @@ export default class Block {
         this._currentHp = this._blockData?.hp || 100;
     }
 
-    render = (xOffset: number) => {    // TODO: Block gets y offset values as arguments to renderer
+    render = (p5: P5, xOffset: number) => {    // TODO: Block gets y offset values as arguments to renderer
         this._xOffset = xOffset;
         const x = this._x * this._width - this._xOffset;
         const y = this._y * this._width - this._yOffset;
-        this._p5.fill(this._color);
-        this._p5.strokeWeight(2);
-        this._p5.stroke(constants.ALMOST_BLACK);
-        this._p5.rect(x, y, this._width, this._width);
+        p5.fill(this._color);
+        p5.strokeWeight(2);
+        p5.stroke(constants.ALMOST_BLACK);
+        p5.rect(x, y, this._width, this._width);
     }
 
 }

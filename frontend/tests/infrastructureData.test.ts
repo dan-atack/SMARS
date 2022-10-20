@@ -1,6 +1,5 @@
 import InfrastructureData from "../src/infrastructureData";
-import MapData, { MapZone } from "../src/mapData";
-import Floor from "../src/floor";   // To use for mockage, maybe??
+import Map from "../src/map";
 import { ModuleInfo } from "../src/server_functions";
 
 // DUMMY DATA:
@@ -408,7 +407,7 @@ describe("Infrastructure Data", () => {
     // Returns true or false depending on whether a new Floor's elevation is at the map's surface level
     test("Can determine if Floor is at ground level on flat map", () => {
         // Create instance of Map Data class to provide topographical data for ground floor calculation
-        const topographicalMap = new MapData();
+        const topographicalMap = new Map();
         topographicalMap._mapData = map2;   // Use the flat map for starters
         topographicalMap.updateTopographyAndZones();
         const topo = topographicalMap._topography;
@@ -421,7 +420,7 @@ describe("Infrastructure Data", () => {
 
     test("Can determine Floor's ground zone on uneven map", () => {
         // Load map data for 'butte' shaped map
-        const topographicalMap = new MapData();
+        const topographicalMap = new Map();
         topographicalMap._mapData = map3;
         topographicalMap.updateTopographyAndZones();
         const topo = topographicalMap._topography;

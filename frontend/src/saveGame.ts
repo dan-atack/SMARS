@@ -7,7 +7,7 @@ import { constants } from "./constants";
 import { sendSaveGame } from "./server_functions";
 import { Resource } from "./economyData";
 import { ColonistSaveData } from "./colonist";
-import { Coords } from "./connectorData";
+import { Coords } from "./connector";
 
 // Save Game type info
 export type GameTime = {

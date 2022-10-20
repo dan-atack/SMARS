@@ -1,5 +1,5 @@
 // The Floor represents a single walkable surface within the base, and accompanying information about the modules that comprise it
-import { MapZone } from "./mapData";
+import { MapZone } from "./map";
 import { constants } from "./constants";
 
 export default class Floor {

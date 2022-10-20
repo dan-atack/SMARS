@@ -1697,14 +1697,13 @@ Since the last chapter was clearly a massive over-reach in terms of adding far t
 
 Exit Criteria:
 
-- Colonist Action Logic's createConsumeActionStack function is updated to eliminate unnecessary movement actions when the Colonist can step right off of a ladder into the coordinates of a resource-containing module
-- Colonists have a movement animation for the 'eat' action
-- New unit test created for scenario where colonist is on a floor and needs to descend
-- New specification for Infrastructure class's findModulesWithResources method: It should now only return modules that have the type 'Life Support'
-- Colonist Data unit tests should all be updated to use the Cantina module data instead of the storage room
-- Some Infra/Infra data unit tests should also be updated to use the cantina module data
-- Console logs from the previous chapter should be, for the most part, commented-out/deleted
-- [STRETCH] Recombine the Map and Map Data classes, and update the Map Data unit tests to ensure they all still pass
+- [DONE] Colonist Action Logic's createConsumeActionStack function is updated to eliminate unnecessary movement actions when the Colonist can step right off of a ladder into the coordinates of a resource-containing module
+- [DONE] Colonists have a movement animation for the 'eat' action
+- [DONE] New unit test created for scenario where colonist is on a floor and needs to descend
+- [DONE] New specification for Infrastructure class's findModulesWithResources method: It should now take an optional boolean argument that tells it to only return modules that have the type 'Life Support'
+- [DONE] Colonist Data unit tests should all be updated to use the Cantina module data instead of the storage room
+- [DONE] Some Infra/Infra data unit tests should also be updated to use the cantina module data
+- [DONE] Console logs from the previous chapter should be, for the most part, commented-out/deleted
 
 1. Create a unit test case for the Colonist Data class that expects a 3-part action stack if the coordinates for the consume action match the coordinates for the 'climb' action (in other words, drop the 'move' action between 'climb' and 'eat/drink').
 
@@ -1724,7 +1723,73 @@ Exit Criteria:
 
 9. Add/fix the outcome for the Colonist's Action Logic where the colonist is on a (non-ground) floor and finds resources on another (non-ground) floor and has to move towards them. Add a unit test as well, of course.
 
-10. Finally, we do need to have some kind of system in place for when a resource truly isn't available, to prevent the colonist from freezing up in the event of a scarcity. I recommend adding an additional trait, needsAvailable, to keep track of missed attempts at finding any of their needs. That way, if a colonist runs the get-water/get-food sequence and recieves and empty list, they can set the needsUnmet for that need to 0 (default value of 1 means that the resource is accessible, as far as the colonist knows). Then, the updateGoal method's first needs-based section can check for that value when preparing to set the goal to get-(need), and skip that need if the value is zero. In order to ensure the Colonist occasionally checks again, we can reset the availablilty value to 1 with each hourly update. I suppose we'll want to unit test this too, consarnit.
+10. Finally, we do need to have some kind of system in place for when a resource truly isn't available, to prevent the colonist from freezing up in the event of a scarcity. I recommend adding an additional trait, needsAvailable, to keep track of missed attempts at finding any of their needs. That way, if a colonist runs the get-water/get-food sequence and recieves and empty list, they can set the needsUnmet for that need to 0 (default value of 1 means that the resource is accessible, as far as the colonist knows). Then, the updateGoal method's first needs-based section can check for that value when preparing to set the goal to get-(need), and skip that need if the value is zero. In order to ensure the Colonist occasionally checks again, we can reset the availablilty value to 1 with each hourly update. I suppose we'll want to unit test this too.
+
+## Chapter Thirty-One: The Inspect Tool (Difficulty Estimate: 3 For New Mouse Shadow, Click Handler and Sidebar Display)
+
+### October 10, 2022
+
+In order to give the player (not to mention the developer) a better picture of what is going on in the game's world, we will need a tool that can be used to 'inspect' in-game entities and display some vital stats about them in the Sidebar's details area. The Inspect Tool will be selectable from the Sidebar, using the button currently labeled 'select,' and will turn the mouse cursor shadow into a little magnifying glass. When the mouse is clicked over the game's world area, the Engine's mouse context handler will call a series of functions to determine which in-game object, if any, has been clicked, and print out some information about it to the Sidebar's details area, replacing the minimap display in the lower half of the Sidebar.
+
+Exit Criteria:
+
+- [DONE] The player can select the Inspect Tool from the Sidebar and see a little magnifying glass as the mouse cursor shadow when they move the cursor over the game world.
+- [DONE] When the mouse is clicked on an in-game entity, the Sidebar's DetailsArea will show information about that entity based on what type of thing it is:
+- [DONE] For Colonists, we should see their ID, their current goal, current action, and the value/threshold for each of their needs.
+- [DONE] For Connectors, we should see their ID, name and type, as well as top and bottom coordinates and, in the case of conduit-type connectors, the resources they can transport (from the connector data).
+- [DONE] For Modules we should see their ID, name and type, as well as what resources (if any) are contained and what the max capacity is for each, as well as whether the module is pressurized.
+- [DONE] For Map tiles, we should see the name, resource type, hitpoints and yield info, which represents how much of the resource can be extracted by a single 'mine' action (coming soon!!?).
+- [DONE] The player can unselect the current entity by any of the following means: A) Clicking another in-game entity, B) Clicking on any empty space in the game area, or C) Clicking another sidebar button/changing the mouse context.
+
+1. In the Sidebar class, rename the 'Select' button to 'Inspect' and in the Engine, change the mouse context handler case name to reflect this as well ('select' and 'inspect' are lowercase for the mouse context handler).
+
+2. Do a 'find in all files' for the word 'select' to ensure that any calls to the mouse context setter from outside the Engine use the updated terminology.
+
+3. Combine the MouseShadow/MouseShadowData classes, and fix any unit tests that this might break, as well as ensuring all game functionality is unaffected.
+
+4. Add an optional boolean parameter called 'inspectMode' to the MouseShadow class's constructor, and have that set a corresponding attribute, this.\_inspectMode. This will be read at render time to tell the MouseShadow to show the image of a magnifying glass instead.
+
+5. Tell the Engine to create a new mouse shadow with the inspectMode boolean set to true whenever the mouse context is set to 'inspect.' Validate in-game.
+
+6. Create the actual P5 shapes that the MouseShadow will use when it is in Inspect mode, and validate the tool's 'look and feel' in-game.
+
+7. Add a new Engine method in the mouse handlers section, handleInspect, which will be called by the mouse click handler when the mouse context is 'inspect.' Initially it can do the job of console logging the grid coordinates which is currently performed by the click handler itself. This method should recieve the X and Y coordinates pair as a single argument so that it can print them, but also so that it can use them for what comes next...
+
+8. Before adding anything to the Population class, take a moment to remove P5 from both it, and the Colonist class. Run the unit tests and do a manual sanity check before proceeding.
+
+9. Write a new method for the Population class, getColonistFromCoords, to take a pair of coordinates, and use them to check each Colonist's location and return a pointer to the colonist (if any) that matches the input. Be sure to allow for clicks on the Colonist's feet or head. It should return a null if no colonist is found at the selected coordinates, OR if more than one colonist is found (since they can overlap, returning a null is the simplest way to let the user know to try again when they are not in the same position). We can unit test this, so let's do that, creating the inaugural Population tests file in the process!
+
+10. Have the Engine's handleInspect method call the Population class's getColonistFromCoords method whenever a click is registered, and if it turns up an answer, console log it. Otherwise just print something like 'No colonist found at X, Y, moving on to the Infra class.' The idea is that this method will go through all of the various types of in-game entities in a particular order (Population, Connectors, Modules, Map Blocks) and report back as soon as it hits something (if indeed it does hit anything at all).
+
+11. Before proceeding, remove P5 from the Connector class, and recombine it with the connector data class. Ensure all dependencies in other modules are updated and all unit tests/sanity checks passing before proceeding.
+
+12. Next, write a method for the Infrastructure (base) class, which will findConnectorFromCoords by looping through the connectors list until it finds one that overlaps with the given coordinates. Only one connector should be returned by this process, so the issue of overlapping connectors should be a consideration here... as in fact it was for the Colonists, so perhaps a similar solution (just use the 'find' method on the array to return the first Connector that matches the given coordinates) can be employed here. If no connector is found, return a null. Again, unit test first before implementing - unit tests should account for whatever solution is used to deal with overlapping Connectors.
+
+13. Next write another Infrastructure method, findModuleFromCoords, that finds a module from a provided set of coordinates and returns the result. Since Modules, unlike Connectors, cannot overlap with each other, this should be a simpler process than the previous case. Unit tests first, naturally.
+
+14. Then, before doing the Map inspect handler, combine the Map and Map Data classes, again ensuring that all unit tests and manual sanity checks pass before proceeding.
+
+15. Then, make a new method for the now-unified Map class, that returns the Block info (if any) for the selected coordinates. Can probably do this pretty efficiently by getting the column from the X value and then doing a find within the column for the Block that has a matching Y value. Unit test first, as always (NOTE that to fully unit test this it will be necessary to quickly decouple P5 from the Block's constructor).
+
+16. Integrate the four newly developed coordinate-finder methods into the Engine's handleInspect method, so that it will first select a Colonist, then a Connector, then a Module, and finally a Block if none of the above have already been selected. The object, if any, that is selected by the Inspect tool will be stored under a new Engine property, inspecting, which will be able to be either a null, or a Block, a Colonist, a Module or a Connector, and which natually will start out as a null. Validate that this logic is working in the console log before proceeding. Also, if the player clicks in the air, that should deselect the current item (i.e. set the inspect property to null), as should any change to the mouse context.
+
+17. Next, rather than overcrowding the DetailsArea component, which is already geared to be the building options menu, create a new component class, InspectDisplay, to handle the Inspect tool's visual output. Structure it so that its constructor takes no arguments, and give it skeleton methods for setup, updateInspectData, and render - making sure that the render method can accept P5 as an argument so that we can easily integrate unit tests for this class.
+
+18. In the DetailsArea component, add a field for inspectData, which can be a simple boolean that gets set by the Engine when an object is selected with the Inspect tool.
+
+19. Import the InspectDisplay class into the DetailsArea component and create an instance of it in the DA's constructor. Then, add a condition to the DA's renderer so that when the inspectData field is set to true, it renders the InspectDisplay component instead of the Minimap.
+
+20. Next, add a method for the DA to updateInspectDisplay, which will be called by the Engine when it sets the boolean inspectDisplay to true or false, and which will simply call the InspectDisplay component's own updateInspectData method.
+
+21. Merge the Module and ModuleData classes to help the Inspect Display identify modules without having to descend into their data class.
+
+22. Fill out the Inspect display formatting for Block data, adding a few more InspectDisplay position attributes to use for convenience (halfway down mark, 1/4 and 3/4 marks, etc.). Data to display for Blocks: name (type), resource, yield, HP/Max HP.
+
+23. Fill out the Inspect display formatting for Colonist data. Data to display: ID, need levels, current goal, current action.
+
+24. Fill out the Inspect display formatting for Module data. Data to display: name (type), ID, resources contained/maximum, pressurization status, durability.
+
+25. Fill out the Inspect display formatting for Connector data. Data to display: name (type), ID, and then bifurcating on the connector type (conduit or transport) show either the resources carried (for conduits) or the amount of colonists that can be on it at the same time (phrase the outputs differently).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
@@ -1760,29 +1825,39 @@ As the game matures, it will be more and more desirable to separate features tha
 
 12. [5: Save Data Completeness] Although currently not doing much, save game files do not contain the game's map type or difficulty level data - both fields contain a blank string.
 
-### 13. [8: Major Gameplay issue] In some circumstances, colonists who have just begun an 'explore' goal will have an action stack that tells them to jump off of a floor.
+13. [8: Major Gameplay issue] In some circumstances, colonists who have just begun an 'explore' goal will have an action stack that tells them to jump off of a floor, with the false belief that they are stuck up there (even when a ladder to the surface is available).
 
-### 14. [8: Major Gameplay issue] In some circumstances, colonists will climb empty space (in the observed instance, the place where the climb action took place was in between two actual ladders) as though it were an actual ladder.
+14. [8: Major Gameplay issue] In some circumstances, colonists will climb empty space (in the observed instance, the place where the climb action took place was in between two actual ladders) as though it were an actual ladder.
 
 ## Technical Debt Issues:
 
-### 1. Refactoring needed to enable widespread unit testing of Engine subcomponents. Component classes to refactor (by removing P5 from the class attributes and making it an argument to the render method instead):
+### 1. Refactoring needed to enable widespread unit testing of Engine subcomponents classes. Classes to refactor (by removing P5 from the class attributes and making it an argument to the render method instead, and/or recombining the base and data versions of the class):
+
+- Colonist/ColonistData
+
+- Population (no unit tests had been made due to P5! Hurray, now we can add them all!!!)
+
+- Block (no data class exists yet - not a high priority)
+
+- MouseShadow/MouseShadowData (also not a top priority)
 
 ### - Colonist/ColonistData
 
-### - Block (no data class exists yet - not a high priority)
+### - Infrastructure/InfrastructureData (the big one)
 
-### - MouseShadow/MouseShadowData (also not a top priority)
+### - Economy/EconomyData
 
 ### 2. Refactor unit tests for classes that have already been refactored in this way:
 
+- MouseShadow/MouseShadowData
+
 ### - Infrastructure/InfrastructureData
 
-### - Module/ModuleData
+- Module/ModuleData
 
-### - Connector/ConnectorData
+- Connector/ConnectorData
 
-### - Map/MapData
+- Map/MapData
 
 # Annex A: Advanced Concepts
 
@@ -1790,11 +1865,13 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ### 1. Add a new Infra Data class method to calculate a list of coordinate pairs for each individual section of a proposed Connector. This will be used to detect collisions with the terrain - the one possible obstacle to creating a new Connector (gravity/indoors criteria don't apply to in-between segments). We'll need a getConnectorSegments method that is updated by the Engine's validateMouseLocationForPlacement method (which will also need to be upgraded to note the difference between a new connector's start/stop phases).
 
-### 2. Add ability to merge overlapping connectors (analogous to how floors are combined, only vertically).
+### 2. Add ability to merge overlapping connectors (analogous to how floors are combined, only vertically... as well as in multi-line segments??).
 
 ### 3. Add ability for Connector renderer to operate like module renderer (using shapes data).
 
-### 4. Add a "roles" property to the Module Info type description (and thus to all existing modules in the DB) that contains a list of at least one string describing the role that a module plays (e.g. 'storage', 'dispensary', 'rest', 'science', etc.). This will help colonists figure out which module to go to when they have jobs, as well as restrict where resources can be accessed by colonists (so they have to eat at the cantina instead of being able to visit the store room instead, for instance).
+### 4. Add a "roles" property to the Module Info type description (and thus to all existing modules in the DB) that contains a list of at least one string describing the role that a module plays (e.g. 'storage', 'dispensary', 'rest', 'science', etc.). This will help colonists figure out which module to go to when they have jobs, as well as restrict where resources can be accessed by colonists (so they have to eat at the cantina instead of being able to visit the store room instead, for instance). Addendum: This might not be the way things eventually end up going, but it's worth keeping around for consideration.
+
+### 5. Integrate the 'elevators' data from the connectorData field into the data for the actual Connectors array in the Infrastructure base class... And if this is the catalyst that leads to that great merger, then undertake it boldly, and do a triumphant unit test/sanity check run when it's over!
 
 ### Exit Criteria for backend save/load game chapter:
 

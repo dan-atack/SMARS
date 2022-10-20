@@ -1,4 +1,4 @@
-import ConnectorData from "../src/connectorData";
+import Connector from "../src/connector";
 import { ConnectorInfo } from "../src/server_functions";
 // jest.mock("../src/connectorData");
 
@@ -17,19 +17,19 @@ const connectorInfo: ConnectorInfo = { "name" : "Air Vent", "type" : "conduit", 
 //     expect(connectorData).toHaveBeenCalledTimes(1);
 // })
 
-describe("ConnectorData", () => {
+describe("Connector", () => {
 
-    const connectorData = new ConnectorData(ids[0], start, stop1, connectorInfo);
-    const connectorDataHorizontal = new ConnectorData(ids[1], start, stop2, connectorInfo);
-    const connectorDataSinglePoint = new ConnectorData(ids[2], start, start, connectorInfo);
+    const connector = new Connector(ids[0], start, stop1, connectorInfo);
+    const connectorDataHorizontal = new Connector(ids[1], start, stop2, connectorInfo);
+    const connectorDataSinglePoint = new Connector(ids[2], start, start, connectorInfo);
 
     // Defines a property (proof that the constructor executed successfully)
     test("Defines orientation", () => {
-        expect(typeof connectorData._orientation).toBe("string");
+        expect(typeof connector._orientation).toBe("string");
     })
 
     test("Calculates orientation correctly", () => {
-        expect(connectorData._orientation).toBe("vertical");
+        expect(connector._orientation).toBe("vertical");
     })
 
     test("Calculates horizontal orientation correctly", () => {

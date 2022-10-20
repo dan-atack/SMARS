@@ -1,29 +1,32 @@
 // The Population class is the disembodied list of all your colonists, and the functions for updating them.
 import P5 from "p5";
 import Colonist, { ColonistSaveData } from "./colonist";
+import { Coords } from "./connector";
 import Infrastructure from "./infrastructure";
 import Map from "./map";
 
 export default class Population {
     // Population types:
-    _p5: P5;
     _colonists: Colonist[];
     _colonistsCurrentSerial: number;    // Needed to individually tag colonists when they are created
     _xOffset: number;                   // Needed for colonist render functions
 
-    constructor(p5: P5) {
-        this._p5 = p5;
+    constructor() {
         this._colonists = [];                   // Default population is zero.
         this._colonistsCurrentSerial = 9000;    // Colonists are from the 9000 series!
         this._xOffset = 0;                      // Default position is the left edge of the world.
     }
 
+    // SECTION 1: ADDING POPULATION (COLONISTS)
+
     addColonist = (x: number, y: number) => {
         const id = this._colonistsCurrentSerial;
-        const colonist = new Colonist(this._p5, id, x, y);
+        const colonist = new Colonist(id, x, y);
         this._colonistsCurrentSerial++; // Increment ID number for the next colonist
         this._colonists.push(colonist);
     }
+
+    // SECTION 2: COLONIST UPDATERS
 
     // Master updater function for controlling all individual colonist updater methods:
     // Needs terrain info for position updates (every minute), and a boolean for whether to update colonists' needs (every hour)
@@ -31,13 +34,13 @@ export default class Population {
         // Every minute:
         this.handleColonistMinutelyUpdates(infra, map);              // Should happen once every minute
         // Every hour:
-        if (needs) this.updateColonistNeedsAndGoals(infra, map);      // Should happen once every hour
+        if (needs) this.handleColonistHourlyUpdates(infra, map);      // Should happen once every hour
     }
 
     // Passes terrain info to each colonist and then checks if they have achieved their current goal
     handleColonistMinutelyUpdates = (infra: Infrastructure, map: Map) => {
         // For each colonist, isolate the 3 terrain columns around them:
-        const terrain = map._data._mapData;
+        const terrain = map._mapData;
         this._colonists.forEach((colonist) => {
             let cols: number[][] = [terrain[colonist._data._x]];
             // If colonist is next to the right or left edge of the map, only return 2 columns:
@@ -52,19 +55,26 @@ export default class Population {
         })
     }
 
-    updateColonistNeedsAndGoals = (infra: Infrastructure, map: Map) => {
+    handleColonistHourlyUpdates = (infra: Infrastructure, map: Map) => {
         this._colonists.forEach((colonist) => {
             colonist._data.handleHourlyUpdates(infra, map);
         })
     }
 
-    calculatePopulationResourceConsumption = (hour: number) => {
-        const air = this._colonists.length;
-        const water = this._colonists.length;
-        let food = 0;
-        if (hour % 8 === 0) food = this._colonists.length;
-        return { air, water, food };
+    // SECTION 3: COLONIST INFO API (GETTER FUNCTIONS)
+
+    getColonistDataFromCoords = (coords: Coords) => {
+        const colonists = this._colonists.find((col) => {
+            return col._data._x === coords.x && (col._data._y === coords.y || col._data._y === coords.y - 1)
+        });
+        if (colonists) {
+            return colonists;
+        } else {
+            return null;    // If no colonist is found return a null
+        }
     }
+
+    // SECTION 4: COLONIST SAVE/LOAD DATA MANAGEMENT
 
     prepareColonistSaveData = () => {
         const colonistData: ColonistSaveData[] = [];
@@ -93,7 +103,7 @@ export default class Population {
     loadColonistData = (data: ColonistSaveData[]) => {
         if (data) {
             data.forEach((colonistData) => {
-                const c = new Colonist(this._p5, colonistData.id, colonistData.x, colonistData.y, colonistData);
+                const c = new Colonist(colonistData.id, colonistData.x, colonistData.y, colonistData);
                 this._colonists.push(c);
                 // Keep track of saved colonists' serials so that newer colonists can resume the series
                 this._colonistsCurrentSerial = colonistData.id + 1;
@@ -104,10 +114,10 @@ export default class Population {
     }
 
     // Gets horizontal offset and fps (game speed) data from the Engine's render method
-    render = (xOffset: number, fps: number, gameOn: boolean) => {
+    render = (p5: P5, xOffset: number, fps: number, gameOn: boolean) => {
         this._xOffset = xOffset;
         this._colonists.forEach((colonist) => {
-            colonist.render(this._xOffset, fps, gameOn);
+            colonist.render(p5, this._xOffset, fps, gameOn);
         })
     }
 

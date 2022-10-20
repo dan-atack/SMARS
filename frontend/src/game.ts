@@ -123,21 +123,21 @@ export default class Game extends Screen {
         const connectorData: ConnectorSaveInfo[] = [];
         this._engine._infrastructure._modules.forEach((mod) => {
             const stats = {
-                id: mod._data._id,
-                name: mod._data._moduleInfo.name,
-                type: mod._data._moduleInfo.type,
-                x: mod._data._x,
-                y: mod._data._y,
-                resources: mod._data._resources
+                id: mod._id,
+                name: mod._moduleInfo.name,
+                type: mod._moduleInfo.type,
+                x: mod._x,
+                y: mod._y,
+                resources: mod._resources
             }
             moduleData.push(stats);
         });
         this._engine._infrastructure._connectors.forEach((con) => {
             const stats = {
-                id: con._data._id,
-                name: con._data._connectorInfo.name,
-                type: con._data._connectorInfo.type,
-                segments: con._data._segments,
+                id: con._id,
+                name: con._connectorInfo.name,
+                type: con._connectorInfo.type,
+                segments: con._segments,
             }
             connectorData.push(stats);
         })
@@ -149,7 +149,7 @@ export default class Game extends Screen {
             difficulty: this._gameData.difficulty,
             map_type: this._gameData.mapType,
             random_events: this._gameData.randomEvents,
-            terrain: this._engine._map._data._mapData,
+            terrain: this._engine._map._mapData,
             modules: moduleData,
             connectors: connectorData,
             resources: this._engine._economy._data._resources,

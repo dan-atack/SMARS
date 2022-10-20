@@ -10,13 +10,18 @@ import Population from "./population";
 import Modal, { EventData } from "./modal";
 import Lander from "./lander";
 import MouseShadow from "./mouseShadow";
+// Component shapes for Inspect Tool
+import Block from "./block";
+import Colonist from "./colonist";
+import Connector from "./connector";
+import Module from "./module";
 // Helper/server functions
 import { ModuleInfo, ConnectorInfo, getOneModule, getOneConnector } from "./server_functions";
 import { constants, modalData } from "./constants";
 // Types
 import { ConnectorSaveInfo, ModuleSaveInfo, SaveInfo, GameTime } from "./saveGame";
 import { GameData } from "./newGameSetup";
-import { Coords } from "./connectorData";
+import { Coords } from "./connector";
 import { Resource } from "./economyData";
 
 // TODO: Load Environment variables
@@ -47,6 +52,7 @@ export default class Engine extends View {
     mouseContext: string;       // Mouse context tells the Engine's click handler what to do when the mouse is pressed.
     selectedBuilding: ModuleInfo | ConnectorInfo | null;    // Data storage for when the user is about to place a new structure
     selectedBuildingCategory: string    // String name of the selected building category (if any)
+    inspecting: Colonist | Connector | Module | Block | null;   // Pointer to the current item being inspected, if any
     // In-game time control
     gameOn: boolean;            // If the game is on then the time ticker advances; if not it doesn't
     _tick: number;              // Updated every frame; keeps track of when to advance the game's clock
@@ -78,7 +84,7 @@ export default class Engine extends View {
         this._map = new Map();
         this._infrastructure = new Infrastructure();
         this._economy = new Economy(p5);
-        this._population = new Population(p5);
+        this._population = new Population();
         this._modal = null;
         this._animation = null;
         this._mouseShadow = null;
@@ -89,9 +95,10 @@ export default class Engine extends View {
         this._mouseInScrollRange = 0;   // Counts how many frames have passed with the mouse within scroll distance of the edge
         this._scrollThreshold = 10;     // Controls the number of frames that must pass before the map starts to scroll
         this._fastScrollThreshold = 60; // Number of frames to pass before fast scroll begins
-        this.mouseContext = "select"    // Default mouse context is the user wants to select what they click on (if they click on the map)
+        this.mouseContext = "inspect"    // Default mouse context allows user to select ('inspect') whatever they click on
         this.selectedBuilding = null;   // There is no building info selected by default.
         this.selectedBuildingCategory = "";  // Keep track of whether the selected building is a module or connector
+        this.inspecting = null;         // Keep track of selected item; default is null
         // Time-keeping:
         // TODO: Make the clock its own component, to de-clutter the Engine.
         this.gameOn = true;             // By default the game is on when the Engine starts
@@ -119,31 +126,31 @@ export default class Engine extends View {
         this.currentView = true;
         this._sidebar.setup();
         this.selectedBuilding = null;
-        this._sidebar._detailsArea._minimap.updateTerrain(this._map._data._mapData);
+        this._sidebar._detailsArea._minimap.updateTerrain(this._map._mapData);
         // Sidebar minimap display - does it only need it during 'setup' or does it also need occasional updates?
     }
 
     setupNewGame = (gameData: GameData) => {
         this._gameData = gameData;  // gameData object only needs to be set for new games
-        this._map.setup(this._p5, this._gameData.mapTerrain);
+        this._map.setup(this._gameData.mapTerrain);
         this._economy._data.addMoney(this._gameData.startingResources[0][1]);
-        this._horizontalOffset = this._map._data._maxOffset / 2;   // Put player in the middle of the map to start out
-        this._infrastructure.setup(this._map._data._mapData.length);
+        this._horizontalOffset = this._map._maxOffset / 2;   // Put player in the middle of the map to start out
+        this._infrastructure.setup(this._map._mapData.length);
         this.createNewGameModal();
     }
 
     setupSavedGame = (saveInfo: SaveInfo) => {
         this._saveInfo = saveInfo;
         this.setClock(saveInfo.game_time);
-        this._map.setup(this._p5, this._saveInfo.terrain);
+        this._map.setup(this._saveInfo.terrain);
         // TODO: Extract the map expansion/sidebar pop-up (and the reverse) into a separate method
         this._map.setExpanded(false);   // Map starts in 'expanded' mode by default, so it must tell it the sidebar is open
         this._economy._data.addMoney(saveInfo.resources[0][1]); // Reload money from save data
         // TODO: Update the economy's load sequence to re-load rate-of-change data instead of resource quantities
         // DON'T DO IT HERE THOUGH - Do it at the end of the loadModuleFromSave method (2 down from this one)
         this._economy._data.setResourceChangeRates();           // Reset money rate-of-change indicator
-        this._horizontalOffset = this._map._data._maxOffset / 2;
-        this._infrastructure.setup(this._map._data._mapData.length);
+        this._horizontalOffset = this._map._maxOffset / 2;
+        this._infrastructure.setup(this._map._mapData.length);
         this._population.loadColonistData(saveInfo.colonists);
         this.loadModulesFromSave(saveInfo.modules);
         this.loadConnectorsFromSave(saveInfo.connectors);
@@ -192,12 +199,12 @@ export default class Engine extends View {
         if (selectedBuilding != null) {
             locations.forEach((space, idx) => {
                 if (ids && resources) {     // Use saved serial number and resource data only if they exist
-                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._data._topography, this._map._data._zones, ids[idx]); // Create module with ID
+                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._topography, this._map._zones, ids[idx]); // Create module with ID
                     resources[idx].forEach((resource) => {
                         this._infrastructure.addResourcesToModule(ids[idx], resource);  // Provision with saved resources
                     })
                 } else {
-                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._data._topography, this._map._data._zones,);
+                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._topography, this._map._zones,);
                 }
             })
         }
@@ -269,24 +276,20 @@ export default class Engine extends View {
             if (mouseX > 0 && mouseX < constants.SCREEN_WIDTH && mouseY > 0 && mouseY < constants.SCREEN_HEIGHT) {
                 const [gridX, gridY] = this.getMouseGridPosition(mouseX, mouseY);
                 switch (this.mouseContext) {
-                    case "select":
-                        console.log(`Select: ${gridX}, ${gridY}`);
+                    case "inspect":
+                        this.handleInspect({ x: gridX, y: gridY });
                         break;
-                    // NOTE: To add new building placement contexts, ensure case name is also added to setMouseContext method
                     case "placeModule":
-                        console.log("Place Module.");
                         this.handleModulePlacement(gridX, gridY);
                         break;
                     case "connectorStart":
-                        console.log("Connector Start.");
                         this.handleConnectorStartPlacement(gridX, gridY)
                         break;
                     case "connectorStop":
-                        console.log("Connector Stop.");
                         this.handleConnectorStopPlacement();
                         break;
                     case "resource":
-                        console.log("Resource");
+                        console.log("Resource Mode selected.");
                         break;
                     case "modal":
                         this._modal?.handleClicks(mouseX, mouseY);
@@ -358,9 +361,9 @@ export default class Engine extends View {
         if (this._scrollingLeft && this._horizontalOffset > 0) {
             this._mouseInScrollRange > this._fastScrollThreshold ? this._horizontalOffset -= 2 : this._horizontalOffset--;
             this._horizontalOffset = Math.max(this._horizontalOffset, 0);   // Ensure scroll does not go too far left
-        } else if (this._scrollingRight && this._horizontalOffset < this._map._data._maxOffset){
+        } else if (this._scrollingRight && this._horizontalOffset < this._map._maxOffset){
             this._mouseInScrollRange > this._fastScrollThreshold ? this._horizontalOffset += 2 : this._horizontalOffset++;
-            this._horizontalOffset = Math.min(this._horizontalOffset, this._map._data._maxOffset);   // Ensure scroll does not go too far right
+            this._horizontalOffset = Math.min(this._horizontalOffset, this._map._maxOffset);   // Ensure scroll does not go too far right
         }
     }
 
@@ -377,7 +380,11 @@ export default class Engine extends View {
         if (this.selectedBuilding != null && this._infrastructure._data.isModule(this.selectedBuilding)) {
             h = this.selectedBuilding.height;
         }
-        this._mouseShadow = new MouseShadow(this._p5, w, h);
+        this._mouseShadow = new MouseShadow(w, h);
+    }
+
+    createInspectToolMouseShadow = () => {
+        this._mouseShadow = new MouseShadow(1, 1, true);
     }
 
     destroyMouseShadow = () => {
@@ -389,23 +396,24 @@ export default class Engine extends View {
         // TODO: Improve the way this prevents out-of-bounds exceptions
         if (this.selectedBuilding && this._mouseShadow && x >= 0) {   // Only check if a building is selected and a mouse shadow exists
             if (this._infrastructure._data.isModule(this.selectedBuilding)) {    // If we have a module, check its placement
-                const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._data._mapData);
-                this._mouseShadow._data.setColor(clear);
-            } else if (!this._mouseShadow._data._connectorStartCoords) { // If we have a Connector with NO start coords
+                const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._mapData);
+                this._mouseShadow.setColor(clear);
+            } else if (!this._mouseShadow._connectorStartCoords) { // If we have a Connector with NO start coords
                 // If no start coords exist, this is the start placement
-                const clear = this._infrastructure._data.checkConnectorEndpointPlacement(x, y, this._map._data._mapData);
-                this._mouseShadow._data.setColor(clear);
-            } else if (this._mouseShadow._data._connectorStopCoords) {
-                const xStop = this._mouseShadow._data._connectorStopCoords.x;
-                const yStop = this._mouseShadow._data._connectorStopCoords.y;
-                const clear = this._infrastructure._data.checkConnectorEndpointPlacement(xStop, yStop, this._map._data._mapData);
-                this._mouseShadow._data.setColor(clear);
+                const clear = this._infrastructure._data.checkConnectorEndpointPlacement(x, y, this._map._mapData);
+                this._mouseShadow.setColor(clear);
+            } else if (this._mouseShadow._connectorStopCoords) {
+                const xStop = this._mouseShadow._connectorStopCoords.x;
+                const yStop = this._mouseShadow._connectorStopCoords.y;
+                const clear = this._infrastructure._data.checkConnectorEndpointPlacement(xStop, yStop, this._map._mapData);
+                this._mouseShadow.setColor(clear);
             }
         }
     }
 
     // Given to various sub-components, this dictates how the mouse will behave when clicked in different situations
     setMouseContext = (value: string) => {
+        this.clearInspectSelection();     // Reset inspect data
         this.mouseContext = value;
         // Only update the selected building if the mouse context is 'placeModule' or 'connectorStart'
         if (this.mouseContext === "placeModule" || this.mouseContext === "connectorStart") {
@@ -418,10 +426,14 @@ export default class Engine extends View {
         if (this.selectedBuilding === null) {
             this.destroyMouseShadow();
         }
+        // Last, check if the mouse context has been set to 'inspect' and tell it to do the magnifying glass image if so
+        if (this.mouseContext === "inspect") {
+            this.createInspectToolMouseShadow();
+        }
     }
 
     // Used for placing buildings and anything else that needs to 'snap to' the grid (returns values in grid locations)
-    getMouseGridPosition(mouseX: number, mouseY: number) {
+    getMouseGridPosition = (mouseX: number, mouseY: number) => {
         // Calculate X position with the offset included to prevent wonkiness
         const mouseGridX = Math.floor((mouseX + this._horizontalOffset) / constants.BLOCK_WIDTH)
         const mouseGridY = Math.floor(mouseY / constants.BLOCK_WIDTH)
@@ -431,6 +443,27 @@ export default class Engine extends View {
         // TODO: ADD vertical offset calculation
         // Return coordinates as a tuple:
         return [gridX, gridY];
+    }
+
+    // Takes the mouse coordinates and looks for an in-game entity at that location
+    handleInspect = (coords: Coords) => {
+        if (this._population.getColonistDataFromCoords(coords)) {                   // First check for Colonists
+            this.inspecting = this._population.getColonistDataFromCoords(coords);
+        } else if (this._infrastructure.getConnectorFromCoords(coords)) {           // Next, check for Connectors
+            this.inspecting = this._infrastructure.getConnectorFromCoords(coords);
+        } else if (this._infrastructure.getModuleFromCoords(coords)) {              // Then, check for Modules
+            this.inspecting = this._infrastructure.getModuleFromCoords(coords);
+        } else if (this._map.getBlockForCoords(coords)) {                           // Finally, check for terrain Blocks
+            this.inspecting = this._map.getBlockForCoords(coords);
+        } else {
+            this.inspecting = null;
+        }
+        this._sidebar._detailsArea.setInspectData(this.inspecting);
+    }
+
+    clearInspectSelection = () => {
+        this.inspecting = null;
+        this._sidebar._detailsArea.setInspectData(this.inspecting);
     }
 
     //// STRUCTURE PLACEMENT METHODS ////
@@ -448,9 +481,9 @@ export default class Engine extends View {
             if (this._infrastructure._data.isModule(this.selectedBuilding)) {
                 // ASSUMES CASH IS THE ONLY KIND OF COST
                 const affordable = this._economy._data.checkResources(this.selectedBuilding.buildCosts[0][1]);
-                const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._data._mapData);
+                const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._mapData);
                 if (clear && affordable) {
-                    this._infrastructure.addModule(x, y, this.selectedBuilding,  this._map._data._topography, this._map._data._zones,);
+                    this._infrastructure.addModule(x, y, this.selectedBuilding,  this._map._topography, this._map._zones,);
                     this._economy._data.subtractMoney(this.selectedBuilding.buildCosts[0][1]);
                 } else {
                     // TODO: Display this info to the player with an in-game message of some kind
@@ -464,8 +497,8 @@ export default class Engine extends View {
     // Locks the mouse cursor into place at the start location of a new connector (X and Y are already gridified)
     handleConnectorStartPlacement = (x: number, y: number) => {
         // Ensure start location is valid
-        if (this._infrastructure._data.checkConnectorEndpointPlacement(x, y, this._map._data._mapData)) {
-            this._mouseShadow?._data.setLocked(true, {x: x, y: y});   // Lock the shadow's position when start location is chosen
+        if (this._infrastructure._data.checkConnectorEndpointPlacement(x, y, this._map._mapData)) {
+            this._mouseShadow?.setLocked(true, {x: x, y: y});   // Lock the shadow's position when start location is chosen
             this.setMouseContext("connectorStop");
         }
     }
@@ -473,14 +506,14 @@ export default class Engine extends View {
     // Completes the purchase and placement of a new connector
     handleConnectorStopPlacement = () => {
         // Ensure there is a building selected, and that it's not a module
-        if (this.selectedBuilding != null && !this._infrastructure._data.isModule(this.selectedBuilding) && this._mouseShadow?._data._connectorStopCoords != null && this._mouseShadow._data._connectorStartCoords) {
+        if (this.selectedBuilding != null && !this._infrastructure._data.isModule(this.selectedBuilding) && this._mouseShadow?._connectorStopCoords != null && this._mouseShadow._connectorStartCoords) {
             const baseCost = this.selectedBuilding.buildCosts[0][1];    // Get just the number
-            const len = Math.max(this._mouseShadow._data._deltaX, this._mouseShadow._data._deltaY) + 1;
+            const len = Math.max(this._mouseShadow._deltaX, this._mouseShadow._deltaY) + 1;
             const cost = baseCost * len;  // Multiply cost by units of length
             const affordable = this._economy._data.checkResources(cost); // NOTE: THIS ASSUMES COST IS ONLY EVER IN TERMS OF MONEY
-            const start = this._mouseShadow._data._connectorStartCoords;
-            const stop = this._mouseShadow._data._connectorStopCoords;
-            const clear = this._infrastructure._data.checkConnectorEndpointPlacement(stop.x, stop.y, this._map._data._mapData);
+            const start = this._mouseShadow._connectorStartCoords;
+            const stop = this._mouseShadow._connectorStopCoords;
+            const clear = this._infrastructure._data.checkConnectorEndpointPlacement(stop.x, stop.y, this._map._mapData);
             if (affordable && clear) {
                 this._infrastructure.addConnector(start, stop, this.selectedBuilding, this._map);
                 this._economy._data.subtractMoney(cost);
@@ -507,7 +540,7 @@ export default class Engine extends View {
         if (flat) {
             this.createModal(false, modalData[0]);
             this._landingSiteCoords[0] = gridX - 4; // Set landing site location to the left edge of the landing area
-            this._landingSiteCoords[1] = (constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH) - this._map._data._columns[gridX].length;
+            this._landingSiteCoords[1] = (constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH) - this._map._columns[gridX].length;
         }    
     }
 
@@ -571,8 +604,8 @@ export default class Engine extends View {
         if (this._infrastructure._modules.length >= startingStructureCount) {
             this._infrastructure._modules.forEach((mod) => {
                 // Default for now is to just indiscriminately fill 'em all up
-                mod._data._moduleInfo.storageCapacity.forEach((resource) =>  {
-                    mod._data.addResource(resource);
+                mod._moduleInfo.storageCapacity.forEach((resource) =>  {
+                    mod.addResource(resource);
                 })
             });
             this.updateEconomyDisplay();    // Update economy display so that the player can see what they have right away
@@ -588,12 +621,6 @@ export default class Engine extends View {
     updateEconomyDisplay = () => {
         const rs = this._infrastructure.getAllBaseResources();
         this._economy._data.updateResources(rs);
-        // RESOURCE CONSUMPTION - TO BE A NEW METHOD, OBVIOUSLY
-        // const leakage = this._infrastructure.calculateModulesOxygenLoss();
-        // const { air, water, food } = this._population.calculatePopulationResourceConsumption(this._gameTime.hour);
-        // this._economy._data.updateResource("oxygen", air + leakage);
-        // this._economy._data.updateResource("water", water);
-        // this._economy._data.updateResource("food", food);
     }
 
     //// GAMESPEED AND TIME METHODS ////
@@ -671,8 +698,7 @@ export default class Engine extends View {
         }
         if (this._waitTime <= 0) {
             // Resolve wait by resetting mouse context and possibly calling additional functions
-            // console.log(`Wait period over at ${new Date()}`);
-            this.setMouseContext("select");
+            this.setMouseContext("inspect");
             this.resolveWaitPeriod();
         }
     }
@@ -711,7 +737,7 @@ export default class Engine extends View {
             resolutions: [
                 {
                     text: "The feeling is mutual.",
-                    outcomes: [["set-mouse-context", "select"]]
+                    outcomes: [["set-mouse-context", "inspect"]]
                 } 
             ]
         }
@@ -727,7 +753,7 @@ export default class Engine extends View {
             resolutions: [
                 {
                     text: "How time flies!",
-                    outcomes: [["set-mouse-context", "select"], ["add-money", 50000]]
+                    outcomes: [["set-mouse-context", "inspect"], ["add-money", 50000]]
                 }
             ]
         }
@@ -760,14 +786,11 @@ export default class Engine extends View {
                         this.provisionInitialStructures();
                         break;
                     case "set-mouse-context":
-                        // console.log(`Setting mouse context: ${outcome[1]}`);
                         this.setMouseContext(outcome[1].toString());
                         break;
                     case "add-money":
-                        // console.log(`Adding money: ${outcome[1]}`);
                         if (typeof outcome[1] === "number") this._economy._data.addMoney(outcome[1]);
                         break;
-                        // TODO: Add other cases as they are invented
                     default:
                         console.log(`Unrecognized modal resolution code: ${outcome[0]}`);
                 }
@@ -786,6 +809,8 @@ export default class Engine extends View {
             this.renderBuildingShadow();
         } else if (this.mouseContext === "landing") {
             this.renderLandingPath();
+        } else if (this.mouseContext === "inspect") {
+            this.renderInspectTool();
         }
     }
 
@@ -817,17 +842,28 @@ export default class Engine extends View {
             y = y * constants.BLOCK_WIDTH;
             if (this.selectedBuilding !== null) {
                 if (this._infrastructure._data.isModule(this.selectedBuilding)) {
-                    this._mouseShadow.render(x, y, this._horizontalOffset);
+                    this._mouseShadow.render(this._p5, x, y, this._horizontalOffset);
                 } else {
                     if (this.mouseContext === "connectorStart") {
-                        this._mouseShadow.render(x, y, this._horizontalOffset);
+                        this._mouseShadow.render(this._p5, x, y, this._horizontalOffset);
                     } else if (this.mouseContext === "connectorStop") {
                         this._mouseShadow.resizeForConnector(x, y, this.selectedBuilding.horizontal, this.selectedBuilding.vertical);
-                        this._mouseShadow.render(x, y, this._horizontalOffset);
+                        this._mouseShadow.render(this._p5, x, y, this._horizontalOffset);
                     }
                 }
             }
         }    
+    }
+
+    // For rendering the inspect tool
+    renderInspectTool = () => {
+        // Only render the Inspect Tool if mouse is over the map area (not the sidebar) and there is no modal
+        if (this._p5.mouseX < constants.SCREEN_WIDTH - this._sidebar._width && !this._modal && this._mouseShadow) {
+            let [x, y] = this.getMouseGridPosition(this._p5.mouseX, this._p5.mouseY);
+            x = x * constants.BLOCK_WIDTH;
+            y = y * constants.BLOCK_WIDTH;
+            this._mouseShadow.render(this._p5, x, y, this._horizontalOffset);
+        }
     }
 
     render = () => {
@@ -841,17 +877,20 @@ export default class Engine extends View {
         if (this._animation) {
             this._animation.render(this._horizontalOffset);     // Render animation second
         }
-        this._map.render(this._horizontalOffset);               // Render map third
+        this._map.render(p5, this._horizontalOffset);               // Render map third
         this._infrastructure.render(this._p5, this._horizontalOffset);    // Render infrastructure fourth
         if (this.selectedBuilding && !this._infrastructure._data.isModule(this.selectedBuilding)) {
             this.renderMouseShadow(); // If placing a connector, render mouse shadow above the infra layer
         }
         this._economy.render();
-        this._population.render(this._horizontalOffset, this.ticksPerMinute, this.gameOn);
+        this._population.render(this._p5, this._horizontalOffset, this.ticksPerMinute, this.gameOn);
         this.handleMouseScroll();   // Every frame, check for mouse scrolling
         // Don't render sidebar until the player has chosen a landing site
         if (this._hasLanded) {
             this._sidebar.render(this._gameTime.minute, this._gameTime.hour, this._gameTime.cycle);
+        }
+        if (this.mouseContext === "inspect") {
+            this.renderMouseShadow();
         }
         if (this._modal) {
             this._modal.render();
