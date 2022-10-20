@@ -108,7 +108,28 @@ export default class InspectDisplay {
     }
 
     displayConnectortData = (p5: P5) => {
-        p5.text("Connector Details", this._center, this._headers[0]);
+        if (this._currentSelection && this.isConnector(this._currentSelection)) {
+            const conn = this._currentSelection;   // For convenience
+            p5.text(`${conn._connectorInfo.name} (ID: ${conn._id})`, this._center, this._headers[0]);
+            p5.textSize(18);
+            p5.textAlign(p5.LEFT);
+            p5.text(`Connector Type: ${conn._connectorInfo.type}`, this._textAlignleft, this._headers[1]);
+            p5.text(`Orientation: ${conn._orientation}`, this._textAlignleft, this._headers[2]);
+            if (conn._orientation === 'vertical') {
+                p5.text(`Height: ${conn._bottom - conn._top + 1}`, this._textAlignleft, this._headers[3]);
+            } else {
+                p5.text(`Length: ${conn._rightEdge - conn._leftEdge + 1}`, this._textAlignleft, this._headers[3]);
+            }
+            if (conn._connectorInfo.type === "transport") {                 // Transport
+                p5.text(`Max occupants: ${conn._connectorInfo.maxFlowRate}`, this._textAlignleft, this._headers[4]);  
+            } else {                                                        // Conduit
+                p5.text(`Resource: ${conn._connectorInfo.resourcesCarried[0]}`, this._textAlignleft, this._headers[4]);
+                p5.text(`Flow rate: ${conn._connectorInfo.maxFlowRate}`, this._textAlignleft, this._headers[5]);
+            }
+        } else {
+            p5.fill(constants.RED_ERROR);
+            p5.text("Warning: Connector Data Missing", this._center, this._headers[0]);
+        }
     }
 
     displayModuleData = (p5: P5) => {

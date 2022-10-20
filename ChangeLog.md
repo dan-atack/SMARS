@@ -1734,13 +1734,12 @@ In order to give the player (not to mention the developer) a better picture of w
 Exit Criteria:
 
 - [DONE] The player can select the Inspect Tool from the Sidebar and see a little magnifying glass as the mouse cursor shadow when they move the cursor over the game world.
-- When the mouse is clicked on an in-game entity, the Sidebar's DetailsArea will show information about that entity based on what type of thing it is:
-- For Colonists, we should see their ID, their current goal, current action, action stack length and the value/threshold for each of their needs.
-- For Connectors, we should see their ID, name and type, as well as top and bottom coordinates and, in the case of conduit-type connectors, the resources they can transport (from the connector data).
-- For Modules we should see their ID, name and type, as well as what resources (if any) are contained and what the max capacity is for each, as well as the module's colonist capacity and whether it is pressurized.
-- For Map tiles, we should see the name, resource type, hitpoints and yield info, which represents how much of the resource can be extracted by a single 'mine' action (when that gets implemented, that is).
-- Engine should keep track of the currently selected entity and display its info in the details area of the sidebar.
-- The player can unselect the current entity by any of the following means: A) Clicking another in-game entity, B) Clicking another sidebar button, C) Clicking the Inspect button again (which will keep the mouse context in 'inspect' mode but clear the data for the currently selected object).
+- [DONE] When the mouse is clicked on an in-game entity, the Sidebar's DetailsArea will show information about that entity based on what type of thing it is:
+- [DONE] For Colonists, we should see their ID, their current goal, current action, and the value/threshold for each of their needs.
+- [DONE] For Connectors, we should see their ID, name and type, as well as top and bottom coordinates and, in the case of conduit-type connectors, the resources they can transport (from the connector data).
+- [DONE] For Modules we should see their ID, name and type, as well as what resources (if any) are contained and what the max capacity is for each, as well as whether the module is pressurized.
+- [DONE] For Map tiles, we should see the name, resource type, hitpoints and yield info, which represents how much of the resource can be extracted by a single 'mine' action (coming soon!!?).
+- [DONE] The player can unselect the current entity by any of the following means: A) Clicking another in-game entity, B) Clicking on any empty space in the game area, or C) Clicking another sidebar button/changing the mouse context.
 
 1. In the Sidebar class, rename the 'Select' button to 'Inspect' and in the Engine, change the mouse context handler case name to reflect this as well ('select' and 'inspect' are lowercase for the mouse context handler).
 
@@ -1788,11 +1787,9 @@ Exit Criteria:
 
 23. Fill out the Inspect display formatting for Colonist data. Data to display: ID, need levels, current goal, current action.
 
-#### 24. Fill out the Inspect display formatting for Module data. Data to display: name (type), ID, resources contained/maximum, pressurization status, durability.
+24. Fill out the Inspect display formatting for Module data. Data to display: name (type), ID, resources contained/maximum, pressurization status, durability.
 
-### 25. Fill out the Inspect display formatting for Connector data. Data to display: name (type), ID, resources carried, whether it can be vertical/horizontal... And if you're really feeling plucky, see the item below and then add a list of floors reached when that's done!
-
-### 26. STRETCH: Integrate the 'elevators' data from the connectorData field into the data for the actual Connectors array in the Infrastructure base class... And if this is the catalyst that leads to that great merger, then undertake it boldly, and do a triumphant unit test/sanity check run when it's over!
+25. Fill out the Inspect display formatting for Connector data. Data to display: name (type), ID, and then bifurcating on the connector type (conduit or transport) show either the resources carried (for conduits) or the amount of colonists that can be on it at the same time (phrase the outputs differently).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
@@ -1873,6 +1870,8 @@ As the game matures, it will be more and more desirable to separate features tha
 ### 3. Add ability for Connector renderer to operate like module renderer (using shapes data).
 
 ### 4. Add a "roles" property to the Module Info type description (and thus to all existing modules in the DB) that contains a list of at least one string describing the role that a module plays (e.g. 'storage', 'dispensary', 'rest', 'science', etc.). This will help colonists figure out which module to go to when they have jobs, as well as restrict where resources can be accessed by colonists (so they have to eat at the cantina instead of being able to visit the store room instead, for instance). Addendum: This might not be the way things eventually end up going, but it's worth keeping around for consideration.
+
+### 5. Integrate the 'elevators' data from the connectorData field into the data for the actual Connectors array in the Infrastructure base class... And if this is the catalyst that leads to that great merger, then undertake it boldly, and do a triumphant unit test/sanity check run when it's over!
 
 ### Exit Criteria for backend save/load game chapter:
 

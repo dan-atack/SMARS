@@ -413,7 +413,7 @@ export default class Engine extends View {
 
     // Given to various sub-components, this dictates how the mouse will behave when clicked in different situations
     setMouseContext = (value: string) => {
-        this.inspecting = null;     // Reset inspect data
+        this.clearInspectSelection();     // Reset inspect data
         this.mouseContext = value;
         // Only update the selected building if the mouse context is 'placeModule' or 'connectorStart'
         if (this.mouseContext === "placeModule" || this.mouseContext === "connectorStart") {
@@ -458,6 +458,11 @@ export default class Engine extends View {
         } else {
             this.inspecting = null;
         }
+        this._sidebar._detailsArea.setInspectData(this.inspecting);
+    }
+
+    clearInspectSelection = () => {
+        this.inspecting = null;
         this._sidebar._detailsArea.setInspectData(this.inspecting);
     }
 
