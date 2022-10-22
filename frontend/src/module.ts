@@ -11,6 +11,7 @@ export default class Module {
     _y: number;
     _moduleInfo: ModuleInfo;
     _resources : Resource[];    // Represents the current tallies of each type of resource stored in this module
+    _crewPresent: number;       // If the module has a crew capacity, keep track of how many colonists are currently in it
     _width: number;             // Width and height are in terms of blocks (grid spaces), not pixels
     _height: number;
     _xOffset: number;           // The offset value will be in terms of PIXELS, to allow for smoother scrolling
@@ -23,7 +24,8 @@ export default class Module {
         this._x = x;
         this._y = y;
         this._moduleInfo = moduleInfo;
-        this._resources = [];                       
+        this._resources = [];
+        this._crewPresent = 0;
         this._moduleInfo.storageCapacity.forEach((res) => {
             const r: Resource = [ res[0], 0 ];
             this._resources.push(r); // Add resource capacity

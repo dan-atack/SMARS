@@ -27,6 +27,8 @@ export type ModuleInfo = {
     durability: number      // Basically hitpoints
     buildCosts: Resource[]        // A list of any kind of Resource, just like storage capacity (see below)
     maintenanceCosts: Resource[]    // Same idea as above
+    productionInputs?: Resource[]   // For production modules only, what resources are needed to produce its output?
+    productionOutput?: Resource[]   // For production modules only, the output from a single batch of work
     storageCapacity: Resource[]   // A list of the amount of each type of resource (if any) that can be stored in this module
     crewCapacity: number    // How many humans can fit into a phone booth??
     shapes: {

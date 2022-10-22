@@ -1791,6 +1791,23 @@ Exit Criteria:
 
 25. Fill out the Inspect display formatting for Connector data. Data to display: name (type), ID, and then bifurcating on the connector type (conduit or transport) show either the resources carried (for conduits) or the amount of colonists that can be on it at the same time (phrase the outputs differently).
 
+## Chapter Thirty-Two: Production Modules (Difficulty Estimate: 2 for new module info fields and one new structure)
+
+### October 21, 2022
+
+Now that we have resources in modules, and colonists are able to consume these resources, and the player can see for themself what quantities of each resource are present, the next thing that the game needs is for the colony to be able to start PRODUCING resources. As the initial stockpiles of food and water (we'll leave the air supply to the side for the moment) begin to diminish, the colonists will need to produce more stuff. This means they will need modules dedicated to producing resources. In order to avoid adding unnecessary production info fields (inputs, outputs, labour time for production, etc.) into all of the current modules, this chapter will introduce two optional fields for the ModuleInfo type definition, for production inputs and outputs. We will create just one instance of a production module, the hydroponics pod, as well as updating the Inspect Display for modules to pivot on whether the module has the 'production' type. The chapter will end when it is proved that the player can build a production module, save and reload their game, and see the module's production-related info in the Inspect Display area (some minor adjustments to the module display template will be needed).
+
+Exit Criteria:
+
+- When clicked in Inspect mode, production module shows info about colonist slots occupied/available, as well as input/output quantities
+- First production module, the Hydroponics Pod, can be constructed and saved/loaded
+
+1. Add two optional fields to the ModuleInfo type definition, productionInputs and productionOutputs, and make them both a list of resources.
+
+2. Add a field to the Module class's constructor, crewPresent, which will be the number of colonists present in a module. All modules will have this property, and should display it as part of the Inspect Display _IF_ they have any a crew capacity of greater than zero. Once this property is added, quickly recheck the Module and Infra unit tests to make sure they're all still correct before proceeding.
+
+### 3. Create a production module in the newBuildings.ts file. Before uploading it, add a line of logic to the World Editor suite's add_modules.ts file to prevent the uploading of a new production module if it does not have both the productionInputs and productionOutputs fields. Validate this logic by attempting to upload a production module that lacks these fields, and delete it if it accidentally gets through. Then upload your hydroponics pod data and see if you can build it in the game.
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
