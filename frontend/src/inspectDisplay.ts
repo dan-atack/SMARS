@@ -37,7 +37,7 @@ export default class InspectDisplay {
         }
         this._currentSelection = null;
         this._selectionName = "";
-        this._prodInfoButton = new Button("Show More", this._center, this._headers[2], this.handleProductionInfo, 128, 48, constants.ALMOST_BLACK, constants.EGGSHELL, 22);
+        this._prodInfoButton = new Button("SHOW\nPRODUCTION", this._center, this._headers[2] - 16, this.handleProductionInfo, 128, 64, constants.YELLOW_TEXT, constants.YELLOW_BG, 18);
     }
 
     // SECTION 1 - GENERAL UPDATE AND TYPE IDENTIFICATION METHODS
@@ -173,7 +173,7 @@ export default class InspectDisplay {
                 p5.text(`/  ${(res[1] / 100).toFixed(0)}`, this._left3Q, this._headers[5] + idx * 20);
             });
             if (mod._moduleInfo.type === "Production") {    // Render button for production info display
-                this._prodInfoButton._label = "Show More"
+                this._prodInfoButton._label = "SHOW\nPRODUCTION"
                 this._prodInfoButton.render(p5);
             }
         } else {
@@ -188,8 +188,24 @@ export default class InspectDisplay {
             p5.textSize(20);
             p5.text(`${mod._moduleInfo.name} (ID: ${mod._id})`, this._center, this._headers[0]);
             p5.text("Production Information", this._center, this._headers[1]);
+            p5.textSize(16);
+            p5.textAlign(p5.LEFT);
+            if (mod._moduleInfo.productionInputs && mod._moduleInfo.productionOutputs) {
+                let inputs = "";
+                let outputs = "";
+                mod._moduleInfo.productionInputs.forEach((input, idx) => {
+                    if (idx > 0) inputs += " + ";
+                    inputs += input[0];
+                })
+                mod._moduleInfo.productionOutputs.forEach((output, idx) => {
+                    if (idx > 0) outputs += " + ";
+                    outputs += output[0];
+                })
+                p5.text(`Converts ${inputs}`, this._textAlignleft, this._headers[4]);
+                p5.text(`Into ${outputs}`, this._textAlignleft, this._headers[5]);
+            }
             // Reset button text before showing it; button will return to regular module info display
-            this._prodInfoButton._label = "Show Less"
+            this._prodInfoButton._label = "SHOW\nBASIC INFO"
             this._prodInfoButton.render(p5);
         } else {
             p5.fill(constants.RED_ERROR);

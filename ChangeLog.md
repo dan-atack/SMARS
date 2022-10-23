@@ -1808,7 +1808,11 @@ Exit Criteria:
 
 3. Create a production module in the newBuildings.ts file. Before uploading it, add a line of logic to the World Editor suite's add_module and update_module files to prevent the uploading of a new production module if it does not have both the productionInputs and productionOutputs fields. Validate this logic by attempting to upload a production module that lacks these fields, and delete it if it accidentally gets through. Then upload your hydroponics pod data and see if you can build it in the game.
 
-### 4. Remove P5 from the Button class, and create a basic unit test file for it.
+4. Remove P5 from the Button class, and create a basic unit test file for it.
+
+5. Setup a button handler system for the Inspect Display to handle the 'Show More' button, which will be offered only when the player selects a production module.
+
+6. Fill out the Production Inputs/Outputs display template for Production Modules, and ensure that the player can toggle back to the basic module display from the production details display (make the button a toggle switch that goes back and forth between the two display modes).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

@@ -39,6 +39,7 @@ export const constants = {
     GREEN_MODULE: "#22B14C",
     GREEN_DARK: "#023803",
     GREEN_DARKER: "#012400",
+    GREEN_DARKEST: "#031A0A",
     BLUEGREEN_CRYSTAL: "#00F2BA",
     BLUEGREEN_DARK: "#052E26",
     BLUE_BG: "#00004F",
