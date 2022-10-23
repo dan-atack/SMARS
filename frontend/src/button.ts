@@ -37,7 +37,7 @@ export default class Button {
         }
         p5.fill(this._bgColor);    // Button BG color
         p5.rect(this._x, this._y, this._width, this._height, 8, 8, 8, 8);
-        p5.strokeWeight(4); // Reset stroke weight before button text is rendered
+        p5.strokeWeight(2); // Reset stroke weight before button text is rendered
         p5.stroke(0);
         p5.textSize(this._fontSize);
         p5.textStyle(p5.BOLD);

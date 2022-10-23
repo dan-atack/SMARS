@@ -99,6 +99,8 @@ export default class DetailsArea {
                     button.handleClick(mouseX, mouseY);
                 })
             }
+        } else if (this._inspectData) {     // Alternately, if the Inspect Display is open, activate its click handler
+            this._inspectDisplay.handleClicks(mouseX, mouseY);
         }
     }
 

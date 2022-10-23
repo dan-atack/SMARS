@@ -20,7 +20,7 @@ export default class InspectDisplay {
     _headers: number[];         // Vertical positions for rows of data
     _currentSelection: Block | Colonist | Connector | Module | null;
     _selectionName: string;     // Quick way for the renderer to know what type of object is selected
-    _altDetailsButton: Button   // Some displays might need a second page to show all the relevant info (e.g. production modules)
+    _prodInfoButton: Button     // Alternates between regular/production view for production modules
 
     constructor(x: number, y: number) {
         this._leftEdge = x;
@@ -37,7 +37,7 @@ export default class InspectDisplay {
         }
         this._currentSelection = null;
         this._selectionName = "";
-        this._altDetailsButton = new Button("More Info", this._center, this._headers[3], this.handleMoreInfo, 64, 32);
+        this._prodInfoButton = new Button("Show More", this._center, this._headers[2], this.handleProductionInfo, 128, 48, constants.ALMOST_BLACK, constants.EGGSHELL, 22);
     }
 
     // SECTION 1 - GENERAL UPDATE AND TYPE IDENTIFICATION METHODS
@@ -73,8 +73,19 @@ export default class InspectDisplay {
 
     // SECTION 2 - BUTTON HANDLERS
 
-    handleMoreInfo = () => {
-        console.log("More Info requested.");
+    // Toggles between
+    handleProductionInfo = () => {
+        if (this._selectionName === "module") {
+            this._selectionName = "production-module";
+        } else {
+            this._selectionName = "module";
+        }
+    }
+
+    // Only allow clicks when the button is 
+    handleClicks = (mouseX: number, mouseY: number) => {
+        // TODO: Add buttons into a list if more are added for non-module templates
+        this._prodInfoButton.handleClick(mouseX, mouseY);
     }
 
     // SECTION 3 - CLASS-SPECIFIC DISPLAY TEMPLATES
@@ -150,11 +161,6 @@ export default class InspectDisplay {
             p5.textAlign(p5.LEFT);
             p5.text(`${mod._moduleInfo.pressurized ? "Pressurized" : "Unpressurized"} - Integrity: ${mod._moduleInfo.durability}`, this._textAlignleft, this._headers[1]);
             p5.text(`${mod._moduleInfo.crewCapacity ? `Crew: ${mod._crewPresent} / ${mod._moduleInfo.crewCapacity}` : "No crew capacity"}`, this._textAlignleft, this._headers[2]);
-            // if (mod._moduleInfo.type === "Production") {
-            //     p5.textSize(16);
-            // } else {
-            //     p5.textSize(18);
-            // }
             p5.text(`Resources:`, this._textAlignleft, this._headers[3]);
             p5.text("Type", this._textAlignleft, this._headers[4]);
             p5.text("/         Quantity", this._left1Q, this._headers[4]);
@@ -165,7 +171,26 @@ export default class InspectDisplay {
             });
             mod._moduleInfo.storageCapacity.forEach((res, idx) => {
                 p5.text(`/  ${(res[1] / 100).toFixed(0)}`, this._left3Q, this._headers[5] + idx * 20);
-            })
+            });
+            if (mod._moduleInfo.type === "Production") {    // Render button for production info display
+                this._prodInfoButton._label = "Show More"
+                this._prodInfoButton.render(p5);
+            }
+        } else {
+            p5.fill(constants.RED_ERROR);
+            p5.text("Warning: Module Data Missing", this._center, this._headers[0]);
+        }
+    }
+
+    displayProductionModuleData = (p5: P5) => {
+        if (this._currentSelection && this.isModule(this._currentSelection)) {
+            const mod = this._currentSelection;
+            p5.textSize(20);
+            p5.text(`${mod._moduleInfo.name} (ID: ${mod._id})`, this._center, this._headers[0]);
+            p5.text("Production Information", this._center, this._headers[1]);
+            // Reset button text before showing it; button will return to regular module info display
+            this._prodInfoButton._label = "Show Less"
+            this._prodInfoButton.render(p5);
         } else {
             p5.fill(constants.RED_ERROR);
             p5.text("Warning: Module Data Missing", this._center, this._headers[0]);
@@ -206,6 +231,9 @@ export default class InspectDisplay {
                     break;
                 case "module":
                     this.displayModuleData(p5);
+                    break;
+                case "production-module":
+                    this.displayProductionModuleData(p5);
                     break;
                 default:
                     p5.fill(constants.RED_ERROR);
