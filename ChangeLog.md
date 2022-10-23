@@ -1795,12 +1795,12 @@ Exit Criteria:
 
 ### October 21, 2022
 
-Now that we have resources in modules, and colonists are able to consume these resources, and the player can see for themself what quantities of each resource are present, the next thing that the game needs is for the colony to be able to start PRODUCING resources. As the initial stockpiles of food and water (we'll leave the air supply to the side for the moment) begin to diminish, the colonists will need to produce more stuff. This means they will need modules dedicated to producing resources. In order to avoid adding unnecessary production info fields (inputs, outputs, labour time for production, etc.) into all of the current modules, this chapter will introduce two optional fields for the ModuleInfo type definition, for production inputs and outputs. We will create just one instance of a production module, the hydroponics pod, as well as updating the Inspect Display for modules to pivot on whether the module has the 'production' type. The chapter will end when it is proved that the player can build a production module, save and reload their game, and see the module's production-related info in the Inspect Display area (some minor adjustments to the module display template will be needed).
+Now that we have resources in modules, and colonists are able to consume these resources, and the player can see for themself what quantities of each resource are present, the next thing that the game needs is for the colony to be able to start PRODUCING resources. As the initial stockpiles of food and water (we'll leave the air supply to the side for the moment) begin to diminish, the colonists will need to produce more stuff. This means they will need modules dedicated to producing resources. In order to avoid adding unnecessary production info fields (inputs, outputs, labour time for production, etc.) into all of the current modules, this chapter will introduce two optional fields for the ModuleInfo type definition, for production inputs and outputs. We will create just one instance of a production module, the hydroponics pod, as well as updating the Inspect Display for modules to pivot on whether the module has the 'production' type. The chapter will end when the player can build a production module, save and reload their game, and see the module's production-related info in the Inspect Display area (some minor adjustments to the module display template will be needed).
 
 Exit Criteria:
 
-- When clicked in Inspect mode, production module shows info about colonist slots occupied/available, as well as input/output quantities
-- First production module, the Hydroponics Pod, can be constructed and saved/loaded
+- [DONE] When clicked in Inspect mode, production module shows info about colonist slots occupied/available, as well as input/output quantities
+- [DONE] First production module, the Hydroponics Pod, can be constructed and saved/loaded
 
 1. Add two optional fields to the ModuleInfo type definition, productionInputs and productionOutputs, and make them both a list of resources.
 
@@ -1813,6 +1813,33 @@ Exit Criteria:
 5. Setup a button handler system for the Inspect Display to handle the 'Show More' button, which will be offered only when the player selects a production module.
 
 6. Fill out the Production Inputs/Outputs display template for Production Modules, and ensure that the player can toggle back to the basic module display from the production details display (make the button a toggle switch that goes back and forth between the two display modes).
+
+## Chapter Thirty-Three: Jobs For the Boys: Colonist Roles (Difficulty Estimate: 5 for Population screen updates and Colonist role-assignment system development)
+
+### October 23, 2022
+
+Now that there are some empty production facilities lying around, it is time to prepare the Colonists to enter the job market. First they will need new infomation fields to assign ROLES, which will tell them what kinds of JOBS to do (see below this paragraph for a glossary of new role-related terminology). A role will consist of a name and a number, which will be the ID of the production module the colonist is assigned to. The player will be able to assign roles to the colonists in the Population screen, so there will be a bit of reformatting to do there. The Population screen should consist of a list of rows for each colonist, and on each row there will be a button for each type of ROLE option. We can leave a placeholder with fake data for the number of each roles available (which will be informed by the soon-to-be-developed Industry class). Chapter will be complete when the player can assign roles to colonists via the Population screen, and see each colonist's role info when they inspect them (this will probably necessitate the creation of an alternate colonist inspect display like we created for production modules just now). For the moment, assigning a role will not affect the colonist's behaviour; it will be purely a formal distinction.
+
+ROLE: The top-level designation for the type of work a colonist is assigned to. Examples are 'farmer', 'miner', 'scientist' or 'explorer' - in each case what is represented is the overall purpose of the work the colonist will do, rather than a description of any specific task.
+
+JOB: Jobs are the intermediate-level item in the work terms heirarchy, referring to a set of tasks (actions) that achieve a specific part of the overall mission of a colonist's ROLE. Examples of JOBS would be 'produce food', 'mine ore', 'transport resource' or 'do science.' A Job is essentially commensurate with a colonist GOAL, just as the tasks within a job are the same as colonist ACTIONS. The difference between a Job and a Goal is that whereas a Goal is just a string which stands alone in the colonist's data structure, a Job will be comprised of both a short string (mission statement) as well as a list of the tasks (actions) that the colonist who takes the job will have to add to. Colonists will have a separate type of action, 'go-to-work', that they will call to find the way to their assigned work module.
+
+Exit Criteria:
+
+- The Population Screen displays a row for each Colonist, with space for several potential role-assignment buttons
+- Colonists can be assigned roles in the Population screen
+- Colonist role data is added to save game files
+- Legacy saves assign all colonists to 'explore' role when loaded
+- Colonist Inspect Display shows Role name (replacing 'current action')
+- Colonist Inspect Display includes button to open Population page, highlighting the current colonist's row
+
+### 1. Add the role field to the Colonist class. Role will be a tuple, consisting of role name (string) and module ID (number).
+
+### 2. Start working on the Population screen: Move or get rid of the current flavour text, and make a space for the Colonists roster. Update the Population screen's setup method to take the whole Population object from the Engine (this is passed to it in the Game component's view changing switch case) instead of just the population array's length.
+
+### 3. Create a new Population class method, assignRoleToColonist, which will take a colonist ID (number), a role name (string) and a module ID (number) and assign a colonist to a role/module. Initially we'll have to use a made up number when determining the module ID, but eventually the true value for this field will be provided by the Industry component, which will also be fed to the Population screen's setup method.
+
+### 4. Create a new class, PopulationRow, to be created by a loop in the Population screen. PopulationRow will need to have a parameter to accept the Population class's assignRoleToColonist method, so it can pass that to its various role-assigning buttons.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
@@ -1892,9 +1919,19 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ### 3. Add ability for Connector renderer to operate like module renderer (using shapes data).
 
-### 4. Add a "roles" property to the Module Info type description (and thus to all existing modules in the DB) that contains a list of at least one string describing the role that a module plays (e.g. 'storage', 'dispensary', 'rest', 'science', etc.). This will help colonists figure out which module to go to when they have jobs, as well as restrict where resources can be accessed by colonists (so they have to eat at the cantina instead of being able to visit the store room instead, for instance). Addendum: This might not be the way things eventually end up going, but it's worth keeping around for consideration.
+### 4. Integrate the 'elevators' data from the connectorData field into the data for the actual Connectors array in the Infrastructure base class... And if this is the catalyst that leads to that great merger, then undertake it boldly, and do a triumphant unit test/sanity check run when it's over!
 
-### 5. Integrate the 'elevators' data from the connectorData field into the data for the actual Connectors array in the Infrastructure base class... And if this is the catalyst that leads to that great merger, then undertake it boldly, and do a triumphant unit test/sanity check run when it's over!
+## Section A.2: Advanced Module Features
+
+### 1. Add a "roles" property to the Module Info type description (and thus to all existing modules in the DB) that contains a list of at least one string describing the role that a module plays (e.g. 'storage', 'dispensary', 'rest', 'science', etc.). This will help colonists figure out which module to go to when they have jobs, as well as restrict where resources can be accessed by colonists (so they have to eat at the cantina instead of being able to visit the store room instead, for instance). Addendum: This might not be the way things eventually end up going, but it's worth keeping around for consideration.
+
+# Annex B: Aesthetic Considerations for First Release
+
+## Section B.1: Colonist Personalities
+
+### 1. When a new game is created, create two lists of first and last names. Randomly assign a name to each colonist, to display instead of the 'colonist ID' label in the Inspect Display area.
+
+### 2. Add an array of different space suit colours, and randomly assign them to the colonists when they are added as well.
 
 ### Exit Criteria for backend save/load game chapter:
 
