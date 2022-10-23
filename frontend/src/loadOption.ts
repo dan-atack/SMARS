@@ -11,7 +11,7 @@ export default class LoadOption extends Button {
     // TODO: Add a setter to interact with the Load Game screen's field for the current save data thing
 
     constructor(p5: P5, saveInfo: SaveSummary, x: number, y: number, w: number, h: number, setSaveSelection: (saveSummary: SaveSummary) => void) {
-        super(p5, saveInfo.game_name, x, y, () => console.log("Exception: load option click handler is not working."), w, h, constants.EGGSHELL, constants.ALMOST_BLACK, 20);
+        super(saveInfo.game_name, x, y, () => console.log("Exception: load option click handler is not working."), w, h, constants.EGGSHELL, constants.ALMOST_BLACK, 20);
         this.setSaveSelection = setSaveSelection;
         this._saveInfo = saveInfo;
         this._width = w;
@@ -45,8 +45,7 @@ export default class LoadOption extends Button {
         }
     }
 
-    render = () => {
-        const p5 = this._p5;
+    render = (p5: P5) => {
         p5.strokeWeight(4);
         // Render borders thicker and in font colour if button is 'selected':
         if (this._selected) {

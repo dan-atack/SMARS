@@ -51,7 +51,7 @@ export default class Modal {
         // Create one button per resolution and have the handler pass the index number of the button to the resolveModal method
         this._resolutions.forEach((res, idx) => {
             const handler = () => this.resolveModal(idx);
-            const b = new Button(this._p5, res.text, this._buttonX + idx * (this._buttonWidth + 16), this._buttonY, handler, this._buttonWidth, 48, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
+            const b = new Button(res.text, this._buttonX + idx * (this._buttonWidth + 16), this._buttonY, handler, this._buttonWidth, 48, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
             this._buttons.push(b);
         })
     }
@@ -81,7 +81,7 @@ export default class Modal {
         p5.textAlign()
         p5.text(this._text, this._xPosition + this._width / 2, this._yPosition + this._height / 2); // TODO: limit text box size
         this._buttons.forEach((button) => {
-            button.render();
+            button.render(p5);
         })
     }
 

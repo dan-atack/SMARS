@@ -64,7 +64,7 @@ export default class Sidebar {
         this.changeView = changeView;
         this.setMouseContext = setMouseContext;
         this.setGameSpeed = setGameSpeed;
-        this.menuButton = new Button(this._p5, "Menu", constants.SCREEN_WIDTH - 88, 16, this.handleMenuButton, 76, 64, constants.GREEN_TERMINAL, constants.ALMOST_BLACK, 24);
+        this.menuButton = new Button("Menu", constants.SCREEN_WIDTH - 88, 16, this.handleMenuButton, 76, 64, constants.GREEN_TERMINAL, constants.ALMOST_BLACK, 24);
         this._detailsArea = new DetailsArea(p5, this.setBuildOptionsOpen, setMouseContext);  // OR ThIS.SetMouseContex?
     }
 
@@ -73,20 +73,20 @@ export default class Sidebar {
         this._buildOptionsOpen = false;
         this._detailsArea.setExtended(false);
         // Create view-changing buttons:
-        const earth = new Button(this._p5, "Earth", this._position + 4, this._viewButtonY, this.handleEarth, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 24);
-        const industry = new Button(this._p5, "Industry", this._position + this._viewButtonWidth + 12, this._viewButtonY, this.handleIndustry, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 24);
-        const tech = new Button(this._p5, "Technology", this._position + 4, this._viewButtonY + this._viewButtonHeight + 8, this.handleTech, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 20);
-        const population = new Button(this._p5, "Population", this._position + this._viewButtonWidth + 12, this._viewButtonY + this._viewButtonHeight + 8, this.handlePopulation, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 22);
+        const earth = new Button("Earth", this._position + 4, this._viewButtonY, this.handleEarth, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 24);
+        const industry = new Button("Industry", this._position + this._viewButtonWidth + 12, this._viewButtonY, this.handleIndustry, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 24);
+        const tech = new Button("Technology", this._position + 4, this._viewButtonY + this._viewButtonHeight + 8, this.handleTech, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 20);
+        const population = new Button("Population", this._position + this._viewButtonWidth + 12, this._viewButtonY + this._viewButtonHeight + 8, this.handlePopulation, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 22);
         // Construction, resources and map options buttons:
-        const build = new Button(this._p5, "BUILD", this._position + 4, this._mapButtonsY, this.handleBuild, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 24);
-        const resource = new Button(this._p5, "RESOURCE", this._position + this._viewButtonWidth + 12, this._mapButtonsY, this.handleResource, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
-        const inspect = new Button(this._p5, "INSPECT", this._position + 4, this._mapButtonsY + this._viewButtonHeight + 8, this.handleInspect, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 24);
-        const overlays = new Button(this._p5, "OVERLAYS", this._position + this._viewButtonWidth + 12, this._mapButtonsY + this._viewButtonHeight + 8, this.handleOverlays, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
+        const build = new Button("BUILD", this._position + 4, this._mapButtonsY, this.handleBuild, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 24);
+        const resource = new Button("RESOURCE", this._position + this._viewButtonWidth + 12, this._mapButtonsY, this.handleResource, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
+        const inspect = new Button("INSPECT", this._position + 4, this._mapButtonsY + this._viewButtonHeight + 8, this.handleInspect, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 24);
+        const overlays = new Button("OVERLAYS", this._position + this._viewButtonWidth + 12, this._mapButtonsY + this._viewButtonHeight + 8, this.handleOverlays, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
         // Game speed adjustment buttons:
-        const pause = new Button(this._p5, "||", this._gameSpeedButtonX, this._gameSpeedButtonY, this.handlePause, this._gameSpeedButtonWidth, this._gameSpeedButtonWidth, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
-        const slow = new Button(this._p5, ">", this._gameSpeedButtonX + this._gameSpeedButtonMargin, this._gameSpeedButtonY, this.handleSlow, this._gameSpeedButtonWidth, this._gameSpeedButtonWidth, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
-        const fast = new Button(this._p5, ">>", this._gameSpeedButtonX + 2 * this._gameSpeedButtonMargin, this._gameSpeedButtonY, this.handleFast, this._gameSpeedButtonWidth + 8, this._gameSpeedButtonWidth, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
-        const blazing = new Button(this._p5, ">>>", this._gameSpeedButtonX + 3 * this._gameSpeedButtonMargin + 8, this._gameSpeedButtonY, this.handleBlazing, this._gameSpeedButtonWidth + 16, this._gameSpeedButtonWidth, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
+        const pause = new Button("||", this._gameSpeedButtonX, this._gameSpeedButtonY, this.handlePause, this._gameSpeedButtonWidth, this._gameSpeedButtonWidth, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
+        const slow = new Button(">", this._gameSpeedButtonX + this._gameSpeedButtonMargin, this._gameSpeedButtonY, this.handleSlow, this._gameSpeedButtonWidth, this._gameSpeedButtonWidth, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
+        const fast = new Button(">>", this._gameSpeedButtonX + 2 * this._gameSpeedButtonMargin, this._gameSpeedButtonY, this.handleFast, this._gameSpeedButtonWidth + 8, this._gameSpeedButtonWidth, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
+        const blazing = new Button(">>>", this._gameSpeedButtonX + 3 * this._gameSpeedButtonMargin + 8, this._gameSpeedButtonY, this.handleBlazing, this._gameSpeedButtonWidth + 16, this._gameSpeedButtonWidth, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
         this._buttons = [earth, industry, tech, population, build, resource, inspect, overlays];
         this._gameSpeedButtons = [pause, slow, fast, blazing];
     }
@@ -98,9 +98,8 @@ export default class Sidebar {
             this._buttons.forEach((button) => {
                 button.handleClick(mouseX, mouseY);
             })
-        } else {
-            this._detailsArea.handleClicks(mouseX, mouseY);
         }
+        this._detailsArea.handleClicks(mouseX, mouseY); // Run Details Area click handlers regardless
         this.menuButton.handleClick(mouseX, mouseY);    // Call menu button separately since it's not part of the standard list of buttons
         this._gameSpeedButtons.forEach((button) => {    // Ditto for the game speed buttons
             button.handleClick(mouseX, mouseY);
@@ -244,16 +243,16 @@ export default class Sidebar {
         p5.strokeWeight(2);
         p5.textSize(14);
         p5.text(dateString, this._clockX, this._clockY + 60);
-        this.menuButton.render();
+        this.menuButton.render(p5);
         this._gameSpeedButtons.forEach((button) => {
-            button.render();
+            button.render(p5);
         })
         if (!this._buildOptionsOpen) {
             // Show top-level buttons if build options area is not expanded
             this._buttons.forEach((button) => {
-                button.render();    // Top-level buttons
+                button.render(p5);    // Top-level buttons
             })
         }
-        this._detailsArea.render();
+        this._detailsArea.render(p5);
     }
 }

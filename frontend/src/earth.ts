@@ -40,7 +40,7 @@ export default class Earth extends View {
         p5.text(`Earth Date: ${this.earthDate.toISOString().slice(0, 10)}`, 400, 150);
         p5.text(`Change: ${this.dateRemainder}`, 500, 180);
         this._buttons.forEach((button) => {
-            button.render();
+            button.render(p5);
         })
     }
 

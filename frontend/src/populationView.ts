@@ -46,7 +46,7 @@ export default class PopulationView extends View {
         p5.text("Colony health rating: Fair", constants.SCREEN_WIDTH / 8, 288);
         p5.text("Colony morale rating: Plucky", constants.SCREEN_WIDTH / 8, 320);
         this._buttons.forEach((button) =>{
-            button.render();
+            button.render(p5);
         })
     }
 

@@ -72,11 +72,9 @@ export default class NewGameSetup extends Screen {
     }
 
     setup = () => {
-        const p5 = this._p5;
         this.currentScreen = true;
         // Create buttons:
         const easy = new Button(
-            p5,
             "easy",
             this._difficultyPositionX,
             this._difficultyPositionY,
@@ -87,7 +85,6 @@ export default class NewGameSetup extends Screen {
             constants.GREEN_DARK
         );
         const medium = new Button(
-            p5,
             "medium",
             this._difficultyPositionX + this._difficultyWidth, 
             this._difficultyPositionY,
@@ -98,7 +95,7 @@ export default class NewGameSetup extends Screen {
             constants.GREEN_DARK,
             22  // Font size override
         );
-        const hard = new Button(p5,
+        const hard = new Button(
             "hard",
             this._difficultyPositionX + 2 * this._difficultyWidth,
             this._difficultyPositionY,
@@ -109,7 +106,6 @@ export default class NewGameSetup extends Screen {
             constants.GREEN_DARK
         );
         const polar = new Button(
-            p5,
             "polar",
             this._mapTypePositionX,
             this._mapTypePositionY,
@@ -121,7 +117,6 @@ export default class NewGameSetup extends Screen {
             28
         );
         const highlands = new Button(
-            p5,
             "highlands",
             this._mapTypePositionX,
             this._mapTypePositionY + this._mapTypeHeight,
@@ -133,7 +128,6 @@ export default class NewGameSetup extends Screen {
             28
         );
         const riverbed = new Button(
-            p5,
             "riverbed",
             this._mapTypePositionX,
             this._mapTypePositionY + 2 * this._mapTypeHeight,
@@ -145,7 +139,6 @@ export default class NewGameSetup extends Screen {
             28
         );
         const yesRandom = new Button(
-            p5,
             "yes",
             this._randomPositionX,
             this._randomPositionY,
@@ -156,7 +149,6 @@ export default class NewGameSetup extends Screen {
             constants.GREEN_DARK
         );
         const noRandom = new Button(
-            p5,
             "no",
             this._randomPositionX + this._randomWidth,
             this._randomPositionY,
@@ -167,7 +159,6 @@ export default class NewGameSetup extends Screen {
             constants.GREEN_DARK
         );
         const startGame = new Button(
-            p5,
             "start game",
             192,
             600,
@@ -177,7 +168,7 @@ export default class NewGameSetup extends Screen {
             constants.GREEN_TERMINAL,
             constants.GREEN_DARK
         );
-        const backToMenu = new Button(p5,
+        const backToMenu = new Button(
             "back to menu",
             512,
             600,
@@ -378,12 +369,12 @@ export default class NewGameSetup extends Screen {
         // Render unselected buttons FIRST, so that the selected ones' glowing borders are always fully visible:
         this._buttons.forEach((button) => {
             if (!button._selected) {
-                button.render();
+                button.render(p5);
             }
         })
         this._buttons.forEach((button) => {
             if (button._selected) {
-                button.render();
+                button.render(p5);
             }
         })
         // Minimap

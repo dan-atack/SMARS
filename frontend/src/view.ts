@@ -22,7 +22,6 @@ export default class View {
         this.changeView = changeView;
         this._buttons = [];
         const returnToGame = new Button(
-            p5,
             "Return to Game",
             this._width / 2 - 128,
             560,
@@ -51,7 +50,7 @@ export default class View {
         const p5 = this._p5;    // For convenience
         p5.background(constants.APP_BACKGROUND);
         this._buttons.forEach((button) => {
-            button.render();
+            button.render(p5);
         })
     }
 

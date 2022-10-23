@@ -5,6 +5,7 @@ import Colonist from "./colonist";
 import Connector from "./connector";
 import { constants } from "./constants";
 import Module from "./module";
+import Button from "./button";
 
 export default class InspectDisplay {
     // Inspect Display types
@@ -19,6 +20,7 @@ export default class InspectDisplay {
     _headers: number[];         // Vertical positions for rows of data
     _currentSelection: Block | Colonist | Connector | Module | null;
     _selectionName: string;     // Quick way for the renderer to know what type of object is selected
+    _prodInfoButton: Button     // Alternates between regular/production view for production modules
 
     constructor(x: number, y: number) {
         this._leftEdge = x;
@@ -35,6 +37,7 @@ export default class InspectDisplay {
         }
         this._currentSelection = null;
         this._selectionName = "";
+        this._prodInfoButton = new Button("SHOW\nPRODUCTION", this._center, this._headers[2] - 16, this.handleProductionInfo, 128, 64, constants.YELLOW_TEXT, constants.YELLOW_BG, 18);
     }
 
     // SECTION 1 - GENERAL UPDATE AND TYPE IDENTIFICATION METHODS
@@ -68,7 +71,24 @@ export default class InspectDisplay {
         return (obj as Block)._blockData !== undefined;
     }
 
-    // SECTION 2 - CLASS-SPECIFIC DISPLAY TEMPLATES
+    // SECTION 2 - BUTTON HANDLERS
+
+    // Toggles between
+    handleProductionInfo = () => {
+        if (this._selectionName === "module") {
+            this._selectionName = "production-module";
+        } else {
+            this._selectionName = "module";
+        }
+    }
+
+    // Only allow clicks when the button is 
+    handleClicks = (mouseX: number, mouseY: number) => {
+        // TODO: Add buttons into a list if more are added for non-module templates
+        this._prodInfoButton.handleClick(mouseX, mouseY);
+    }
+
+    // SECTION 3 - CLASS-SPECIFIC DISPLAY TEMPLATES
 
     displayColonistData = (p5: P5) => {
         if (this._currentSelection && this.isColonist(this._currentSelection)) {
@@ -107,7 +127,7 @@ export default class InspectDisplay {
         }
     }
 
-    displayConnectortData = (p5: P5) => {
+    displayConnectorData = (p5: P5) => {
         if (this._currentSelection && this.isConnector(this._currentSelection)) {
             const conn = this._currentSelection;   // For convenience
             p5.text(`${conn._connectorInfo.name} (ID: ${conn._id})`, this._center, this._headers[0]);
@@ -139,8 +159,8 @@ export default class InspectDisplay {
             p5.text(`${mod._moduleInfo.name} (ID: ${mod._id})`, this._center, this._headers[0]);
             p5.textSize(18);
             p5.textAlign(p5.LEFT);
-            p5.text(`Pressurized: ${mod._moduleInfo.pressurized}`, this._textAlignleft, this._headers[1]);
-            p5.text(`Durability: ${mod._moduleInfo.durability}`, this._textAlignleft, this._headers[2]);
+            p5.text(`${mod._moduleInfo.pressurized ? "Pressurized" : "Unpressurized"} - Integrity: ${mod._moduleInfo.durability}`, this._textAlignleft, this._headers[1]);
+            p5.text(`${mod._moduleInfo.crewCapacity ? `Crew: ${mod._crewPresent} / ${mod._moduleInfo.crewCapacity}` : "No crew capacity"}`, this._textAlignleft, this._headers[2]);
             p5.text(`Resources:`, this._textAlignleft, this._headers[3]);
             p5.text("Type", this._textAlignleft, this._headers[4]);
             p5.text("/         Quantity", this._left1Q, this._headers[4]);
@@ -151,7 +171,42 @@ export default class InspectDisplay {
             });
             mod._moduleInfo.storageCapacity.forEach((res, idx) => {
                 p5.text(`/  ${(res[1] / 100).toFixed(0)}`, this._left3Q, this._headers[5] + idx * 20);
-            })
+            });
+            if (mod._moduleInfo.type === "Production") {    // Render button for production info display
+                this._prodInfoButton._label = "SHOW\nPRODUCTION"
+                this._prodInfoButton.render(p5);
+            }
+        } else {
+            p5.fill(constants.RED_ERROR);
+            p5.text("Warning: Module Data Missing", this._center, this._headers[0]);
+        }
+    }
+
+    displayProductionModuleData = (p5: P5) => {
+        if (this._currentSelection && this.isModule(this._currentSelection)) {
+            const mod = this._currentSelection;
+            p5.textSize(20);
+            p5.text(`${mod._moduleInfo.name} (ID: ${mod._id})`, this._center, this._headers[0]);
+            p5.text("Production Information", this._center, this._headers[1]);
+            p5.textSize(16);
+            p5.textAlign(p5.LEFT);
+            if (mod._moduleInfo.productionInputs && mod._moduleInfo.productionOutputs) {
+                let inputs = "";
+                let outputs = "";
+                mod._moduleInfo.productionInputs.forEach((input, idx) => {
+                    if (idx > 0) inputs += " + ";
+                    inputs += input[0];
+                })
+                mod._moduleInfo.productionOutputs.forEach((output, idx) => {
+                    if (idx > 0) outputs += " + ";
+                    outputs += output[0];
+                })
+                p5.text(`Converts ${inputs}`, this._textAlignleft, this._headers[4]);
+                p5.text(`Into ${outputs}`, this._textAlignleft, this._headers[5]);
+            }
+            // Reset button text before showing it; button will return to regular module info display
+            this._prodInfoButton._label = "SHOW\nBASIC INFO"
+            this._prodInfoButton.render(p5);
         } else {
             p5.fill(constants.RED_ERROR);
             p5.text("Warning: Module Data Missing", this._center, this._headers[0]);
@@ -188,10 +243,13 @@ export default class InspectDisplay {
                     this.displayColonistData(p5);
                     break;
                 case "connector":
-                    this.displayConnectortData(p5);
+                    this.displayConnectorData(p5);
                     break;
                 case "module":
                     this.displayModuleData(p5);
+                    break;
+                case "production-module":
+                    this.displayProductionModuleData(p5);
                     break;
                 default:
                     p5.fill(constants.RED_ERROR);
