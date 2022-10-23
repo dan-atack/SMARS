@@ -23,7 +23,7 @@ export default class Logbook extends View {
         p5.background(constants.APP_BACKGROUND);
         p5.text("Rendering logs...", constants.SCREEN_WIDTH / 2, 384);
         this._buttons.forEach((button) => {
-            button.render();
+            button.render(p5);
         })
     }
 

@@ -3,7 +3,6 @@ import { constants } from "./constants";
 
 export default class Button {
     // Define types for button attributes:
-    _p5: P5;
     _label: string;
     _x: number;
     _y: number;
@@ -16,8 +15,7 @@ export default class Button {
     handler: () => void;
  
 
-    constructor(p5: P5, label:string, x:number, y:number, handler: () => void, w:number=256, h:number=128, color:string="black", bgColor=constants.EGGSHELL, fontSize:number=36) {
-        this._p5 = p5;
+    constructor(label:string, x:number, y:number, handler: () => void, w:number=256, h:number=128, color:string="black", bgColor=constants.EGGSHELL, fontSize:number=36) {
         this._label = label;
         this._x = x;
         this._y = y;
@@ -30,8 +28,7 @@ export default class Button {
         this.handler = handler;
     }
 
-    render = () => {
-        const p5 = this._p5;
+    render = (p5: P5) => {
         p5.strokeWeight(4);
         // Render borders thicker and in font colour if button is 'selected':
         if (this._selected) {

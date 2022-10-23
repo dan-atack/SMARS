@@ -35,7 +35,6 @@ export default class Menu extends Screen {
         const p5 = this._p5;
         this.currentScreen = true;
         const newGame = new Button(
-            p5,
             "New Game",
             this._buttonX,
             176,
@@ -46,7 +45,6 @@ export default class Menu extends Screen {
             this._buttonBG
         );
         const loadGame = new Button(
-            p5,
             "Load Game",
             this._buttonX,
             304,    // Buttons are 128 pixels apart on the Y axis
@@ -57,7 +55,6 @@ export default class Menu extends Screen {
             this._buttonBG
         );
         const preferences = new Button (
-            p5,
             "Preferences",
             this._buttonX,
             432,    // Buttons are 128 pixels apart on the Y axis
@@ -68,7 +65,6 @@ export default class Menu extends Screen {
             this._buttonBG
         );
         const logout = new Button (
-            p5,
             "Return to Login",
             this._buttonX,
             560,
@@ -115,7 +111,7 @@ export default class Menu extends Screen {
         p5.textAlign(p5.CENTER, p5.TOP);
         p5.text(`Welcome to SMARS, ${this._username}`, 480, 80);
         this._buttons.forEach((button) => {
-            button.render();
+            button.render(p5);
         })
     }
 

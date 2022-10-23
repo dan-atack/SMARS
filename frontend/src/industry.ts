@@ -24,7 +24,7 @@ export default class Industry extends View {
         p5.fill(constants.GREEN_TERMINAL);
         p5.text("Industry page rendered", constants.SCREEN_WIDTH / 2, 384);
         this._buttons.forEach((button) => {
-            button.render();
+            button.render(p5);
         })
     }
 

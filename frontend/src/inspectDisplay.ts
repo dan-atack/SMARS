@@ -5,6 +5,7 @@ import Colonist from "./colonist";
 import Connector from "./connector";
 import { constants } from "./constants";
 import Module from "./module";
+import Button from "./button";
 
 export default class InspectDisplay {
     // Inspect Display types
@@ -19,6 +20,7 @@ export default class InspectDisplay {
     _headers: number[];         // Vertical positions for rows of data
     _currentSelection: Block | Colonist | Connector | Module | null;
     _selectionName: string;     // Quick way for the renderer to know what type of object is selected
+    _altDetailsButton: Button   // Some displays might need a second page to show all the relevant info (e.g. production modules)
 
     constructor(x: number, y: number) {
         this._leftEdge = x;
@@ -35,6 +37,7 @@ export default class InspectDisplay {
         }
         this._currentSelection = null;
         this._selectionName = "";
+        this._altDetailsButton = new Button("More Info", this._center, this._headers[3], this.handleMoreInfo, 64, 32);
     }
 
     // SECTION 1 - GENERAL UPDATE AND TYPE IDENTIFICATION METHODS
@@ -68,7 +71,13 @@ export default class InspectDisplay {
         return (obj as Block)._blockData !== undefined;
     }
 
-    // SECTION 2 - CLASS-SPECIFIC DISPLAY TEMPLATES
+    // SECTION 2 - BUTTON HANDLERS
+
+    handleMoreInfo = () => {
+        console.log("More Info requested.");
+    }
+
+    // SECTION 3 - CLASS-SPECIFIC DISPLAY TEMPLATES
 
     displayColonistData = (p5: P5) => {
         if (this._currentSelection && this.isColonist(this._currentSelection)) {
@@ -107,7 +116,7 @@ export default class InspectDisplay {
         }
     }
 
-    displayConnectortData = (p5: P5) => {
+    displayConnectorData = (p5: P5) => {
         if (this._currentSelection && this.isConnector(this._currentSelection)) {
             const conn = this._currentSelection;   // For convenience
             p5.text(`${conn._connectorInfo.name} (ID: ${conn._id})`, this._center, this._headers[0]);
@@ -140,7 +149,12 @@ export default class InspectDisplay {
             p5.textSize(18);
             p5.textAlign(p5.LEFT);
             p5.text(`${mod._moduleInfo.pressurized ? "Pressurized" : "Unpressurized"} - Integrity: ${mod._moduleInfo.durability}`, this._textAlignleft, this._headers[1]);
-            p5.text(`${mod._moduleInfo.crewCapacity ? `Crew: ${mod._crewPresent}/${mod._moduleInfo.crewCapacity}` : "No crew capacity"}`, this._textAlignleft, this._headers[2]);
+            p5.text(`${mod._moduleInfo.crewCapacity ? `Crew: ${mod._crewPresent} / ${mod._moduleInfo.crewCapacity}` : "No crew capacity"}`, this._textAlignleft, this._headers[2]);
+            // if (mod._moduleInfo.type === "Production") {
+            //     p5.textSize(16);
+            // } else {
+            //     p5.textSize(18);
+            // }
             p5.text(`Resources:`, this._textAlignleft, this._headers[3]);
             p5.text("Type", this._textAlignleft, this._headers[4]);
             p5.text("/         Quantity", this._left1Q, this._headers[4]);
@@ -188,7 +202,7 @@ export default class InspectDisplay {
                     this.displayColonistData(p5);
                     break;
                 case "connector":
-                    this.displayConnectortData(p5);
+                    this.displayConnectorData(p5);
                     break;
                 case "module":
                     this.displayModuleData(p5);

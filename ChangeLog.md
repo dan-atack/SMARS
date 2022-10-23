@@ -1806,7 +1806,9 @@ Exit Criteria:
 
 2. Add a field to the Module class's constructor, crewPresent, which will be the number of colonists present in a module. All modules will have this property, and should display it as part of the Inspect Display _IF_ they have any a crew capacity of greater than zero. Once this property is added, quickly recheck the Module and Infra unit tests to make sure they're all still correct before proceeding.
 
-### 3. Create a production module in the newBuildings.ts file. Before uploading it, add a line of logic to the World Editor suite's add_modules.ts file to prevent the uploading of a new production module if it does not have both the productionInputs and productionOutputs fields. Validate this logic by attempting to upload a production module that lacks these fields, and delete it if it accidentally gets through. Then upload your hydroponics pod data and see if you can build it in the game.
+3. Create a production module in the newBuildings.ts file. Before uploading it, add a line of logic to the World Editor suite's add_module and update_module files to prevent the uploading of a new production module if it does not have both the productionInputs and productionOutputs fields. Validate this logic by attempting to upload a production module that lacks these fields, and delete it if it accidentally gets through. Then upload your hydroponics pod data and see if you can build it in the game.
+
+### 4. Remove P5 from the Button class, and create a basic unit test file for it.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

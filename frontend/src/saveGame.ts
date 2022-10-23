@@ -96,8 +96,8 @@ export default class SaveGame extends Screen {
         this._gameNameInput = this._p5.createInput(`${saveInfo.username}'s game`); // Input field is created at setup time
         this._gameNameInput.parent("app");
         this._gameNameInput.addClass("save-game-name");
-        const saveGame = new Button(this._p5, "Save Game", this._buttonX, this._buttonY, this.handleSave, this._buttonWidth, this._buttonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK);
-        const returnToGame = new Button(this._p5, "Return to Main Menu", this._buttonX, this._buttonY + this._buttonHeight + 16, this.handleReturnToMainMenu, this._buttonWidth, this._buttonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK);
+        const saveGame = new Button("Save Game", this._buttonX, this._buttonY, this.handleSave, this._buttonWidth, this._buttonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK);
+        const returnToGame = new Button("Return to Main Menu", this._buttonX, this._buttonY + this._buttonHeight + 16, this.handleReturnToMainMenu, this._buttonWidth, this._buttonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK);
         this._buttons = [saveGame, returnToGame];
         this._justOpened = true;            // Set to true to block first click responder from firing
         this._saveWasSuccessful = false;    // Reset to allow new saves to occur each time the screen is opened
@@ -171,7 +171,7 @@ export default class SaveGame extends Screen {
         p5.textSize(30);
         p5.text(this._message, 480, 320);
         this._buttons.forEach((button) => {
-            button.render();
+            button.render(p5);
         })
     }
 }

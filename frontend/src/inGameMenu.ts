@@ -36,8 +36,8 @@ export default class InGameMenu extends Screen {
 
     setup = () => {
         this.currentScreen = true;
-        const saveGame = new Button(this._p5, "Save Game", this._buttonX, this._buttonY, this.handleSave, this._buttonWidth, this._buttonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK);
-        const returnToGame = new Button(this._p5, "Return to Game", this._buttonX, this._buttonY + this._buttonHeight + this._buttonPadding, this.handleReturnToGame, this._buttonWidth, this._buttonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK);
+        const saveGame = new Button("Save Game", this._buttonX, this._buttonY, this.handleSave, this._buttonWidth, this._buttonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK);
+        const returnToGame = new Button("Return to Game", this._buttonX, this._buttonY + this._buttonHeight + this._buttonPadding, this.handleReturnToGame, this._buttonWidth, this._buttonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK);
         this._buttons = [saveGame, returnToGame];
     }
 
@@ -71,7 +71,7 @@ export default class InGameMenu extends Screen {
         p5.text("Just what do you think", 480, 80);
         p5.text(`you're doing, ${this._username}?`, 480, 136);
         this._buttons.forEach((button) => {
-            button.render();
+            button.render(p5);
         })
     }
 

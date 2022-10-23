@@ -10,8 +10,8 @@ export default class BuildingChip extends Button {
     setMouseContext: (value: string) => void;
     setBuildingSelection: (value: ModuleInfo | ConnectorInfo | null) => void;
 
-    constructor(p5: P5, buildingData: ModuleInfo | ConnectorInfo, x: number, y: number, setMouseContext: (value: string) => void, setBuildingSelection: (value: ModuleInfo | ConnectorInfo | null) => void) {
-        super(p5, buildingData.name, x + 8, y, () => console.log("Exception: build chip click handler is not working."), constants.SIDEBAR_WIDTH - 24, 88, constants.EGGSHELL, constants.ALMOST_BLACK, 20);    // Handler here is a dud since the build chip uses the set mouse context function as its handler and this requires a string argument (instead of no argument)
+    constructor(buildingData: ModuleInfo | ConnectorInfo, x: number, y: number, setMouseContext: (value: string) => void, setBuildingSelection: (value: ModuleInfo | ConnectorInfo | null) => void) {
+        super(buildingData.name, x + 8, y, () => console.log("Exception: build chip click handler is not working."), constants.SIDEBAR_WIDTH - 24, 88, constants.EGGSHELL, constants.ALMOST_BLACK, 20);    // Handler here is a dud since the build chip uses the set mouse context function as its handler and this requires a string argument (instead of no argument)
         this.buildingData = buildingData;
         this.setMouseContext = setMouseContext;
         this.setBuildingSelection = setBuildingSelection;
@@ -58,8 +58,7 @@ export default class BuildingChip extends Button {
         return cost;
     }
 
-    render = () => {
-        const p5 = this._p5;
+    render = (p5: P5) => {
         p5.strokeWeight(4);
         // Render borders thicker and in font colour if button is 'selected':
         if (this._selected) {

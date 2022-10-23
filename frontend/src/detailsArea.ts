@@ -65,13 +65,13 @@ export default class DetailsArea {
         this._buildingSelection = null;     // Default is no building selection
         this._buildTypeOptions = [];
         this._buildingOptions = [];
-        const mods = new Button(p5, "Modules", this._x, this._buttonY, this.handleModules, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
-        const cons = new Button(p5, "Connectors", this._x, this._buttonY + this._buttonMargin, this.handleConnectors, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
-        const close = new Button(p5, "CANCEL", this._x, this._buttonY + 4 * this._buttonMargin, this.handleClose, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG);  // Close is the 'Back' button from the categories list; de-expands DA
+        const mods = new Button("Modules", this._x, this._buttonY, this.handleModules, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
+        const cons = new Button("Connectors", this._x, this._buttonY + this._buttonMargin, this.handleConnectors, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
+        const close = new Button("CANCEL", this._x, this._buttonY + 4 * this._buttonMargin, this.handleClose, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG);  // Close is the 'Back' button from the categories list; de-expands DA
         this._categoryButtons = [mods, cons, close];
         this._typeButtons = [];
         this._optionButtons = [];
-        this._backButton = new Button(p5, "BACK", this._x, this._buttonY + 4 * this._buttonMargin, this.handleBack, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG);
+        this._backButton = new Button("BACK", this._x, this._buttonY + 4 * this._buttonMargin, this.handleBack, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG);
         this._inspectDisplay = new InspectDisplay(this._x, this._y);
         this._minimap = new Minimap(p5, this._x + 24, this._y + 256, []);
         this._inspectData = false;      // By default there is no inspect data to display
@@ -106,7 +106,7 @@ export default class DetailsArea {
     populateTypeOptions = (types: string[]) => {
         this._typeButtons = []; // Clear existing options
         types.forEach((buildingType, idx) => {
-            const button = new Button(this._p5, buildingType, this._x, this._buttonY + idx * this._buttonMargin, () => this.handleTypeSelection(buildingType), this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
+            const button = new Button(buildingType, this._x, this._buttonY + idx * this._buttonMargin, () => this.handleTypeSelection(buildingType), this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
             this._typeButtons.push(button);
         })
     }
@@ -115,7 +115,7 @@ export default class DetailsArea {
     populateBuildingOptions = (buildings: ModuleInfo[] | ConnectorInfo[]) => {
         this._optionButtons = [];       // Clear existing options
         buildings.forEach((bld, idx) => {
-            const m = new BuildingChip(this._p5, bld, this._x, this._buttonY + idx * this._buttonMargin, this.setMouseContext, this.setBuildingSelection);
+            const m = new BuildingChip(bld, this._x, this._buttonY + idx * this._buttonMargin, this.setMouseContext, this.setBuildingSelection);
             this._optionButtons.push(m);
         })
     }
@@ -211,40 +211,37 @@ export default class DetailsArea {
         this._buildingSelection = value;
     }
 
-    showBuildingOptions = () => {
-        const p5 = this._p5;
+    showBuildingOptions = (p5: P5) => {
         p5.textSize(22);
         p5.fill(constants.GREEN_TERMINAL);
         p5.text("Inspect", this._x + (this._width / 2), this._yExtended + 64);
         p5.text(`${this._buildTypeSelection} ${this._buildCategorySelection}:`, this._x + (this._width / 2), this._yExtended + 88);
-        this._backButton.render();  // Render back button to return to building categories menu
+        this._backButton.render(p5);  // Render back button to return to building categories menu
         // Render individual building options:
         this._optionButtons.forEach((button) => {
-            button.render();
+            button.render(p5);
         })
         p5.textAlign(p5.CENTER, p5.CENTER);
         // TODO: Add rules for pagination if list length exceeds 4 items
     }
 
-    showTypeOptions = () => {
-        const p5 = this._p5;
+    showTypeOptions = (p5: P5) => {
         p5.textSize(22);
         p5.fill(constants.GREEN_TERMINAL);
         p5.text(`Select ${this._buildCategorySelection.slice(0, -1)} type:`, this._x + (this._width / 2), this._yExtended + 64);
-        this._backButton.render();
+        this._backButton.render(p5);
         this._typeButtons.forEach((button) => {
-            button.render();
+            button.render(p5);
         })
         p5.textAlign(p5.CENTER, p5.CENTER);
     }
 
-    showCategoryOptions = () => {
-        const p5 = this._p5;
+    showCategoryOptions = (p5: P5) => {
         p5.textSize(22);
         p5.fill(constants.GREEN_TERMINAL);
         p5.text("Select Building Category", this._x + (this._width / 2), this._yExtended + 64);
         this._categoryButtons.forEach((button) => {
-            button.render();
+            button.render(p5);
         })
         p5.textAlign(p5.CENTER, p5.CENTER);
     }
@@ -273,8 +270,7 @@ export default class DetailsArea {
         this._inspectDisplay.render(p5);
     }
 
-    render = () => {
-        const p5 = this._p5;
+    render = (p5: P5) => {
         p5.fill(constants.BLUEGREEN_DARK);
         p5.strokeWeight(2);
         p5.stroke(constants.ALMOST_BLACK);
@@ -282,11 +278,11 @@ export default class DetailsArea {
             p5.rect(this._x, this._yExtended, this._width, this._extendedHeight, 8, 8, 8, 8);
             // If type is selected show building options; else show type options; else show category options
             if (this._buildTypeSelection) {
-                this.showBuildingOptions();
+                this.showBuildingOptions(p5);
             } else if (this._buildCategorySelection) {
-                this.showTypeOptions();
+                this.showTypeOptions(p5);
             } else {
-                this.showCategoryOptions();
+                this.showCategoryOptions(p5);
             }
         } else {    // If Details Area is not extended, show it at normal height and display either Minimap or Inspect Display
             p5.rect(this._x, this._y, this._width, this._normalHeight, 8, 8, 8, 8);

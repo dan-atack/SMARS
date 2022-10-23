@@ -82,10 +82,10 @@ export default class LoadGame extends Screen {
         this._saveInfo = null;
         this._justOpened = true;            // Set to true to block first click responder from firing
         this._loadWasSuccessful = false;    // Reset to allow new saves to occur each time the screen is opened
-        const loadGame = new Button(this._p5, "Load Game", this._buttonX, this._buttonY, this.handleLoad, this._buttonWidth, this._buttonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK);
-        const returnToMenu = new Button(this._p5, "Return to Main Menu", this._buttonX, this._buttonY + this._buttonHeight + 16, this.handleReturnToMenu, this._buttonWidth, this._buttonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK);
-        const next = new Button(this._p5, "NEXT", this._buttonX / 2 + 48, this._buttonY / 2 + 96, this.handleNext, this._buttonWidth / 4, this._buttonHeight / 2, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
-        const prev = new Button(this._p5, "PREV", this._buttonX / 2 - 80, this._buttonY / 2 + 96, this.handlePrev, this._buttonWidth / 4, this._buttonHeight / 2, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
+        const loadGame = new Button("Load Game", this._buttonX, this._buttonY, this.handleLoad, this._buttonWidth, this._buttonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK);
+        const returnToMenu = new Button("Return to Main Menu", this._buttonX, this._buttonY + this._buttonHeight + 16, this.handleReturnToMenu, this._buttonWidth, this._buttonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK);
+        const next = new Button("NEXT", this._buttonX / 2 + 48, this._buttonY / 2 + 96, this.handleNext, this._buttonWidth / 4, this._buttonHeight / 2, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
+        const prev = new Button("PREV", this._buttonX / 2 - 80, this._buttonY / 2 + 96, this.handlePrev, this._buttonWidth / 4, this._buttonHeight / 2, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
         this._buttons = [loadGame, returnToMenu, next, prev];
         // Get list of saved game files for the current user
         this.getSavedGames(this._username, this.setsavedGames);
@@ -221,10 +221,10 @@ export default class LoadGame extends Screen {
         p5.fill(this._messageColor);
         p5.text(this._message, 180, 400);
         this._loadOptions.forEach((option) => {
-            option.render();
+            option.render(p5);
         })
         this._buttons.forEach((button) => {
-            button.render();
+            button.render(p5);
         })
     }
 
