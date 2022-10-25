@@ -1833,11 +1833,13 @@ Exit Criteria:
 - Colonist Inspect Display shows Role name (replacing 'current action')
 - Colonist Inspect Display includes button to open Population page, highlighting the current colonist's row
 
-### 1. Add the role field to the Colonist class. Role will be a tuple, consisting of role name (string) and module ID (number).
+1. Add the role field to the Colonist class. Role will be a tuple, consisting of role name (string) and module ID (number).
 
-### 2. Start working on the Population screen: Move or get rid of the current flavour text, and make a space for the Colonists roster. Update the Population screen's setup method to take the whole Population object from the Engine (this is passed to it in the Game component's view changing switch case) instead of just the population array's length.
+2. Add colonist role field to the Colonist Save data shape; add a default value to the constructor field so that it checks the load data for a role, and then defaults to ['explorer', 0].
 
-### 3. Create a new Population class method, assignRoleToColonist, which will take a colonist ID (number), a role name (string) and a module ID (number) and assign a colonist to a role/module. Initially we'll have to use a made up number when determining the module ID, but eventually the true value for this field will be provided by the Industry component, which will also be fed to the Population screen's setup method.
+3. Start working on the Population screen: Move or get rid of the current flavour text, and make a space for the Colonists roster. Update the Population screen's setup method to take the whole Colonists list from the Engine's Population class (this is passed to it in the Game component's view changing switch case) instead of just the population array's length.
+
+4. Create a new Population class method, assignRoleToColonist, which will take a colonist ID (number), a role name (string) and a module ID (number) and assign a colonist to a role/module. Initially we'll have to use a made up number when determining the module ID, but eventually the true value for this field will be provided by the Industry component, which will also be fed to the Population screen's setup method. Unit test that this can find a colonist and assign them to a particular role.
 
 ### 4. Create a new class, PopulationRow, to be created by a loop in the Population screen. PopulationRow will need to have a parameter to accept the Population class's assignRoleToColonist method, so it can pass that to its various role-assigning buttons.
 

@@ -11,10 +11,13 @@ export type ColonistNeeds = {
     rest: number,
 };
 
+export type ColonistRole = [string, number];
+
 export type ColonistSaveData = {
     id: number,
     x: number,
     y: number,
+    role: ColonistRole,
     needs: ColonistNeeds,
     goal: string,
     currentAction: ColonistAction | null,

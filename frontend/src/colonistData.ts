@@ -1,5 +1,5 @@
 // The ColonistData class handles all of the data processing for the colonist class, without any of the rendering tasks
-import { ColonistSaveData, ColonistNeeds } from "./colonist";
+import { ColonistSaveData, ColonistNeeds, ColonistRole } from "./colonist";
 import { createConsumeActionStack, findElevatorToGround } from "./colonistActionLogic";
 import { Coords } from "./connector";
 import Infrastructure from "./infrastructure";  // Infra data info gets passed by population updater function
@@ -22,6 +22,7 @@ export default class ColonistData {
     _height: number;                // Colonists' height is in terms of grid spaces...
     _xOffset: number;       // ...The offset value, on the other hand, will be in terms of pixels, to allow for smoother scrolling
     _yOffset: number;
+    _role: [string, number];        // Roles will consist of a name (e.g. farmer) and module ID (e.g. 1001)
     _needs: ColonistNeeds;          // Keep track of the colonist's needs to help them choose what to do with their lives
     _needThresholds: ColonistNeeds; // Separately keep track of the various thresholds for each type of need
     _needsAvailable: ColonistNeeds; // Also, keep track of whether any needs are unavailable (0 = unavailable, 1 = available)
@@ -46,7 +47,8 @@ export default class ColonistData {
         this._height = 2;
         this._xOffset = 0;
         this._yOffset = 0;
-        this._needs = saveData ? saveData.needs : { // Load existing needs, or set to zero for new colonists
+        this._role = saveData?.role ? saveData.role : [ "explorer", 0];   // Default role for colonists is to be an explorer
+        this._needs = saveData ? saveData.needs : {                 // Load existing needs, or set to zero for new colonists
             water: 0,
             food: 0,
             rest: 0
@@ -88,7 +90,7 @@ export default class ColonistData {
         this.handleMovement(map, infra, adjacentColumns);  // Finally, take care of movement last
     }
 
-    // NEEDS AND GOAL-ORIENTED METHODS
+    // NEEDS, ROLE AND GOAL-ORIENTED METHODS
 
     // This may take arguments some day, like how much the Colonist has exerted himself since the last update
     updateNeeds = () => {
@@ -103,6 +105,11 @@ export default class ColonistData {
         this._needsAvailable.food = 1;
         this._needsAvailable.water = 1;
         this._needsAvailable.rest = 1;
+    }
+
+    // Sets the Colonist's role (i.e. occupation) in the base
+    setRole = (role: ColonistRole) => {
+        this._role = role;
     }
 
     // Checks whether any needs have exceeded their threshold and assigns a new goal if so; otherwise sets goal to 'explore'

@@ -9,12 +9,10 @@ export default class Population {
     // Population types:
     _colonists: Colonist[];
     _colonistsCurrentSerial: number;    // Needed to individually tag colonists when they are created
-    _xOffset: number;                   // Needed for colonist render functions
 
     constructor() {
         this._colonists = [];                   // Default population is zero.
         this._colonistsCurrentSerial = 9000;    // Colonists are from the 9000 series!
-        this._xOffset = 0;                      // Default position is the left edge of the world.
     }
 
     // SECTION 1: ADDING POPULATION (COLONISTS)
@@ -61,7 +59,19 @@ export default class Population {
         })
     }
 
-    // SECTION 3: COLONIST INFO API (GETTER FUNCTIONS)
+    // SECTION 3: COLONIST ROLE MANAGEMENT
+
+    assignColonistRole = (colonistID: number, role: [string, number]) => {
+        const colonist = this._colonists.find((col) => col._data._id === colonistID);
+        if (colonist) {
+            colonist._data.setRole(role);
+        } else {
+            console.log(`Error: Colonist ${colonistID} could not be assigned role: ${role[0]}. Reason: Colonist ID not found in Population array`);
+            return null;
+        }
+    }
+
+    // SECTION 4: COLONIST INFO API (GETTER FUNCTIONS)
 
     getColonistDataFromCoords = (coords: Coords) => {
         const colonists = this._colonists.find((col) => {
@@ -74,7 +84,7 @@ export default class Population {
         }
     }
 
-    // SECTION 4: COLONIST SAVE/LOAD DATA MANAGEMENT
+    // SECTION 5: COLONIST SAVE/LOAD DATA MANAGEMENT
 
     prepareColonistSaveData = () => {
         const colonistData: ColonistSaveData[] = [];
@@ -83,6 +93,7 @@ export default class Population {
                 id: colonist._data._id,
                 x: colonist._data._x,
                 y: colonist._data._y,
+                role: colonist._data._role,
                 needs: colonist._data._needs,
                 goal: colonist._data._currentGoal,
                 currentAction: colonist._data._currentAction,
@@ -115,9 +126,8 @@ export default class Population {
 
     // Gets horizontal offset and fps (game speed) data from the Engine's render method
     render = (p5: P5, xOffset: number, fps: number, gameOn: boolean) => {
-        this._xOffset = xOffset;
         this._colonists.forEach((colonist) => {
-            colonist.render(p5, this._xOffset, fps, gameOn);
+            colonist.render(p5, xOffset, fps, gameOn);
         })
     }
 
