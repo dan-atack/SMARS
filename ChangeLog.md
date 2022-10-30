@@ -1826,20 +1826,36 @@ JOB: Jobs are the intermediate-level item in the work terms heirarchy, referring
 
 Exit Criteria:
 
-- The Population Screen displays a row for each Colonist, with space for several potential role-assignment buttons
-- Colonists can be assigned roles in the Population screen
-- Colonist role data is added to save game files
-- Legacy saves assign all colonists to 'explore' role when loaded
-- Colonist Inspect Display shows Role name (replacing 'current action')
-- Colonist Inspect Display includes button to open Population page, highlighting the current colonist's row
+- [DONE] The Population Screen displays a row for each Colonist, with space for several potential role-assignment buttons
+- [DONE] Colonists can be assigned roles in the Population screen
+- [DONE] Colonist role data is added to save game files
+- [DONE] Legacy saves assign all colonists to 'explore' role when loaded
+- [DONE] Colonist Inspect Display shows Role name (replacing 'current action')
+- [DONE] [STRETCH] An aesthetic touch: give new colonists a randomly generated name, to give the game some personality!
 
-### 1. Add the role field to the Colonist class. Role will be a tuple, consisting of role name (string) and module ID (number).
+1. Add the role field to the Colonist class. Role will be a tuple, consisting of role name (string) and module ID (number).
 
-### 2. Start working on the Population screen: Move or get rid of the current flavour text, and make a space for the Colonists roster. Update the Population screen's setup method to take the whole Population object from the Engine (this is passed to it in the Game component's view changing switch case) instead of just the population array's length.
+2. Add colonist role field to the Colonist Save data shape; add a default value to the constructor field so that it checks the load data for a role, and then defaults to ['explorer', 0].
 
-### 3. Create a new Population class method, assignRoleToColonist, which will take a colonist ID (number), a role name (string) and a module ID (number) and assign a colonist to a role/module. Initially we'll have to use a made up number when determining the module ID, but eventually the true value for this field will be provided by the Industry component, which will also be fed to the Population screen's setup method.
+3. Start working on the Population screen: Move or get rid of the current flavour text, and make a space for the Colonists roster. Update the Population screen's setup method to take the whole Colonists list from the Engine's Population class (this is passed to it in the Game component's view changing switch case) instead of just the population array's length.
 
-### 4. Create a new class, PopulationRow, to be created by a loop in the Population screen. PopulationRow will need to have a parameter to accept the Population class's assignRoleToColonist method, so it can pass that to its various role-assigning buttons.
+4. Create a new Population class method, assignRoleToColonist, which will take a colonist ID (number), a role name (string) and a module ID (number) and assign a colonist to a role/module. Initially we'll have to use a made up number when determining the module ID, but eventually the true value for this field will be provided by the Industry component, which will also be fed to the Population screen's setup method. Unit test that this can find a colonist and assign them to a particular role.
+
+5. Create a new class, PopulationRow, to be created by a loop in the Population screen. PopulationRow will need to have a parameter to accept the Population class's assignRoleToColonist method, so it can pass that to its various role-assigning buttons.
+
+6. Create handler functions for the initial roles: farmer, explorer and miner in the PopulationView class.
+
+7. Adjust the start position of the PopulationRows to push them down a little bit, and add column labels in the PopulationView class, corresponding with the locations of the different cells in the PopulationRows. Column labels are: Id, Name, Current Role, and Set Role. Id should be 10% of the total column width; Name should be 20%, Current Role can also be 20%, and the Role Selection area should be 50% of the total available space.
+
+8. Next, add the actual Buttons to the PopulationRows, so they can display the different Role options in the Role Selection column.
+
+9. Add a names property to the PopulationView class, to provide some initial names for your Colonists. Integrate the Colonist names into the Colonist save/load data system and test thoroughly.
+
+10. Pass each Colonist's name to the PopulationRow as an additional parameter, and have it display the Colonist's name, ID and current role in the appropriate fields.
+
+11. Update the handler functions for the PopulationView screen's various role setting buttons, so that they pass the new role info to the Population class, thus updating the Colonists.
+
+12. Update the Colonist Inspect Display to show the colonist's name instead of their ID, and their current role instead of their current action.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
@@ -1929,9 +1945,15 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ## Section B.1: Colonist Personalities
 
-### 1. When a new game is created, create two lists of first and last names. Randomly assign a name to each colonist, to display instead of the 'colonist ID' label in the Inspect Display area.
+1. When a new game is created, create a list of names. Assign a name to each new colonist, to display instead of the 'colonist ID' label in the Inspect Display area.
 
 ### 2. Add an array of different space suit colours, and randomly assign them to the colonists when they are added as well.
+
+## Section B.2: Population View Screen UX Enhancements
+
+### 1. Add a button labelled 'Change Role' to the Colonist Inspect Display to open the Population View screen.
+
+### 2. Enable the player to highlight a row in the Population View screen, and have that screen open with a particular colonist highlighted if it is opened via clicking the 'Change Role' button mentioned in the above point.
 
 ### Exit Criteria for backend save/load game chapter:
 

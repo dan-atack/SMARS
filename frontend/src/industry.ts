@@ -22,7 +22,7 @@ export default class Industry extends View {
         const p5 = this._p5;
         p5.background(constants.APP_BACKGROUND);
         p5.fill(constants.GREEN_TERMINAL);
-        p5.text("Industry page rendered", constants.SCREEN_WIDTH / 2, 384);
+        p5.text("Colony Industry Report", constants.SCREEN_WIDTH / 2, 64);
         this._buttons.forEach((button) => {
             button.render(p5);
         })

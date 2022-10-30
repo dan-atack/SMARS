@@ -30,6 +30,7 @@ export default class Button {
 
     render = (p5: P5) => {
         p5.strokeWeight(4);
+        p5.stroke(0);
         // Render borders thicker and in font colour if button is 'selected':
         if (this._selected) {
             p5.strokeWeight(8);

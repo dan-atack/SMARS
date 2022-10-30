@@ -1,5 +1,6 @@
 // The Population class is the disembodied list of all your colonists, and the functions for updating them.
 import P5 from "p5";
+import { constants } from "./constants";
 import Colonist, { ColonistSaveData } from "./colonist";
 import { Coords } from "./connector";
 import Infrastructure from "./infrastructure";
@@ -8,22 +9,33 @@ import Map from "./map";
 export default class Population {
     // Population types:
     _colonists: Colonist[];
-    _colonistsCurrentSerial: number;    // Needed to individually tag colonists when they are created
-    _xOffset: number;                   // Needed for colonist render functions
+    _colonistsCurrentSerial: number;    // Needed to individually tag colonists when they are created (starts at zero)
+    _colonistSerialBase: number;        // Serial base = the large number added to the current serial index (Which starts at zero)
 
     constructor() {
         this._colonists = [];                   // Default population is zero.
-        this._colonistsCurrentSerial = 9000;    // Colonists are from the 9000 series!
-        this._xOffset = 0;                      // Default position is the left edge of the world.
+        this._colonistsCurrentSerial = 0;       // Current serial always starts at zero
+        this._colonistSerialBase = 9000;        // Colonists are from the 9000 series!
+
     }
 
     // SECTION 1: ADDING POPULATION (COLONISTS)
 
+    // Note: When altering this, consider if changes need to be mirrored in the loadColonistData method in Section 5
     addColonist = (x: number, y: number) => {
-        const id = this._colonistsCurrentSerial;
-        const colonist = new Colonist(id, x, y);
+        const id = this._colonistsCurrentSerial + this._colonistSerialBase;
+        const name = this.makeColonistName();
+        const colonist = new Colonist(id, name, x, y);
         this._colonistsCurrentSerial++; // Increment ID number for the next colonist
         this._colonists.push(colonist);
+    }
+
+    makeColonistName = () => {
+        const idx = this._colonistsCurrentSerial % constants.colonistNames.length;  // Ensure index is always inside the array
+        const first = constants.colonistNames[idx];
+        const rando = Math.floor(Math.random() * constants.colonistLastNames.length);   // Get random last name
+        const last = constants.colonistLastNames[rando];
+        return `${first} ${last}`;
     }
 
     // SECTION 2: COLONIST UPDATERS
@@ -61,7 +73,19 @@ export default class Population {
         })
     }
 
-    // SECTION 3: COLONIST INFO API (GETTER FUNCTIONS)
+    // SECTION 3: COLONIST ROLE MANAGEMENT
+
+    assignColonistRole = (colonistID: number, role: [string, number]) => {
+        const colonist = this._colonists.find((col) => col._data._id === colonistID);
+        if (colonist) {
+            colonist._data.setRole(role);
+        } else {
+            console.log(`Error: Colonist ${colonistID} could not be assigned role: ${role[0]}. Reason: Colonist ID not found in Population array`);
+            return null;
+        }
+    }
+
+    // SECTION 4: COLONIST INFO API (GETTER FUNCTIONS)
 
     getColonistDataFromCoords = (coords: Coords) => {
         const colonists = this._colonists.find((col) => {
@@ -74,15 +98,17 @@ export default class Population {
         }
     }
 
-    // SECTION 4: COLONIST SAVE/LOAD DATA MANAGEMENT
+    // SECTION 5: COLONIST SAVE/LOAD DATA MANAGEMENT
 
     prepareColonistSaveData = () => {
         const colonistData: ColonistSaveData[] = [];
         this._colonists.forEach((colonist) => {
             const d: ColonistSaveData = {
                 id: colonist._data._id,
+                name: colonist._data._name,
                 x: colonist._data._x,
                 y: colonist._data._y,
+                role: colonist._data._role,
                 needs: colonist._data._needs,
                 goal: colonist._data._currentGoal,
                 currentAction: colonist._data._currentAction,
@@ -103,21 +129,20 @@ export default class Population {
     loadColonistData = (data: ColonistSaveData[]) => {
         if (data) {
             data.forEach((colonistData) => {
-                const c = new Colonist(colonistData.id, colonistData.x, colonistData.y, colonistData);
+                const c = new Colonist(colonistData.id, colonistData.name ? colonistData.name : this.makeColonistName(), colonistData.x, colonistData.y, colonistData);
                 this._colonists.push(c);
-                // Keep track of saved colonists' serials so that newer colonists can resume the series
-                this._colonistsCurrentSerial = colonistData.id + 1;
+                // Increase colonist serial number when each colonist is loaded, to prevent duplicate serials
+                this._colonistsCurrentSerial++;
             });
         } else {
-            console.log("No colonist data in save file.");
+            console.log("Warning: No colonist data in save file.");
         }
     }
 
     // Gets horizontal offset and fps (game speed) data from the Engine's render method
     render = (p5: P5, xOffset: number, fps: number, gameOn: boolean) => {
-        this._xOffset = xOffset;
         this._colonists.forEach((colonist) => {
-            colonist.render(p5, this._xOffset, fps, gameOn);
+            colonist.render(p5, xOffset, fps, gameOn);
         })
     }
 

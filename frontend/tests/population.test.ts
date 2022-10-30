@@ -21,4 +21,10 @@ describe("Population", () => {
         expect(population.getColonistDataFromCoords({ x: 10, y: 32 })?._data._id).toBe(9000);   // Feet
         expect(population.getColonistDataFromCoords({ x: 10, y: 33 })).toBe(null);              // Too low!!!
     })
+
+    test("Can assign a role to a colonist when given the colonist's ID", () => {
+        population.assignColonistRole(9000, ["farmer", 1001]);
+        expect(population._colonists[0]._data._role[0]).toBe("farmer");             // Role is assigned if colonist exists
+        expect(population.assignColonistRole(8000, ["farmer", 1001])).toBe(null);   // If colonist ID does not exist return null
+    })
 })

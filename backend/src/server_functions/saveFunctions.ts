@@ -43,8 +43,11 @@ export type ColonistNeeds = {
 };
 
 export type ColonistSaveData = {
+    id: number,
+    name: string,
     x: number,
     y: number,
+    role: [string, number],
     needs: ColonistNeeds,
     goal: string,
     currentAction: ColonistAction,
