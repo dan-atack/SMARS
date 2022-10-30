@@ -1,15 +1,16 @@
 // Sub-component for the Population View page, to display info for individual Colonists
 import P5 from "p5";
 import Button from "./button";
+import Colonist from "./colonist";
 import { constants } from "./constants";
 
 export default class PopulationRow {
     // Population Row types
-    _colonistId: number;
+    _colonist: Colonist;                // Store a pointer to the actual colonist, rather than taking a bunch of individual stats
     _width: number;
     _height: number;
-    _colWidths: number[]                        // List of column widths, in pixels
-    _colEdges: number[];                        // The left edge of each column
+    _colWidths: number[]                // List of column widths, in pixels
+    _colEdges: number[];                // The left edge of each column
     _margin: number;
     _buttonWidth: number;
     _buttonHeight: number;
@@ -23,9 +24,9 @@ export default class PopulationRow {
     _setMiner: (id: number) => void;
     // TODO: Add handler functions for other roles
 
-    // X = Left edge; Idx = vertical position increment
-    constructor(x: number, idx: number, rowWidths: number[],  colonistId: number, setExplorer: (id: number) => void, setFarmer: (id: number) => void, setMiner: (id: number) => void) {
-        this._colonistId = colonistId;
+    // X = Left edge; Idx = vertical position increment, rowWidths = table formatting determined in populationView component
+    constructor(colonist: Colonist, x: number, idx: number, rowWidths: number[], setExplorer: (id: number) => void, setFarmer: (id: number) => void, setMiner: (id: number) => void) {
+        this._colonist = colonist;
         this._width = constants.SCREEN_WIDTH - 160;
         this._height = 64;
         this._colWidths = rowWidths;
@@ -65,17 +66,17 @@ export default class PopulationRow {
 
     // Note: to enable proper button selection highlighting, button handlers must appear in same order in which buttons are created
     handleExplorer = () => {
-        this._setExplorer(this._colonistId);
+        this._setExplorer(this._colonist._data._id);
         this.setRoleButtonSelection(0);
     }
 
     handleFarmer = () => {
-        this._setFarmer(this._colonistId);
+        this._setFarmer(this._colonist._data._id);
         this.setRoleButtonSelection(1);
     }
 
     handleMiner = () => {
-        this._setMiner(this._colonistId);
+        this._setMiner(this._colonist._data._id);
         this.setRoleButtonSelection(2);
     }
 
@@ -102,6 +103,13 @@ export default class PopulationRow {
         // Role Options
         p5.fill(constants.GREEN_DARKEST);
         p5.rect(this._colEdges[3], this._y, this._colWidths[3], this._height);
+        p5.stroke(constants.ALMOST_BLACK);
+        p5.fill(constants.GREEN_TERMINAL);
+        p5.textSize(18);
+        // Text all at once after the boxes are rendered
+        p5.text(this._colonist._data._id, this._colEdges[0] + this._colWidths[0] / 2, this._y + this._height / 2);
+        p5.text(this._colonist._data._name, this._colEdges[1] + this._colWidths[1] / 2, this._y + this._height / 2);
+        p5.text(this._colonist._data._role[0], this._colEdges[2] + this._colWidths[2] / 2, this._y + this._height / 2);
         this._buttons.forEach((btn) => {
             btn.render(p5);
         })

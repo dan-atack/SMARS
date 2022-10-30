@@ -1851,7 +1851,7 @@ Exit Criteria:
 
 9. Add a names property to the PopulationView class, to provide some initial names for your Colonists. Integrate the Colonist names into the Colonist save/load data system and test thoroughly.
 
-### 10. Pass each Colonist's name to the PopulationRow as an additional parameter, and have it display the Colonist's name, ID and current role in the appropriate fields.
+10. Pass each Colonist's name to the PopulationRow as an additional parameter, and have it display the Colonist's name, ID and current role in the appropriate fields.
 
 ### 11. Create the handler functions for the PopulationView screen's various role setting buttons, so that they pass the new role info to the Population class, thus updating the Colonists.
 

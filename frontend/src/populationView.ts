@@ -33,7 +33,7 @@ export default class PopulationView extends View {
         this.setPopulation(population);
         // Create population rows anew each time setup is called
         this._population?._colonists.forEach((colonist, idx) => {
-            const row = new PopulationRow(this._rowIndent, idx, this._colWidths, colonist._data._id, this.setExplorer, this.setFarmer, this.setMiner);
+            const row = new PopulationRow(colonist, this._rowIndent, idx, this._colWidths, this.setExplorer, this.setFarmer, this.setMiner);
             this._rows.push(row);
         })
         const p5 = this._p5;
