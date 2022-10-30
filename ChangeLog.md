@@ -1841,7 +1841,19 @@ Exit Criteria:
 
 4. Create a new Population class method, assignRoleToColonist, which will take a colonist ID (number), a role name (string) and a module ID (number) and assign a colonist to a role/module. Initially we'll have to use a made up number when determining the module ID, but eventually the true value for this field will be provided by the Industry component, which will also be fed to the Population screen's setup method. Unit test that this can find a colonist and assign them to a particular role.
 
-### 4. Create a new class, PopulationRow, to be created by a loop in the Population screen. PopulationRow will need to have a parameter to accept the Population class's assignRoleToColonist method, so it can pass that to its various role-assigning buttons.
+5. Create a new class, PopulationRow, to be created by a loop in the Population screen. PopulationRow will need to have a parameter to accept the Population class's assignRoleToColonist method, so it can pass that to its various role-assigning buttons.
+
+6. Create handler functions for the initial roles: farmer, explorer and miner in the PopulationView class.
+
+7. Adjust the start position of the PopulationRows to push them down a little bit, and add column labels in the PopulationView class, corresponding with the locations of the different cells in the PopulationRows. Column labels are: Id, Name, Current Role, and Set Role. Id should be 10% of the total column width; Name should be 20%, Current Role can also be 20%, and the Role Selection area should be 50% of the total available space.
+
+8. Next, add the actual Buttons to the PopulationRows, so they can display the different Role options in the Role Selection column.
+
+9. Add a names property to the PopulationView class, to provide some initial names for your Colonists. Integrate the Colonist names into the Colonist save/load data system and test thoroughly.
+
+### 10. Pass each Colonist's name to the PopulationRow as an additional parameter, and have it display the Colonist's name, ID and current role in the appropriate fields.
+
+### 11. Create the handler functions for the PopulationView screen's various role setting buttons, so that they pass the new role info to the Population class, thus updating the Colonists.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

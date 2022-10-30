@@ -15,6 +15,7 @@ export type ColonistAction = {
 export default class ColonistData {
     // Colonist data types
     _id: number;        // Colonists will have a unique ID just like everything else
+    _name: string;      // To give the game a bit of humanity, each colonist will have a name (first names only at this point)
     _x: number;         // Colonists' x and y positions will be in terms of grid locations
     _y: number;
     _standingOnId: string | number; // To keep track of which map zone (ID = string) or floor (ID = number)
@@ -38,8 +39,9 @@ export default class ColonistData {
     _facing: string;                // Either "right" or "left"... until SMARS 3D is released, that is!
     _animationTick: number;         // Governs the progression of movement/activity animations
 
-    constructor(id: number, x: number, y: number, saveData?: ColonistSaveData) {
+    constructor(id: number, name: string, x: number, y: number, saveData?: ColonistSaveData) {
         this._id = id;
+        this._name = name;
         this._x = x;
         this._y = y;
         this._standingOnId = "";

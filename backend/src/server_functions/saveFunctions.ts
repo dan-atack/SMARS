@@ -43,7 +43,8 @@ export type ColonistNeeds = {
 };
 
 export type ColonistSaveData = {
-    id: number
+    id: number,
+    name: string,
     x: number,
     y: number,
     role: [string, number],

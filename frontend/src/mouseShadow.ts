@@ -127,7 +127,7 @@ export default class MouseShadow {
             const centerY = this._y + constants.BLOCK_WIDTH / 2;
             const rad = constants.BLOCK_WIDTH / 2;
             p5.noFill();
-            p5.stroke(constants.GRAY_DARKER);
+            p5.stroke(constants.GRAY_DARK);
             p5.strokeWeight(5);
             p5.ellipse(centerX, centerY, this._w + constants.BLOCK_WIDTH / 4);
             p5.stroke(constants.GRAY_METEOR);

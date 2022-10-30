@@ -73,7 +73,7 @@ const flatTerrain = [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 
 
 describe("ColonistData", () => {
     // Create test instances
-    const colonistData = new ColonistData(9000, 0, 32);
+    const colonistData = new ColonistData(9000, "Ziggy", 0, 32);
     const mockInfra = new Infrastructure();
     const mockMap = new Map();
     mockMap._mapData = flatTerrain;

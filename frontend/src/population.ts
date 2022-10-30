@@ -1,5 +1,6 @@
 // The Population class is the disembodied list of all your colonists, and the functions for updating them.
 import P5 from "p5";
+import { constants } from "./constants";
 import Colonist, { ColonistSaveData } from "./colonist";
 import { Coords } from "./connector";
 import Infrastructure from "./infrastructure";
@@ -8,18 +9,21 @@ import Map from "./map";
 export default class Population {
     // Population types:
     _colonists: Colonist[];
-    _colonistsCurrentSerial: number;    // Needed to individually tag colonists when they are created
+    _colonistsCurrentSerial: number;    // Needed to individually tag colonists when they are created (starts at zero)
+    _colonistSerialBase: number;        // Serial base = the large number added to the current serial index (Which starts at zero)
 
     constructor() {
         this._colonists = [];                   // Default population is zero.
-        this._colonistsCurrentSerial = 9000;    // Colonists are from the 9000 series!
+        this._colonistsCurrentSerial = 0;       // Current serial always starts at zero
+        this._colonistSerialBase = 9000;        // Colonists are from the 9000 series!
+
     }
 
     // SECTION 1: ADDING POPULATION (COLONISTS)
 
     addColonist = (x: number, y: number) => {
-        const id = this._colonistsCurrentSerial;
-        const colonist = new Colonist(id, x, y);
+        const id = this._colonistsCurrentSerial + this._colonistSerialBase;
+        const colonist = new Colonist(id, constants.colonistNames[this._colonistsCurrentSerial], x, y);
         this._colonistsCurrentSerial++; // Increment ID number for the next colonist
         this._colonists.push(colonist);
     }
@@ -91,6 +95,7 @@ export default class Population {
         this._colonists.forEach((colonist) => {
             const d: ColonistSaveData = {
                 id: colonist._data._id,
+                name: colonist._data._name,
                 x: colonist._data._x,
                 y: colonist._data._y,
                 role: colonist._data._role,
@@ -114,13 +119,13 @@ export default class Population {
     loadColonistData = (data: ColonistSaveData[]) => {
         if (data) {
             data.forEach((colonistData) => {
-                const c = new Colonist(colonistData.id, colonistData.x, colonistData.y, colonistData);
+                const c = new Colonist(colonistData.id, colonistData.name, colonistData.x, colonistData.y, colonistData);
                 this._colonists.push(c);
-                // Keep track of saved colonists' serials so that newer colonists can resume the series
-                this._colonistsCurrentSerial = colonistData.id + 1;
+                // Increase colonist serial number when each colonist is loaded, to prevent duplicate serials
+                this._colonistsCurrentSerial++;
             });
         } else {
-            console.log("No colonist data in save file.");
+            console.log("Warning: No colonist data in save file.");
         }
     }
 

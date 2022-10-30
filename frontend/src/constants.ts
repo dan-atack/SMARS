@@ -19,7 +19,7 @@ export const constants = {
     GRAY_DRY_ICE: "#BCC4C1",
     GRAY_LIGHT: "#7D7D7D",
     GRAY_MEDIUM: "#626378",
-    GRAY_DARKER: "#595A6B",
+    GRAY_DARK: "#595A6B",
     GRAY_METEOR: "#353837",
     GRAY_IRON_ORE: "#2E1409",
     EGGSHELL: "#F6F7E9",
@@ -37,6 +37,7 @@ export const constants = {
     GREEN_LEAVES: "#049426",
     GREEN_TERMINAL: "#0FFF13",
     GREEN_MODULE: "#22B14C",
+    GREEN_DARKISH: "#054F07",
     GREEN_DARK: "#023803",
     GREEN_DARKER: "#012400",
     GREEN_DARKEST: "#031A0A",
@@ -44,6 +45,8 @@ export const constants = {
     BLUEGREEN_DARK: "#052E26",
     BLUE_BG: "#00004F",
     PURPLE_LIGHT: "#A67ACF",
+    // Other game data
+    colonistNames: ["Jeb", "Valentina", "Bob", "Zelda", "Buzz", "Sally", "Diego", "Amelia", "Roy", "Carmen", "Zade", "Jesse"]
 }
 
 // Modal Data (for now - eventually it should come from the backend!)
