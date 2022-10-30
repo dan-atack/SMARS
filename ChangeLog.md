@@ -1826,12 +1826,12 @@ JOB: Jobs are the intermediate-level item in the work terms heirarchy, referring
 
 Exit Criteria:
 
-- The Population Screen displays a row for each Colonist, with space for several potential role-assignment buttons
-- Colonists can be assigned roles in the Population screen
-- Colonist role data is added to save game files
-- Legacy saves assign all colonists to 'explore' role when loaded
-- Colonist Inspect Display shows Role name (replacing 'current action')
-- Colonist Inspect Display includes button to open Population page, highlighting the current colonist's row
+- [DONE] The Population Screen displays a row for each Colonist, with space for several potential role-assignment buttons
+- [DONE] Colonists can be assigned roles in the Population screen
+- [DONE] Colonist role data is added to save game files
+- [DONE] Legacy saves assign all colonists to 'explore' role when loaded
+- [DONE] Colonist Inspect Display shows Role name (replacing 'current action')
+- [DONE] [STRETCH] An aesthetic touch: give new colonists a randomly generated name, to give the game some personality!
 
 1. Add the role field to the Colonist class. Role will be a tuple, consisting of role name (string) and module ID (number).
 
@@ -1853,7 +1853,9 @@ Exit Criteria:
 
 10. Pass each Colonist's name to the PopulationRow as an additional parameter, and have it display the Colonist's name, ID and current role in the appropriate fields.
 
-### 11. Create the handler functions for the PopulationView screen's various role setting buttons, so that they pass the new role info to the Population class, thus updating the Colonists.
+11. Update the handler functions for the PopulationView screen's various role setting buttons, so that they pass the new role info to the Population class, thus updating the Colonists.
+
+12. Update the Colonist Inspect Display to show the colonist's name instead of their ID, and their current role instead of their current action.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
@@ -1943,9 +1945,15 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ## Section B.1: Colonist Personalities
 
-### 1. When a new game is created, create two lists of first and last names. Randomly assign a name to each colonist, to display instead of the 'colonist ID' label in the Inspect Display area.
+1. When a new game is created, create a list of names. Assign a name to each new colonist, to display instead of the 'colonist ID' label in the Inspect Display area.
 
 ### 2. Add an array of different space suit colours, and randomly assign them to the colonists when they are added as well.
+
+## Section B.2: Population View Screen UX Enhancements
+
+### 1. Add a button labelled 'Change Role' to the Colonist Inspect Display to open the Population View screen.
+
+### 2. Enable the player to highlight a row in the Population View screen, and have that screen open with a particular colonist highlighted if it is opened via clicking the 'Change Role' button mentioned in the above point.
 
 ### Exit Criteria for backend save/load game chapter:
 

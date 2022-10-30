@@ -21,11 +21,21 @@ export default class Population {
 
     // SECTION 1: ADDING POPULATION (COLONISTS)
 
+    // Note: When altering this, consider if changes need to be mirrored in the loadColonistData method in Section 5
     addColonist = (x: number, y: number) => {
         const id = this._colonistsCurrentSerial + this._colonistSerialBase;
-        const colonist = new Colonist(id, constants.colonistNames[this._colonistsCurrentSerial], x, y);
+        const name = this.makeColonistName();
+        const colonist = new Colonist(id, name, x, y);
         this._colonistsCurrentSerial++; // Increment ID number for the next colonist
         this._colonists.push(colonist);
+    }
+
+    makeColonistName = () => {
+        const idx = this._colonistsCurrentSerial % constants.colonistNames.length;  // Ensure index is always inside the array
+        const first = constants.colonistNames[idx];
+        const rando = Math.floor(Math.random() * constants.colonistLastNames.length);   // Get random last name
+        const last = constants.colonistLastNames[rando];
+        return `${first} ${last}`;
     }
 
     // SECTION 2: COLONIST UPDATERS
@@ -119,7 +129,7 @@ export default class Population {
     loadColonistData = (data: ColonistSaveData[]) => {
         if (data) {
             data.forEach((colonistData) => {
-                const c = new Colonist(colonistData.id, colonistData.name, colonistData.x, colonistData.y, colonistData);
+                const c = new Colonist(colonistData.id, colonistData.name ? colonistData.name : this.makeColonistName(), colonistData.x, colonistData.y, colonistData);
                 this._colonists.push(c);
                 // Increase colonist serial number when each colonist is loaded, to prevent duplicate serials
                 this._colonistsCurrentSerial++;

@@ -46,7 +46,8 @@ export const constants = {
     BLUE_BG: "#00004F",
     PURPLE_LIGHT: "#A67ACF",
     // Other game data
-    colonistNames: ["Jeb", "Valentina", "Bob", "Zelda", "Buzz", "Sally", "Diego", "Amelia", "Roy", "Carmen", "Zade", "Jesse"]
+    colonistNames: ["Jeb", "Valentina", "Bob", "Zelda", "Buzz", "Sally", "Diego", "Amelia", "Roy", "Carmen", "Zade", "Jesse"],
+    colonistLastNames: ["Armstrong", "Lovell", "Gaga-ren", "Zhukov", "Borman", "Tsiolkovsky", "Goddard", "Ming", "Karman", "Holst"]
 }
 
 // Modal Data (for now - eventually it should come from the backend!)

@@ -94,12 +94,12 @@ export default class InspectDisplay {
         if (this._currentSelection && this.isColonist(this._currentSelection)) {
             const col = this._currentSelection;   // For convenience
             const goalString = col._data._currentGoal.split("-").join(" ");
-            p5.text(`Colonist ${col._data._id || ""}`, this._center, this._headers[0]);
+            p5.text(col._data._name, this._center, this._headers[0]);
             p5.textSize(18);
             p5.textAlign(p5.LEFT);
             p5.text("Need Levels:", this._textAlignleft, this._headers[3]);
-            p5.text(`Current goal: ${goalString}`, this._textAlignleft, this._headers[1]);
-            p5.text(`Current action: ${col._data._currentAction?.type || ""}`, this._textAlignleft, this._headers[2]);
+            p5.text(`Current role: ${col._data._role[0] || "none!"}`, this._textAlignleft, this._headers[1]);
+            p5.text(`Current goal: ${goalString}`, this._textAlignleft, this._headers[2]);
             p5.textSize(16);
             p5.text("Current", this._left1Q, this._headers[4]);
             p5.text("/  Threshold", this._center, this._headers[4]);

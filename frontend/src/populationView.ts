@@ -19,7 +19,7 @@ export default class PopulationView extends View {
         this._rows = [];
         this._rowIndent = 64;
         const rowPercent = (constants.SCREEN_WIDTH - 160) / 100;      // With default values one percent is 8 pixels wide
-        this._colWidths = [rowPercent * 10, rowPercent * 20, rowPercent * 20, rowPercent * 50];
+        this._colWidths = [rowPercent * 10, rowPercent * 25, rowPercent * 15, rowPercent * 50];
         this._colHeaderPositions = [];
         let cur = 0;
         this._colWidths.forEach((col) => {
@@ -48,15 +48,15 @@ export default class PopulationView extends View {
     // Button handlers for Role assignments: All need just the Colonist's ID as an argument
 
     setExplorer = (id: number) => {
-        console.log(`Assigning colonist ${id} to new role: Explorer.`);
+        this._population?.assignColonistRole(id, ["explorer", 0]);      // No module ID is needed for exploration role...
     }
 
     setFarmer = (id: number) => {
-        console.log(`Assigning colonist ${id} to new role: Farmer.`);
+        this._population?.assignColonistRole(id, ["farmer", 0]);      // ...In fact, module ID req is slated for deprecation...
     }
 
     setMiner = (id: number) => {
-        console.log(`Assigning colonist ${id} to new role: Miner.`);
+        this._population?.assignColonistRole(id, ["miner", 0]);      // ... That was fast!
     }
 
     handleClicks = (mouseX: number, mouseY: number) => {
