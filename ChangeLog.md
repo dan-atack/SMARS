@@ -1857,6 +1857,27 @@ Exit Criteria:
 
 12. Update the Colonist Inspect Display to show the colonist's name instead of their ID, and their current role instead of their current action.
 
+## Chapter Thirty-Four: Module Resource Transfers (Difficulty Estimate: TBD)
+
+### November 1, 2022
+
+The final ingredient to allowing Colonists to produce things in the production modules is to give those modules the resources they need as inputs. To get this feature up and running quickly, we will temporarily bypass the need for modules to be connected by members of the Connector class (although that will surely be added not long after implementing basic production). This chapter will be dedicated to implementing a module resource-sharing system, where each module has two new properties: 1) shareResources, which is a simple boolean switch that determines whether or not it is allowed to send resources to other modules (this does not affect Colonists' consume action however) and 2) resourcePar, which will be a number between 0 and 1, which determines the fraction of each (non-output) resource that a module will attempt to maintain, by sending requests to other modules. Eventually when the Connectors are brought into this picture, modules will only be able to send/request resources to/from other modules to which they are connected by the appropriate Connector type (so pipes will enable sharing water, ducts for air, wires for electricity, etc.). For now though, we will instead implement a global resource-sharing scheme wherein every module will submit its resource requests - one resource at a time - to a resource requests master-list, and then the Infra class will go through that list and match each request to a module that A) contains the needed resource and B) has its shareResources value set to true. An hourly update method will be added to the Infra class to routinely recompile resource requests, and all resource transfers will be executed immediately whenever possible. Doesn't make sense to start using flow rates before we even get the Connectors involved!
+
+Exit Criteria:
+
+- Modules all have resourceShare and resourceGet policies
+- Module resource policies are visible in module Inspect Display
+- Infrastructure class has hourly update to distribute module resources
+- All possible resource requests are fulfilled instantly each hour
+- Production modules should only make requests for resources in their 'production inputs' list
+- Production modules should share resources from their 'production outputs' list even if resourceShare is set to false
+
+Not Doing:
+
+- Anything to do with Connectors, including resource transfer rates
+- Any ability for the player to adjust modules' resource sharing/request policies
+- Resource sharing policies in save game data
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
