@@ -20,6 +20,7 @@ export const constants = {
     GRAY_LIGHT: "#7D7D7D",
     GRAY_MEDIUM: "#626378",
     GRAY_DARK: "#595A6B",
+    GRAY_DARKER: "#595A6B",
     GRAY_METEOR: "#353837",
     GRAY_IRON_ORE: "#2E1409",
     EGGSHELL: "#F6F7E9",

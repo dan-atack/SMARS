@@ -1881,7 +1881,7 @@ Not Doing:
 
 1. Add the new fields, resourceShare (boolean) and resourceGet (number), to the Module class.
 
-2. In the Module class's constructor function, add some logic that will set these policies based on the Module's type, so that 'Life Support' modules will not share, and will try to stay full (false, 1) and 'Production' modules will also not share, but seek only to maintain half fullness with regard to their input resources (false, 0.5). 'Storage' modules on the other hand SHOULD share and should not seek to replenish themselves (true, 0). All other modules' default setting should be (false, 0) - in other words, just stay out of the whole business. Add unit tests to the Module class to validate each of these cases.
+### 2. - UNIT TEST REMAINING - In the Module class's constructor function, add some logic that will set these policies based on the Module's type, so that 'Life Support' modules will not share, and will try to stay full (false, 1) and 'Production' modules will also not share, but seek only to maintain half fullness with regard to their input resources (false, 0.5). 'Storage' modules on the other hand SHOULD share and should not seek to replenish themselves (true, 0). All other modules' default setting should be (false, 0) - in other words, just stay out of the whole business. Add unit tests to the Module class to validate each of these cases.
 
 ### 3. Create a new Module method called handleResourceUpdates, which will contain a simple console log at first.
 

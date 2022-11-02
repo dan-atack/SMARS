@@ -12,7 +12,7 @@ const storageModuleInfo: ModuleInfo = {
     durability: 100,
     buildCosts:[
         ["money", 100000]
-    ],  // money
+    ],
     maintenanceCosts: [
         ["power", 1]
     ],
@@ -36,7 +36,7 @@ const noStoreModuleInfo: ModuleInfo = {
     durability: 100,
     buildCosts:[
         ["money", 100000]
-    ],  // money
+    ],
     maintenanceCosts: [
         ["power", 1]
     ],
@@ -45,8 +45,87 @@ const noStoreModuleInfo: ModuleInfo = {
     shapes: []                  // Shapes data not needed for unit tests
 };
 
+const lifeSupportModInfo: ModuleInfo = {
+    name: "Crew Quarters",
+    width: 4,
+    height: 3,
+    type: "Life Support",
+    pressurized: true,
+    columnStrength: 10,
+    durability: 100,
+    buildCosts:[
+        ["money", 100000],  // money
+    ],
+    maintenanceCosts: [
+        ["power", 1]
+    ],
+    storageCapacity: [
+        ["oxygen", 1000]    // oxygen, water, food
+    ],
+    crewCapacity: 2,
+    shapes: []
+};
+
+const productionModuleInfo: ModuleInfo = {
+    name: "Hydroponics Pod",
+    width: 3,
+    height: 3,
+    type: "Production",
+    pressurized: true,
+    columnStrength: 1,
+    durability: 100,
+    buildCosts: [
+        ["money", 100000],
+    ],
+    maintenanceCosts: [
+        ["power", 10]
+    ],
+    productionInputs: [     // Plant life needs: water, CO2 and light (in this case electric light)
+        ["water", 5],
+        ["carbon", 5],
+        ["power", 100]
+    ],
+    productionOutputs: [
+        ["food", 10],
+        ["air", 10],
+    ],
+    storageCapacity: [
+        ["air", 9000],
+        ["water", 2500],
+        ["carbon", 2500],
+        ["food", 1000],
+        ["power", 1000]     // Limited internal batteries
+    ],
+    crewCapacity: 1,
+    shapes: []
+}
+
+const commsModuleInfo: ModuleInfo = {
+    name: "Comms Antenna",
+    type: "Communications",
+    width: 8,
+    height: 5,
+    pressurized: false,
+    columnStrength: 0,
+    durability: 100,
+    buildCosts: [
+        [ "money", 200000 ]
+    ],
+    maintenanceCosts: [
+        [ "power", 5 ]
+    ],
+    storageCapacity: [
+        [ "power", 100 ]
+    ],
+    crewCapacity: 0,
+    shapes: []
+}
+
 const moduleData = new Module(9000, 10, 10, storageModuleInfo);
 const emptyModule = new Module(9001, 20, 20, noStoreModuleInfo);
+const lsModule = new Module(9002, 14, 10, lifeSupportModInfo);
+const prodModule = new Module(9003, 14, 6, productionModuleInfo);
+const commsModule = new Module(9004, 10, 6, commsModuleInfo);
 
 describe("ModuleData", () => {
 
@@ -138,5 +217,20 @@ describe("ModuleData", () => {
         expect(moduleData.getResourceQuantity("minerals")).toBe(0);     // Also returns zero if resource capacity does not exist
         moduleData.addResource(["water", 500]);
         expect(moduleData.getResourceQuantity("water")).toBe(500);      // Returns the quantity of a resource if it is available
+    })
+
+    test("A module's type determines its resource sharing and resource getting policies", () => {
+        // Storage: Sharing is true and acquisition is 0
+        expect(moduleData._resourceSharing).toBe(true);
+        expect(moduleData._resourceAcquiring).toBe(0);
+        // Life Support: Sharing is false and acquisition is 1
+        expect(lsModule._resourceSharing).toBe(false);
+        expect(lsModule._resourceAcquiring).toBe(1);
+        // Production: Sharing is false and acquisition is 0.5
+        expect(prodModule._resourceSharing).toBe(false);
+        expect(prodModule._resourceAcquiring).toBe(0.5);
+        // Other: Other module types stay out of resource sharing entirely (false and 0)
+        expect(commsModule._resourceSharing).toBe(false);
+        expect(commsModule._resourceAcquiring).toBe(0);
     })
 })
