@@ -10,6 +10,8 @@ export default class Module {
     _x: number;     // Buildings' x and y positions will be in terms of GRID LOCATIONS to act as fixed reference points
     _y: number;
     _moduleInfo: ModuleInfo;
+    _resourceSharing: boolean;  // Yes or no policy, for whether to grant the resource requests of other modules
+    _resourceAcquiring: number; // 0 to 1, representing how much of the max capacity of each resource the module tries to maintain
     _resources : Resource[];    // Represents the current tallies of each type of resource stored in this module
     _crewPresent: number;       // If the module has a crew capacity, keep track of how many colonists are currently in it
     _width: number;             // Width and height are in terms of blocks (grid spaces), not pixels
@@ -24,6 +26,24 @@ export default class Module {
         this._x = x;
         this._y = y;
         this._moduleInfo = moduleInfo;
+        // Determine resource sharing policies via module type data
+        switch (this._moduleInfo.type) {
+            case "Life Support":  // Life support does not share and tries to always be full (it is the end of the production line)
+                this._resourceSharing = false;
+                this._resourceAcquiring = 1;
+                break;
+            case "Storage":     // Storage wants to share and does not try to top itself up
+                this._resourceSharing = true;
+                this._resourceAcquiring = 0;
+                break;
+            case "Production":  // Production is willing to share its output and tries to keep a good supply of input resources
+                this._resourceSharing = false;  // Production modules will have a rule so that they share their output resource/s
+                this._resourceAcquiring = 0.5;  // Similarly, they will have another rule to only try to acquire input resource/s
+                break;
+            default:            // All other modules are instructed to stay out of the resource exchange business altogether
+                this._resourceSharing = false;
+                this._resourceAcquiring = 0;
+        }
         this._resources = [];
         this._crewPresent = 0;
         this._moduleInfo.storageCapacity.forEach((res) => {

@@ -1857,7 +1857,7 @@ Exit Criteria:
 
 12. Update the Colonist Inspect Display to show the colonist's name instead of their ID, and their current role instead of their current action.
 
-## Chapter Thirty-Four: Module Resource Transfers (Difficulty Estimate: TBD)
+## Chapter Thirty-Four: Module Resource Transfers (Difficulty Estimate: 5 for complexity of resource sharing system and associated testing requirements, as well as alterations to Inspect Display area)
 
 ### November 1, 2022
 
@@ -1870,13 +1870,26 @@ Exit Criteria:
 - Infrastructure class has hourly update to distribute module resources
 - All possible resource requests are fulfilled instantly each hour
 - Production modules should only make requests for resources in their 'production inputs' list
-- Production modules should share resources from their 'production outputs' list even if resourceShare is set to false
+- [STRETCH] Production modules should share resources from their 'production outputs' list even if resourceShare is false
 
 Not Doing:
 
 - Anything to do with Connectors, including resource transfer rates
 - Any ability for the player to adjust modules' resource sharing/request policies
 - Resource sharing policies in save game data
+- Dealing with Production module resource overflows
+
+1. Add the new fields, resourceShare (boolean) and resourceGet (number), to the Module class.
+
+2. In the Module class's constructor function, add some logic that will set these policies based on the Module's type, so that 'Life Support' modules will not share, and will try to stay full (false, 1) and 'Production' modules will also not share, but seek only to maintain half fullness with regard to their input resources (false, 0.5). 'Storage' modules on the other hand SHOULD share and should not seek to replenish themselves (true, 0). All other modules' default setting should be (false, 0) - in other words, just stay out of the whole business. Add unit tests to the Module class to validate each of these cases.
+
+### 3. Create a new Module method called handleResourceUpdates, which will contain a simple console log at first.
+
+### 4. Create a corresponding Infrastructure method, handleHourlyUpdates, which will call each Module's resource update method.
+
+### 5. Add a call to the Infra class's hourly updater to the Engine's clock.
+
+### 6. Take a moment to extract all of the Engine's hourly updates into their own updater method, and put that in the clock, instead of all these individual update calls. Do the same for the minutely update method/s as well.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
