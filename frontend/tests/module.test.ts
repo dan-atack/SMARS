@@ -129,6 +129,28 @@ const commsModule = new Module(9004, 10, 6, commsModuleInfo);
 
 describe("ModuleData", () => {
 
+    // Test setup function to clear all resources from a module
+    const resetResource = (mod: Module) => {
+        mod._resources.forEach((res) => {
+            mod.deductResource(res);
+        })
+    }
+
+    // Test setup function to completely fill a module
+    const fillModule = (mod: Module) => {
+        mod._moduleInfo.storageCapacity.forEach((res) => {
+            mod.addResource(res);
+        })
+    }
+
+    // Takes a second parameter to represent the fraction (out of 1) to fill a module
+    const partiallyFillModule = (mod: Module, fraction: number) => {
+        mod._moduleInfo.storageCapacity.forEach((res) => {
+            const qty = Math.ceil(res[1] * fraction);
+            mod.addResource([res[0], qty]);
+        })
+    }
+
     test("Has no resources at the outset", () => {
         // Checks that the constructor has correctly set up the resource list and set all quantities to zero
         expect(moduleData._resources).toStrictEqual([
@@ -232,5 +254,63 @@ describe("ModuleData", () => {
         // Other: Other module types stay out of resource sharing entirely (false and 0)
         expect(commsModule._resourceSharing).toBe(false);
         expect(commsModule._resourceAcquiring).toBe(0);
+    })
+
+    test("Can determine resource requests based on resource sharing policy", () => {
+        // Policy = 0 and module is full - Expect no requests
+        fillModule(moduleData);
+        expect(moduleData.determineResourceRequests()).toStrictEqual([]);
+        // Policy = 0 and module is empty - Expect no requests
+        resetResource(moduleData);
+        expect(moduleData.determineResourceRequests()).toStrictEqual([]);
+        // Policy = 0.5 and module is full - Expect no requests
+        fillModule(prodModule);
+        expect(prodModule.determineResourceRequests()).toStrictEqual([]);
+        // Policy = 0.5 and module is half full - Expect no requests
+        resetResource(prodModule);
+        partiallyFillModule(prodModule, 0.5);
+        expect(prodModule.determineResourceRequests()).toStrictEqual([]);
+        // Policy = 0.5 and module is empty - Expect small requests
+        resetResource(prodModule);
+        expect(prodModule.determineResourceRequests()).toStrictEqual([
+            {
+                 "modId": 9003,
+                 "resource":[
+                   "air",
+                   4500,
+                 ],
+               },
+               {
+                 "modId": 9003,
+                 "resource":[
+                   "water",
+                   1250,
+                 ],
+               },
+               {
+                 "modId": 9003,
+                 "resource": [
+                   "carbon",
+                   1250,
+                 ],
+               },
+               {
+                 "modId": 9003,
+                 "resource": [
+                   "food",
+                   500,
+                 ],
+               },
+               {
+                 "modId": 9003,
+                 "resource": [
+                   "power",
+                   500,
+                 ],
+               },
+             ])
+        // Policy = 1 and module is full - Expect no requests
+        // Policy = 1 and module is half full - Expect small requests
+        // Policy = 1 and module is empty - Expect large requests
     })
 })

@@ -648,6 +648,13 @@ export default class Engine extends View {
         this._gameTime = gameTime;
     }
 
+    // Calls scheduled update events
+    handleHourlyUpdates = () => {
+        this.updateEconomyDisplay();
+        this.updateEarthData();
+        this._infrastructure.handleHourlyUpdates();
+    }
+
     // In-game clock control and general event scheduler
     advanceClock = () => {
         if (this.gameOn) {
@@ -660,8 +667,8 @@ export default class Engine extends View {
                     this._gameTime.minute ++;
                 } else {
                     this._gameTime.minute = 0;   // Advance hours (anything on an hourly schedule should go here)
-                    this.updateEconomyDisplay();
-                    this.updateEarthData();     // Advance Earth date every game hour
+                    this.handleHourlyUpdates();
+                         // Advance Earth date every game hour
                     if (this._gameTime.hour < this._hoursPerClockCycle) {
                         this._gameTime.hour ++;
                         if (this._gameTime.hour === this._hoursPerClockCycle) {  // Advance day/night cycle when hour hits twelve

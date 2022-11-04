@@ -4,6 +4,11 @@ import { Resource } from "./economyData";
 import { ModuleInfo } from "./server_functions";
 import { constants } from "./constants";
 
+export type ResourceRequest = {
+    modId: number,
+    resource: Resource
+}
+
 export default class Module {
     // Module types:
     _id: number;            // A unique serial number assigned by the Infra class at the object's creation
@@ -59,6 +64,8 @@ export default class Module {
         this._isRendered = false;
     }
 
+    // SECTION 1: RESOURCE INFO GETTERS
+
     // Pseudo-property to quickly get just the names of the resources in this module's capacity
     _resourceCapacity () {
         let r: string[] = [];
@@ -75,6 +82,28 @@ export default class Module {
             }
         })
         return qty;
+    }
+
+    // SECTION 2: RESOURCE SHIPPING/RECEIVING METHODS
+
+    // Called by the Infra class every hour, returns a list of the resource requests for this Module
+    determineResourceRequests = () => {
+        const reqs: ResourceRequest[] = [];
+        // Determine whether to make requests based on resource getter policy value (And whether there is any storage capacity)
+        if (this._resourceAcquiring > 0 && this._resources.length > 0) {
+            const needs: Resource[] = [];
+            this._moduleInfo.storageCapacity.forEach((res) => {
+                const par = Math.ceil(this._resourceAcquiring * res[1]);    // Par = 'acquiring' fraction times max capacity
+                const current = this.getResourceQuantity(res[0]);
+                if (par > current) {
+                    reqs.push({
+                        modId: this._id, 
+                        resource: [res[0], par - current]
+                    })
+                }
+            })
+        }
+        return reqs;
     }
 
     // Try to add a resource and return the quantity actually added

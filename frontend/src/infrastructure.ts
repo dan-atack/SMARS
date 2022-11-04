@@ -1,7 +1,7 @@
 // The Infrastructure class is the disembodied list of your buildings, and can call building methods.
 import P5 from "p5";
 import InfrastructureData from "./infrastructureData";
-import Module from "./module";
+import Module, { ResourceRequest } from "./module";
 import Connector from "./connector";
 import { ConnectorInfo, ModuleInfo } from "./server_functions";
 import { constants } from "./constants";
@@ -66,7 +66,18 @@ export default class Infrastructure {
         }
     }
 
-    // SECTION 2 - VALIDATING MODULE / CONNECTOR PLACEMENT
+    // SECTION 2 - MODULE UPDATER METHODS
+
+    handleHourlyUpdates = () => {
+        const reqs: ResourceRequest[] = [];
+        this._modules.forEach((mod) => {
+            const modReqs = mod.determineResourceRequests();
+            reqs.concat(modReqs);
+        })
+        console.log(reqs);
+    }
+
+    // SECTION 3 - VALIDATING MODULE / CONNECTOR PLACEMENT
 
     // Top level module placement checker: Calls sub-routines from the data class
     checkModulePlacement = (x: number, y: number, moduleInfo: ModuleInfo, terrain: number[][]) => {
@@ -86,10 +97,6 @@ export default class Infrastructure {
             return true;
         } else {
             // If map/module 'clear' value is not equal to true then it is a list of the coordinates that are obstructed
-            // console.log(`Module obstructions: ${modClear === true ? 0 : modClear.length}`);
-            // console.log(`Map obstructions: ${mapClear === true ? 0 : mapClear.length}`);
-            // console.log(`Terrain gaps underneath module: ${mapFloor}`);
-            // console.log(`Module gaps underneath module: ${modFloor}`);
             return false;
         }
     }
@@ -157,7 +164,7 @@ export default class Infrastructure {
         }
     }
 
-    // SECTION 3 - ECONOMIC / RESOURCE-RELATED METHODS
+    // SECTION 4 - ECONOMIC / RESOURCE-RELATED METHODS
 
     // Looks up a module and passes it the given resource data
     addResourcesToModule = (moduleId: number, resource: Resource) => {
@@ -186,7 +193,7 @@ export default class Infrastructure {
         return loss_rate * this._modules.length;   
     }
 
-    // SECTION 4 - INFRASTRUCTURE INFO API (GETTER FUNCTIONS)
+    // SECTION 5 - INFRASTRUCTURE INFO API (GETTER FUNCTIONS)
 
     // Returns array of modules when given a resource tuple (name and quantity sought, in this case)
     // UPDATE: Can optionally be given second argument, lifeSupp, which is a boolean for when a colonist is looking for food/water
