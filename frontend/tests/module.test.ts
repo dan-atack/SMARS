@@ -314,11 +314,15 @@ describe("ModuleData", () => {
         expect(lsModule.determineResourceRequests()).toStrictEqual([{
             modId: 9002,
             resource: ["oxygen", 1000]
-        }]
-        )
+        }])
         // Policy = 1 and module is half full - Expect small requests
-
+        partiallyFillModule(lsModule, 0.5);
+        expect(lsModule.determineResourceRequests()).toStrictEqual([{
+            modId: 9002,
+            resource: ["oxygen", 500]
+        }])
         // Policy = 1 and module is full - Expect no requests
-
+        fillModule(lsModule);
+        expect(lsModule.determineResourceRequests()).toStrictEqual([]);
     })
 })
