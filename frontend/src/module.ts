@@ -91,10 +91,15 @@ export default class Module {
         const reqs: ResourceRequest[] = [];
         // Determine whether to make requests based on resource getter policy value (And whether there is any storage capacity)
         if (this._resourceAcquiring > 0 && this._resources.length > 0) {
-            const needs: Resource[] = [];
             this._moduleInfo.storageCapacity.forEach((res) => {
                 const par = Math.ceil(this._resourceAcquiring * res[1]);    // Par = 'acquiring' fraction times max capacity
-                const current = this.getResourceQuantity(res[0]);
+                let current = this.getResourceQuantity(res[0]);
+                // Override 'current' value for production modules' output resources (set to equal the par to cancel the order)
+                if (this._moduleInfo.productionOutputs) {
+                    this._moduleInfo.productionOutputs.forEach((r) => {
+                        if (res[0] === r[0]) current = par;
+                    })
+                }
                 if (par > current) {
                     reqs.push({
                         modId: this._id, 

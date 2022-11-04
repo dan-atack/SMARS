@@ -1883,13 +1883,19 @@ Not Doing:
 
 2. In the Module class's constructor function, add some logic that will set these policies based on the Module's type, so that 'Life Support' modules will not share, and will try to stay full (false, 1) and 'Production' modules will also not share, but seek only to maintain half fullness with regard to their input resources (false, 0.5). 'Storage' modules on the other hand SHOULD share and should not seek to replenish themselves (true, 0). All other modules' default setting should be (false, 0) - in other words, just stay out of the whole business. Add unit tests to the Module class to validate each of these cases.
 
-### 3. Create a new Module method called createResourceRequests, which will determine which resources to request (if any) based on the module's resource sharing policies. Validate with unit tests before proceeding.
+3. Create a new Module method called createResourceRequests, which will determine which resources to request (if any) based on the module's resource sharing policies. Validate with unit tests before proceeding.
 
 4. Create a corresponding Infrastructure method, handleHourlyUpdates, which will call each Module's resource resource request method.
 
 5. Add a call to the Infra class's hourly updater to the Engine's clock.
 
 6. Take a moment to extract all of the Engine's hourly updates into their own updater method, and put that in the clock, instead of all these individual update calls. Do the same for the minutely update method/s as well.
+
+7. Isolate the Infra class's module resource request compiler into its own method, compileModuleResourceRequests, and have that return the resource requests master list. We will then pass that into yet another new method, processModuleResourceRequests, which will be tasked with the actual distribution of the requested resources. Put both of these method calls into the higher-level method, handleHourlyUpdates.
+
+8. Create a unit test for the Infrastructure class's compileModuleResourceRequests method, to validate that it gets every module's requests into a single-level list.
+
+### 8. Update the Module class's resource request determination method to only request the input needs for production modules. Update unit tests to reflect this.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

@@ -206,4 +206,18 @@ describe("Infrastructure base class", () => {
         expect(infra.getConnectorFromCoords({ x: 8, y: 25 })?._id).toBe(2000);
     })
 
+    test("Can compile a list of all modules' resource requests", () => {
+        // Modules are: 1 Lander (experimental type = no requests) 2 Storage modules (no requests) and one cantina that has 10% of both its food and water quotas
+        expect(infra.compileModuleResourceRequests()).toStrictEqual([
+            {
+                modId: 1003,
+                resource: ["food", 4500]
+            },
+            {
+                modId: 1003,
+                resource: ["water", 4500]
+            }
+        ])
+    })
+
 })

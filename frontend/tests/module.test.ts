@@ -270,16 +270,9 @@ describe("ModuleData", () => {
         resetResource(prodModule);
         partiallyFillModule(prodModule, 0.5);
         expect(prodModule.determineResourceRequests()).toStrictEqual([]);
-        // Policy = 0.5 and module is empty - Expect small requests
+        // Policy = 0.5 and module is empty AND MODULE TYPE IS PRODUCTION - Expect small requests for INPUT RESOURCES ONLY
         resetResource(prodModule);
         expect(prodModule.determineResourceRequests()).toStrictEqual([
-            {
-                 "modId": 9003,
-                 "resource":[
-                   "air",
-                   4500,
-                 ],
-               },
                {
                  "modId": 9003,
                  "resource":[
@@ -292,13 +285,6 @@ describe("ModuleData", () => {
                  "resource": [
                    "carbon",
                    1250,
-                 ],
-               },
-               {
-                 "modId": 9003,
-                 "resource": [
-                   "food",
-                   500,
                  ],
                },
                {

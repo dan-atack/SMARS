@@ -69,12 +69,23 @@ export default class Infrastructure {
     // SECTION 2 - MODULE UPDATER METHODS
 
     handleHourlyUpdates = () => {
+        const reqs = this.compileModuleResourceRequests();
+        console.log(reqs);
+    }
+
+    compileModuleResourceRequests = () => {
         const reqs: ResourceRequest[] = [];
         this._modules.forEach((mod) => {
             const modReqs = mod.determineResourceRequests();
-            reqs.concat(modReqs);
+            modReqs.forEach((req) => {
+                reqs.push(req);
+            })
         })
-        console.log(reqs);
+        return reqs;
+    }
+
+    processModuleResourceRequests = () => {
+        // TODO: Add logic for distributing resources
     }
 
     // SECTION 3 - VALIDATING MODULE / CONNECTOR PLACEMENT
