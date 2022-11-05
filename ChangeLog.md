@@ -1857,7 +1857,7 @@ Exit Criteria:
 
 12. Update the Colonist Inspect Display to show the colonist's name instead of their ID, and their current role instead of their current action.
 
-## Chapter Thirty-Four: Module Resource Transfers (Difficulty Estimate: 5 for complexity of resource sharing system and associated testing requirements, as well as alterations to Inspect Display area)
+## Chapter Thirty-Four: Module Resource Transfers (Difficulty Estimate: 3 for development of resource sharing system and associated testing requirements)
 
 ### November 1, 2022
 
@@ -1865,15 +1865,15 @@ The final ingredient to allowing Colonists to produce things in the production m
 
 Exit Criteria:
 
-- Modules all have resourceShare and resourceGet policies
-- Module resource policies are visible in module Inspect Display
-- Infrastructure class has hourly update to distribute module resources
-- All possible resource requests are fulfilled instantly each hour
-- Production modules should only make requests for resources in their 'production inputs' list
-- [STRETCH] Production modules should share resources from their 'production outputs' list even if resourceShare is false
+- [DONE] Modules all have resourceShare and resourceGet policies
+- [DONE] Infrastructure class has hourly update to distribute module resources
+- [DONE] All possible resource requests are fulfilled instantly each hour
+- [DONE] Production modules should only make requests for resources in their 'production inputs' list
+- [DONE] [STRETCH] Production modules share resources from their 'production outputs' list even if resourceShare is false
 
 Not Doing:
 
+- Inspect Display updates
 - Anything to do with Connectors, including resource transfer rates
 - Any ability for the player to adjust modules' resource sharing/request policies
 - Resource sharing policies in save game data
@@ -1895,7 +1895,11 @@ Not Doing:
 
 8. Create a unit test for the Infrastructure class's compileModuleResourceRequests method, to validate that it gets every module's requests into a single-level list.
 
-### 8. Update the Module class's resource request determination method to only request the input needs for production modules. Update unit tests to reflect this.
+9. Update the Module class's resource request determination method to only request the input needs for production modules. Update unit tests to reflect this.
+
+10. Create the logic (and unit test cases) for the Infra class's resolveModuleResourceRequests method. It should go through the requests list one item at a time, looking for modules that have the resource present and have a resource sharing policy.
+
+11. Update the logic for the Infra class's resolveModuleResourceRequests method to permit taking resources from production modules, in the event that the resource is part of their OUTPUTS list.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

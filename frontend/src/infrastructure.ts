@@ -70,7 +70,7 @@ export default class Infrastructure {
 
     handleHourlyUpdates = () => {
         const reqs = this.compileModuleResourceRequests();
-        console.log(reqs);
+        this.resolveModuleResourceRequests(reqs);
     }
 
     compileModuleResourceRequests = () => {
@@ -84,8 +84,25 @@ export default class Infrastructure {
         return reqs;
     }
 
-    processModuleResourceRequests = () => {
-        // TODO: Add logic for distributing resources
+    resolveModuleResourceRequests = (reqs: ResourceRequest[]) => {
+        reqs.forEach((req) => {
+            // 1 Get modules that A) have the resource, B) aren't the requesting module itself and C) allow resource sharing
+            const providers = this._modules.filter((mod) => {
+                // 2 Determine resource sharing policy separately, to allow production modules to share output/s
+                let out = false;
+                if (mod._moduleInfo.productionOutputs) {
+                    mod._moduleInfo.productionOutputs.forEach((res) => {
+                        if (res[0] === req.resource[0]) out = true;
+                    })
+                }
+                return mod._resourceCapacity().includes(req.resource[0]) && mod._id !== req.modId && mod._resourceSharing || out;
+            });
+            providers.forEach((mod) => {
+                const available = mod.deductResource(req.resource);
+                // Transfer the available amount to the requesting module
+                this.addResourcesToModule(req.modId, [req.resource[0], available]);
+            })
+        })
     }
 
     // SECTION 3 - VALIDATING MODULE / CONNECTOR PLACEMENT

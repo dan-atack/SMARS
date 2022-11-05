@@ -66,9 +66,36 @@ const cantinaModuleInfo: ModuleInfo = {
     ],
     storageCapacity: [
         ["food", 5000],
-        ["water", 5000]
+        ["water", 5000],
+        ["power", 1000]
     ],
     crewCapacity: 2,
+    shapes: []
+}
+
+const powerPlantInfo: ModuleInfo = {
+    name: "Small RTG Reactor",
+    width: 3,
+    height: 2,
+    type: "Production",
+    pressurized: false,
+    columnStrength: 10,
+    durability: 100,
+    buildCosts:[
+        ["money", 1000000]
+    ],
+    maintenanceCosts: [],
+    productionInputs: [
+        ["plutonium", 1]
+    ],
+    productionOutputs: [
+        ["power", 100]
+    ],
+    storageCapacity: [
+        ["power", 100000],
+        ["plutonium", 50000]
+    ],
+    crewCapacity: 0,
     shapes: []
 }
 
@@ -120,7 +147,8 @@ describe("Infrastructure base class", () => {
         infra.addModule(8, 25, storageModuleInfo, mockography, zonesData, 1001);
         infra.addModule(12, 25, storageModuleInfo, mockography, zonesData, 1002);
         infra.addModule(8, 22, cantinaModuleInfo, mockography, zonesData, 1003);
-        expect(infra._modules.length).toBe(4);
+        infra.addModule(0, 25, powerPlantInfo, mockography, zonesData, 1004);
+        expect(infra._modules.length).toBe(5);
     })
 
     test("Can provision a module with a resource", () => {
@@ -146,7 +174,8 @@ describe("Infrastructure base class", () => {
         ]);
         expect(infra._modules[3]._resources).toStrictEqual([
             ["food", 500],
-            ["water", 500]
+            ["water", 500],
+            ["power", 0]
         ])
     })
     
@@ -216,8 +245,50 @@ describe("Infrastructure base class", () => {
             {
                 modId: 1003,
                 resource: ["water", 4500]
+            },
+            {
+                modId: 1003,
+                resource: ["power", 1000]
+            },
+            {
+                modId: 1004,
+                resource: ["plutonium", 25000]
             }
         ])
+    })
+
+    test("Hourly updater method handles module resource requests", () => {
+        // Provision storage module first
+        infra.addResourcesToModule(1002, ["food", 1000000]);
+        infra.addResourcesToModule(1002, ["oxygen", 100000]);
+        infra.addResourcesToModule(1002, ["equipment", 100000]);
+        expect(infra._modules[3]._resources).toStrictEqual([
+            ["food", 500],
+            ["water", 500],
+            ["power", 0]
+        ]);
+        infra.handleHourlyUpdates();                            // Expect cantina to be fully restocked...
+        expect(infra._modules[3]._resources).toStrictEqual([
+            ["food", 5000],
+            ["water", 5000],
+            ["power", 0]                                        // Except for the power
+        ]);
+        expect(infra._modules[2]._resources).toStrictEqual([    // ... With supplies taken from the storage room
+            ["oxygen", 1000],
+            ["food", 5500],
+            ["water", 5500],
+            ["equipment", 20000]
+        ]);
+    })
+
+    test("Production modules share production output resources", () => {
+        infra.addResourcesToModule(1004, ["power", 100000]);        // Provision power production module
+        infra.handleHourlyUpdates();
+        expect(infra._modules[3]._resources).toStrictEqual([
+            ["food", 5000],
+            ["water", 5000],
+            ["power", 1000]                                        // Power is transferred
+        ]);
     })
 
 })
