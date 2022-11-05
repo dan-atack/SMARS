@@ -1901,6 +1901,8 @@ Not Doing:
 
 11. Update the logic for the Infra class's resolveModuleResourceRequests method to permit taking resources from production modules, in the event that the resource is part of their OUTPUTS list.
 
+## Chapter Thirty-Five:
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.

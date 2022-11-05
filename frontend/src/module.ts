@@ -87,7 +87,7 @@ export default class Module {
     // SECTION 2: RESOURCE SHIPPING/RECEIVING METHODS
 
     // Called by the Infra class every hour, returns a list of the resource requests for this Module
-    determineResourceRequests = () => {
+    determineResourceRequests () {
         const reqs: ResourceRequest[] = [];
         // Determine whether to make requests based on resource getter policy value (And whether there is any storage capacity)
         if (this._resourceAcquiring > 0 && this._resources.length > 0) {
