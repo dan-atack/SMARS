@@ -163,7 +163,7 @@ export default class ColonistData {
 
     // Clears the current action (if any) and starts progress towards a newly selected goal
     startGoalProgress = (infra: Infrastructure) => {
-        console.log(`Colonist ${this._id} starting progress towards goal: ${this._currentGoal}.`);
+        // console.log(`Colonist ${this._id} starting progress towards goal: ${this._currentGoal}.`);
         this.startAction(infra);
     }
 
@@ -171,7 +171,7 @@ export default class ColonistData {
     resolveGoal = () => {
         this.resolveAction();     // Clear current action first
         this.clearActions();    // Then clear out the rest of the action stack
-        console.log(`Colonist ${this._id} goal resolved: ${this._currentGoal}.`);
+        // console.log(`Colonist ${this._id} goal resolved: ${this._currentGoal}.`);
         this.setGoal("");
     }
 

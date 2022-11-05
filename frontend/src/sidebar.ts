@@ -93,13 +93,13 @@ export default class Sidebar {
 
     // General-purpose click dispatcher
     handleClicks = (mouseX: number, mouseY: number) => {
+        this._detailsArea.handleClicks(mouseX, mouseY); // Run Details Area click handlers first
         // Only run top-level button handlers if the building options aren't open:
         if (!this._buildOptionsOpen) {
             this._buttons.forEach((button) => {
                 button.handleClick(mouseX, mouseY);
             })
         }
-        this._detailsArea.handleClicks(mouseX, mouseY); // Run Details Area click handlers regardless
         this.menuButton.handleClick(mouseX, mouseY);    // Call menu button separately since it's not part of the standard list of buttons
         this._gameSpeedButtons.forEach((button) => {    // Ditto for the game speed buttons
             button.handleClick(mouseX, mouseY);
