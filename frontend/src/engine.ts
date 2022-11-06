@@ -5,6 +5,7 @@ import View from "./view";
 import Sidebar from "./sidebar";
 import Map from "./map";
 import Infrastructure from "./infrastructure";
+import Industry from "./industry";
 import Economy from "./economy";
 import Population from "./population";
 import Modal, { EventData } from "./modal";
@@ -35,6 +36,7 @@ export default class Engine extends View {
     _saveInfo: SaveInfo | null  // Data object for a saved game
     _map: Map;
     _infrastructure: Infrastructure;
+    _industry: Industry;
     _economy: Economy;
     _population: Population;
     _modal: Modal | null;
@@ -83,6 +85,7 @@ export default class Engine extends View {
         this._saveInfo = null;  // Saved game info is loaded from the Game module when it calls the setupSavedGame method
         this._map = new Map();
         this._infrastructure = new Infrastructure();
+        this._industry = new Industry();
         this._economy = new Economy(p5);
         this._population = new Population();
         this._modal = null;
@@ -653,6 +656,7 @@ export default class Engine extends View {
         this.updateEconomyDisplay();
         this.updateEarthData();
         this._infrastructure.handleHourlyUpdates();
+        this._industry.updateJobs(this._infrastructure);
     }
 
     // In-game clock control and general event scheduler

@@ -1909,9 +1909,9 @@ Now that the production modules have been provisioned, it is time to start putti
 
 1. Create the Industry class, as well as a skeletal unit test file. The Industry class should have the following fields: roles (which is a list of objects that contain information about a role, including its name, and the resource it aims to produce) and jobs (which are actually ColonistActions, so we can import that type definition).
 
-### 2. Create skeleton methods for the updateJobs and getJob methods, and prepare to create some unit tests for them. Don't make the actual tests just yet though. UpdateJobs should take the infra class as an argument in order to come up with a jobs list for every role, and getJob should take a string representing the role name, as well as a set of coordinates (so it can theoretically pick the production module of the appropriate type that is nearest to the Colonist's location).
+2. Create skeleton methods for the updateJobs and getJob methods, and prepare to create some unit tests for them. Don't make the actual tests just yet though. UpdateJobs should take the infra class as an argument in order to come up with a jobs list for every role, and getJob should take a string representing the role name, as well as a set of coordinates (so it can theoretically pick the production module of the appropriate type that is nearest to the Colonist's location).
 
-### 3. Integrate the Industry class into the Engine, and call its updateJobs method every hour to see a console log message from it.
+3. Integrate the Industry class into the Engine, and call its updateJobs method every hour to see a console log message from it.
 
 ### 4. In addition to the updateJobs method, which will be a top-level updater, create a method called updateJobsForRole, which will take the name of the role as well as the infra class that gets passed to the top-level updater, so that it can be used to update the jobs for one particular role instead of doing it for all roles. Then we can call this method via a loop in the top-level updater, or we can call it for one role at a time, should the need arise.
 

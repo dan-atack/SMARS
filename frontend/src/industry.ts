@@ -10,23 +10,31 @@ export default class Industry {
     _jobs: ColonistAction[];
 
     constructor() {
-        this._roles = [];
+        this._roles = [
+            {
+                name: "farmer",             // Role name
+                resourceProduced: "food"    // Resource produced (will send colonists to any module that produces this resource)
+            }
+        ];
         this._jobs = [];
     }
 
     // Top level updater - called by the Engine class's hourly updater method
     updateJobs = (infra: Infrastructure) => {
         console.log("Updating jobs");
+        this._roles.forEach((role) => {
+            this.updateJobsForRole(infra, role.name);
+        })
     }
 
     // Updates the jobs for a specific role
-    updateJobForRole = (infra: Infrastructure, role: string) => {
-        console.log("Updating individual job");
+    updateJobsForRole = (infra: Infrastructure, role: string) => {
+        console.log(`Updating jobs for ${role}`);
     }
 
     // Called by the Colonists when they need a new job
-    getJob = (infra: Infrastructure) => {
-        console.log("Getting job");
+    getJob = (role: string, coords: Coords) => {
+        console.log(`Getting ${role} job for colonist at (${coords.x}, ${coords.y})`);
     }
 
 }
