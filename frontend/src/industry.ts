@@ -1,31 +1,32 @@
-// In-game view for displaying the tech tree
+// The Industry class is the disembodied list of all the jobs in the colony, and the functions for updating them
 import P5 from "p5";
-import View from "./view";
-import Button from "./button";
-import { constants } from "./constants";
+import Infrastructure from "./infrastructure";
+import { Coords } from "./connector";
+import { ColonistAction } from "./colonistData";
 
-export default class Industry extends View {
-    // Industry overview Types:
+export default class Industry {
+    // Industry class types:
+    _roles: { name: string, resourceProduced: string }[];   // Each role has a name, and a goal, which is to produce a resource
+    _jobs: ColonistAction[];
 
-    constructor(p5: P5, changeView: (newView: string) => void) {
-        super(p5, changeView);
+    constructor() {
+        this._roles = [];
+        this._jobs = [];
     }
 
-    setup = () => {
-        this.currentView = true;
-        const p5 = this._p5;
-        p5.background(constants.APP_BACKGROUND);
-        p5.text("Industry page", constants.SCREEN_WIDTH / 2, 128);
+    // Top level updater - called by the Engine class's hourly updater method
+    updateJobs = (infra: Infrastructure) => {
+        console.log("Updating jobs");
     }
 
-    render = () => {
-        const p5 = this._p5;
-        p5.background(constants.APP_BACKGROUND);
-        p5.fill(constants.GREEN_TERMINAL);
-        p5.text("Colony Industry Report", constants.SCREEN_WIDTH / 2, 64);
-        this._buttons.forEach((button) => {
-            button.render(p5);
-        })
+    // Updates the jobs for a specific role
+    updateJobForRole = (infra: Infrastructure, role: string) => {
+        console.log("Updating individual job");
+    }
+
+    // Called by the Colonists when they need a new job
+    getJob = (infra: Infrastructure) => {
+        console.log("Getting job");
     }
 
 }

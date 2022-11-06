@@ -1901,7 +1901,21 @@ Not Doing:
 
 11. Update the logic for the Infra class's resolveModuleResourceRequests method to permit taking resources from production modules, in the event that the resource is part of their OUTPUTS list.
 
-## Chapter Thirty-Five:
+## Chapter Thirty-Five: The Industry Class (Difficulty Estimate: TBD)
+
+### November 6, 2022
+
+Now that the production modules have been provisioned, it is time to start putting the colonists to work! This chapter will focus on creating a new Engine subclass, Industry, which will act as a repository for all productivity-related information in the colony. The purpose of this class, in its first increment, will be to determine what production jobs can be done for each type of Role that the Colonists can be assigned to. We will start with food production, which will be done in the Hydroponics module (so far the game's only production module) In time, the Industry class will encompass information about power generation and mining as well, but those will be added in later chapters. The idea is that for whatever type of Role a colonist can be assigned to, when they are deciding on a new (non-life-support) goal they will check in with the Industry class to be assigned to a particular module to carry out production work. The Industry class will have two initial methods: updateJobs, which will prepare a list of jobs for each role, and getJob, which will be exposed to the Colonist class when they are starting a new goal.
+
+1. Create the Industry class, as well as a skeletal unit test file. The Industry class should have the following fields: roles (which is a list of objects that contain information about a role, including its name, and the resource it aims to produce) and jobs (which are actually ColonistActions, so we can import that type definition).
+
+### 2. Create skeleton methods for the updateJobs and getJob methods, and prepare to create some unit tests for them. Don't make the actual tests just yet though. UpdateJobs should take the infra class as an argument in order to come up with a jobs list for every role, and getJob should take a string representing the role name, as well as a set of coordinates (so it can theoretically pick the production module of the appropriate type that is nearest to the Colonist's location).
+
+### 3. Integrate the Industry class into the Engine, and call its updateJobs method every hour to see a console log message from it.
+
+### 4. In addition to the updateJobs method, which will be a top-level updater, create a method called updateJobsForRole, which will take the name of the role as well as the infra class that gets passed to the top-level updater, so that it can be used to update the jobs for one particular role instead of doing it for all roles. Then we can call this method via a loop in the top-level updater, or we can call it for one role at a time, should the need arise.
+
+### 5. Develop the unit tests for the updateJobsForRole method. When given a role, it should search the
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
@@ -1940,6 +1954,8 @@ As the game matures, it will be more and more desirable to separate features tha
 13. [8: Major Gameplay issue] In some circumstances, colonists who have just begun an 'explore' goal will have an action stack that tells them to jump off of a floor, with the false belief that they are stuck up there (even when a ladder to the surface is available).
 
 14. [8: Major Gameplay issue] In some circumstances, colonists will climb empty space (in the observed instance, the place where the climb action took place was in between two actual ladders) as though it were an actual ladder.
+
+### 15. [2: UX / Inaccurate info display] The Earth date on the Earth screen is broken. It appears to not take the date from the save game data into account.
 
 ## Technical Debt Issues:
 
