@@ -223,7 +223,7 @@ export default class Infrastructure {
 
     // SECTION 5 - INFRASTRUCTURE INFO API (GETTER FUNCTIONS)
 
-    // Returns array of modules when given a resource tuple (name and quantity sought, in this case)
+    // Returns array of modules that contain a resource when given a resource tuple (name and quantity sought, in this case)
     // UPDATE: Can optionally be given second argument, lifeSupp, which is a boolean for when a colonist is looking for food/water
     findModulesWithResource = (resource: Resource, lifeSupp?: boolean) => {
         let mods: Module[] = [];  // Prepare to return the list of modules
@@ -243,6 +243,16 @@ export default class Infrastructure {
                     return [];
                 }
             }
+        });
+        return mods;
+    }
+
+    // Returns an array of modules that have a given resource among their production outputs
+    findModulesWithOutput = (resource: string) => {
+        const mods = this._modules.filter((mod) => {
+            const outputStrings: string[] = [];
+            mod._moduleInfo.productionOutputs?.forEach((res) => outputStrings.push(res[0]));
+            return outputStrings.includes(resource);
         });
         return mods;
     }

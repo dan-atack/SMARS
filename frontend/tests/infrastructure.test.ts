@@ -99,6 +99,35 @@ const powerPlantInfo: ModuleInfo = {
     shapes: []
 }
 
+const hydroponicsModuleData: ModuleInfo = {
+    name: "Hydroponics Pod",
+    width: 3,
+    height: 3,
+    type: "Production",
+    pressurized: true,
+    columnStrength: 1,
+    durability: 100,
+    buildCosts: [
+        ["money", 100000],
+    ],
+    maintenanceCosts: [
+        ["power", 10]
+    ],
+    productionInputs: [     // Plant life needs: water, CO2 and light (in this case electric light)
+        ["water", 5]
+    ],
+    productionOutputs: [
+        ["food", 10],
+        ["air", 10],
+    ],
+    storageCapacity: [
+        ["water", 2500],
+        ["food", 1000],
+    ],
+    crewCapacity: 1,
+    shapes: []
+}
+
 const ladderData: ConnectorInfo = {
     name: "Ladder",
     type: "transport",
@@ -289,6 +318,14 @@ describe("Infrastructure base class", () => {
             ["water", 5000],
             ["power", 1000]                                        // Power is transferred
         ]);
+    })
+
+    test("Can return a list of modules that produce a given resource", () => {
+        // Add food production module now, to avoid interfering with other tests
+        infra.addModule(0, 22, hydroponicsModuleData, mockography, zonesData, 1005);
+        expect(infra.findModulesWithOutput("power")[0]._id).toBe(1004);         // Find the power plant
+        expect(infra.findModulesWithOutput("food")[0]._id).toBe(1005);          // Find the hydro pod
+        expect(infra.findModulesWithOutput("oxygen")).toStrictEqual([]);       // No oxygen producers = empty list returned
     })
 
 })

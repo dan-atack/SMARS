@@ -1913,9 +1913,13 @@ Now that the production modules have been provisioned, it is time to start putti
 
 3. Integrate the Industry class into the Engine, and call its updateJobs method every hour to see a console log message from it.
 
-### 4. In addition to the updateJobs method, which will be a top-level updater, create a method called updateJobsForRole, which will take the name of the role as well as the infra class that gets passed to the top-level updater, so that it can be used to update the jobs for one particular role instead of doing it for all roles. Then we can call this method via a loop in the top-level updater, or we can call it for one role at a time, should the need arise.
+4. In addition to the updateJobs method, which will be a top-level updater, create a method called updateJobsForRole, which will take the name of the role as well as the infra class that gets passed to the top-level updater, so that it can be used to update the jobs for one particular role instead of doing it for all roles. Then we can call this method via a loop in the top-level updater, or we can call it for one role at a time, should the need arise.
 
-### 5. Develop the unit tests for the updateJobsForRole method. When given a role, it should search the
+5. Develop the unit tests for the updateJobsForRole method. When given a role name, it should search the Infra class for modules that produce that role's resourceProduced value. It should then be able to narrow down the list to only include modules that have enough of the requisite inputs to allow at least one round of production. It should then make a job (Colonist action) for every available slot in every module that is ready to produce, and return the list of those jobs. Test this by making a test Infra instance with three Hydroponics pods that have been modified to only require water (we'll reintroduce carbon to the equation later on). Fill two modules with enough water to allow food production to occur, and do not fill the other one.
+
+### 6. Implement the code for the updateJobsForRole method. It should return a list of ColonistActions when it works properly, and an empty list when no jobs are found, or when there is an exception of some kind. Make sure to include graceful error/exception handling, and include that in the unit tests as well!
+
+### 7. Implement a new Infra method called findResourceProducers, that takes the string name of a resource and returns a list of all the modules that have that resource as one of their outputs. Unit test this function in the Infra base class unit tests file.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

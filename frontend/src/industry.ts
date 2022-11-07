@@ -7,22 +7,35 @@ import { ColonistAction } from "./colonistData";
 export default class Industry {
     // Industry class types:
     _roles: { name: string, resourceProduced: string }[];   // Each role has a name, and a goal, which is to produce a resource
-    _jobs: ColonistAction[];
-
+    _jobs: any; // An unfortunate but necessary use of the any type; the Jobs property is a dictionary of role names to job lists
+    
     constructor() {
         this._roles = [
             {
                 name: "farmer",             // Role name
                 resourceProduced: "food"    // Resource produced (will send colonists to any module that produces this resource)
-            }
+            },
+            {
+                name: "miner",
+                resourceProduced: "minerals"
+            },
+            // {
+            //     name: "scientist",
+            //     resourceProduced: "research"
+            // }
         ];
-        this._jobs = [];
+        this._jobs = {};    // Create jobs as empty object, then assign each role's name to be a key, whose value is a list of jobs
+        this._roles.forEach((role) => {
+            this._jobs[role.name as keyof Object] = [] as ColonistAction[];
+        })
     }
 
     // Top level updater - called by the Engine class's hourly updater method
     updateJobs = (infra: Infrastructure) => {
         console.log("Updating jobs");
         this._roles.forEach((role) => {
+            // Find modules that produce the role's resource
+            const mods = infra.findModulesWithOutput(role.resourceProduced);
             this.updateJobsForRole(infra, role.name);
         })
     }
