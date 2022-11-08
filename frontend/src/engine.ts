@@ -280,6 +280,7 @@ export default class Engine extends View {
                 const [gridX, gridY] = this.getMouseGridPosition(mouseX, mouseY);
                 switch (this.mouseContext) {
                     case "inspect":
+                        console.log(`(${gridX}, ${gridY})`);
                         this.handleInspect({ x: gridX, y: gridY });
                         break;
                     case "placeModule":

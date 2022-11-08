@@ -1,4 +1,4 @@
-import Industry from "../src/industry";
+import Industry, { Role } from "../src/industry";
 import Infrastructure from "../src/infrastructure";
 import Module from "../src/module";
 import { ModuleInfo } from "../src/server_functions";
@@ -60,6 +60,7 @@ describe("Industry class", () => {
     })
 
     test("UpdateJobsForRole creates a list of available jobs", () => {
+        const role: Role = { name: "farmer", action: "farm", resourceProduced: "food" }
         // Setup test: Fill 2 of the farm modules and leave the third one empty
         infra.addResourcesToModule(1001, ["water", 1000]);
         infra.addResourcesToModule(1002, ["water", 1000]);
@@ -67,20 +68,21 @@ describe("Industry class", () => {
         expect(infra._modules[0]._resources).toStrictEqual([["water", 1000], ["food", 0]]);
         expect(infra._modules[1]._resources).toStrictEqual([["water", 1000], ["food", 0]]);
         // Run test: Expect one job for each farm slot (one per module)
-        // expect(industry.updateJobsForRole(infra, "farmer")).toStrictEqual([
-        //     {
-        //         type: "farm",
-        //         coords: { x: 1, y: 25 },
-        //         duration: 60,
-        //         buildingId: 1001
-        //     },
-        //     {
-        //         type: "farm",
-        //         coords: { x: 5, y: 25 },
-        //         duration: 60,
-        //         buildingId: 1002
-        //     }
-        // ])
+        industry.updateJobsForRole(infra, role)
+        expect(industry._jobs.farmer).toStrictEqual([
+            {
+                type: "farm",
+                coords: { x: 1, y: 27 },
+                duration: 60,
+                buildingId: 1001
+            },
+            {
+                type: "farm",
+                coords: { x: 5, y: 27 },
+                duration: 60,
+                buildingId: 1002
+            }
+        ])
     })
 
 })

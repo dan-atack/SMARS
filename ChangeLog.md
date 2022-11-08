@@ -1923,6 +1923,8 @@ Now that the production modules have been provisioned, it is time to start putti
 
 8. Also, create a new Module method (plus unit test) that returns a boolean when asked if it is provisioned (i.e. has enough input resources to carry out at least one round of production).
 
+### 9. Update the Hydroponics module so that it only requires water as an input.
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
