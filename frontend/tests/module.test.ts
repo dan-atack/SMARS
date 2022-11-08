@@ -311,4 +311,18 @@ describe("ModuleData", () => {
         fillModule(lsModule);
         expect(lsModule.determineResourceRequests()).toStrictEqual([]);
     })
+
+    test("Can tell if module has sufficient resources for production", () =>{
+        // Setup test: 1 module has almost enough resources but not quite, the other has an abundance
+        resetResource(prodModule);
+        prodModule.addResource(["water", 5]);
+        prodModule.addResource(["power", 100]);
+        prodModule.addResource(["carbon", 4]);
+        const prodModule2 = new Module(9005, 10, 2, productionModuleInfo);
+        prodModule2.addResource(["water", 5]);
+        prodModule2.addResource(["power", 100]);
+        prodModule2.addResource(["carbon", 5]);
+        expect(prodModule.hasProductionInputs()).toBe(false);
+        expect(prodModule2.hasProductionInputs()).toBe(true);
+    })
 })

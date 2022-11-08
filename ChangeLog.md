@@ -1919,7 +1919,9 @@ Now that the production modules have been provisioned, it is time to start putti
 
 ### 6. Implement the code for the updateJobsForRole method. It should return a list of ColonistActions when it works properly, and an empty list when no jobs are found, or when there is an exception of some kind. Make sure to include graceful error/exception handling, and include that in the unit tests as well!
 
-### 7. Implement a new Infra method called findResourceProducers, that takes the string name of a resource and returns a list of all the modules that have that resource as one of their outputs. Unit test this function in the Infra base class unit tests file.
+7. Create a new Infra method called findResourceProducers, that takes the string name of a resource and returns a list of all the modules that have that resource as one of their outputs. Unit test this function in the Infra base class unit tests file.
+
+8. Also, create a new Module method (plus unit test) that returns a boolean when asked if it is provisioned (i.e. has enough input resources to carry out at least one round of production).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

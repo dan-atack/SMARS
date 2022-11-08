@@ -111,6 +111,16 @@ export default class Module {
         return reqs;
     }
 
+    // Called by the Industry class to determine if a module can produce
+    hasProductionInputs () {
+        let provisioned = true;
+        // Check each input resource against the current quantity; if any resource is lacking, return false
+        this._moduleInfo.productionInputs?.forEach((res) => {
+            if (this.getResourceQuantity(res[0]) < res[1]) provisioned = false;
+        });
+        return provisioned;
+    }
+
     // Try to add a resource and return the quantity actually added
     addResource (resource: Resource) {
         // Check if resource is in the module's capacity list

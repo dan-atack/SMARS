@@ -36,6 +36,12 @@ export default class Industry {
         this._roles.forEach((role) => {
             // Find modules that produce the role's resource
             const mods = infra.findModulesWithOutput(role.resourceProduced);
+            console.log(`Found ${mods.length} modules for ${role.name}s to work at.`);
+            // For each module check if it A) has enough input resources to produce and B) how many open slots it has
+            mods.forEach((mod) => {
+                const slots = mod._moduleInfo.crewCapacity - mod._crewPresent;
+                const provisioned = true;
+            })
             this.updateJobsForRole(infra, role.name);
         })
     }
