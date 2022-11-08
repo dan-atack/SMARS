@@ -83,6 +83,8 @@ describe("Industry class", () => {
                 buildingId: 1002
             }
         ])
+        // Check that no extra keys have been created in the Jobs object by mistake
+        expect(Object.keys(industry._jobs).length).toBe(2); // Farmer and miner
     })
 
 })
