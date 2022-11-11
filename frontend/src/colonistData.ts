@@ -1,6 +1,6 @@
 // The ColonistData class handles all of the data processing for the colonist class, without any of the rendering tasks
 import { ColonistSaveData, ColonistNeeds, ColonistRole } from "./colonist";
-import { createConsumeActionStack, findElevatorToGround } from "./colonistActionLogic";
+import { createConsumeActionStack, createProductionActionStack, findElevatorToGround } from "./colonistActionLogic";
 import { Coords } from "./connector";
 import Industry from "./industry";
 import Infrastructure from "./infrastructure";  // Infra data info gets passed by population updater function
@@ -124,7 +124,7 @@ export default class ColonistData {
         };
         // 2 - Determine job-related (second priority) goal ONLY IF no needs-based goal has been set
         if (this._currentGoal === "explore" || this._currentGoal === "") {
-            this.checkForJobs(industry);
+            this.checkForJobs(infra, map, industry);
         }
         // 3 - If no goal has been set, tell them to go exploring; otherwise use the goal determined above
         if (this._currentGoal === "") {
@@ -150,18 +150,21 @@ export default class ColonistData {
     }
 
     // Sub-routine 2 for updateGoal method: Checks for jobs for the Colonist's role
-    checkForJobs = (industry: Industry) => {
-        console.log(`Looking for ${this._role[0]} work.`);
+    checkForJobs = (infra: Infrastructure, map: Map, industry: Industry) => {
         const job = industry.getJob(this._role[0]);
-        console.log(job);
+        if (job) {  // Set the Job type as the new goal if a job is found; otherwise this will fall through to the default case
+            console.log(`Setting goal for ${this._name}: ${job.type}`);
+            this.addAction(job.type, job.coords, job.duration, job.buildingId); // Make the job the first item in the action stack
+            this.setGoal(job.type, infra, map, job);     // Then determine how to get to the job site
+        }
     }
 
-    // Takes a string naming the current goal, and uses that to set the destination (and sets that string as the current goal)
-    // Also takes optional parameter when setting the "explore" goal, to ensure the colonist isn't sent off the edge of the world
-    setGoal = (goal: string, infra?: Infrastructure, map?: Map) => {
+    // Takes a string naming the current goal, as well as additional optional arguments for infra and map
+    // ALSO takes an optional final argument for a production job, to pass to the action stack determinator
+    setGoal = (goal: string, infra?: Infrastructure, map?: Map, job?: ColonistAction) => {
         this._currentGoal = goal;
         if (infra && map) {
-            this.determineActionsForGoal(infra, map);
+            this.determineActionsForGoal(infra, map, job);  // If there is a job, pass it to action stack determinator
         } else if (this._currentGoal !== "") {
             console.log(`Error: Infra/Map data missing for non-empty colonist goal: ${this._currentGoal}`);
         }
@@ -194,7 +197,7 @@ export default class ColonistData {
     // (Actions are individual tasks, such as 'move to x', or 'consume a resource' which collectively form a single GOAL)
 
     // Top Level Action Creation Method: determines the individual actions to be performed to achieve the current goal
-    determineActionsForGoal = (infra: Infrastructure, map: Map) => {
+    determineActionsForGoal = (infra: Infrastructure, map: Map, job?: ColonistAction) => {
         this.clearActions();    // Ensure the action stack is empty before adding to it
         const currentPosition = { x: this._x, y: this._y + 1 }; // Add 1 to colonist Y position to get 'foot level' value
         switch(this._currentGoal) {
@@ -232,6 +235,15 @@ export default class ColonistData {
             this._actionStack = createConsumeActionStack(currentPosition, this._standingOnId, ["food", this._needs.food], infra);
                 // If no action stack was returned, assume that food is temporarily unavailable
                 if (this._actionStack.length === 0) this._needsAvailable.food = 0;
+                break;
+            case "farm":
+            case "mine":    // Right now both farming and mining have the same action stack goal: find the way to the job site
+                if (job) {
+                    this.addAction(job.type, job.coords, job.duration, job.buildingId);
+                    const stack = createProductionActionStack(currentPosition, this._standingOnId, infra, job);
+                } else {
+                    console.log(`Error: No job data found for goal: ${this._currentGoal}`);
+                }
                 break;
         }
         this.startGoalProgress(infra);

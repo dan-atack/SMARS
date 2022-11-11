@@ -86,6 +86,10 @@ export const createConsumeActionStack = (colonistCoords: Coords, colonistStandin
     return stack;
 }
 
+export const createProductionActionStack = (colonistCoords: Coords, standingOn: string | number, infra: Infrastructure, job: ColonistAction) => {
+    console.log(`Finding colonist path to ${job.type} job at (${job.coords.x}, ${job.coords.y})`)
+}
+
 // Returns an elevator or a null if no acceptable elevator is found
 export const findElevatorToGround = (x: number, floorId: number, infra: Infrastructure) => {
     const floor = infra._data.getFloorFromId(floorId);

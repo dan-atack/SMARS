@@ -40,7 +40,6 @@ export default class Industry {
 
     // Top level updater - called by the Engine class's hourly updater method
     updateJobs = (infra: Infrastructure) => {
-        console.log("Updating all jobs");
         this._roles.forEach((role) => {
             this.updateJobsForRole(infra, role);
         })
@@ -49,11 +48,11 @@ export default class Industry {
 
     // Updates the jobs for a specific role
     updateJobsForRole = (infra: Infrastructure, role: Role) => {
-        console.log(`Updating jobs for ${role.name}`);
+        // console.log(`Updating jobs for ${role.name}`);
         this._jobs[role.name] = []; // Reset jobs list for this role
         // Find modules that produce the role's resource
         const mods = infra.findModulesWithOutput(role.resourceProduced);
-        console.log(`Found ${mods.length} modules for ${role.name}s to work at.`);
+        // console.log(`Found ${mods.length} modules for ${role.name}s to work at.`);
         // For each module check if it A) has enough input resources to produce and B) how many open slots it has
         mods.forEach((mod) => {
             const slots = mod._moduleInfo.crewCapacity - mod._crewPresent;

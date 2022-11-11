@@ -1910,7 +1910,7 @@ Now that the production modules have been provisioned, it is time to start putti
 Exit Criteria:
 
 - [DONE] Industry class creates a list of jobs for each type of occupation (role) every hour
-- Colonists can pick a job from the Industry class based on their role
+- [DONE] Colonists can get a job assigned to them from the Industry class based on their role
 - Colonists go to the module specified by their job, and perform a 'work' action there (action stack creation)
 - Once the Colonist's work action is completed, the modules inputs are converted into outputs
 - Once the work action is completed, modules immediately post another job, resource supplies permitting
@@ -1941,9 +1941,15 @@ Exit Criteria:
 
 11. Take this moment to extract the three sub-routines of the updateGoal method into their own distinct functions: checkForNeeds, and checkForJobs, which will be the new logic to be developed for getting a job from the Industry class, and preparing to create an action stack based on that job info. The default assignment to exploring can remain in the updateGoal method.
 
-### 12. Create the unit tests and then the code for the Industry class's getJob method. Version 1.0 of this method will ignore the Colonist's location, and instead simply pop the last item from the jobs list and give that to the Colonist.
+12. Create the unit tests and then the code for the Industry class's getJob method. Version 1.0 of this method will ignore the Colonist's location, and instead simply pop the last item from the jobs list and give that to the Colonist. If no jobs are available, or the role itself is not found, return a null instead.
 
-### 13. Pass the Industry class to the Colonist's updateGoal method, down into the checkForJobs method, via the Population class's hourly updater method. Validate with a sanity check that the Colonist can get a job.
+13. Pass the Industry class to the Colonist's updateGoal method, down into the checkForJobs method, via the Population class's hourly updater method. Validate with a sanity check that the Colonist can get a job.
+
+14. Add new cases to the ColonistData class's determineActionsForGoal method: "farm" and "mine." For now, they can both lead to the same outcome, which is to find a path to the coordinates in the job action.
+
+15. Since job assignments from the Industry class give the Colonist the first (i.e. chronologically last) item for their action stack, add an optional job argument to the action stack determination (and setGoal) methods, so that the checkForJobs method can hand the job to the action stack determinator, rather than trying to add it to the stack before setting the new goal.
+
+16. Next, open up the ColonistActionLogic file, and create the skeleton of a new function called createProductionActionStack.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
