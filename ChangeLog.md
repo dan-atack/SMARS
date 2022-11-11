@@ -1901,11 +1901,23 @@ Not Doing:
 
 11. Update the logic for the Infra class's resolveModuleResourceRequests method to permit taking resources from production modules, in the event that the resource is part of their OUTPUTS list.
 
-## Chapter Thirty-Five: The Industry Class (Difficulty Estimate: TBD)
+## Chapter Thirty-Five: The Industry Class (Difficulty Estimate: 5 for lots of little things coming together, including updating/isolating parts of the Colonist's pathfinding logic, plus a new animation sequence)
 
 ### November 6, 2022
 
 Now that the production modules have been provisioned, it is time to start putting the colonists to work! This chapter will focus on creating a new Engine subclass, Industry, which will act as a repository for all productivity-related information in the colony. The purpose of this class, in its first increment, will be to determine what production jobs can be done for each type of Role that the Colonists can be assigned to. We will start with food production, which will be done in the Hydroponics module (so far the game's only production module) In time, the Industry class will encompass information about power generation and mining as well, but those will be added in later chapters. The idea is that for whatever type of Role a colonist can be assigned to, when they are deciding on a new (non-life-support) goal they will check in with the Industry class to be assigned to a particular module to carry out production work. The Industry class will have two initial methods: updateJobs, which will prepare a list of jobs for each role, and getJob, which will be exposed to the Colonist class when they are starting a new goal.
+
+Exit Criteria:
+
+- [DONE] Industry class creates a list of jobs for each type of occupation (role) every hour
+- Colonists can pick a job from the Industry class based on their role
+- Colonists go to the module specified by their job, and perform a 'work' action there (action stack creation)
+- Once the Colonist's work action is completed, the modules inputs are converted into outputs
+- Once the work action is completed, modules immediately post another job, resource supplies permitting
+- Once the work action is completed, if the Colonist is not yet tired/hungry/thirsty, they will begin another round of production immediately
+- Production action has a basic animation
+- Production outputs are held in the production module
+- [STRETCH] On the hourly module resource transfer phase, production modules ship their resources to other modules
 
 1. Create the Industry class, as well as a skeletal unit test file. The Industry class should have the following fields: roles (which is a list of objects that contain information about a role, including its name, and the resource it aims to produce) and jobs (which are actually ColonistActions, so we can import that type definition).
 
@@ -1917,13 +1929,21 @@ Now that the production modules have been provisioned, it is time to start putti
 
 5. Develop the unit tests for the updateJobsForRole method. When given a role name, it should search the Infra class for modules that produce that role's resourceProduced value. It should then be able to narrow down the list to only include modules that have enough of the requisite inputs to allow at least one round of production. It should then make a job (Colonist action) for every available slot in every module that is ready to produce, and return the list of those jobs. Test this by making a test Infra instance with three Hydroponics pods that have been modified to only require water (we'll reintroduce carbon to the equation later on). Fill two modules with enough water to allow food production to occur, and do not fill the other one.
 
-### 6. Implement the code for the updateJobsForRole method. It should return a list of ColonistActions when it works properly, and an empty list when no jobs are found, or when there is an exception of some kind. Make sure to include graceful error/exception handling, and include that in the unit tests as well!
+6. Implement the code for the updateJobsForRole method. It should return a list of ColonistActions when it works properly, and an empty list when no jobs are found, or when there is an exception of some kind. Make sure to include graceful error/exception handling, and include that in the unit tests as well!
 
 7. Create a new Infra method called findResourceProducers, that takes the string name of a resource and returns a list of all the modules that have that resource as one of their outputs. Unit test this function in the Infra base class unit tests file.
 
 8. Also, create a new Module method (plus unit test) that returns a boolean when asked if it is provisioned (i.e. has enough input resources to carry out at least one round of production).
 
 9. Update the Hydroponics module so that it only requires water as an input, to facilitate zero-carbon testing ;)
+
+10. Add a new bit of logic to the Colonist Data class's updateGoal block, to check for jobs based on the Colonist's role.
+
+11. Take this moment to extract the three sub-routines of the updateGoal method into their own distinct functions: checkForNeeds, and checkForJobs, which will be the new logic to be developed for getting a job from the Industry class, and preparing to create an action stack based on that job info. The default assignment to exploring can remain in the updateGoal method.
+
+### 12. Create the unit tests and then the code for the Industry class's getJob method. Version 1.0 of this method will ignore the Colonist's location, and instead simply pop the last item from the jobs list and give that to the Colonist.
+
+### 13. Pass the Industry class to the Colonist's updateGoal method, down into the checkForJobs method, via the Population class's hourly updater method. Validate with a sanity check that the Colonist can get a job.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

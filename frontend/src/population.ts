@@ -5,6 +5,7 @@ import Colonist, { ColonistSaveData } from "./colonist";
 import { Coords } from "./connector";
 import Infrastructure from "./infrastructure";
 import Map from "./map";
+import Industry from "./industry";
 
 export default class Population {
     // Population types:
@@ -42,15 +43,15 @@ export default class Population {
 
     // Master updater function for controlling all individual colonist updater methods:
     // Needs terrain info for position updates (every minute), and a boolean for whether to update colonists' needs (every hour)
-    updateColonists = (needs: boolean, infra: Infrastructure, map: Map) => {
+    updateColonists = (needs: boolean, infra: Infrastructure, map: Map, industry: Industry) => {
         // Every minute:
-        this.handleColonistMinutelyUpdates(infra, map);              // Should happen once every minute
+        this.handleColonistMinutelyUpdates(infra, map, industry);              // Should happen once every minute
         // Every hour:
-        if (needs) this.handleColonistHourlyUpdates(infra, map);      // Should happen once every hour
+        if (needs) this.handleColonistHourlyUpdates(infra, map, industry);      // Should happen once every hour
     }
 
     // Passes terrain info to each colonist and then checks if they have achieved their current goal
-    handleColonistMinutelyUpdates = (infra: Infrastructure, map: Map) => {
+    handleColonistMinutelyUpdates = (infra: Infrastructure, map: Map, industry: Industry) => {
         // For each colonist, isolate the 3 terrain columns around them:
         const terrain = map._mapData;
         this._colonists.forEach((colonist) => {
@@ -63,13 +64,13 @@ export default class Population {
                 cols.push(terrain[colonist._data._x + 1]);
             }
             // Pass all info to the colonist's minutely update handler
-            colonist._data.handleMinutelyUpdates(cols, infra, map);
+            colonist._data.handleMinutelyUpdates(cols, infra, map, industry);
         })
     }
 
-    handleColonistHourlyUpdates = (infra: Infrastructure, map: Map) => {
+    handleColonistHourlyUpdates = (infra: Infrastructure, map: Map, industry: Industry) => {
         this._colonists.forEach((colonist) => {
-            colonist._data.handleHourlyUpdates(infra, map);
+            colonist._data.handleHourlyUpdates(infra, map, industry);
         })
     }
 

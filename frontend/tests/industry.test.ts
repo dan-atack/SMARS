@@ -87,4 +87,24 @@ describe("Industry class", () => {
         expect(Object.keys(industry._jobs).length).toBe(2); // Farmer and miner
     })
 
+    test("Can get a job for a colonist", () => {
+        // Pop the last job off of the list when jobs are available for the given role
+        expect(industry.getJob("farmer")).toStrictEqual({
+                type: "farm",
+                coords: { x: 5, y: 27 },
+                duration: 60,
+                buildingId: 1002
+        });
+        // Run through farmer jobs list...
+        expect(industry.getJob("farmer")).toStrictEqual({
+            type: "farm",
+                coords: { x: 1, y: 27 },
+                duration: 60,
+                buildingId: 1001
+        });
+        // ... Until it's empty
+        expect(industry.getJob("farmer")).toBe(null);
+        expect(industry.getJob("miner")).toBe(null);    // If no jobs exist for the given role, return a null
+    })
+
 })

@@ -73,8 +73,15 @@ export default class Industry {
     }
 
     // Called by the Colonists when they need a new job
-    getJob = (role: string, coords: Coords) => {
-        console.log(`Getting ${role} job for colonist at (${coords.x}, ${coords.y})`);
+    // TODO: Add coordinates argument to allow more efficient job assignments!
+    getJob = (role: string) => {
+        let job: ColonistAction | null;
+        if (typeof this._jobs[role] !== "undefined" && this._jobs[role].length > 0) {
+            job = this._jobs[role].pop();
+        } else {
+            job = null;
+        }
+        return job;
     }
 
 }

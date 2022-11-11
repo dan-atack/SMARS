@@ -2,6 +2,7 @@
 import { ColonistSaveData, ColonistNeeds, ColonistRole } from "./colonist";
 import { createConsumeActionStack, findElevatorToGround } from "./colonistActionLogic";
 import { Coords } from "./connector";
+import Industry from "./industry";
 import Infrastructure from "./infrastructure";  // Infra data info gets passed by population updater function
 import Map from "./map";
 
@@ -79,16 +80,16 @@ export default class ColonistData {
     }
 
     // Handles hourly updates to the colonist's needs and priorities (goals)
-    handleHourlyUpdates = (infra: Infrastructure, map: Map) => {
+    handleHourlyUpdates = (infra: Infrastructure, map: Map, industry: Industry) => {
         this.updateNeeds();
         this.resetNeedAvailabilities();
-        this.updateGoal(infra, map);
+        this.updateGoal(infra, map, industry);
     }
 
     // AdjacentColumns is a subset of the map; just the column the colonist is on, plus one to the immediate right/left
-    handleMinutelyUpdates = (adjacentColumns: number[][], infra: Infrastructure, map: Map) => {
+    handleMinutelyUpdates = (adjacentColumns: number[][], infra: Infrastructure, map: Map, industry: Industry) => {
         this.checkActionStatus(infra);              // First: Update actions before goals
-        this.checkGoalStatus(infra, map);           // Then update goals after actions
+        this.checkGoalStatus(infra, map, industry);           // Then update goals after actions
         this.handleMovement(map, infra, adjacentColumns);  // Finally, take care of movement last
     }
 
@@ -115,30 +116,44 @@ export default class ColonistData {
     }
 
     // Checks whether any needs have exceeded their threshold and assigns a new goal if so; otherwise sets goal to 'explore'
-    updateGoal = (infra: Infrastructure, map: Map) => {
+    updateGoal = (infra: Infrastructure, map: Map, industry: Industry) => {
         // 1 - Determine needs-based (first priority) goals
         // If the colonist has no current goal, or is set to exploring, check if any needs have reached their thresholds
         if (this._currentGoal === "explore" || this._currentGoal === "") {
-            Object.keys(this._needs).forEach((need) => {
-                // Check each need to see if it has A) crossed its threshold and B) is still believed to be available
-                // @ts-ignore
-                if (this._needs[need] >= this._needThresholds[need] && this._needsAvailable[need]) {
-                    // When setting new goal, clear out the current action - UNLESS it's a 'climb' action, in which case wait
-                    if (this._currentAction?.type !== "climb") {
-                        this.resolveAction();
-                        this.setGoal(`get-${need}`, infra, map);
-                    } else {
-                        console.log(`Colonist ${this._id} is climbing - delaying new action start.`);
-                    }
-                }
-            })
+            this.checkForNeeds(infra, map);
         };
-        // 2- Determine job-related (second priority) goal if no needs-based goal has been set
-        // If no goal has been set, tell them to go exploring; otherwise use the goal determined above
-        // TODO: When colonists can have jobs, revamp this logic to check for non-exploration jobs before defaulting to explore
+        // 2 - Determine job-related (second priority) goal ONLY IF no needs-based goal has been set
+        if (this._currentGoal === "explore" || this._currentGoal === "") {
+            this.checkForJobs(industry);
+        }
+        // 3 - If no goal has been set, tell them to go exploring; otherwise use the goal determined above
         if (this._currentGoal === "") {
             this.setGoal("explore", infra, map);
         };
+    }
+
+    // Sub-routine 1 for updateGoal method: Checks if any needs have reached their threshold
+    checkForNeeds = (infra: Infrastructure, map: Map) => {
+        Object.keys(this._needs).forEach((need) => {
+            // Check each need to see if it has A) crossed its threshold and B) is still believed to be available
+            // @ts-ignore
+            if (this._needs[need] >= this._needThresholds[need] && this._needsAvailable[need]) {
+                // When setting new goal, clear out the current action - UNLESS it's a 'climb' action, in which case wait
+                if (this._currentAction?.type !== "climb") {
+                    this.resolveAction();
+                    this.setGoal(`get-${need}`, infra, map);
+                } else {
+                    console.log(`Colonist ${this._id} is climbing - delaying new action start.`);
+                }
+            }
+        })
+    }
+
+    // Sub-routine 2 for updateGoal method: Checks for jobs for the Colonist's role
+    checkForJobs = (industry: Industry) => {
+        console.log(`Looking for ${this._role[0]} work.`);
+        const job = industry.getJob(this._role[0]);
+        console.log(job);
     }
 
     // Takes a string naming the current goal, and uses that to set the destination (and sets that string as the current goal)
@@ -153,11 +168,11 @@ export default class ColonistData {
     }
 
     // Determines if a colonist has reached their destination, and if so, what to do next
-    checkGoalStatus = (infra: Infrastructure, map: Map) => {
+    checkGoalStatus = (infra: Infrastructure, map: Map, industry: Industry) => {
         // New way: Check if the colonist has no actions remaining - if so, they have resolved their current goal
         if (this._actionStack.length === 0 && this._currentAction === null) {
             this.resolveGoal();
-            this.updateGoal(infra, map);
+            this.updateGoal(infra, map, industry);
         }
     }
 

@@ -1,6 +1,7 @@
 import ColonistData from "../src/colonistData";
 import Infrastructure from "../src/infrastructure";
 import Map from "../src/map";
+import Industry from "../src/industry";
 import { ModuleInfo } from "../src/server_functions";
 import { ConnectorInfo } from "../src/server_functions";
 
@@ -76,6 +77,7 @@ describe("ColonistData", () => {
     const colonistData = new ColonistData(9000, "Ziggy", 0, 32);
     const mockInfra = new Infrastructure();
     const mockMap = new Map();
+    const indy = new Industry();
     mockMap._mapData = flatTerrain;
     mockMap.updateTopographyAndZones();
     mockInfra._data.setup(mockMap._mapData.length);
@@ -115,12 +117,12 @@ describe("ColonistData", () => {
 
     test("Colonist with no goal will set goal to explore when updateGoal is called", () => {
         colonistData._currentGoal = "";
-        colonistData.updateGoal(mockInfra, mockMap);
+        colonistData.updateGoal(mockInfra, mockMap, indy);
         expect(colonistData._currentGoal).toBe("explore");
     })
 
     test("Hourly updater method increases colonist needs", () => {
-        colonistData.handleHourlyUpdates(mockInfra, mockMap);
+        colonistData.handleHourlyUpdates(mockInfra, mockMap, indy);
         expect(colonistData._needs).toStrictEqual({
             water: 1,
             food: 1,
@@ -135,7 +137,7 @@ describe("ColonistData", () => {
             rest: 3
         };
         colonistData._currentGoal = "explore";
-        colonistData.handleHourlyUpdates(mockInfra, mockMap);
+        colonistData.handleHourlyUpdates(mockInfra, mockMap, indy);
         expect(colonistData._currentGoal).toBe("get-water");
     })
 
@@ -145,7 +147,7 @@ describe("ColonistData", () => {
             food: 7,
             rest: 0
         };
-        colonistData.handleHourlyUpdates(mockInfra, mockMap);
+        colonistData.handleHourlyUpdates(mockInfra, mockMap, indy);
         expect(colonistData._currentGoal).toBe("get-water");
     })
 
@@ -172,7 +174,7 @@ describe("ColonistData", () => {
 
     test("CheckGoalStatus method will resolve current goal and set a new one if there is no current action/action stack", () => {
         colonistData._needs.food = 7;
-        colonistData.checkGoalStatus(mockInfra, mockMap);
+        colonistData.checkGoalStatus(mockInfra, mockMap, indy);
         expect(colonistData._currentGoal).toBe("get-food"); // Will be set to get-food since we made the colonist hungry
     })
 
@@ -448,7 +450,7 @@ describe("ColonistData", () => {
         // Reset current goal data before proceeding
         resetColonistData();
         colonistData._currentGoal = "";
-        colonistData.updateGoal(mockInfra, mockMap);
+        colonistData.updateGoal(mockInfra, mockMap, indy);
         // Tests resume
         colonistData._x = 1;
         colonistData._movementDest = { x: 2, y: 0};
@@ -705,7 +707,7 @@ describe("ColonistData", () => {
         expect(colonistData._actionStack.length).toBe(0);
         expect(colonistData._needsAvailable.water).toBe(0);
         // Also, check that the availability is reset to 1 after the hourly update
-        colonistData.handleHourlyUpdates(mockInfra, mockMap);
+        colonistData.handleHourlyUpdates(mockInfra, mockMap, indy);
         expect(colonistData._needsAvailable.water).toBe(1);
     })
 

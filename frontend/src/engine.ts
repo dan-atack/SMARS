@@ -667,7 +667,7 @@ export default class Engine extends View {
             if (this._tick >= this.ticksPerMinute) {
                 this._tick = 0;     // Advance minutes
                 // Update colonists' locations each 'minute', and all of their other stats every hour
-                this._population.updateColonists(this._gameTime.minute === 0, this._infrastructure, this._map);
+                this._population.updateColonists(this._gameTime.minute === 0, this._infrastructure, this._map, this._industry);
                 if (this._gameTime.minute < this._minutesPerHour - 1) {  // Minus one tells the minutes counter to reset to zero after 59
                     this._gameTime.minute ++;
                 } else {
