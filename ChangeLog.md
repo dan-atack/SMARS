@@ -1951,6 +1951,10 @@ Exit Criteria:
 
 16. Next, open up the ColonistActionLogic file, and create the skeleton of a new function called createProductionActionStack.
 
+### 17. In the ColonistActionLogic file, copy the action stack creation logic for the two different complete stacks (elevator to ground floor exists, and elevator to current floor exists) from the createConsumeActionStack method into their own functions, called climbLadderFromGroundActions and climbLadderFromFloorActions. Since replacing the code in the consume action sequence creator is not necessary at this moment, just use the new methods in the context of the production action stack creator (do a unit test run followed by manual sanity check before proceeding).
+
+### 18. Plug the findPathToModule function into the new createProductionActionStack method, so that it adds the pathfinding steps on top of the job action and returns a complete stack. As with the consume action stack creator, if no additional actions are added to the stack after the initial job action (indicating that the job site is unreachable), return an empty list so that the colonist knows that the current goal is impossible. It will be an hour before the job is re-created by the Industry class if this happens, so there is no need for the colonist to 'remember' that a particular job site is unreachable; they will simply move onto the next job (or if no jobs remain for their role, they should simply revert to exploring until more jobs are created by the Industry class's hourly update).
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.

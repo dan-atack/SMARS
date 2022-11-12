@@ -1,4 +1,4 @@
-import ColonistData from "../src/colonistData";
+import ColonistData, { ColonistAction } from "../src/colonistData";
 import Infrastructure from "../src/infrastructure";
 import Map from "../src/map";
 import Industry from "../src/industry";
@@ -51,6 +51,40 @@ const cantinaModuleInfo: ModuleInfo = {
         ["water", 5000]
     ],
     crewCapacity: 2,
+    shapes: []
+}
+
+const prodModInfo: ModuleInfo = {
+    name: "Hydroponics Pod",
+    width: 3,
+    height: 3,
+    type: "Production",
+    pressurized: true,
+    columnStrength: 1,
+    durability: 100,
+    buildCosts: [
+        ["money", 100000],
+    ],
+    maintenanceCosts: [
+        ["power", 10]
+    ],
+    productionInputs: [     // Plant life needs: water, CO2 and light (in this case electric light)
+        ["water", 5],
+        ["carbon", 5],
+        ["power", 100]
+    ],
+    productionOutputs: [
+        ["food", 10],
+        ["air", 10],
+    ],
+    storageCapacity: [
+        ["air", 9000],
+        ["water", 2500],
+        ["carbon", 2500],
+        ["food", 1000],
+        ["power", 1000]     // Limited internal batteries
+    ],
+    crewCapacity: 1,
     shapes: []
 }
 
@@ -709,6 +743,58 @@ describe("ColonistData", () => {
         // Also, check that the availability is reset to 1 after the hourly update
         colonistData.handleHourlyUpdates(mockInfra, mockMap, indy);
         expect(colonistData._needsAvailable.water).toBe(1);
+    })
+
+    // 8 - If the colonist is assigned to work at a module, they can get there if both are on the ground
+    test("Action Determination for production jobs works when colonist is on same zone as production site", () => {
+        resetColonistData();
+        // Colonist is on the ground
+        colonistData._x = 3;
+        colonistData._y = 31;   // Head is one above (lower integer) the feet, which are one higher than the topography value
+        colonistData.detectTerrainBeneath(mockMap, mockInfra);
+        // Add new production module
+        mockInfra.addModule(5, 30, prodModInfo, mockMap._topography, mockMap._zones, 1004);
+        const job: ColonistAction = { type: "farm", coords: { x: 6, y: 30 }, duration: 60, buildingId: 1004 };
+        colonistData.setGoal("farm", mockInfra, mockMap, job);
+        expect(colonistData._actionStack.length).toBe(1);
+        expect(colonistData._currentAction).toStrictEqual({
+            type: "move",
+            coords: { x: 6, y: 30 },
+            duration: 0,
+            buildingId: 0
+        });
+        expect(colonistData._actionStack).toStrictEqual([{ type: "farm", coords: { x: 6, y: 30 }, duration: 60, buildingId: 1004 }])
+    })
+
+    // 9 - If the colonist is assigned to work at a module, they can get there if it is on another floor (and is connected)
+    test("Action Determination for production jobs works when colonist is on same zone as production site", () => {
+        resetColonistData();
+        // Colonist is on the ground
+        colonistData._x = 3;
+        colonistData._y = 31;   // Head is one above (lower integer) the feet, which are one higher than the topography value
+        colonistData.detectTerrainBeneath(mockMap, mockInfra);
+        // Add new production module
+        mockInfra.addModule(5, 27, prodModInfo, mockMap._topography, mockMap._zones, 1005);
+        // Create job data
+        const job: ColonistAction = { type: "farm", coords: { x: 6, y: 27 }, duration: 60, buildingId: 1005 };
+        // Test without a ladder first: The stack should come back empty, resulting in the job being skipped
+        colonistData.setGoal("farm", mockInfra, mockMap, job);
+        expect(colonistData._actionStack.length).toBe(0);
+        expect(colonistData._currentAction).toBe(null);
+        resetColonistData();
+        // Add a ladder
+        mockInfra.addConnector({ x: 5, y: 32 }, { x: 5, y: 24 }, connectorInfo, mockMap, 2004);
+        // Set Goal again for test WITH a ladder
+        colonistData.setGoal("farm", mockInfra, mockMap, job);
+        // Expect results: Current action is to walk to the ladder, and 3 other actions are: climb, move, produce (farm)
+        expect(colonistData._actionStack.length).toBe(3);
+        expect(colonistData._currentAction).toStrictEqual({
+            type: "move",
+            coords: { x: 5, y: 32 },
+            duration: 0,
+            buildingId: 0
+        });
+        // expect(colonistData._actionStack).toStrictEqual([{ type: "farm", coords: { x: 6, y: 30 }, duration: 60, buildingId: 1004 }])
     })
 
     // TODO: Test updatePosition method!!!

@@ -232,15 +232,14 @@ export default class ColonistData {
                 if (this._actionStack.length === 0) this._needsAvailable.water = 0;
                 break;
             case "get-food":    // Parallels the get-water case almost closely enough to be the same... but not quite!
-            this._actionStack = createConsumeActionStack(currentPosition, this._standingOnId, ["food", this._needs.food], infra);
+                this._actionStack = createConsumeActionStack(currentPosition, this._standingOnId, ["food", this._needs.food], infra);
                 // If no action stack was returned, assume that food is temporarily unavailable
                 if (this._actionStack.length === 0) this._needsAvailable.food = 0;
                 break;
             case "farm":
             case "mine":    // Right now both farming and mining have the same action stack goal: find the way to the job site
                 if (job) {
-                    this.addAction(job.type, job.coords, job.duration, job.buildingId);
-                    const stack = createProductionActionStack(currentPosition, this._standingOnId, infra, job);
+                    this._actionStack = createProductionActionStack(currentPosition, this._standingOnId, infra, job);
                 } else {
                     console.log(`Error: No job data found for goal: ${this._currentGoal}`);
                 }
