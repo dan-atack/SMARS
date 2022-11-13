@@ -1961,15 +1961,13 @@ Exit Criteria:
 
 21. Make a new Colonist method, produce, which will do a position check like the consume method does to ensure that the colonist is in the right position and then find the Module identified by the current action's building ID value. Once the module is found, call its punchIn method with the colonist's ID. Add a call to this method to the colonist's startAction switch block when the action is "farm."
 
-### 23. Add a new field to the Module class, called colonistsPresent. It will be a list of numbers representing colonist IDs.
+22. Have the Module's punchIn method push the colonist's ID to the module's crewPresent list when it's called. Unit test that this works correctly.
 
-### 24. Have the Module's punchIn method push the colonist's ID to the module's colonistsPresent list when it's called. Unit test that this works correctly.
+### 25. Have the Module's punchOut method filter out the colonist's ID from the crewPresent list when it's called. If a colonist whose number is not on the list punches out this should not cause an error (although a warning should be printed to the console). Unit test that this works correctly.
 
-### 25. Have the Module's punchOut method filter out the colonist's ID from the colonistsPresent list when it's called. If a colonist whose number is not on the list punches out this should not cause an error (although a warning should be printed to the console). Unit test that this works correctly.
+### 26. Add the Module's crewPresent field to the Module class's save data.
 
-### 26. Add the Module's colonistsPresent field to the Module class's save data.
-
-### 27. When loading a saved Module that does not have a colonistsPresent list, have that field revert to being an empty list.
+### 27. When loading a saved Module that does not have a crew Present list, have that field revert to being an empty list.
 
 ### 28. Next, add a case to the ColonistData's startMovement switch block for "farm", following essentially the same pattern as the "eat" and "drink" actions.
 

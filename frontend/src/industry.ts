@@ -55,7 +55,7 @@ export default class Industry {
         // console.log(`Found ${mods.length} modules for ${role.name}s to work at.`);
         // For each module check if it A) has enough input resources to produce and B) how many open slots it has
         mods.forEach((mod) => {
-            const slots = mod._moduleInfo.crewCapacity - mod._crewPresent;
+            const slots = mod._moduleInfo.crewCapacity - mod._crewPresent.length;
             const provisioned = mod.hasProductionInputs();
             if (slots > 0 && provisioned) {
                 for (let i = 0; i < slots; i++) {

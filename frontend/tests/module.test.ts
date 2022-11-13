@@ -325,4 +325,10 @@ describe("ModuleData", () => {
         expect(prodModule.hasProductionInputs()).toBe(false);
         expect(prodModule2.hasProductionInputs()).toBe(true);
     })
+
+    test("Can keep track of a colonist's ID with the punchIn method", () => {
+        const colonistId = 5000;
+        prodModule.punchIn(colonistId);
+        expect(prodModule._crewPresent).toStrictEqual([5000]);
+    })
 })

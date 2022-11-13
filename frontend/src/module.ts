@@ -18,7 +18,7 @@ export default class Module {
     _resourceSharing: boolean;  // Yes or no policy, for whether to grant the resource requests of other modules
     _resourceAcquiring: number; // 0 to 1, representing how much of the max capacity of each resource the module tries to maintain
     _resources : Resource[];    // Represents the current tallies of each type of resource stored in this module
-    _crewPresent: number;       // If the module has a crew capacity, keep track of how many colonists are currently in it
+    _crewPresent: number[];     // If the module has a crew capacity, keep track of which colonists are currently inside
     _width: number;             // Width and height are in terms of blocks (grid spaces), not pixels
     _height: number;
     _xOffset: number;           // The offset value will be in terms of PIXELS, to allow for smoother scrolling
@@ -50,7 +50,7 @@ export default class Module {
                 this._resourceAcquiring = 0;
         }
         this._resources = [];
-        this._crewPresent = 0;
+        this._crewPresent = [];
         this._moduleInfo.storageCapacity.forEach((res) => {
             const r: Resource = [ res[0], 0 ];
             this._resources.push(r); // Add resource capacity
@@ -179,6 +179,7 @@ export default class Module {
 
     punchIn = (colonistId: number) => {
         console.log(`Colonist ${colonistId} punching in.`);
+        this._crewPresent.push(colonistId);
     }
 
     punchOut = (colonistId: number) => {
