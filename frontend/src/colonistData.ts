@@ -267,7 +267,7 @@ export default class ColonistData {
                     if (this._actionTimeElapsed >= this._currentAction.duration) {
                         this._needs.water -= this._currentAction.duration;  // Reduce water need by 1/unit of time spent drinking
                         this.resolveAction();
-                        this.checkForNextAction(infra);
+                        this.checkForNextAction(infra);     // Do we need this? Drink should be the last action in a stack
                     }
                     break;
                 case "eat":
@@ -275,6 +275,12 @@ export default class ColonistData {
                         this._needs.food -= this._currentAction.duration;   // Reduce food need by 1/unit of time spent eating
                         this.resolveAction();
                         this.checkForNextAction(infra);
+                    }
+                    break;
+                case "farm":
+                    if (this._actionTimeElapsed >= this._currentAction.duration) {
+                        this.resolveAction();
+                        // TODO: Also call the production module's 'produce' method now
                     }
                     break;
                 case "move":
@@ -307,24 +313,24 @@ export default class ColonistData {
             this._currentAction = action;
             switch(this._currentAction.type) {
                 case "climb":
-                    // console.log(`Colonist ${this._id} Climbing ladder at ${this._currentAction.coords.x}`);
                     this._movementDest = this._currentAction.coords;
                     break;
                 case "drink":
-                    // console.log(`Colonist ${this._id} Drinking at ${this._currentAction.buildingId}`);
                     this.consume("water", infra);
                     break;
                 case "eat":
-                    // console.log(`Colonist ${this._id} Eating at ${this._currentAction.buildingId}`);
                     this.consume("food", infra);
                     break;
+                case "farm":
+                    console.log("It comes outta the fuckin' GROUND!");
+                    this.produce(infra);
+                    break;
                 case "move":
-                    // console.log(`Colonist ${this._id} Beginning movement to ${this._currentAction.coords.x}`);
                     this._movementDest = this._currentAction.coords;
                     break;
             }
         } else {
-            console.log('Error: Unable to start action because the action stack is empty.')
+            console.log('Warning: Unable to start action because the action stack is empty.')
         }
     }
 
@@ -533,6 +539,18 @@ export default class ColonistData {
                 // Skip this action if the colonist was sent to the wrong coordinates
                 this.resolveAction();
             }
+        }
+    }
+
+    produce = (infra: Infrastructure) => {
+        // Ensure that the current action exists, and that the colonist is in the right place
+        if (this._currentAction && this._currentAction.coords.x === this._x && this._currentAction.coords.y === this._y + 1) {
+            const mod = infra.getModuleFromID(this._currentAction.buildingId);
+            if (mod) {
+                mod.punchIn(this._id);
+            }
+        } else {
+            console.log(`Warning: Colonist ${this._id} is in wrong position for ${this._currentAction?.type} production.`);
         }
     }
 

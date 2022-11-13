@@ -1911,7 +1911,7 @@ Exit Criteria:
 
 - [DONE] Industry class creates a list of jobs for each type of occupation (role) every hour
 - [DONE] Colonists can get a job assigned to them from the Industry class based on their role
-- Colonists go to the module specified by their job, and perform a 'work' action there (action stack creation)
+- Colonists go to the module specified by their job, and perform a 'work' action there
 - Once the Colonist's work action is completed, the modules inputs are converted into outputs
 - Once the work action is completed, modules immediately post another job, resource supplies permitting
 - Once the work action is completed, if the Colonist is not yet tired/hungry/thirsty, they will begin another round of production immediately
@@ -1951,9 +1951,33 @@ Exit Criteria:
 
 16. Next, open up the ColonistActionLogic file, and create the skeleton of a new function called createProductionActionStack.
 
-### 17. In the ColonistActionLogic file, copy the action stack creation logic for the two different complete stacks (elevator to ground floor exists, and elevator to current floor exists) from the createConsumeActionStack method into their own functions, called climbLadderFromGroundActions and climbLadderFromFloorActions. Since replacing the code in the consume action sequence creator is not necessary at this moment, just use the new methods in the context of the production action stack creator (do a unit test run followed by manual sanity check before proceeding).
+17. In the ColonistActionLogic file, copy the action stack creation logic for the two different complete stacks (elevator to ground floor exists, and elevator to current floor exists) from the createConsumeActionStack method into their own functions, called climbLadderFromGroundActions and climbLadderFromFloorActions. Since replacing the code in the consume action sequence creator is not necessary at this moment, just use the new methods in the context of the production action stack creator (do a unit test run followed by manual sanity check before proceeding).
 
-### 18. Plug the findPathToModule function into the new createProductionActionStack method, so that it adds the pathfinding steps on top of the job action and returns a complete stack. As with the consume action stack creator, if no additional actions are added to the stack after the initial job action (indicating that the job site is unreachable), return an empty list so that the colonist knows that the current goal is impossible. It will be an hour before the job is re-created by the Industry class if this happens, so there is no need for the colonist to 'remember' that a particular job site is unreachable; they will simply move onto the next job (or if no jobs remain for their role, they should simply revert to exploring until more jobs are created by the Industry class's hourly update).
+18. Plug the new action stack creation sub-functions into the new createProductionActionStack method, so that it adds the pathfinding steps on top of the job action and returns a complete stack. As with the consume action stack creator, if no additional actions are added to the stack after the initial job action (indicating that the job site is unreachable), return an empty list so that the colonist knows that the current goal is impossible (unless of course there is only one action because the colonist is already at the job site!). It will be an hour before the job is re-created by the Industry class if this happens, so there is no need for the colonist to 'remember' that a particular job site is unreachable; they will simply move onto the next job (or if no jobs remain for their role, they should simply revert to exploring until more jobs are created by the Industry class's hourly update).
+
+19. Add a case to the checkActionStatus switch block for "farm" (we'll leave "mine" for another time) to have it resolve the current action once the target duration has been met.
+
+20. Add two new skeleton methods to the Module class called punchIn and punchOut. They will take a number representing a colonist's ID as an argument, and simply console log that value for now.
+
+21. Make a new Colonist method, produce, which will do a position check like the consume method does to ensure that the colonist is in the right position and then find the Module identified by the current action's building ID value. Once the module is found, call its punchIn method with the colonist's ID. Add a call to this method to the colonist's startAction switch block when the action is "farm."
+
+### 23. Add a new field to the Module class, called colonistsPresent. It will be a list of numbers representing colonist IDs.
+
+### 24. Have the Module's punchIn method push the colonist's ID to the module's colonistsPresent list when it's called. Unit test that this works correctly.
+
+### 25. Have the Module's punchOut method filter out the colonist's ID from the colonistsPresent list when it's called. If a colonist whose number is not on the list punches out this should not cause an error (although a warning should be printed to the console). Unit test that this works correctly.
+
+### 26. Add the Module's colonistsPresent field to the Module class's save data.
+
+### 27. When loading a saved Module that does not have a colonistsPresent list, have that field revert to being an empty list.
+
+### 28. Next, add a case to the ColonistData's startMovement switch block for "farm", following essentially the same pattern as the "eat" and "drink" actions.
+
+### 29. Create a simple ColonistAnimation to go with the "farm" action. Make the colonist reach over to touch each of the six plant containers.
+
+### 30. Now, create the Module class's produce method: Reduce the amount of resources in stock for all input resource, and increase the stock for all output resources.
+
+### 31. Have the Colonist call the Module's produce method and then its punchOut method in the checkActionStatus block for farming (we can potentially add other types of production action to the same switch case stack later on if they involve the same criteria).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

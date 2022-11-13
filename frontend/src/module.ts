@@ -111,7 +111,7 @@ export default class Module {
         return reqs;
     }
 
-    // Called by the Industry class to determine if a module can produce
+    // Called by the Industry class to determine if a module can produce (convert inputs to outputs) right now
     hasProductionInputs () {
         let provisioned = true;
         // Check each input resource against the current quantity; if any resource is lacking, return false
@@ -173,6 +173,16 @@ export default class Module {
             // console.log(`Cannot find resource ${resource[0]} in module ${this._moduleInfo.name} ${this._id}`);
             return 0;
         }
+    }
+
+    // SECTION 3: WORK-RELATED METHODS (FOR PRODUCTION MODULES ONLY)
+
+    punchIn = (colonistId: number) => {
+        console.log(`Colonist ${colonistId} punching in.`);
+    }
+
+    punchOut = (colonistId: number) => {
+        console.log(`Colonist ${colonistId} punching out.`);
     }
 
     render = (p5: P5, xOffset: number) => {    // TODO: Block gets y offset values as arguments to renderer

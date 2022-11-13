@@ -794,7 +794,26 @@ describe("ColonistData", () => {
             duration: 0,
             buildingId: 0
         });
-        // expect(colonistData._actionStack).toStrictEqual([{ type: "farm", coords: { x: 6, y: 30 }, duration: 60, buildingId: 1004 }])
+        expect(colonistData._actionStack).toStrictEqual([
+            {
+                type: "farm",
+                coords: { x: 6, y: 27 },
+                duration: 60,
+                buildingId: 1005
+            },
+            {
+                type: "move",
+                coords: { x: 6, y: 27 },
+                duration: 0,
+                buildingId: 0
+            },
+            {
+                type: "climb",
+                coords: { x: 5, y: 28 },   // NOTE: Climb action takes into account the Colonist's HEAD level, not FOOT level
+                duration: 0,
+                buildingId: 2004
+            }
+        ])
     })
 
     // TODO: Test updatePosition method!!!
