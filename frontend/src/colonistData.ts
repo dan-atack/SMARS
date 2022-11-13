@@ -279,8 +279,8 @@ export default class ColonistData {
                     break;
                 case "farm":
                     if (this._actionTimeElapsed >= this._currentAction.duration) {
+                        infra.resolveModuleProduction(this._currentAction.buildingId, this._id);
                         this.resolveAction();
-                        // TODO: Also call the production module's 'produce' method now
                     }
                     break;
                 case "move":
@@ -405,12 +405,10 @@ export default class ColonistData {
                     this._movementCost = 5; // It takes 5 time units to climb one segment of ladder in either direction
                     break;
                 case "drink":
-                    this._movementType = "drink";
-                    this._movementCost = this._currentAction.duration;  // Drink time depends on thirst level
-                    break;
                 case "eat":
-                    this._movementType = "eat";
-                    this._movementCost = this._currentAction.duration;  // Eating time depends on hunger level
+                case "farm":        // All three of these activities have an animation name, and a time duration
+                    this._movementType = this._currentAction.type;
+                    this._movementCost = this._currentAction.duration;  // Drink time depends on thirst level
                     break;
                 case "move":
                     // A - Determine direction
@@ -429,7 +427,7 @@ export default class ColonistData {
                         // Jumping down from either 1 or 2 blocks takes the same movement
                         case 2:
                             this._movementType = "big-drop";
-                            this._movementCost = 5;
+                            this._movementCost = 6;
                             break;
                         case 1:
                             this._movementType = "small-drop";
@@ -445,7 +443,7 @@ export default class ColonistData {
                             break;
                         case -2:
                             this._movementType = "big-climb";
-                            this._movementCost = 10;
+                            this._movementCost = 12;
                             break;
                         default:
                             // Abort movement if terrain is too steep

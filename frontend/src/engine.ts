@@ -918,12 +918,12 @@ export default class Engine extends View {
         if (this._modal) {
             this._modal.render();
         }
-        // if (this._population._colonists.length > 1) {
-        //     p5.text(`Colonist 1 water needs: ${this._population._colonists[0]._data._needs.water}`, 160, 160);
-        //     p5.text(`Colonist 1 food needs: ${this._population._colonists[0]._data._needs.food}`, 160, 180);
-        //     p5.text(`Colonist 2 water needs: ${this._population._colonists[1]._data._needs.water}`, 160, 200);
-        //     p5.text(`Colonist 2 food needs: ${this._population._colonists[1]._data._needs.food}`, 160, 220);
-        // }
+        if (this._population._colonists.length > 1) {   
+            if (this._population._colonists[0]._data._currentAction?.type === "farm" || this._population._colonists[1]._data._currentAction?.type === "farm") {
+                p5.fill(constants.EGGSHELL);
+                p5.text("It comes outta the fuckin' GROUND!", 360, 360);
+            }
+        }
     }
 
 }

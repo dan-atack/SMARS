@@ -204,6 +204,17 @@ export default class Infrastructure {
         }
     }
 
+    // Tells a given module to complete its production sequence, and punch out the colonist
+    resolveModuleProduction = (moduleId: number, colonistId: number) => {
+        const mod = this.getModuleFromID(moduleId);
+        if (mod) {
+            mod.produce();
+            mod.punchOut(colonistId);
+        } else {
+            console.log(`Error: Could not find production data for module ${moduleId}`);
+        }
+    }
+
     // Top-level module resource calculator - returns all resource data to the Economy class to amalgamate it
     getAllBaseResources = () => {
         const resources: Resource[] = [];

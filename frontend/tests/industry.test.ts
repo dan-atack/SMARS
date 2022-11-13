@@ -73,13 +73,13 @@ describe("Industry class", () => {
             {
                 type: "farm",
                 coords: { x: 1, y: 27 },
-                duration: 60,
+                duration: 30,
                 buildingId: 1001
             },
             {
                 type: "farm",
                 coords: { x: 5, y: 27 },
-                duration: 60,
+                duration: 30,
                 buildingId: 1002
             }
         ])
@@ -92,14 +92,14 @@ describe("Industry class", () => {
         expect(industry.getJob("farmer")).toStrictEqual({
                 type: "farm",
                 coords: { x: 5, y: 27 },
-                duration: 60,
+                duration: 30,
                 buildingId: 1002
         });
         // Run through farmer jobs list...
         expect(industry.getJob("farmer")).toStrictEqual({
             type: "farm",
                 coords: { x: 1, y: 27 },
-                duration: 60,
+                duration: 30,
                 buildingId: 1001
         });
         // ... Until it's empty

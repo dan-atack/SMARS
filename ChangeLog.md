@@ -1969,11 +1969,11 @@ Exit Criteria:
 
 25. When loading a saved Module that does not have a crew Present list, have that field revert to being an empty list.
 
-### 28. Next, add a case to the ColonistData's startMovement switch block for "farm", following essentially the same pattern as the "eat" and "drink" actions.
+26. Next, add a case to the ColonistData's startMovement switch block for "farm", following essentially the same pattern as the "eat" and "drink" actions. In fact, since all three of these cases use the EXACT same pattern, combine them to drop into a single execution block, setting the movement type and duration based on the current action's type and duration values.
 
-### 29. Create a simple ColonistAnimation to go with the "farm" action. Make the colonist reach over to touch each of the six plant containers.
+27. Create a simple ColonistAnimation to go with the "farm" action. Make the colonist reach over to touch each of the six plant containers.
 
-### 30. Now, create the Module class's produce method: Reduce the amount of resources in stock for all input resource, and increase the stock for all output resources.
+### 30. Now, create the Module class's produce method: Reduce the amount of resources in stock for all input resource, and increase the stock for all output resources. Big unit tests needed here broh.
 
 ### 31. Have the Colonist call the Module's produce method and then its punchOut method in the checkActionStatus block for farming (we can potentially add other types of production action to the same switch case stack later on if they involve the same criteria).
 

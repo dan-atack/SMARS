@@ -754,7 +754,7 @@ describe("ColonistData", () => {
         colonistData.detectTerrainBeneath(mockMap, mockInfra);
         // Add new production module
         mockInfra.addModule(5, 30, prodModInfo, mockMap._topography, mockMap._zones, 1004);
-        const job: ColonistAction = { type: "farm", coords: { x: 6, y: 30 }, duration: 60, buildingId: 1004 };
+        const job: ColonistAction = { type: "farm", coords: { x: 6, y: 30 }, duration: 30, buildingId: 1004 };
         colonistData.setGoal("farm", mockInfra, mockMap, job);
         expect(colonistData._actionStack.length).toBe(1);
         expect(colonistData._currentAction).toStrictEqual({
@@ -763,7 +763,7 @@ describe("ColonistData", () => {
             duration: 0,
             buildingId: 0
         });
-        expect(colonistData._actionStack).toStrictEqual([{ type: "farm", coords: { x: 6, y: 30 }, duration: 60, buildingId: 1004 }])
+        expect(colonistData._actionStack).toStrictEqual([{ type: "farm", coords: { x: 6, y: 30 }, duration: 30, buildingId: 1004 }])
     })
 
     // 9 - If the colonist is assigned to work at a module, they can get there if it is on another floor (and is connected)
@@ -776,7 +776,7 @@ describe("ColonistData", () => {
         // Add new production module
         mockInfra.addModule(5, 27, prodModInfo, mockMap._topography, mockMap._zones, 1005);
         // Create job data
-        const job: ColonistAction = { type: "farm", coords: { x: 6, y: 27 }, duration: 60, buildingId: 1005 };
+        const job: ColonistAction = { type: "farm", coords: { x: 6, y: 27 }, duration: 30, buildingId: 1005 };
         // Test without a ladder first: The stack should come back empty, resulting in the job being skipped
         colonistData.setGoal("farm", mockInfra, mockMap, job);
         expect(colonistData._actionStack.length).toBe(0);
@@ -798,7 +798,7 @@ describe("ColonistData", () => {
             {
                 type: "farm",
                 coords: { x: 6, y: 27 },
-                duration: 60,
+                duration: 30,
                 buildingId: 1005
             },
             {

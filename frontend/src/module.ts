@@ -187,6 +187,21 @@ export default class Module {
         this._crewPresent = this._crewPresent.filter((id) => id !== colonistId);
     }
 
+    produce = () => {
+        // Reduce quantities of each input resource
+        let shortages = false;
+        this._moduleInfo.productionInputs?.forEach((resource) => {
+            const used = this.deductResource(resource);
+            if (used !== resource[1]) shortages = true;
+        });
+        // If all inputs were present, increase quantity of each output resource
+        if (!(shortages)) {
+            this._moduleInfo.productionOutputs?.forEach((resource) => {
+                this.addResource(resource);
+            })
+        }
+    }
+
     render = (p5: P5, xOffset: number) => {    // TODO: Block gets y offset values as arguments to renderer
         this._xOffset = xOffset;    // Offset is in terms of pixels
         // HERE IS WHERE X AND Y COORDINATES AND WIDTH AND HEIGHT ARE CONVERTED TO PIXEL VALUES:

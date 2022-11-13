@@ -62,7 +62,7 @@ export default class Industry {
                     const job: ColonistAction = {
                         type: role.action,
                         coords: { x: mod._x + i + 1, y: mod._y + mod._height - 1},
-                        duration: 60,   // TODO: Make this depend on some other quantity?
+                        duration: 30,   // TODO: Make this depend on some other quantity?
                         buildingId: mod._id
                     };
                     this._jobs[role.name].push(job);
