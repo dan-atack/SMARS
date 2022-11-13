@@ -70,7 +70,7 @@ export default class Engine extends View {
     _provisioned: boolean;          // Flag to know when to stop trying to fill up the initial structures with resources
     switchScreen: (switchTo: string) => void;   // App-level SCREEN switcher (passed down via drill from the app)
     updateEarthData: () => void;    // Updater for the date on Earth (for starters)
-    getModuleInfo: (setter: (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[], resources?: Resource[][]) => void, category: string, type: string, name: string, locations: number[][], ids?: number[], resources?: Resource[][]) => void;        // Getter function for loading individual structure data from the backend
+    getModuleInfo: (setter: (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[], resources?: Resource[][]) => void, category: string, type: string, name: string, locations: number[][], ids?: number[], resources?: Resource[][], crews?: number[][]) => void;        // Getter function for loading individual structure data from the backend
     getConnectorInfo: (setter: (selectedConnector: ConnectorInfo, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => void, category: string, type: string, name: string, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => void;
 
     constructor(p5: P5, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, updateEarthData: () => void) {
@@ -180,33 +180,44 @@ export default class Engine extends View {
                     modTypes.push(mod.name)
                 }
             });
-            // For each name (type) of module, get all the coordinates for all instances of that module, then re-populate them
+            // For each type of module, get all coordinates, serials, etc for all instances of that module, then re-populate them
             modTypes.forEach((mT) => {
                 const mods = modules.filter((mod) => mod.name === mT);
                 const modType = mods[0].type != undefined ? mods[0].type : "test";
-                const coords: number[][] = [];
+                const coords: number[][] = [];      // List of every module's coordinates
                 const serials: number[] = [];
                 const resources: Resource[][] = [];
+                const crews: number[][] = [];         // List of IDs of colonists present in each module 
                 mods.forEach((mod) => {
                     coords.push([mod.x, mod.y]);
                     serials.push(mod.id);   // Get ID in separate list, to be used alongside the coordinates
                     resources.push(mod.resources);  // Ditto resource data
+                    crews.push(mod.crewPresent);
                 })
-                this.getModuleInfo(this.loadModuleFromSave, "modules", modType, mT, coords, serials, resources);
+                this.getModuleInfo(this.loadModuleFromSave, "modules", modType, mT, coords, serials, resources, crews);
             })
         }  
     }
 
     // Called by the above method, this will actually use the data from the backend to re-create loaded modules
-    loadModuleFromSave = (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[], resources?: Resource[][]) => {
+    loadModuleFromSave = (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[], resources?: Resource[][], crews?: number[][]) => {
         if (selectedBuilding != null) {
             locations.forEach((space, idx) => {
-                if (ids && resources) {     // Use saved serial number and resource data only if they exist
+                if (ids && resources && crews) {    // For newest saves
                     this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._topography, this._map._zones, ids[idx]); // Create module with ID
                     resources[idx].forEach((resource) => {
                         this._infrastructure.addResourcesToModule(ids[idx], resource);  // Provision with saved resources
                     })
-                } else {
+                    const mod = this._infrastructure.getModuleFromID(ids[idx]);
+                    if (mod) {
+                        mod._crewPresent = crews[idx] || [];  // Re-add crew roster
+                    }
+                } else if (ids && resources) {     // For saves without module crew data
+                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._topography, this._map._zones, ids[idx]); // Create module with ID
+                    resources[idx].forEach((resource) => {
+                        this._infrastructure.addResourcesToModule(ids[idx], resource);  // Provision with saved resources
+                    })
+                } else {                            // For ancient saves (no crew OR resource data)
                     this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._topography, this._map._zones,);
                 }
             })

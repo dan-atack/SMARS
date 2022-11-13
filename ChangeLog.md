@@ -1963,11 +1963,11 @@ Exit Criteria:
 
 22. Have the Module's punchIn method push the colonist's ID to the module's crewPresent list when it's called. Unit test that this works correctly.
 
-### 25. Have the Module's punchOut method filter out the colonist's ID from the crewPresent list when it's called. If a colonist whose number is not on the list punches out this should not cause an error (although a warning should be printed to the console). Unit test that this works correctly.
+23. Have the Module's punchOut method filter out the colonist's ID from the crewPresent list when it's called. If a colonist whose number is not on the list punches out this should not cause an error.
 
-### 26. Add the Module's crewPresent field to the Module class's save data.
+24. Add the Module's crewPresent field to the Module class's save data.
 
-### 27. When loading a saved Module that does not have a crew Present list, have that field revert to being an empty list.
+25. When loading a saved Module that does not have a crew Present list, have that field revert to being an empty list.
 
 ### 28. Next, add a case to the ColonistData's startMovement switch block for "farm", following essentially the same pattern as the "eat" and "drink" actions.
 

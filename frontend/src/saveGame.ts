@@ -25,6 +25,7 @@ export type ModuleSaveInfo = {
     x: number,
     y: number,
     resources: Resource[],
+    crewPresent: number[]   // IDs of crew present
 }
 
 export type ConnectorSaveInfo = {

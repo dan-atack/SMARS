@@ -184,6 +184,7 @@ export default class Module {
 
     punchOut = (colonistId: number) => {
         console.log(`Colonist ${colonistId} punching out.`);
+        this._crewPresent = this._crewPresent.filter((id) => id !== colonistId);
     }
 
     render = (p5: P5, xOffset: number) => {    // TODO: Block gets y offset values as arguments to renderer

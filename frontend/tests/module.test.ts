@@ -312,7 +312,7 @@ describe("ModuleData", () => {
         expect(lsModule.determineResourceRequests()).toStrictEqual([]);
     })
 
-    test("Can tell if module has sufficient resources for production", () =>{
+    test("hasProductionInputs can tell if module has sufficient resources for production", () =>{
         // Setup test: 1 module has almost enough resources but not quite, the other has an abundance
         resetResource(prodModule);
         prodModule.addResource(["water", 5]);
@@ -326,9 +326,21 @@ describe("ModuleData", () => {
         expect(prodModule2.hasProductionInputs()).toBe(true);
     })
 
-    test("Can keep track of a colonist's ID with the punchIn method", () => {
+    test("punchIn adds a colonist ID to the list of crew present in the module", () => {
         const colonistId = 5000;
         prodModule.punchIn(colonistId);
         expect(prodModule._crewPresent).toStrictEqual([5000]);
+    })
+
+    test("PunchOut removes a colonist ID from the list of crew present", () => {
+        const otherId = 5001;
+        prodModule.punchIn(otherId);
+        expect(prodModule._crewPresent).toStrictEqual([5000, 5001]);    // Add a second ID to the list for fun
+        prodModule.punchOut(5000);
+        expect(prodModule._crewPresent).toStrictEqual([5001]);  // Number punched out is removed from the list
+        prodModule.punchOut(5000);
+        expect(prodModule._crewPresent).toStrictEqual([5001]);  // Calling for a number not in the list does nothing
+        prodModule.punchOut(5001);
+        expect(prodModule._crewPresent).toStrictEqual([]);  // Can empty the list with this command
     })
 })
