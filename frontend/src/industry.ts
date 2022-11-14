@@ -41,34 +41,38 @@ export default class Industry {
     // Top level updater - called by the Engine class's hourly updater method
     updateJobs = (infra: Infrastructure) => {
         this._roles.forEach((role) => {
-            this.updateJobsForRole(infra, role);
+            this.updateJobsForRole(infra, role.name);
         })
         console.log(this._jobs);
     }
 
-    // Updates the jobs for a specific role
-    updateJobsForRole = (infra: Infrastructure, role: Role) => {
-        // console.log(`Updating jobs for ${role.name}`);
-        this._jobs[role.name] = []; // Reset jobs list for this role
-        // Find modules that produce the role's resource
-        const mods = infra.findModulesWithOutput(role.resourceProduced);
-        // console.log(`Found ${mods.length} modules for ${role.name}s to work at.`);
-        // For each module check if it A) has enough input resources to produce and B) how many open slots it has
-        mods.forEach((mod) => {
-            const slots = mod._moduleInfo.crewCapacity - mod._crewPresent.length;
-            const provisioned = mod.hasProductionInputs();
-            if (slots > 0 && provisioned) {
-                for (let i = 0; i < slots; i++) {
-                    const job: ColonistAction = {
-                        type: role.action,
-                        coords: { x: mod._x + i + 1, y: mod._y + mod._height - 1},
-                        duration: 30,   // TODO: Make this depend on some other quantity?
-                        buildingId: mod._id
-                    };
-                    this._jobs[role.name].push(job);
+    // Updates the jobs for a specific role from its string name
+    updateJobsForRole = (infra: Infrastructure, roleName: string) => {
+        // Find the role based on the given role name string OR role action string (i.e. find the role for 'farm' OR 'farmer')
+        const role = this._roles.find((role) => role.name === roleName || role.action === roleName);
+        if (role) {
+            this._jobs[role.name] = []; // Reset jobs list for this role
+            // Find modules that produce the role's resource
+            const mods = infra.findModulesWithOutput(role.resourceProduced);
+            // For each module check if it A) has enough input resources to produce and B) how many open slots it has
+            mods.forEach((mod) => {
+                const slots = mod._moduleInfo.crewCapacity - mod._crewPresent.length;
+                const provisioned = mod.hasProductionInputs();
+                if (slots > 0 && provisioned) {
+                    for (let i = 0; i < slots; i++) {
+                        const job: ColonistAction = {
+                            type: role.action,
+                            coords: { x: mod._x + i + 1, y: mod._y + mod._height - 1},
+                            duration: 30,   // TODO: Make this depend on some other quantity?
+                            buildingId: mod._id
+                        };
+                        this._jobs[role.name].push(job);
+                    }
                 }
-            }
-        })
+            })
+        } else {
+            console.log(`Error: role data for role ${roleName} not found.`);
+        }   
     }
 
     // Called by the Colonists when they need a new job

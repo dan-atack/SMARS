@@ -68,7 +68,7 @@ describe("Industry class", () => {
         expect(infra._modules[0]._resources).toStrictEqual([["water", 1000], ["food", 0]]);
         expect(infra._modules[1]._resources).toStrictEqual([["water", 1000], ["food", 0]]);
         // Run test: Expect one job for each farm slot (one per module)
-        industry.updateJobsForRole(infra, role)
+        industry.updateJobsForRole(infra, role.name);
         expect(industry._jobs.farmer).toStrictEqual([
             {
                 type: "farm",
@@ -82,7 +82,23 @@ describe("Industry class", () => {
                 duration: 30,
                 buildingId: 1002
             }
-        ])
+        ]);
+        // Run alternate test: Expect same results when the role's action word instead
+        industry.updateJobsForRole(infra, role.action);
+        expect(industry._jobs.farmer).toStrictEqual([
+            {
+                type: "farm",
+                coords: { x: 1, y: 27 },
+                duration: 30,
+                buildingId: 1001
+            },
+            {
+                type: "farm",
+                coords: { x: 5, y: 27 },
+                duration: 30,
+                buildingId: 1002
+            }
+        ]);
         // Check that no extra keys have been created in the Jobs object by mistake
         expect(Object.keys(industry._jobs).length).toBe(2); // Farmer and miner
     })

@@ -253,7 +253,7 @@ describe("ColonistData", () => {
         // Start the action before checking the action status
         colonistData.startAction(mockInfra);
         expect(colonistData._actionTimeElapsed).toBe(0);
-        colonistData.checkActionStatus(mockInfra);
+        colonistData.checkActionStatus(mockInfra, indy);
         expect(colonistData._actionTimeElapsed).toBe(1);
     })
 
@@ -263,7 +263,7 @@ describe("ColonistData", () => {
         expect(colonistData._actionTimeElapsed).toBe(0);    // Validate reset
         colonistData.addAction("move", { x: 0, y: 0 });
         colonistData.startAction(mockInfra);
-        colonistData.checkActionStatus(mockInfra);
+        colonistData.checkActionStatus(mockInfra, indy);
         expect(colonistData._actionTimeElapsed).toBe(0);    // Validate that time elapsed is still 0
     })
 
@@ -281,7 +281,7 @@ describe("ColonistData", () => {
         // Verify that action is not resolved when colonist is not in the exact position
         colonistData._x = 10;
         colonistData._y = 31;
-        colonistData.checkActionStatus(mockInfra);
+        colonistData.checkActionStatus(mockInfra, indy);
         expect(colonistData._currentAction).toStrictEqual({
             type: "climb",
             coords: { x: 10, y: 32 },
@@ -289,7 +289,7 @@ describe("ColonistData", () => {
             buildingId: 1001
         })
         colonistData._y = 32;   // Move the colonist into position and re-check
-        colonistData.checkActionStatus(mockInfra);
+        colonistData.checkActionStatus(mockInfra, indy);
         expect(colonistData._currentAction).toBe(null); // Action should now be resolved
     })
 
@@ -307,7 +307,7 @@ describe("ColonistData", () => {
         })
         // Verify that action is not resolved when colonist has not finished drinking
         colonistData._actionTimeElapsed = 8;
-        colonistData.checkActionStatus(mockInfra);
+        colonistData.checkActionStatus(mockInfra, indy);
         expect(colonistData._currentAction).toStrictEqual({
             type: "drink",
             coords: { x: 10, y: 32 },
@@ -315,7 +315,7 @@ describe("ColonistData", () => {
             buildingId: 1001
         })
         colonistData._actionTimeElapsed = 10;   // Increase the action time elapsed to equal the duration value
-        colonistData.checkActionStatus(mockInfra);
+        colonistData.checkActionStatus(mockInfra, indy);
         expect(colonistData._currentAction).toBe(null); // Action should now be resolved
     })
 
@@ -334,7 +334,7 @@ describe("ColonistData", () => {
         })
         // Verify that action is not resolved when colonist has not finished eating
         colonistData._actionTimeElapsed = 8;
-        colonistData.checkActionStatus(mockInfra);
+        colonistData.checkActionStatus(mockInfra, indy);
         expect(colonistData._currentAction).toStrictEqual({
             type: "eat",
             coords: { x: 10, y: 32 },
@@ -342,7 +342,7 @@ describe("ColonistData", () => {
             buildingId: 1001
         })
         colonistData._actionTimeElapsed = 10;   // Increase the action time elapsed to equal the duration value
-        colonistData.checkActionStatus(mockInfra);
+        colonistData.checkActionStatus(mockInfra, indy);
         expect(colonistData._currentAction).toBe(null); // Action should now be resolved
         // PART 2: Action is resolved, but Colonist's need is only partially satisfied if target module has insufficient resources
         // Reset test conditions
@@ -357,7 +357,7 @@ describe("ColonistData", () => {
         expect(colonistData._currentAction?.duration).toBe(5);      // Reduce duration since it takes less time to eat less food
         // Fast forward to the end of the action
         colonistData._actionTimeElapsed = 4;
-        colonistData.checkActionStatus(mockInfra);
+        colonistData.checkActionStatus(mockInfra, indy);
         expect(colonistData._currentAction).toBe(null);     // Action should resolve itself after a shorter than expected duration
         expect(colonistData._needs.food).toBe(5);           // Only half of the hunger is removed, however
     })
@@ -376,7 +376,7 @@ describe("ColonistData", () => {
         // Verify that action is not resolved when colonist is not at the right x coordinate, even if y coord is matching
         colonistData._x = 9;
         colonistData._y = 31;
-        colonistData.checkActionStatus(mockInfra);
+        colonistData.checkActionStatus(mockInfra, indy);
         expect(colonistData._currentAction).toStrictEqual({
             type: "move",
             coords: { x: 10, y: 32 },
@@ -385,7 +385,7 @@ describe("ColonistData", () => {
         })
         colonistData._x = 10;   // Move the colonist into position and re-check (mess up the y coordinate too, just for show)
         colonistData._y = 99;
-        colonistData.checkActionStatus(mockInfra);
+        colonistData.checkActionStatus(mockInfra, indy);
         expect(colonistData._currentAction).toBe(null); // Action should now be resolved
     })
 

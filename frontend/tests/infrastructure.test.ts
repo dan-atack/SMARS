@@ -317,7 +317,7 @@ describe("Infrastructure base class", () => {
         expect(infra._modules[3]._resources).toStrictEqual([
             ["food", 5000],
             ["water", 5000],
-            ["power", 1000]                                        // Power is transferred
+            ["power", 1000]                                        // Power is transferred from production module to cantina
         ]);
     })
 

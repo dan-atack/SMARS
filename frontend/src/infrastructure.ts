@@ -204,6 +204,8 @@ export default class Infrastructure {
         }
     }
 
+    // TODO: Add a method here to call the module's deduct resources function too
+
     // Tells a given module to complete its production sequence, and punch out the colonist
     resolveModuleProduction = (moduleId: number, colonistId: number) => {
         const mod = this.getModuleFromID(moduleId);

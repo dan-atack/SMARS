@@ -93,7 +93,7 @@ export const createProductionActionStack = (colonistCoords: Coords, standingOnId
     if (floor) {
         // 2A - Destination is on same surface as colonist
         if (determineIfColonistIsOnSameSurface(floor, standingOnId)) {
-            if (colonistCoords !== job.coords) {
+            if (colonistCoords.x !== job.coords.x) {
                 stack.push(addAction("move", job.coords)); // If colonist is not already at the module, add move action
             }
         } else if (floor._connectors.length > 0){
