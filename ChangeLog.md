@@ -1911,13 +1911,13 @@ Exit Criteria:
 
 - [DONE] Industry class creates a list of jobs for each type of occupation (role) every hour
 - [DONE] Colonists can get a job assigned to them from the Industry class based on their role
-- Colonists go to the module specified by their job, and perform a 'work' action there
-- Once the Colonist's work action is completed, the modules inputs are converted into outputs
+- [DONE] Colonists go to the module specified by their job, and perform a 'work' action there
+- [DONE] Once the Colonist's work action is completed, the module's inputs are converted into outputs
 - Once the work action is completed, modules immediately post another job, resource supplies permitting
 - Once the work action is completed, if the Colonist is not yet tired/hungry/thirsty, they will begin another round of production immediately
-- Production action has a basic animation
-- Production outputs are held in the production module
-- [STRETCH] On the hourly module resource transfer phase, production modules ship their resources to other modules
+- [DONE] Production action (farm) has a basic animation
+- [DONE] Production outputs are contained in the production module
+- [STRETCH] On the hourly module resource transfer phase, production modules try to ship their resources to storage modules
 
 1. Create the Industry class, as well as a skeletal unit test file. The Industry class should have the following fields: roles (which is a list of objects that contain information about a role, including its name, and the resource it aims to produce) and jobs (which are actually ColonistActions, so we can import that type definition).
 
@@ -1975,7 +1975,13 @@ Exit Criteria:
 
 ### 30. Now, create the Module class's produce method: Reduce the amount of resources in stock for all input resource, and increase the stock for all output resources. Big unit tests needed here broh.
 
-### 31. Have the Colonist call the Module's produce method and then its punchOut method in the checkActionStatus block for farming (we can potentially add other types of production action to the same switch case stack later on if they involve the same criteria).
+31. Have the Colonist call the Module's produce method and then its punchOut method in the checkActionStatus block for farming (we can potentially add other types of production action to the same switch case stack later on if they involve the same criteria).
+
+### 32. Add a simple unit test for the Infrastructure class's new method, resolveModuleProduction, to make sure it's airtight.
+
+### 33. For the Infrastructure class's hourly updates method, add a new sub-method called checkProductionModulesForOutputs. This will be used to see which production modules have outputs in their resource stockpiles, and try to transfer those to modules with the storage type.
+
+### 34. Lastly, pass the Industry class down to the colonist's checkActionStatus method from its handleMinutelyUpdates method, so that the farm action resolution block can call the updateJobsForRole method for that role before resolving the action (but after resolving the module's production, in order to come after the Module's punchOut method call). This should allow the Industry class to re-create the jobs list for that role before the Colonist leaves the module, allowing them to simply take another shift there right away rather than having to wait for the hourly update to regenerate the job. Add a unit test to the ColonistData class that uses a mock Industry class to simulate this workflow (in addition to performing manual sanity checks).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

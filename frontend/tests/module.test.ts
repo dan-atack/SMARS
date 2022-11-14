@@ -126,6 +126,7 @@ const emptyModule = new Module(9001, 20, 20, noStoreModuleInfo);
 const lsModule = new Module(9002, 14, 10, lifeSupportModInfo);
 const prodModule = new Module(9003, 14, 6, productionModuleInfo);
 const commsModule = new Module(9004, 10, 6, commsModuleInfo);
+const prodModule2 = new Module(9005, 10, 2, productionModuleInfo);
 
 describe("ModuleData", () => {
 
@@ -313,17 +314,17 @@ describe("ModuleData", () => {
     })
 
     test("hasProductionInputs can tell if module has sufficient resources for production", () =>{
-        // Setup test: 1 module has almost enough resources but not quite, the other has an abundance
+        // Setup test: 1 module has enough resources, the other has almost enough resources but not quite
         resetResource(prodModule);
         prodModule.addResource(["water", 5]);
         prodModule.addResource(["power", 100]);
-        prodModule.addResource(["carbon", 4]);
-        const prodModule2 = new Module(9005, 10, 2, productionModuleInfo);
+        prodModule.addResource(["carbon", 5]);
+        
         prodModule2.addResource(["water", 5]);
         prodModule2.addResource(["power", 100]);
-        prodModule2.addResource(["carbon", 5]);
-        expect(prodModule.hasProductionInputs()).toBe(false);
-        expect(prodModule2.hasProductionInputs()).toBe(true);
+        prodModule2.addResource(["carbon", 4]);
+        expect(prodModule.hasProductionInputs()).toBe(true);
+        expect(prodModule2.hasProductionInputs()).toBe(false);
     })
 
     test("punchIn adds a colonist ID to the list of crew present in the module", () => {
@@ -342,5 +343,26 @@ describe("ModuleData", () => {
         expect(prodModule._crewPresent).toStrictEqual([5001]);  // Calling for a number not in the list does nothing
         prodModule.punchOut(5001);
         expect(prodModule._crewPresent).toStrictEqual([]);  // Can empty the list with this command
+    })
+
+    test("Produce removes inputs from module resource stocks and adds output resources if all inputs are present", () => {
+        // Module 1: Has enough resources = inputs reduced; outputs increased
+        prodModule.produce();
+        expect(prodModule._resources).toStrictEqual([
+            ["air", 10],
+            ["water", 0],
+            ["carbon", 0],
+            ["food", 10],
+            ["power", 0]
+        ]);
+        // Module 2: Does not have enough resoures = inputs are wasted!
+        prodModule2.produce();
+        expect(prodModule2._resources).toStrictEqual([
+            ["air", 0],
+            ["water", 0],
+            ["carbon", 0],
+            ["food", 0],
+            ["power", 0]
+        ]);
     })
 })
