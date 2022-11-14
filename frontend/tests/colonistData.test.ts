@@ -1,6 +1,7 @@
-import ColonistData from "../src/colonistData";
+import ColonistData, { ColonistAction } from "../src/colonistData";
 import Infrastructure from "../src/infrastructure";
 import Map from "../src/map";
+import Industry from "../src/industry";
 import { ModuleInfo } from "../src/server_functions";
 import { ConnectorInfo } from "../src/server_functions";
 
@@ -53,6 +54,40 @@ const cantinaModuleInfo: ModuleInfo = {
     shapes: []
 }
 
+const prodModInfo: ModuleInfo = {
+    name: "Hydroponics Pod",
+    width: 3,
+    height: 3,
+    type: "Production",
+    pressurized: true,
+    columnStrength: 1,
+    durability: 100,
+    buildCosts: [
+        ["money", 100000],
+    ],
+    maintenanceCosts: [
+        ["power", 10]
+    ],
+    productionInputs: [     // Plant life needs: water, CO2 and light (in this case electric light)
+        ["water", 5],
+        ["carbon", 5],
+        ["power", 100]
+    ],
+    productionOutputs: [
+        ["food", 10],
+        ["air", 10],
+    ],
+    storageCapacity: [
+        ["air", 9000],
+        ["water", 2500],
+        ["carbon", 2500],
+        ["food", 1000],
+        ["power", 1000]     // Limited internal batteries
+    ],
+    crewCapacity: 1,
+    shapes: []
+}
+
 // Test Connector Data
 const connectorInfo: ConnectorInfo = {
     name: "Ladder",
@@ -76,6 +111,7 @@ describe("ColonistData", () => {
     const colonistData = new ColonistData(9000, "Ziggy", 0, 32);
     const mockInfra = new Infrastructure();
     const mockMap = new Map();
+    const indy = new Industry();
     mockMap._mapData = flatTerrain;
     mockMap.updateTopographyAndZones();
     mockInfra._data.setup(mockMap._mapData.length);
@@ -115,12 +151,12 @@ describe("ColonistData", () => {
 
     test("Colonist with no goal will set goal to explore when updateGoal is called", () => {
         colonistData._currentGoal = "";
-        colonistData.updateGoal(mockInfra, mockMap);
+        colonistData.updateGoal(mockInfra, mockMap, indy);
         expect(colonistData._currentGoal).toBe("explore");
     })
 
     test("Hourly updater method increases colonist needs", () => {
-        colonistData.handleHourlyUpdates(mockInfra, mockMap);
+        colonistData.handleHourlyUpdates(mockInfra, mockMap, indy);
         expect(colonistData._needs).toStrictEqual({
             water: 1,
             food: 1,
@@ -135,7 +171,7 @@ describe("ColonistData", () => {
             rest: 3
         };
         colonistData._currentGoal = "explore";
-        colonistData.handleHourlyUpdates(mockInfra, mockMap);
+        colonistData.handleHourlyUpdates(mockInfra, mockMap, indy);
         expect(colonistData._currentGoal).toBe("get-water");
     })
 
@@ -145,7 +181,7 @@ describe("ColonistData", () => {
             food: 7,
             rest: 0
         };
-        colonistData.handleHourlyUpdates(mockInfra, mockMap);
+        colonistData.handleHourlyUpdates(mockInfra, mockMap, indy);
         expect(colonistData._currentGoal).toBe("get-water");
     })
 
@@ -172,7 +208,7 @@ describe("ColonistData", () => {
 
     test("CheckGoalStatus method will resolve current goal and set a new one if there is no current action/action stack", () => {
         colonistData._needs.food = 7;
-        colonistData.checkGoalStatus(mockInfra, mockMap);
+        colonistData.checkGoalStatus(mockInfra, mockMap, indy);
         expect(colonistData._currentGoal).toBe("get-food"); // Will be set to get-food since we made the colonist hungry
     })
 
@@ -217,7 +253,7 @@ describe("ColonistData", () => {
         // Start the action before checking the action status
         colonistData.startAction(mockInfra);
         expect(colonistData._actionTimeElapsed).toBe(0);
-        colonistData.checkActionStatus(mockInfra);
+        colonistData.checkActionStatus(mockInfra, indy);
         expect(colonistData._actionTimeElapsed).toBe(1);
     })
 
@@ -227,7 +263,7 @@ describe("ColonistData", () => {
         expect(colonistData._actionTimeElapsed).toBe(0);    // Validate reset
         colonistData.addAction("move", { x: 0, y: 0 });
         colonistData.startAction(mockInfra);
-        colonistData.checkActionStatus(mockInfra);
+        colonistData.checkActionStatus(mockInfra, indy);
         expect(colonistData._actionTimeElapsed).toBe(0);    // Validate that time elapsed is still 0
     })
 
@@ -245,7 +281,7 @@ describe("ColonistData", () => {
         // Verify that action is not resolved when colonist is not in the exact position
         colonistData._x = 10;
         colonistData._y = 31;
-        colonistData.checkActionStatus(mockInfra);
+        colonistData.checkActionStatus(mockInfra, indy);
         expect(colonistData._currentAction).toStrictEqual({
             type: "climb",
             coords: { x: 10, y: 32 },
@@ -253,7 +289,7 @@ describe("ColonistData", () => {
             buildingId: 1001
         })
         colonistData._y = 32;   // Move the colonist into position and re-check
-        colonistData.checkActionStatus(mockInfra);
+        colonistData.checkActionStatus(mockInfra, indy);
         expect(colonistData._currentAction).toBe(null); // Action should now be resolved
     })
 
@@ -271,7 +307,7 @@ describe("ColonistData", () => {
         })
         // Verify that action is not resolved when colonist has not finished drinking
         colonistData._actionTimeElapsed = 8;
-        colonistData.checkActionStatus(mockInfra);
+        colonistData.checkActionStatus(mockInfra, indy);
         expect(colonistData._currentAction).toStrictEqual({
             type: "drink",
             coords: { x: 10, y: 32 },
@@ -279,7 +315,7 @@ describe("ColonistData", () => {
             buildingId: 1001
         })
         colonistData._actionTimeElapsed = 10;   // Increase the action time elapsed to equal the duration value
-        colonistData.checkActionStatus(mockInfra);
+        colonistData.checkActionStatus(mockInfra, indy);
         expect(colonistData._currentAction).toBe(null); // Action should now be resolved
     })
 
@@ -298,7 +334,7 @@ describe("ColonistData", () => {
         })
         // Verify that action is not resolved when colonist has not finished eating
         colonistData._actionTimeElapsed = 8;
-        colonistData.checkActionStatus(mockInfra);
+        colonistData.checkActionStatus(mockInfra, indy);
         expect(colonistData._currentAction).toStrictEqual({
             type: "eat",
             coords: { x: 10, y: 32 },
@@ -306,7 +342,7 @@ describe("ColonistData", () => {
             buildingId: 1001
         })
         colonistData._actionTimeElapsed = 10;   // Increase the action time elapsed to equal the duration value
-        colonistData.checkActionStatus(mockInfra);
+        colonistData.checkActionStatus(mockInfra, indy);
         expect(colonistData._currentAction).toBe(null); // Action should now be resolved
         // PART 2: Action is resolved, but Colonist's need is only partially satisfied if target module has insufficient resources
         // Reset test conditions
@@ -321,7 +357,7 @@ describe("ColonistData", () => {
         expect(colonistData._currentAction?.duration).toBe(5);      // Reduce duration since it takes less time to eat less food
         // Fast forward to the end of the action
         colonistData._actionTimeElapsed = 4;
-        colonistData.checkActionStatus(mockInfra);
+        colonistData.checkActionStatus(mockInfra, indy);
         expect(colonistData._currentAction).toBe(null);     // Action should resolve itself after a shorter than expected duration
         expect(colonistData._needs.food).toBe(5);           // Only half of the hunger is removed, however
     })
@@ -340,7 +376,7 @@ describe("ColonistData", () => {
         // Verify that action is not resolved when colonist is not at the right x coordinate, even if y coord is matching
         colonistData._x = 9;
         colonistData._y = 31;
-        colonistData.checkActionStatus(mockInfra);
+        colonistData.checkActionStatus(mockInfra, indy);
         expect(colonistData._currentAction).toStrictEqual({
             type: "move",
             coords: { x: 10, y: 32 },
@@ -349,7 +385,7 @@ describe("ColonistData", () => {
         })
         colonistData._x = 10;   // Move the colonist into position and re-check (mess up the y coordinate too, just for show)
         colonistData._y = 99;
-        colonistData.checkActionStatus(mockInfra);
+        colonistData.checkActionStatus(mockInfra, indy);
         expect(colonistData._currentAction).toBe(null); // Action should now be resolved
     })
 
@@ -448,7 +484,7 @@ describe("ColonistData", () => {
         // Reset current goal data before proceeding
         resetColonistData();
         colonistData._currentGoal = "";
-        colonistData.updateGoal(mockInfra, mockMap);
+        colonistData.updateGoal(mockInfra, mockMap, indy);
         // Tests resume
         colonistData._x = 1;
         colonistData._movementDest = { x: 2, y: 0};
@@ -705,8 +741,79 @@ describe("ColonistData", () => {
         expect(colonistData._actionStack.length).toBe(0);
         expect(colonistData._needsAvailable.water).toBe(0);
         // Also, check that the availability is reset to 1 after the hourly update
-        colonistData.handleHourlyUpdates(mockInfra, mockMap);
+        colonistData.handleHourlyUpdates(mockInfra, mockMap, indy);
         expect(colonistData._needsAvailable.water).toBe(1);
+    })
+
+    // 8 - If the colonist is assigned to work at a module, they can get there if both are on the ground
+    test("Action Determination for production jobs works when colonist is on same zone as production site", () => {
+        resetColonistData();
+        // Colonist is on the ground
+        colonistData._x = 3;
+        colonistData._y = 31;   // Head is one above (lower integer) the feet, which are one higher than the topography value
+        colonistData.detectTerrainBeneath(mockMap, mockInfra);
+        // Add new production module
+        mockInfra.addModule(5, 30, prodModInfo, mockMap._topography, mockMap._zones, 1004);
+        const job: ColonistAction = { type: "farm", coords: { x: 6, y: 30 }, duration: 30, buildingId: 1004 };
+        colonistData.setGoal("farm", mockInfra, mockMap, job);
+        expect(colonistData._actionStack.length).toBe(1);
+        expect(colonistData._currentAction).toStrictEqual({
+            type: "move",
+            coords: { x: 6, y: 30 },
+            duration: 0,
+            buildingId: 0
+        });
+        expect(colonistData._actionStack).toStrictEqual([{ type: "farm", coords: { x: 6, y: 30 }, duration: 30, buildingId: 1004 }])
+    })
+
+    // 9 - If the colonist is assigned to work at a module, they can get there if it is on another floor (and is connected)
+    test("Action Determination for production jobs works when colonist is on same zone as production site", () => {
+        resetColonistData();
+        // Colonist is on the ground
+        colonistData._x = 3;
+        colonistData._y = 31;   // Head is one above (lower integer) the feet, which are one higher than the topography value
+        colonistData.detectTerrainBeneath(mockMap, mockInfra);
+        // Add new production module
+        mockInfra.addModule(5, 27, prodModInfo, mockMap._topography, mockMap._zones, 1005);
+        // Create job data
+        const job: ColonistAction = { type: "farm", coords: { x: 6, y: 27 }, duration: 30, buildingId: 1005 };
+        // Test without a ladder first: The stack should come back empty, resulting in the job being skipped
+        colonistData.setGoal("farm", mockInfra, mockMap, job);
+        expect(colonistData._actionStack.length).toBe(0);
+        expect(colonistData._currentAction).toBe(null);
+        resetColonistData();
+        // Add a ladder
+        mockInfra.addConnector({ x: 5, y: 32 }, { x: 5, y: 24 }, connectorInfo, mockMap, 2004);
+        // Set Goal again for test WITH a ladder
+        colonistData.setGoal("farm", mockInfra, mockMap, job);
+        // Expect results: Current action is to walk to the ladder, and 3 other actions are: climb, move, produce (farm)
+        expect(colonistData._actionStack.length).toBe(3);
+        expect(colonistData._currentAction).toStrictEqual({
+            type: "move",
+            coords: { x: 5, y: 32 },
+            duration: 0,
+            buildingId: 0
+        });
+        expect(colonistData._actionStack).toStrictEqual([
+            {
+                type: "farm",
+                coords: { x: 6, y: 27 },
+                duration: 30,
+                buildingId: 1005
+            },
+            {
+                type: "move",
+                coords: { x: 6, y: 27 },
+                duration: 0,
+                buildingId: 0
+            },
+            {
+                type: "climb",
+                coords: { x: 5, y: 28 },   // NOTE: Climb action takes into account the Colonist's HEAD level, not FOOT level
+                duration: 0,
+                buildingId: 2004
+            }
+        ])
     })
 
     // TODO: Test updatePosition method!!!

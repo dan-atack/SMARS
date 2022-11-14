@@ -7,7 +7,7 @@ import Engine from "./engine";
 import PopulationView from "./populationView";
 import TechTree from "./tech";
 import Earth from "./earth";
-import Industry from "./industry";
+import IndustryView from "./industryView";
 import Logbook from "./logbook";
 // Game constants:
 import { constants } from "./constants";
@@ -21,7 +21,7 @@ export default class Game extends Screen {
     _population: PopulationView;
     _techTree: TechTree;
     _earth: Earth;
-    _industry: Industry;
+    _industry: IndustryView;
     // _logbook: Logbook;               // This was a place-filler that there might not be space for now...
     _views: View[];
     _gameData: GameData;                // Simple data for a new game
@@ -40,7 +40,7 @@ export default class Game extends Screen {
         this._population = new PopulationView(p5, this.changeView);
         this._techTree = new TechTree(p5, this.changeView);
         this._earth = new Earth(p5, this.changeView) // There IS no planet B!!!
-        this._industry = new Industry(p5, this.changeView);
+        this._industry = new IndustryView(p5, this.changeView);
         // this._logbook = new Logbook(p5, this.changeView);        // On hold pending investigation into why we need it.
         this._views = [this._engine, this._population, this._techTree, this._earth, this._industry];
         this._gameData = {          // Default values will be overridden
@@ -128,7 +128,8 @@ export default class Game extends Screen {
                 type: mod._moduleInfo.type,
                 x: mod._x,
                 y: mod._y,
-                resources: mod._resources
+                resources: mod._resources,
+                crewPresent: mod._crewPresent
             }
             moduleData.push(stats);
         });

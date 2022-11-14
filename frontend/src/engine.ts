@@ -5,6 +5,7 @@ import View from "./view";
 import Sidebar from "./sidebar";
 import Map from "./map";
 import Infrastructure from "./infrastructure";
+import Industry from "./industry";
 import Economy from "./economy";
 import Population from "./population";
 import Modal, { EventData } from "./modal";
@@ -35,6 +36,7 @@ export default class Engine extends View {
     _saveInfo: SaveInfo | null  // Data object for a saved game
     _map: Map;
     _infrastructure: Infrastructure;
+    _industry: Industry;
     _economy: Economy;
     _population: Population;
     _modal: Modal | null;
@@ -68,7 +70,7 @@ export default class Engine extends View {
     _provisioned: boolean;          // Flag to know when to stop trying to fill up the initial structures with resources
     switchScreen: (switchTo: string) => void;   // App-level SCREEN switcher (passed down via drill from the app)
     updateEarthData: () => void;    // Updater for the date on Earth (for starters)
-    getModuleInfo: (setter: (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[], resources?: Resource[][]) => void, category: string, type: string, name: string, locations: number[][], ids?: number[], resources?: Resource[][]) => void;        // Getter function for loading individual structure data from the backend
+    getModuleInfo: (setter: (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[], resources?: Resource[][]) => void, category: string, type: string, name: string, locations: number[][], ids?: number[], resources?: Resource[][], crews?: number[][]) => void;        // Getter function for loading individual structure data from the backend
     getConnectorInfo: (setter: (selectedConnector: ConnectorInfo, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => void, category: string, type: string, name: string, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => void;
 
     constructor(p5: P5, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, updateEarthData: () => void) {
@@ -83,6 +85,7 @@ export default class Engine extends View {
         this._saveInfo = null;  // Saved game info is loaded from the Game module when it calls the setupSavedGame method
         this._map = new Map();
         this._infrastructure = new Infrastructure();
+        this._industry = new Industry();
         this._economy = new Economy(p5);
         this._population = new Population();
         this._modal = null;
@@ -177,33 +180,44 @@ export default class Engine extends View {
                     modTypes.push(mod.name)
                 }
             });
-            // For each name (type) of module, get all the coordinates for all instances of that module, then re-populate them
+            // For each type of module, get all coordinates, serials, etc for all instances of that module, then re-populate them
             modTypes.forEach((mT) => {
                 const mods = modules.filter((mod) => mod.name === mT);
                 const modType = mods[0].type != undefined ? mods[0].type : "test";
-                const coords: number[][] = [];
+                const coords: number[][] = [];      // List of every module's coordinates
                 const serials: number[] = [];
                 const resources: Resource[][] = [];
+                const crews: number[][] = [];         // List of IDs of colonists present in each module 
                 mods.forEach((mod) => {
                     coords.push([mod.x, mod.y]);
                     serials.push(mod.id);   // Get ID in separate list, to be used alongside the coordinates
                     resources.push(mod.resources);  // Ditto resource data
+                    crews.push(mod.crewPresent);
                 })
-                this.getModuleInfo(this.loadModuleFromSave, "modules", modType, mT, coords, serials, resources);
+                this.getModuleInfo(this.loadModuleFromSave, "modules", modType, mT, coords, serials, resources, crews);
             })
         }  
     }
 
     // Called by the above method, this will actually use the data from the backend to re-create loaded modules
-    loadModuleFromSave = (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[], resources?: Resource[][]) => {
+    loadModuleFromSave = (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[], resources?: Resource[][], crews?: number[][]) => {
         if (selectedBuilding != null) {
             locations.forEach((space, idx) => {
-                if (ids && resources) {     // Use saved serial number and resource data only if they exist
+                if (ids && resources && crews) {    // For newest saves
                     this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._topography, this._map._zones, ids[idx]); // Create module with ID
                     resources[idx].forEach((resource) => {
                         this._infrastructure.addResourcesToModule(ids[idx], resource);  // Provision with saved resources
                     })
-                } else {
+                    const mod = this._infrastructure.getModuleFromID(ids[idx]);
+                    if (mod) {
+                        mod._crewPresent = crews[idx] || [];  // Re-add crew roster
+                    }
+                } else if (ids && resources) {     // For saves without module crew data
+                    this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._topography, this._map._zones, ids[idx]); // Create module with ID
+                    resources[idx].forEach((resource) => {
+                        this._infrastructure.addResourcesToModule(ids[idx], resource);  // Provision with saved resources
+                    })
+                } else {                            // For ancient saves (no crew OR resource data)
                     this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._topography, this._map._zones,);
                 }
             })
@@ -277,6 +291,7 @@ export default class Engine extends View {
                 const [gridX, gridY] = this.getMouseGridPosition(mouseX, mouseY);
                 switch (this.mouseContext) {
                     case "inspect":
+                        console.log(`(${gridX}, ${gridY})`);
                         this.handleInspect({ x: gridX, y: gridY });
                         break;
                     case "placeModule":
@@ -653,6 +668,7 @@ export default class Engine extends View {
         this.updateEconomyDisplay();
         this.updateEarthData();
         this._infrastructure.handleHourlyUpdates();
+        this._industry.updateJobs(this._infrastructure);
     }
 
     // In-game clock control and general event scheduler
@@ -662,7 +678,7 @@ export default class Engine extends View {
             if (this._tick >= this.ticksPerMinute) {
                 this._tick = 0;     // Advance minutes
                 // Update colonists' locations each 'minute', and all of their other stats every hour
-                this._population.updateColonists(this._gameTime.minute === 0, this._infrastructure, this._map);
+                this._population.updateColonists(this._gameTime.minute === 0, this._infrastructure, this._map, this._industry);
                 if (this._gameTime.minute < this._minutesPerHour - 1) {  // Minus one tells the minutes counter to reset to zero after 59
                     this._gameTime.minute ++;
                 } else {
@@ -902,12 +918,12 @@ export default class Engine extends View {
         if (this._modal) {
             this._modal.render();
         }
-        // if (this._population._colonists.length > 1) {
-        //     p5.text(`Colonist 1 water needs: ${this._population._colonists[0]._data._needs.water}`, 160, 160);
-        //     p5.text(`Colonist 1 food needs: ${this._population._colonists[0]._data._needs.food}`, 160, 180);
-        //     p5.text(`Colonist 2 water needs: ${this._population._colonists[1]._data._needs.water}`, 160, 200);
-        //     p5.text(`Colonist 2 food needs: ${this._population._colonists[1]._data._needs.food}`, 160, 220);
-        // }
+        if (this._population._colonists.length > 1) {   
+            if (this._population._colonists[0]._data._currentAction?.type === "farm" || this._population._colonists[1]._data._currentAction?.type === "farm") {
+                p5.fill(constants.EGGSHELL);
+                p5.text("It comes outta the fuckin' GROUND!", 360, 360);
+            }
+        }
     }
 
 }

@@ -83,7 +83,8 @@ export type SaveInfo = {
         type: string,           // Module type info is needed to complete search parameters when re-fetching full data object
         x: number,
         y: number,
-        resources: Resource[]
+        resources: Resource[],
+        crewPresent: number[]
     }[]
     connectors: {               // Connector data's shape will eventually change, but for now it's basically the same as a module
         name: string,

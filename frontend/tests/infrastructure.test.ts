@@ -99,6 +99,36 @@ const powerPlantInfo: ModuleInfo = {
     shapes: []
 }
 
+const hydroponicsModuleData: ModuleInfo = {
+    name: "Hydroponics Pod",
+    width: 3,
+    height: 3,
+    type: "Production",
+    pressurized: true,
+    columnStrength: 1,
+    durability: 100,
+    buildCosts: [
+        ["money", 100000],
+    ],
+    maintenanceCosts: [
+        ["power", 10]
+    ],
+    productionInputs: [     // Plant life needs: water, CO2 and light (in this case electric light)
+        ["water", 5]
+    ],
+    productionOutputs: [
+        ["food", 10],
+        ["oxygen", 10],
+    ],
+    storageCapacity: [
+        ["oxygen", 1000],
+        ["water", 2500],
+        ["food", 1000],
+    ],
+    crewCapacity: 1,
+    shapes: []
+}
+
 const ladderData: ConnectorInfo = {
     name: "Ladder",
     type: "transport",
@@ -116,7 +146,7 @@ const ladderData: ConnectorInfo = {
 const airVentData: ConnectorInfo = {
     name: "Air Vent",
     type: "conduit",
-    resourcesCarried: ["air"],
+    resourcesCarried: ["oxygen"],
     maxFlowRate: 1,
     buildCosts:[
         ["money", 10000]
@@ -287,8 +317,32 @@ describe("Infrastructure base class", () => {
         expect(infra._modules[3]._resources).toStrictEqual([
             ["food", 5000],
             ["water", 5000],
-            ["power", 1000]                                        // Power is transferred
+            ["power", 1000]                                        // Power is transferred from production module to cantina
         ]);
+    })
+
+    test("Can return a list of modules that produce a given resource", () => {
+        // Add food production module now, to avoid interfering with other tests
+        infra.addModule(0, 22, hydroponicsModuleData, mockography, zonesData, 1005);
+        expect(infra.findModulesWithOutput("power")[0]._id).toBe(1004);             // Find the power plant
+        expect(infra.findModulesWithOutput("food")[0]._id).toBe(1005);              // Find the hydro pod
+        expect(infra.findModulesWithOutput("oxygen")[0]._id).toBe(1005);            // Find the hydro pod again
+        expect(infra.findModulesWithOutput("equipment")).toStrictEqual([]);         // Return empty list if no prod mod is found
+    })
+
+    test("Can trigger a production round for a module", () => {
+        // Setup: Module exists with a colonist punched in, and the necessary resources for production
+        infra.handleHourlyUpdates();
+        infra._modules[5].punchIn(9999);        // Punch in colonist # 9999
+        expect(infra._modules[5].hasProductionInputs()).toBe(true);     // Validate setup
+        expect(infra._modules[5]._crewPresent).toStrictEqual([9999]);
+        infra.resolveModuleProduction(1005, 9999);  // Should punch out the colonist, and remove inputs and add outputs
+        expect(infra._modules[5]._crewPresent).toStrictEqual([]);
+        expect(infra._modules[5]._resources).toStrictEqual([
+            ["oxygen", 10],     // From 0 to 10 (+10)
+            ["water", 1245],    // From 1250 to 1245 (-5)
+            ["food", 10]        // From 0 to 10 (+10)
+        ])
     })
 
 })

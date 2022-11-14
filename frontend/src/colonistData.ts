@@ -1,7 +1,8 @@
 // The ColonistData class handles all of the data processing for the colonist class, without any of the rendering tasks
 import { ColonistSaveData, ColonistNeeds, ColonistRole } from "./colonist";
-import { createConsumeActionStack, findElevatorToGround } from "./colonistActionLogic";
+import { createConsumeActionStack, createProductionActionStack, findElevatorToGround } from "./colonistActionLogic";
 import { Coords } from "./connector";
+import Industry from "./industry";
 import Infrastructure from "./infrastructure";  // Infra data info gets passed by population updater function
 import Map from "./map";
 
@@ -79,16 +80,16 @@ export default class ColonistData {
     }
 
     // Handles hourly updates to the colonist's needs and priorities (goals)
-    handleHourlyUpdates = (infra: Infrastructure, map: Map) => {
+    handleHourlyUpdates = (infra: Infrastructure, map: Map, industry: Industry) => {
         this.updateNeeds();
         this.resetNeedAvailabilities();
-        this.updateGoal(infra, map);
+        this.updateGoal(infra, map, industry);
     }
 
     // AdjacentColumns is a subset of the map; just the column the colonist is on, plus one to the immediate right/left
-    handleMinutelyUpdates = (adjacentColumns: number[][], infra: Infrastructure, map: Map) => {
-        this.checkActionStatus(infra);              // First: Update actions before goals
-        this.checkGoalStatus(infra, map);           // Then update goals after actions
+    handleMinutelyUpdates = (adjacentColumns: number[][], infra: Infrastructure, map: Map, industry: Industry) => {
+        this.checkActionStatus(infra, industry);              // First: Update actions before goals
+        this.checkGoalStatus(infra, map, industry);           // Then update goals after actions
         this.handleMovement(map, infra, adjacentColumns);  // Finally, take care of movement last
     }
 
@@ -115,49 +116,66 @@ export default class ColonistData {
     }
 
     // Checks whether any needs have exceeded their threshold and assigns a new goal if so; otherwise sets goal to 'explore'
-    updateGoal = (infra: Infrastructure, map: Map) => {
+    updateGoal = (infra: Infrastructure, map: Map, industry: Industry) => {
         // 1 - Determine needs-based (first priority) goals
         // If the colonist has no current goal, or is set to exploring, check if any needs have reached their thresholds
         if (this._currentGoal === "explore" || this._currentGoal === "") {
-            Object.keys(this._needs).forEach((need) => {
-                // Check each need to see if it has A) crossed its threshold and B) is still believed to be available
-                // @ts-ignore
-                if (this._needs[need] >= this._needThresholds[need] && this._needsAvailable[need]) {
-                    // When setting new goal, clear out the current action - UNLESS it's a 'climb' action, in which case wait
-                    if (this._currentAction?.type !== "climb") {
-                        this.resolveAction();
-                        this.setGoal(`get-${need}`, infra, map);
-                    } else {
-                        console.log(`Colonist ${this._id} is climbing - delaying new action start.`);
-                    }
-                }
-            })
+            this.checkForNeeds(infra, map);
         };
-        // 2- Determine job-related (second priority) goal if no needs-based goal has been set
-        // If no goal has been set, tell them to go exploring; otherwise use the goal determined above
-        // TODO: When colonists can have jobs, revamp this logic to check for non-exploration jobs before defaulting to explore
+        // 2 - Determine job-related (second priority) goal ONLY IF no needs-based goal has been set
+        if (this._currentGoal === "explore" || this._currentGoal === "") {
+            this.checkForJobs(infra, map, industry);
+        }
+        // 3 - If no goal has been set, tell them to go exploring; otherwise use the goal determined above
         if (this._currentGoal === "") {
             this.setGoal("explore", infra, map);
         };
     }
 
-    // Takes a string naming the current goal, and uses that to set the destination (and sets that string as the current goal)
-    // Also takes optional parameter when setting the "explore" goal, to ensure the colonist isn't sent off the edge of the world
-    setGoal = (goal: string, infra?: Infrastructure, map?: Map) => {
+    // Sub-routine 1 for updateGoal method: Checks if any needs have reached their threshold
+    checkForNeeds = (infra: Infrastructure, map: Map) => {
+        Object.keys(this._needs).forEach((need) => {
+            // Check each need to see if it has A) crossed its threshold and B) is still believed to be available
+            // @ts-ignore
+            if (this._needs[need] >= this._needThresholds[need] && this._needsAvailable[need]) {
+                // When setting new goal, clear out the current action - UNLESS it's a 'climb' action, in which case wait
+                if (this._currentAction?.type !== "climb") {
+                    this.resolveAction();
+                    this.setGoal(`get-${need}`, infra, map);
+                } else {
+                    console.log(`Colonist ${this._id} is climbing - delaying new action start.`);
+                }
+            }
+        })
+    }
+
+    // Sub-routine 2 for updateGoal method: Checks for jobs for the Colonist's role
+    checkForJobs = (infra: Infrastructure, map: Map, industry: Industry) => {
+        const job = industry.getJob(this._role[0]);
+        if (job) {  // Set the Job type as the new goal if a job is found; otherwise this will fall through to the default case
+            console.log(`Setting goal for ${this._name}: ${job.type}`);
+            this.addAction(job.type, job.coords, job.duration, job.buildingId); // Make the job the first item in the action stack
+            this.setGoal(job.type, infra, map, job);     // Then determine how to get to the job site
+        }
+    }
+
+    // Takes a string naming the current goal, as well as additional optional arguments for infra and map
+    // ALSO takes an optional final argument for a production job, to pass to the action stack determinator
+    setGoal = (goal: string, infra?: Infrastructure, map?: Map, job?: ColonistAction) => {
         this._currentGoal = goal;
         if (infra && map) {
-            this.determineActionsForGoal(infra, map);
+            this.determineActionsForGoal(infra, map, job);  // If there is a job, pass it to action stack determinator
         } else if (this._currentGoal !== "") {
             console.log(`Error: Infra/Map data missing for non-empty colonist goal: ${this._currentGoal}`);
         }
     }
 
     // Determines if a colonist has reached their destination, and if so, what to do next
-    checkGoalStatus = (infra: Infrastructure, map: Map) => {
+    checkGoalStatus = (infra: Infrastructure, map: Map, industry: Industry) => {
         // New way: Check if the colonist has no actions remaining - if so, they have resolved their current goal
         if (this._actionStack.length === 0 && this._currentAction === null) {
             this.resolveGoal();
-            this.updateGoal(infra, map);
+            this.updateGoal(infra, map, industry);
         }
     }
 
@@ -179,7 +197,7 @@ export default class ColonistData {
     // (Actions are individual tasks, such as 'move to x', or 'consume a resource' which collectively form a single GOAL)
 
     // Top Level Action Creation Method: determines the individual actions to be performed to achieve the current goal
-    determineActionsForGoal = (infra: Infrastructure, map: Map) => {
+    determineActionsForGoal = (infra: Infrastructure, map: Map, job?: ColonistAction) => {
         this.clearActions();    // Ensure the action stack is empty before adding to it
         const currentPosition = { x: this._x, y: this._y + 1 }; // Add 1 to colonist Y position to get 'foot level' value
         switch(this._currentGoal) {
@@ -214,16 +232,24 @@ export default class ColonistData {
                 if (this._actionStack.length === 0) this._needsAvailable.water = 0;
                 break;
             case "get-food":    // Parallels the get-water case almost closely enough to be the same... but not quite!
-            this._actionStack = createConsumeActionStack(currentPosition, this._standingOnId, ["food", this._needs.food], infra);
+                this._actionStack = createConsumeActionStack(currentPosition, this._standingOnId, ["food", this._needs.food], infra);
                 // If no action stack was returned, assume that food is temporarily unavailable
                 if (this._actionStack.length === 0) this._needsAvailable.food = 0;
+                break;
+            case "farm":
+            case "mine":    // Right now both farming and mining have the same action stack goal: find the way to the job site
+                if (job) {
+                    this._actionStack = createProductionActionStack(currentPosition, this._standingOnId, infra, job);
+                } else {
+                    console.log(`Error: No job data found for goal: ${this._currentGoal}`);
+                }
                 break;
         }
         this.startGoalProgress(infra);
     }
 
     // Called every minute by the master updater; checks and updates progress towards the completion of the current action
-    checkActionStatus = (infra: Infrastructure) => {
+    checkActionStatus = (infra: Infrastructure, industry: Industry) => {
         if (this._currentAction) {
             // 1 - Increase action elapsed time if the current action has a duration value
             if (this._currentAction.duration > 0) {
@@ -241,7 +267,7 @@ export default class ColonistData {
                     if (this._actionTimeElapsed >= this._currentAction.duration) {
                         this._needs.water -= this._currentAction.duration;  // Reduce water need by 1/unit of time spent drinking
                         this.resolveAction();
-                        this.checkForNextAction(infra);
+                        this.checkForNextAction(infra);     // Do we need this? Drink should be the last action in a stack
                     }
                     break;
                 case "eat":
@@ -249,6 +275,13 @@ export default class ColonistData {
                         this._needs.food -= this._currentAction.duration;   // Reduce food need by 1/unit of time spent eating
                         this.resolveAction();
                         this.checkForNextAction(infra);
+                    }
+                    break;
+                case "farm":
+                    if (this._actionTimeElapsed >= this._currentAction.duration) {
+                        infra.resolveModuleProduction(this._currentAction.buildingId, this._id); // complete production & punch out
+                        industry.updateJobsForRole(infra, this._currentAction.type);    // renew farmer jobs
+                        this.resolveAction();
                     }
                     break;
                 case "move":
@@ -281,24 +314,24 @@ export default class ColonistData {
             this._currentAction = action;
             switch(this._currentAction.type) {
                 case "climb":
-                    // console.log(`Colonist ${this._id} Climbing ladder at ${this._currentAction.coords.x}`);
                     this._movementDest = this._currentAction.coords;
                     break;
                 case "drink":
-                    // console.log(`Colonist ${this._id} Drinking at ${this._currentAction.buildingId}`);
                     this.consume("water", infra);
                     break;
                 case "eat":
-                    // console.log(`Colonist ${this._id} Eating at ${this._currentAction.buildingId}`);
                     this.consume("food", infra);
                     break;
+                case "farm":
+                    console.log("It comes outta the fuckin' GROUND!");
+                    this.produce(infra);
+                    break;
                 case "move":
-                    // console.log(`Colonist ${this._id} Beginning movement to ${this._currentAction.coords.x}`);
                     this._movementDest = this._currentAction.coords;
                     break;
             }
         } else {
-            console.log('Error: Unable to start action because the action stack is empty.')
+            console.log('Warning: Unable to start action because the action stack is empty.')
         }
     }
 
@@ -373,12 +406,10 @@ export default class ColonistData {
                     this._movementCost = 5; // It takes 5 time units to climb one segment of ladder in either direction
                     break;
                 case "drink":
-                    this._movementType = "drink";
-                    this._movementCost = this._currentAction.duration;  // Drink time depends on thirst level
-                    break;
                 case "eat":
-                    this._movementType = "eat";
-                    this._movementCost = this._currentAction.duration;  // Eating time depends on hunger level
+                case "farm":        // All three of these activities have an animation name, and a time duration
+                    this._movementType = this._currentAction.type;
+                    this._movementCost = this._currentAction.duration;  // Drink time depends on thirst level
                     break;
                 case "move":
                     // A - Determine direction
@@ -397,7 +428,7 @@ export default class ColonistData {
                         // Jumping down from either 1 or 2 blocks takes the same movement
                         case 2:
                             this._movementType = "big-drop";
-                            this._movementCost = 5;
+                            this._movementCost = 6;
                             break;
                         case 1:
                             this._movementType = "small-drop";
@@ -413,7 +444,7 @@ export default class ColonistData {
                             break;
                         case -2:
                             this._movementType = "big-climb";
-                            this._movementCost = 10;
+                            this._movementCost = 12;
                             break;
                         default:
                             // Abort movement if terrain is too steep
@@ -507,6 +538,18 @@ export default class ColonistData {
                 // Skip this action if the colonist was sent to the wrong coordinates
                 this.resolveAction();
             }
+        }
+    }
+
+    produce = (infra: Infrastructure) => {
+        // Ensure that the current action exists, and that the colonist is in the right place
+        if (this._currentAction && this._currentAction.coords.x === this._x && this._currentAction.coords.y === this._y + 1) {
+            const mod = infra.getModuleFromID(this._currentAction.buildingId);
+            if (mod) {
+                mod.punchIn(this._id);
+            }
+        } else {
+            console.log(`Warning: Colonist ${this._id} is in wrong position for ${this._currentAction?.type} production.`);
         }
     }
 

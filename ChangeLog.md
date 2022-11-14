@@ -1901,7 +1901,85 @@ Not Doing:
 
 11. Update the logic for the Infra class's resolveModuleResourceRequests method to permit taking resources from production modules, in the event that the resource is part of their OUTPUTS list.
 
-## Chapter Thirty-Five:
+## Chapter Thirty-Five: The Industry Class (Difficulty Estimate: 5 for lots of little things coming together, including updating/isolating parts of the Colonist's pathfinding logic, plus a new animation sequence)
+
+### November 6, 2022
+
+Now that the production modules have been provisioned, it is time to start putting the colonists to work! This chapter will focus on creating a new Engine subclass, Industry, which will act as a repository for all productivity-related information in the colony. The purpose of this class, in its first increment, will be to determine what production jobs can be done for each type of Role that the Colonists can be assigned to. We will start with food production, which will be done in the Hydroponics module (so far the game's only production module) In time, the Industry class will encompass information about power generation and mining as well, but those will be added in later chapters. The idea is that for whatever type of Role a colonist can be assigned to, when they are deciding on a new (non-life-support) goal they will check in with the Industry class to be assigned to a particular module to carry out production work. The Industry class will have two initial methods: updateJobs, which will prepare a list of jobs for each role, and getJob, which will be exposed to the Colonist class when they are starting a new goal.
+
+Exit Criteria:
+
+- [DONE] Industry class creates a list of jobs for each type of occupation (role) every hour
+- [DONE] Colonists can get a job assigned to them from the Industry class based on their role
+- [DONE] Colonists go to the module specified by their job, and perform a 'work' action there
+- [DONE] Once the Colonist's work action is completed, the module's inputs are converted into outputs
+- [DONE] Once the work action is completed, modules immediately post another job, resource supplies permitting
+- [DONE] Once work is completed, if the Colonist is not yet tired/hungry/thirsty, they begin another production round immediately
+- [DONE] Production action (farm) has a basic animation
+- [DONE] Production outputs are contained in the production module
+- [DONE] [STRETCH] On the hourly module resource transfer phase, production modules will ship their resources to other modules
+
+1. Create the Industry class, as well as a skeletal unit test file. The Industry class should have the following fields: roles (which is a list of objects that contain information about a role, including its name, and the resource it aims to produce) and jobs (which are actually ColonistActions, so we can import that type definition).
+
+2. Create skeleton methods for the updateJobs and getJob methods, and prepare to create some unit tests for them. Don't make the actual tests just yet though. UpdateJobs should take the infra class as an argument in order to come up with a jobs list for every role, and getJob should take a string representing the role name, as well as a set of coordinates (so it can theoretically pick the production module of the appropriate type that is nearest to the Colonist's location).
+
+3. Integrate the Industry class into the Engine, and call its updateJobs method every hour to see a console log message from it.
+
+4. In addition to the updateJobs method, which will be a top-level updater, create a method called updateJobsForRole, which will take the name of the role as well as the infra class that gets passed to the top-level updater, so that it can be used to update the jobs for one particular role instead of doing it for all roles. Then we can call this method via a loop in the top-level updater, or we can call it for one role at a time, should the need arise.
+
+5. Develop the unit tests for the updateJobsForRole method. When given a role name, it should search the Infra class for modules that produce that role's resourceProduced value. It should then be able to narrow down the list to only include modules that have enough of the requisite inputs to allow at least one round of production. It should then make a job (Colonist action) for every available slot in every module that is ready to produce, and return the list of those jobs. Test this by making a test Infra instance with three Hydroponics pods that have been modified to only require water (we'll reintroduce carbon to the equation later on). Fill two modules with enough water to allow food production to occur, and do not fill the other one.
+
+6. Implement the code for the updateJobsForRole method. It should return a list of ColonistActions when it works properly, and an empty list when no jobs are found, or when there is an exception of some kind. Make sure to include graceful error/exception handling, and include that in the unit tests as well!
+
+7. Create a new Infra method called findResourceProducers, that takes the string name of a resource and returns a list of all the modules that have that resource as one of their outputs. Unit test this function in the Infra base class unit tests file.
+
+8. Also, create a new Module method (plus unit test) that returns a boolean when asked if it is provisioned (i.e. has enough input resources to carry out at least one round of production).
+
+9. Update the Hydroponics module so that it only requires water as an input, to facilitate zero-carbon testing ;)
+
+10. Add a new bit of logic to the Colonist Data class's updateGoal block, to check for jobs based on the Colonist's role.
+
+11. Take this moment to extract the three sub-routines of the updateGoal method into their own distinct functions: checkForNeeds, and checkForJobs, which will be the new logic to be developed for getting a job from the Industry class, and preparing to create an action stack based on that job info. The default assignment to exploring can remain in the updateGoal method.
+
+12. Create the unit tests and then the code for the Industry class's getJob method. Version 1.0 of this method will ignore the Colonist's location, and instead simply pop the last item from the jobs list and give that to the Colonist. If no jobs are available, or the role itself is not found, return a null instead.
+
+13. Pass the Industry class to the Colonist's updateGoal method, down into the checkForJobs method, via the Population class's hourly updater method. Validate with a sanity check that the Colonist can get a job.
+
+14. Add new cases to the ColonistData class's determineActionsForGoal method: "farm" and "mine." For now, they can both lead to the same outcome, which is to find a path to the coordinates in the job action.
+
+15. Since job assignments from the Industry class give the Colonist the first (i.e. chronologically last) item for their action stack, add an optional job argument to the action stack determination (and setGoal) methods, so that the checkForJobs method can hand the job to the action stack determinator, rather than trying to add it to the stack before setting the new goal.
+
+16. Next, open up the ColonistActionLogic file, and create the skeleton of a new function called createProductionActionStack.
+
+17. In the ColonistActionLogic file, copy the action stack creation logic for the two different complete stacks (elevator to ground floor exists, and elevator to current floor exists) from the createConsumeActionStack method into their own functions, called climbLadderFromGroundActions and climbLadderFromFloorActions. Since replacing the code in the consume action sequence creator is not necessary at this moment, just use the new methods in the context of the production action stack creator (do a unit test run followed by manual sanity check before proceeding).
+
+18. Plug the new action stack creation sub-functions into the new createProductionActionStack method, so that it adds the pathfinding steps on top of the job action and returns a complete stack. As with the consume action stack creator, if no additional actions are added to the stack after the initial job action (indicating that the job site is unreachable), return an empty list so that the colonist knows that the current goal is impossible (unless of course there is only one action because the colonist is already at the job site!). It will be an hour before the job is re-created by the Industry class if this happens, so there is no need for the colonist to 'remember' that a particular job site is unreachable; they will simply move onto the next job (or if no jobs remain for their role, they should simply revert to exploring until more jobs are created by the Industry class's hourly update).
+
+19. Add a case to the checkActionStatus switch block for "farm" (we'll leave "mine" for another time) to have it resolve the current action once the target duration has been met.
+
+20. Add two new skeleton methods to the Module class called punchIn and punchOut. They will take a number representing a colonist's ID as an argument, and simply console log that value for now.
+
+21. Make a new Colonist method, produce, which will do a position check like the consume method does to ensure that the colonist is in the right position and then find the Module identified by the current action's building ID value. Once the module is found, call its punchIn method with the colonist's ID. Add a call to this method to the colonist's startAction switch block when the action is "farm."
+
+22. Have the Module's punchIn method push the colonist's ID to the module's crewPresent list when it's called. Unit test that this works correctly.
+
+23. Have the Module's punchOut method filter out the colonist's ID from the crewPresent list when it's called. If a colonist whose number is not on the list punches out this should not cause an error.
+
+24. Add the Module's crewPresent field to the Module class's save data.
+
+25. When loading a saved Module that does not have a crew Present list, have that field revert to being an empty list.
+
+26. Next, add a case to the ColonistData's startMovement switch block for "farm", following essentially the same pattern as the "eat" and "drink" actions. In fact, since all three of these cases use the EXACT same pattern, combine them to drop into a single execution block, setting the movement type and duration based on the current action's type and duration values.
+
+27. Create a simple ColonistAnimation to go with the "farm" action. Make the colonist reach over to touch each of the six plant containers.
+
+28. Now, create the Module class's produce method: Reduce the amount of resources in stock for all input resources, and increase the stock for all output resources. Big unit tests needed here broh.
+
+29. Have the Colonist call the Module's produce method and then its punchOut method in the checkActionStatus block for farming (we can potentially add other types of production action to the same switch case stack later on if they involve the same criteria).
+
+30. Add a simple unit test for the Infrastructure class's new method, resolveModuleProduction, to make sure it's airtight.
+
+31. Lastly, pass the Industry class down to the colonist's checkActionStatus method from its handleMinutelyUpdates method, so that the farm action resolution block can call the updateJobsForRole method for that role before resolving the action (but after resolving the module's production, in order to come after the Module's punchOut method call). This should allow the Industry class to re-create the jobs list for that role before the Colonist leaves the module, allowing them to simply take another shift there right away rather than having to wait for the hourly update to regenerate the job. Validate with manual sanity check (i.e. just watch to see if the colonists will do several back-to-back rounds of production before stopping).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
@@ -1940,6 +2018,8 @@ As the game matures, it will be more and more desirable to separate features tha
 13. [8: Major Gameplay issue] In some circumstances, colonists who have just begun an 'explore' goal will have an action stack that tells them to jump off of a floor, with the false belief that they are stuck up there (even when a ladder to the surface is available).
 
 14. [8: Major Gameplay issue] In some circumstances, colonists will climb empty space (in the observed instance, the place where the climb action took place was in between two actual ladders) as though it were an actual ladder.
+
+### 15. [2: UX / Inaccurate info display] The Earth date on the Earth screen is broken. It appears to not take the date from the save game data into account.
 
 ## Technical Debt Issues:
 

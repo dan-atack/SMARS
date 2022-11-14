@@ -135,8 +135,9 @@ export const getStructures = (setter: (options: ModuleInfo[] | ConnectorInfo[]) 
     })
 }
 
-// Returns an individual structure, based on the category, type and name... And the list of coordinates, since this will be passed directly to the Infrastructure function that will actually re-produce the buildings. It's weird, but it works!
-export const getOneModule = (setter: (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[], resources?: Resource[][]) => void, category: string, type: string, name: string, locations: number[][], ids?: number[], resources?: Resource[][]) => {
+// Returns an individual structure, based on the category, type and name... And the list of coordinates, since this will be passed directly to the Infrastructure function that will actually re-produce the buildings.
+// This has to be by far the ugliest part of SMARS's code... but it *does* work!
+export const getOneModule = (setter: (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[], resources?: Resource[][], crews?: number[][]) => void, category: string, type: string, name: string, locations: number[][], ids?: number[], resources?: Resource[][], crews?: number[][]) => {
 
     const url = `${constants.URL_PREFIX}/${category}/${type}/${name}`;
 
@@ -151,7 +152,7 @@ export const getOneModule = (setter: (selectedBuilding: ModuleInfo, locations: n
         return res.json();
     })
     .then((response) => {
-        setter(response.data, locations, ids, resources);
+        setter(response.data, locations, ids, resources, crews);
     })
 }
 

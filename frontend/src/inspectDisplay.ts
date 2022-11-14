@@ -160,7 +160,7 @@ export default class InspectDisplay {
             p5.textSize(18);
             p5.textAlign(p5.LEFT);
             p5.text(`${mod._moduleInfo.pressurized ? "Pressurized" : "Unpressurized"} - Integrity: ${mod._moduleInfo.durability}`, this._textAlignleft, this._headers[1]);
-            p5.text(`${mod._moduleInfo.crewCapacity ? `Crew: ${mod._crewPresent} / ${mod._moduleInfo.crewCapacity}` : "No crew capacity"}`, this._textAlignleft, this._headers[2]);
+            p5.text(`${mod._moduleInfo.crewCapacity ? `Crew: ${mod._crewPresent.length} / ${mod._moduleInfo.crewCapacity}` : "No crew capacity"}`, this._textAlignleft, this._headers[2]);
             p5.text(`Resources:`, this._textAlignleft, this._headers[3]);
             p5.text("Type", this._textAlignleft, this._headers[4]);
             p5.text("/         Quantity", this._left1Q, this._headers[4]);
