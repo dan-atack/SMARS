@@ -118,9 +118,10 @@ const hydroponicsModuleData: ModuleInfo = {
     ],
     productionOutputs: [
         ["food", 10],
-        ["air", 10],
+        ["oxygen", 10],
     ],
     storageCapacity: [
+        ["oxygen", 1000],
         ["water", 2500],
         ["food", 1000],
     ],
@@ -145,7 +146,7 @@ const ladderData: ConnectorInfo = {
 const airVentData: ConnectorInfo = {
     name: "Air Vent",
     type: "conduit",
-    resourcesCarried: ["air"],
+    resourcesCarried: ["oxygen"],
     maxFlowRate: 1,
     buildCosts:[
         ["money", 10000]
@@ -323,9 +324,25 @@ describe("Infrastructure base class", () => {
     test("Can return a list of modules that produce a given resource", () => {
         // Add food production module now, to avoid interfering with other tests
         infra.addModule(0, 22, hydroponicsModuleData, mockography, zonesData, 1005);
-        expect(infra.findModulesWithOutput("power")[0]._id).toBe(1004);         // Find the power plant
-        expect(infra.findModulesWithOutput("food")[0]._id).toBe(1005);          // Find the hydro pod
-        expect(infra.findModulesWithOutput("oxygen")).toStrictEqual([]);       // No oxygen producers = empty list returned
+        expect(infra.findModulesWithOutput("power")[0]._id).toBe(1004);             // Find the power plant
+        expect(infra.findModulesWithOutput("food")[0]._id).toBe(1005);              // Find the hydro pod
+        expect(infra.findModulesWithOutput("oxygen")[0]._id).toBe(1005);            // Find the hydro pod again
+        expect(infra.findModulesWithOutput("equipment")).toStrictEqual([]);         // Return empty list if no prod mod is found
+    })
+
+    test("Can trigger a production round for a module", () => {
+        // Setup: Module exists with a colonist punched in, and the necessary resources for production
+        infra.handleHourlyUpdates();
+        infra._modules[5].punchIn(9999);        // Punch in colonist # 9999
+        expect(infra._modules[5].hasProductionInputs()).toBe(true);     // Validate setup
+        expect(infra._modules[5]._crewPresent).toStrictEqual([9999]);
+        infra.resolveModuleProduction(1005, 9999);  // Should punch out the colonist, and remove inputs and add outputs
+        expect(infra._modules[5]._crewPresent).toStrictEqual([]);
+        expect(infra._modules[5]._resources).toStrictEqual([
+            ["oxygen", 10],     // From 0 to 10 (+10)
+            ["water", 1245],    // From 1250 to 1245 (-5)
+            ["food", 10]        // From 0 to 10 (+10)
+        ])
     })
 
 })

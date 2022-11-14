@@ -1973,9 +1973,9 @@ Exit Criteria:
 
 27. Create a simple ColonistAnimation to go with the "farm" action. Make the colonist reach over to touch each of the six plant containers.
 
-### 30. Now, create the Module class's produce method: Reduce the amount of resources in stock for all input resource, and increase the stock for all output resources. Big unit tests needed here broh.
+28. Now, create the Module class's produce method: Reduce the amount of resources in stock for all input resources, and increase the stock for all output resources. Big unit tests needed here broh.
 
-31. Have the Colonist call the Module's produce method and then its punchOut method in the checkActionStatus block for farming (we can potentially add other types of production action to the same switch case stack later on if they involve the same criteria).
+29. Have the Colonist call the Module's produce method and then its punchOut method in the checkActionStatus block for farming (we can potentially add other types of production action to the same switch case stack later on if they involve the same criteria).
 
 ### 32. Add a simple unit test for the Infrastructure class's new method, resolveModuleProduction, to make sure it's airtight.
 
