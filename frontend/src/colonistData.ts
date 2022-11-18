@@ -269,21 +269,19 @@ export default class ColonistData {
                 case "climb":
                     if (this._x === this._currentAction.coords.x && this._y === this._currentAction.coords.y) {
                         this.resolveAction();
-                        this.checkForNextAction(infra);
+                        this.checkForNextAction(infra);     // Only check for next action after movement/climbing actions
                     }
                     break;
                 case "drink":
                     if (this._actionTimeElapsed >= this._currentAction.duration) {
                         this._needs.water -= this._currentAction.duration;  // Reduce water need by 1/unit of time spent drinking
                         this.resolveAction();
-                        this.checkForNextAction(infra);     // Do we need this? Drink should be the last action in a stack
                     }
                     break;
                 case "eat":
                     if (this._actionTimeElapsed >= this._currentAction.duration) {
                         this._needs.food -= this._currentAction.duration;   // Reduce food need by 1/unit of time spent eating
                         this.resolveAction();
-                        this.checkForNextAction(infra);
                     }
                     break;
                 case "farm":
@@ -296,9 +294,15 @@ export default class ColonistData {
                 case "move":
                     if (this._x === this._currentAction.coords.x) {
                         this.resolveAction();
-                        this.checkForNextAction(infra);
+                        this.checkForNextAction(infra);     // Only check for next action after movement/climbing actions
                     }
                     break;
+                case "rest":
+                    if (this._actionTimeElapsed >= this._currentAction.duration) {
+                        this._needs.rest = 0;   // Always awake fully rested - must be nice!!
+                        this.exitModule(infra); // Don't forget to officially exit the module when leaving
+                        this.resolveAction();
+                    }
                 // Housekeeping: Keep options in sync with startAction and startMovement methods and animationFunctions.ts
             }
         }
@@ -559,10 +563,25 @@ export default class ColonistData {
             const mod = infra.getModuleFromID(this._currentAction.buildingId);
             if (mod) {
                 mod.punchIn(this._id);
+            } else {
+                console.log(`Error: ${this._name} unable to enter Module ${this._currentAction.buildingId}. Reason: Module data not found.`);
             }
         } else {
             console.log(`Warning: Colonist ${this._id} is in wrong position to enter ${this._currentAction?.type} module.`);
             this.resolveAction();
+        }
+    }
+
+    // Exits the current module after a rest action
+    exitModule = (infra: Infrastructure) => {
+        // Ensure that the current action exists
+        if (this._currentAction) {
+            const mod = infra.getModuleFromID(this._currentAction.buildingId);
+            if (mod) {
+                mod.punchOut(this._id);
+            } else {
+                console.log(`Error: ${this._name} unable to exit Module ${this._currentAction.buildingId}. Reason: Module data not found.`);
+            }
         }
     }
 

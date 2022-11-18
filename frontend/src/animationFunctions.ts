@@ -63,6 +63,12 @@ export const bodyAnimations = (movementType: string, fpm: number, tick: number, 
             xSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
             ySpeeds = [-1, -1, 0, 0, 0, 0, 0, 0, 2, 0];   // Move up by 0.2 until the end
             break;
+        case "rest":
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            ySpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            break;
         default:
             keyframes = [0.5, 1];
             frameRate = 0.5;
@@ -149,6 +155,12 @@ export const headAnimations = (movementType: string, fpm: number, tick: number, 
             frameRate = 0.1;
             xSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
             ySpeeds = [-1, -1, 0, 0, 0, 0, 0, 0, 2, 0];  // Move up by 0.2 until the end
+            break;
+        case "rest":
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xSpeeds = [-3, 0, 0, 0, 0, 0, 0, 0, 0, 3];
+            ySpeeds = [3, 1, -1, 1, -1, 1, -1, 1, -1, -3];
             break;
         default:
             keyframes = [0.5, 1];
@@ -260,6 +272,14 @@ export const handAnimations = (movementType: string, fpm: number, tick: number, 
             ylSpeeds = [-6, 2, 0, 0, 1, -1, 0, -1, 1, 0, -4, -4, 8, -4, -4, 8, 0, 0, 5, -1];
             xrSpeeds = [1, 1, -1, -1, 6, 4, -10, -12, -4, 16, 6, 4, -10, -12, -4, 16, 0, 0, 0, 0];
             yrSpeeds = [-2, -2, -4, 4, 0, 0, 0, 0, 0, 0, -4, -4, 8, -4, -4, 8, 0, 0, 5, -1];
+            break;
+        case "rest":
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xlSpeeds = [5, 0, 0, 0, 0, 0, 0, 0, 0, -5];      // Left hand inwards = positive
+            ylSpeeds = [-1, 0, 0, 0, 0, 0, 0, 0, 0, 1];
+            xrSpeeds = [-5, 0, 0, 0, 0, 0, 0, 0, 0, 5];    // Right hand inwards = negative
+            yrSpeeds = [-1, 0, 0, 0, 0, 0, 0, 0, 0, 1];    // Both hands (and everything else) upward = negative
             break;
         case "boogie":
             // TODO: Add Easter Egg
@@ -387,6 +407,14 @@ export const footAnimations = (movementType: string, fpm: number, tick: number, 
             ylSpeeds = [-8, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0];    // Step slightly up into the module
             xrSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
             yrSpeeds = [0, 0, -10, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0];
+            break;
+        case "rest":
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xlSpeeds = [10, 0, 0, 0, 0, 0, 0, 0, 0, -10];
+            ylSpeeds = [-2, 0, 0, 0, 0, 0, 0, 0, 0, 2];
+            xrSpeeds = [2, 0, 0, 0, 0, 0, 0, 0, 0, -2];
+            yrSpeeds = [-4, 0, 0, 0, 0, 0, 0, 0, 0, 4];
             break;
         default:
             keyframes = [0.5, 1];

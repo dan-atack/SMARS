@@ -91,17 +91,14 @@ export const createRestActionStack = (colonistCoords: Coords, standingOnId: stri
     // 1 - Find all modules with the name 'Crew Quarters' (TODO: As more types of sleeping module are added, find a better way)
     const mods = infra._modules.filter((mod) => mod._moduleInfo.name === "Crew Quarters");
     if (mods.length > 0) {
-        console.log(`Found ${mods.length} modules to rest in.`);
         mods.forEach((mod) => {
             // 2 - Check if each module is occupied, and add the 'rest' action here if it isn't
             if (!(stackComplete) && mod._crewPresent.length < mod._moduleInfo.crewCapacity) {
                 // Have colonists enter at different ends of the module if it is partially occupied when they get there
-                const coords = { x: mod._x + (mod._crewPresent.length * 3), y: mod._y + mod._height - 1}
+                const coords = { x: mod._x + (mod._crewPresent.length * 2) + 1, y: mod._y + mod._height - 1}
                 stack.push(addAction("rest", coords, 640, mod._id));    // Duration = 480 minutes = 8 hours' sleep
-                console.log(stack);
                 // 3 - Then, find out if it is on the same surface as the colonist
                 stack = stack.concat(getPathToModule(infra, mod._id, coords, standingOnId, colonistCoords));
-                console.log(stack);
                 // 4- If stack has only 'rest' action at this point and zones do not match, the module is inaccessible
                 const floor = infra._data.getFloorFromModuleId(mod._id);
                 if (floor) {
@@ -117,7 +114,6 @@ export const createRestActionStack = (colonistCoords: Coords, standingOnId: stri
             }
         })
     }
-    console.log(stack);
     return stack;
 }
 

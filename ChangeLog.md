@@ -2008,6 +2008,16 @@ Exit Criteria:
 
 6. Now, start to fill out the rest of the rest action (hahaha) stack determinator function, starting by adding the 'rest' action itself, which will take place in the crew quarters module.
 
+7. Make a separate, reusable function for the ColonistActionLogic that can find the way to a module when given its ID and coordinates, as well as the ID of the surface the Colonist is standing on, plus their coordinates. Integrate this into the Rest Stack Creation function.
+
+8. Add a simple animation for the 'rest' action so colonists don't disappear when they go to bed.
+
+9. For the 'rest' action resolution, make ALL of the colonist's need for rest go away (reset to zero). ALSO, make sure the punch the colonist out from the crew quarters or it will appear to remain occupied after they leave, blocking future opportunities for sleeping.
+
+### 10. Add some logic to the Colonist's updateNeeds method to only increase the need for food or water up to the threshold for these needs if the Colonist is currently performing the 'rest' action (so they do not wake up terribly hungry or dehydrated - but just hungry/thirsty enough to enjoy a good breakfast!).
+
+### 11. Just when you thought you could get away with it: Write up some nice unit tests to validate the 'rest' action stack creator, and try to think up some diverse use cases since it contains the first iteration of the reusable floor finder function (the ColonistActionLogic's new getPathToModule function!).
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
