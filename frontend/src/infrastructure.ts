@@ -86,9 +86,11 @@ export default class Infrastructure {
 
     resolveModuleResourceRequests = (reqs: ResourceRequest[]) => {
         reqs.forEach((req) => {
-            // 1 Get modules that A) have the resource, B) aren't the requesting module itself and C) allow resource sharing
+            // 1 Keep track of when the request is satisfied, so that it only gets fulfilled once
+            let fulfilled = false;
+            // 2 Get modules that A) have the resource, B) aren't the requesting module itself and C) allow resource sharing
             const providers = this._modules.filter((mod) => {
-                // 2 Determine resource sharing policy separately, to allow production modules to share output/s
+                // 3 Determine resource sharing policy separately, to allow production modules to share output/s
                 let out = false;
                 if (mod._moduleInfo.productionOutputs) {
                     mod._moduleInfo.productionOutputs.forEach((res) => {
@@ -98,9 +100,13 @@ export default class Infrastructure {
                 return mod._resourceCapacity().includes(req.resource[0]) && mod._id !== req.modId && mod._resourceSharing || out;
             });
             providers.forEach((mod) => {
-                const available = mod.deductResource(req.resource);
-                // Transfer the available amount to the requesting module
-                this.addResourcesToModule(req.modId, [req.resource[0], available]);
+                // Initiate transfer only if request is not already fulfilled, and module has at least some of the resource needed
+                if (!fulfilled && mod.getResourceQuantity(req.resource[0])) {
+                    const available = mod.deductResource(req.resource);
+                    // Transfer the available amount to the requesting module
+                    this.addResourcesToModule(req.modId, [req.resource[0], available]);
+                    fulfilled = true;   // Prevent multiple providers from all attempting to fill up
+                }
             })
         })
     }
@@ -201,6 +207,16 @@ export default class Infrastructure {
             m.addResource(resource);
         } else {
             console.log(`Unable to add ${resource[1]} ${resource[0]} to module ${moduleId}. Module ID was not found.`);
+        }
+    }
+
+    // Does the same thing, but taketh away
+    deductResourceFromModule = (moduleId: number, resource: Resource) => {
+        const m = this._modules.find(mod => mod._id === moduleId);
+        if (m !== undefined) {
+            m.deductResource(resource);
+        } else {
+            console.log(`Unable to deduct ${resource[1]} ${resource[0]} from module ${moduleId}. Module ID was not found.`);
         }
     }
 

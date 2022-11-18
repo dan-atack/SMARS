@@ -84,6 +84,68 @@ export const createConsumeActionStack = (colonistCoords: Coords, colonistStandin
     return stack;
 }
 
+// Creates the action stack to fulfill the 'get-rest' goal which, unlike 'eat' or 'drink', does not consume any resources
+export const createRestActionStack = (colonistCoords: Coords, standingOnId: string | number, infra: Infrastructure) => {
+    const stack: ColonistAction[] = [];
+    // 1 - Find a module with the name 'Crew Quarters' (TODO: As more types of sleeping module are added, find a better way)
+    const mods = infra._modules.filter((mod) => mod._moduleInfo.name === "Crew Quarters");
+    if (mods.length > 0) {
+        mods.forEach((mod) => {
+            // 2 - For each module, find out if it is on the same surface as the colonist
+            // REUSABLE CODE BEGINS
+            const floor = infra._data.getFloorFromModuleId(mod._id);
+            // REUSABLE CODE ENDS
+        })
+    }
+    return stack;
+}
+
+// Reusable function to check if a module's floor is accessible (via same surface or single ladder) and return an action stack
+export const getPathFromModule = (infra: Infrastructure, modId: number, modCoords: Coords, standingOn: string | number, colCoords: Coords) => {
+    let stack: ColonistAction[] = [];
+    // 1 - Find the floor
+    const floor = infra._data.getFloorFromModuleId(modId);
+    if (floor) {
+        // 2 - A - Destination is on same surface as colonist
+        if (determineIfColonistIsOnSameSurface(floor, standingOn)) {
+            if (colCoords.x !== modCoords.x) {
+                stack.push(addAction("move", modCoords)); // If colonist is not already at the module, add move action
+            }
+        } else if (floor._connectors.length > 0){
+        // 2 - B - Destination is on different surface (floor) and said floor has at least one elevator/ladder attached 
+            // For each elevator, check if it reaches the colonist's standingOnId
+            let solved = false;
+            floor._connectors.forEach((elevId) => {
+                if (!solved) {
+                    const elevator = infra._data.getElevatorFromId(elevId);
+                    // Determine 2 possible success criteria for an elevator to recommend itself:
+                    // Option A - The elevator reaches the ground in the same map zone as the colonist
+                    const grounded = elevator && elevator.groundZoneId === standingOn;
+                    // Option B - One of the floors the elevator reaches has the same ID as what the colonist is standing on
+                    const floors = infra._data.getFloorsFromElevatorId(elevId);
+                    const reachesFloor = elevator && floors.find((floor) => floor._id === standingOn as number);
+                    if (grounded) {
+                        stack = stack.concat(climbLadderFromGroundActions(modCoords, floor, elevator));
+                        solved = true;
+                    } else if (reachesFloor){
+                        // If elevator reaches the (non-ground) floor the colonist is on, get on at floor's height (stack complete)
+                        stack = stack.concat(climbLadderFromFloorActions(modCoords, floor, elevator, colCoords.y));
+                        solved = true;
+                    }
+                }
+            })
+        }
+        // If stack only contains initial production job by this point, set its length to zero (no connection found to job site)
+        if (stack.length === 1 && !(determineIfColonistIsOnSameSurface(floor, standingOn))) {
+            console.log(`Warning: Floor ${floor._id} is inaccessible from ${typeof standingOn === "number" ? "floor" : "map zone"} ${standingOn}.`);
+            stack = [];
+        }
+    } else {
+        console.log(`Error: Floor data not found for module ${modId}`);
+    }
+}
+
+// Creates the action stack to fulfill any kind of production module job (a list which currently includes... farmer... zat is all.)
 export const createProductionActionStack = (colonistCoords: Coords, standingOnId: string | number, infra: Infrastructure, job: ColonistAction) => {
     // 1 - Create the stack and add the job data right away, so that it's at the bottom of the stack
     let stack: ColonistAction[] = [];
@@ -110,11 +172,11 @@ export const createProductionActionStack = (colonistCoords: Coords, standingOnId
                     const floors = infra._data.getFloorsFromElevatorId(elevId);
                     const reachesFloor = elevator && floors.find((floor) => floor._id === standingOnId as number);
                     if (grounded) {
-                        stack = stack.concat(climbLadderFromGroundActions(job, floor, elevator));
+                        stack = stack.concat(climbLadderFromGroundActions(job.coords, floor, elevator));
                         solved = true;
                     } else if (reachesFloor){
                         // If elevator reaches the (non-ground) floor the colonist is on, get on at floor's height (stack complete)
-                        stack = stack.concat(climbLadderFromFloorActions(job, floor, elevator, colonistCoords.y));
+                        stack = stack.concat(climbLadderFromFloorActions(job.coords, floor, elevator, colonistCoords.y));
                         solved = true;
                     }
                 }
@@ -133,21 +195,21 @@ export const createProductionActionStack = (colonistCoords: Coords, standingOnId
 }
 
 // Action stack creation expeditor for when the colonist has to walk across the map, then climb a ladder, then possibly move again
-export const climbLadderFromGroundActions = (job: ColonistAction, floor: Floor, elevator: Elevator) => {
+export const climbLadderFromGroundActions = (jobCoords: Coords, floor: Floor, elevator: Elevator) => {
     const stack: ColonistAction[] = [];
     // Only add the first (chronologically last) 'move' if the module is at a different x coordinate than the ladder
-    if (job.coords.x !== elevator.x) {
-        stack.push(addAction("move", { x: job.coords.x, y: job.coords.y }));
+    if (jobCoords.x !== elevator.x) {
+        stack.push(addAction("move", { x: jobCoords.x, y: jobCoords.y }));
     }
     stack.push(addAction("climb", { x: elevator.x, y: floor._elevation - 1 }, 0, elevator.id));
     stack.push(addAction("move", { x: elevator.x, y: elevator.bottom }));
     return stack;
 }
 
-export const climbLadderFromFloorActions = (job: ColonistAction, floor: Floor, elevator: Elevator, y: number) => {
+export const climbLadderFromFloorActions = (jobCoords: Coords, floor: Floor, elevator: Elevator, y: number) => {
     const stack: ColonistAction[] = [];
-    if (job.coords.x !== elevator.x) {
-        stack.push(addAction("move", { x: job.coords.x, y: job.coords.y }));
+    if (jobCoords.x !== elevator.x) {
+        stack.push(addAction("move", { x: jobCoords.x, y: jobCoords.y }));
     }
     stack.push(addAction("climb", { x: elevator.x, y: floor._elevation - 1 }, 0, elevator.id));
     stack.push(addAction("move", { x: elevator.x, y: y }));

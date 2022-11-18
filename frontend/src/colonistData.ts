@@ -1,6 +1,6 @@
 // The ColonistData class handles all of the data processing for the colonist class, without any of the rendering tasks
 import { ColonistSaveData, ColonistNeeds, ColonistRole } from "./colonist";
-import { createConsumeActionStack, createProductionActionStack, findElevatorToGround } from "./colonistActionLogic";
+import { createConsumeActionStack, createProductionActionStack, createRestActionStack, findElevatorToGround } from "./colonistActionLogic";
 import { Coords } from "./connector";
 import Industry from "./industry";
 import Infrastructure from "./infrastructure";  // Infra data info gets passed by population updater function
@@ -59,7 +59,7 @@ export default class ColonistData {
         this._needThresholds = {    // The higher the threshold, the longer a colonist can go without; 1 unit = 1 hour
             water: 4,
             food: 6,
-            rest: 1000
+            rest: 16                // Colonists will need 8 hours' sleep each day, and will remain awake for twice that time
         };
         this._needsAvailable = {    // Set to 1 for available, 0 for unavailable; resets every hour
             water: 1,
@@ -229,12 +229,20 @@ export default class ColonistData {
             case "get-water":
                 this._actionStack = createConsumeActionStack(currentPosition, this._standingOnId, ["water", this._needs.water], infra);
                 // If no action stack was returned, assume that water is temporarily unavailable
-                if (this._actionStack.length === 0) this._needsAvailable.water = 0;
+                if (this._actionStack.length === 0) {
+                    // TODO: Add a warning here.... I'm thinking, set a new Colonist property and have the Engine read it via the Population class (which can update an hourly tally of Colonist warning messages)
+                    this._needsAvailable.water = 0;
+                }
                 break;
             case "get-food":    // Parallels the get-water case almost closely enough to be the same... but not quite!
                 this._actionStack = createConsumeActionStack(currentPosition, this._standingOnId, ["food", this._needs.food], infra);
                 // If no action stack was returned, assume that food is temporarily unavailable
                 if (this._actionStack.length === 0) this._needsAvailable.food = 0;
+                break;
+            case "get-rest":
+                console.log("I'm so tired. I haven't slept a wink.");
+                this._actionStack = createRestActionStack(currentPosition, this._standingOnId, infra);
+                if (this._actionStack.length === 0) this._needsAvailable.rest = 0;
                 break;
             case "farm":
             case "mine":    // Right now both farming and mining have the same action stack goal: find the way to the job site
@@ -323,12 +331,13 @@ export default class ColonistData {
                     this.consume("food", infra);
                     break;
                 case "farm":
-                    console.log("It comes outta the fuckin' GROUND!");
-                    this.produce(infra);
+                    this.enterModule(infra);    // Begin production by calling generic punch-in method
                     break;
                 case "move":
                     this._movementDest = this._currentAction.coords;
                     break;
+                case "rest":
+                    this.enterModule(infra);    // Begin resting by entering the sleeping quarters
             }
         } else {
             console.log('Warning: Unable to start action because the action stack is empty.')
@@ -405,11 +414,12 @@ export default class ColonistData {
                     }
                     this._movementCost = 5; // It takes 5 time units to climb one segment of ladder in either direction
                     break;
-                case "drink":
+                case "drink":       // All of these activities have an animation name and duration, and do not move the colonist
                 case "eat":
-                case "farm":        // All three of these activities have an animation name, and a time duration
+                case "farm":
+                case "rest":
                     this._movementType = this._currentAction.type;
-                    this._movementCost = this._currentAction.duration;  // Drink time depends on thirst level
+                    this._movementCost = this._currentAction.duration;
                     break;
                 case "move":
                     // A - Determine direction
@@ -541,7 +551,8 @@ export default class ColonistData {
         }
     }
 
-    produce = (infra: Infrastructure) => {
+    // Simply finds a module and calls its 'punchIn' method ( usually as part of a produce or rest action )
+    enterModule = (infra: Infrastructure) => {
         // Ensure that the current action exists, and that the colonist is in the right place
         if (this._currentAction && this._currentAction.coords.x === this._x && this._currentAction.coords.y === this._y + 1) {
             const mod = infra.getModuleFromID(this._currentAction.buildingId);
@@ -550,6 +561,7 @@ export default class ColonistData {
             }
         } else {
             console.log(`Warning: Colonist ${this._id} is in wrong position for ${this._currentAction?.type} production.`);
+            this.resolveAction();
         }
     }
 

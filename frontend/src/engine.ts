@@ -918,12 +918,5 @@ export default class Engine extends View {
         if (this._modal) {
             this._modal.render();
         }
-        if (this._population._colonists.length > 1) {   
-            if (this._population._colonists[0]._data._currentAction?.type === "farm" || this._population._colonists[1]._data._currentAction?.type === "farm") {
-                p5.fill(constants.EGGSHELL);
-                p5.text("It comes outta the fuckin' GROUND!", 360, 360);
-            }
-        }
     }
-
 }

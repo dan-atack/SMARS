@@ -1981,6 +1981,33 @@ Exit Criteria:
 
 31. Lastly, pass the Industry class down to the colonist's checkActionStatus method from its handleMinutelyUpdates method, so that the farm action resolution block can call the updateJobsForRole method for that role before resolving the action (but after resolving the module's production, in order to come after the Module's punchOut method call). This should allow the Industry class to re-create the jobs list for that role before the Colonist leaves the module, allowing them to simply take another shift there right away rather than having to wait for the hourly update to regenerate the job. Validate with manual sanity check (i.e. just watch to see if the colonists will do several back-to-back rounds of production before stopping).
 
+## Chapter Thirty-Six: Bed Time for the Colonists (Difficulty Estimate: TBD)
+
+### November 15, 2022
+
+Now that the Colonists are able to put in a hard day's work at the farm module, it is time for them to finally be able to take a well-earned rest. The need for rest has been allowed to accumulate for some time now, but has been removed from relevance in the game by setting the threshold to an insanely high value. Now, to complete the Colonist's daily routine, the threshold will be lowered, and a mechanism put into place to allow Colonists to fulfill the need and get some rest. This routine will be similar to the way consumption and production operate, in that the Colonist will attempt to find their way to a particular module (in this case the Crew Quarters) and perform an action there (in this case, rest). Unlike the other two needs, the duration of the sleep action will not scale based on the Colonist's tiredness (need level), and the action will also take a much longer time to resolve than the other ones (colonists will sleep 8 hours per day to maintain their vigour). Also, since the duration of the sleep action will be long enough for both the food and water needs to go from zero to well over their thresholds, we should come up with a mechanism to limit the increase of these needs while the colonist is sleeping. Ideally they should be allowed to increase up to their thresholds but not beyond them, so that the Colonist always wakes up hungry and thirsty (and thus has breakfast before going off to work for the day).
+
+Exit Criteria:
+
+- Colonists sleep for 8 hours every day
+- When they exceed their rest need threshold, Colonists will go to the nearest Crew Quarters module and perform the sleep action
+- Colonists' other needs do not grow beyond their thresholds while the colonist is sleeping
+- Colonists have a sleep animation and are sent to different positions in the sleeping module
+- Crew Quarters module respects its capacity limits in terms of allowing punching in and punching out
+- Add a third initial colonist to new games to see what happens when the sleeping module capacity is exceeded
+
+1. Reduce the Colonist class's rest threshold from 2000 to 16, and see what happens. Expectation is that they will freeze up as soon as their current goal is completed.
+
+2. Add a new case to the Colonist's DetermineActionsForGoal block for "get-rest", and have it do a simple console log for now.
+
+3. Add a new function in the ColonistActionLogic file, called createRestActionStack, to find the path to the nearest available crew quarters for the colonist to sleep in. Again, just make it a console log for now, plus return an empty list. Call it from the Colonist's "get-rest" case.
+
+4. Rename the Colonist's produce method to enterModule, and have the startAction case for "sleep" call this method as well (punching in to a production module is the same, from the module's point of view, as slouching into the sleeping quarters).
+
+5. Add a case to the startMovement block to start the "sleep" move (which will not be much of a move at all, surprise).
+
+### 6. Now, start to fill out the rest of the rest action (hahaha) stack determinator, starting by adding the 'rest' action itself, which will take place in the crew quarters module.
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.

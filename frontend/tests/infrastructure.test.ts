@@ -292,6 +292,8 @@ describe("Infrastructure base class", () => {
         infra.addResourcesToModule(1002, ["food", 1000000]);
         infra.addResourcesToModule(1002, ["oxygen", 100000]);
         infra.addResourcesToModule(1002, ["equipment", 100000]);
+        // Also, deprovision other storage module, since it will attempt to fulfill the requests itself otherwise
+        infra.deductResourceFromModule(1001, ["water", 10000]);
         expect(infra._modules[3]._resources).toStrictEqual([
             ["food", 500],
             ["water", 500],
@@ -300,8 +302,8 @@ describe("Infrastructure base class", () => {
         infra.handleHourlyUpdates();                            // Expect cantina to be fully restocked...
         expect(infra._modules[3]._resources).toStrictEqual([
             ["food", 5000],
-            ["water", 5000],
-            ["power", 0]                                        // Except for the power
+            ["water", 5000],                                    //
+            ["power", 0]                                        // ... Except for the power
         ]);
         expect(infra._modules[2]._resources).toStrictEqual([    // ... With supplies taken from the storage room
             ["oxygen", 1000],
