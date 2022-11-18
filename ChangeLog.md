@@ -2006,7 +2006,7 @@ Exit Criteria:
 
 5. Add a case to the startMovement block to start the "sleep" move (which will not be much of a move at all, surprise).
 
-### 6. Now, start to fill out the rest of the rest action (hahaha) stack determinator, starting by adding the 'rest' action itself, which will take place in the crew quarters module.
+6. Now, start to fill out the rest of the rest action (hahaha) stack determinator function, starting by adding the 'rest' action itself, which will take place in the crew quarters module.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

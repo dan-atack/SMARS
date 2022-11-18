@@ -77,7 +77,7 @@ export const createConsumeActionStack = (colonistCoords: Coords, colonistStandin
                 })
             }
             // Reset stack length to zero here if it only contains the initial consume action (no connection was found to the target floor)
-            if (stack.length === 1) stack = [];          
+            if (stack.length === 1) stack = [];
         })
     }
     // 4 - Finally, return the action stack for the colonist to start using it
@@ -86,22 +86,43 @@ export const createConsumeActionStack = (colonistCoords: Coords, colonistStandin
 
 // Creates the action stack to fulfill the 'get-rest' goal which, unlike 'eat' or 'drink', does not consume any resources
 export const createRestActionStack = (colonistCoords: Coords, standingOnId: string | number, infra: Infrastructure) => {
-    const stack: ColonistAction[] = [];
-    // 1 - Find a module with the name 'Crew Quarters' (TODO: As more types of sleeping module are added, find a better way)
+    let stack: ColonistAction[] = [];
+    let stackComplete = false;
+    // 1 - Find all modules with the name 'Crew Quarters' (TODO: As more types of sleeping module are added, find a better way)
     const mods = infra._modules.filter((mod) => mod._moduleInfo.name === "Crew Quarters");
     if (mods.length > 0) {
+        console.log(`Found ${mods.length} modules to rest in.`);
         mods.forEach((mod) => {
-            // 2 - For each module, find out if it is on the same surface as the colonist
-            // REUSABLE CODE BEGINS
-            const floor = infra._data.getFloorFromModuleId(mod._id);
-            // REUSABLE CODE ENDS
+            // 2 - Check if each module is occupied, and add the 'rest' action here if it isn't
+            if (!(stackComplete) && mod._crewPresent.length < mod._moduleInfo.crewCapacity) {
+                // Have colonists enter at different ends of the module if it is partially occupied when they get there
+                const coords = { x: mod._x + (mod._crewPresent.length * 3), y: mod._y + mod._height - 1}
+                stack.push(addAction("rest", coords, 640, mod._id));    // Duration = 480 minutes = 8 hours' sleep
+                console.log(stack);
+                // 3 - Then, find out if it is on the same surface as the colonist
+                stack = stack.concat(getPathToModule(infra, mod._id, coords, standingOnId, colonistCoords));
+                console.log(stack);
+                // 4- If stack has only 'rest' action at this point and zones do not match, the module is inaccessible
+                const floor = infra._data.getFloorFromModuleId(mod._id);
+                if (floor) {
+                    // console.log(`Warning: No path found to module ${mod._id}`);
+                    if (stack.length === 1 && !(determineIfColonistIsOnSameSurface(floor, standingOnId))) {
+                        stack = [];
+                    } else {
+                        stackComplete = true;
+                    }
+                } else {
+                    console.log(`Error: Floor data not found for module ${mod._id}`);
+                }
+            }
         })
     }
+    console.log(stack);
     return stack;
 }
 
-// Reusable function to check if a module's floor is accessible (via same surface or single ladder) and return an action stack
-export const getPathFromModule = (infra: Infrastructure, modId: number, modCoords: Coords, standingOn: string | number, colCoords: Coords) => {
+// Reusable function to check if a module's floor is accessible (via same surface or single ladder) and return an action stack that gets to that module (if possible)
+export const getPathToModule = (infra: Infrastructure, modId: number, modCoords: Coords, standingOn: string | number, colCoords: Coords) => {
     let stack: ColonistAction[] = [];
     // 1 - Find the floor
     const floor = infra._data.getFloorFromModuleId(modId);
@@ -109,6 +130,7 @@ export const getPathFromModule = (infra: Infrastructure, modId: number, modCoord
         // 2 - A - Destination is on same surface as colonist
         if (determineIfColonistIsOnSameSurface(floor, standingOn)) {
             if (colCoords.x !== modCoords.x) {
+                console.log("Adding move action");
                 stack.push(addAction("move", modCoords)); // If colonist is not already at the module, add move action
             }
         } else if (floor._connectors.length > 0){
@@ -119,9 +141,9 @@ export const getPathFromModule = (infra: Infrastructure, modId: number, modCoord
                 if (!solved) {
                     const elevator = infra._data.getElevatorFromId(elevId);
                     // Determine 2 possible success criteria for an elevator to recommend itself:
-                    // Option A - The elevator reaches the ground in the same map zone as the colonist
+                    // 3 - A - The elevator reaches the ground in the same map zone as the colonist
                     const grounded = elevator && elevator.groundZoneId === standingOn;
-                    // Option B - One of the floors the elevator reaches has the same ID as what the colonist is standing on
+                    // 3 - B - One of the floors the elevator reaches has the same ID as what the colonist is standing on
                     const floors = infra._data.getFloorsFromElevatorId(elevId);
                     const reachesFloor = elevator && floors.find((floor) => floor._id === standingOn as number);
                     if (grounded) {
@@ -135,14 +157,11 @@ export const getPathFromModule = (infra: Infrastructure, modId: number, modCoord
                 }
             })
         }
-        // If stack only contains initial production job by this point, set its length to zero (no connection found to job site)
-        if (stack.length === 1 && !(determineIfColonistIsOnSameSurface(floor, standingOn))) {
-            console.log(`Warning: Floor ${floor._id} is inaccessible from ${typeof standingOn === "number" ? "floor" : "map zone"} ${standingOn}.`);
-            stack = [];
-        }
     } else {
         console.log(`Error: Floor data not found for module ${modId}`);
     }
+    console.log(stack);
+    return stack;
 }
 
 // Creates the action stack to fulfill any kind of production module job (a list which currently includes... farmer... zat is all.)
@@ -327,7 +346,7 @@ export const determineIfColonistIsOnSameSurface = (floor: Floor, standingOnId: n
         console.log(`Colonist is on same ${sameZone ? 'map zone' : 'floor'} as destination.`);
         return true;
     } else {
-        console.log(`Colonist is not on same surface as resource module`);
+        // console.log(`Colonist is not on same surface as module`);
         return false;
     }
 }

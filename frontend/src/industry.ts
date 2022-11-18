@@ -62,7 +62,7 @@ export default class Industry {
                     for (let i = 0; i < slots; i++) {
                         const job: ColonistAction = {
                             type: role.action,
-                            coords: { x: mod._x + i + 1, y: mod._y + mod._height - 1},
+                            coords: { x: mod._x + (i * 2) + 1, y: mod._y + mod._height - 1},
                             duration: 30,   // TODO: Make this depend on some other quantity?
                             buildingId: mod._id
                         };

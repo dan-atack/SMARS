@@ -164,6 +164,7 @@ export default class ColonistData {
     setGoal = (goal: string, infra?: Infrastructure, map?: Map, job?: ColonistAction) => {
         this._currentGoal = goal;
         if (infra && map) {
+            console.log(`Setting goal for ${this._name}: ${goal}`);
             this.determineActionsForGoal(infra, map, job);  // If there is a job, pass it to action stack determinator
         } else if (this._currentGoal !== "") {
             console.log(`Error: Infra/Map data missing for non-empty colonist goal: ${this._currentGoal}`);
@@ -560,7 +561,7 @@ export default class ColonistData {
                 mod.punchIn(this._id);
             }
         } else {
-            console.log(`Warning: Colonist ${this._id} is in wrong position for ${this._currentAction?.type} production.`);
+            console.log(`Warning: Colonist ${this._id} is in wrong position to enter ${this._currentAction?.type} module.`);
             this.resolveAction();
         }
     }
