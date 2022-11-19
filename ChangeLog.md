@@ -2018,13 +2018,15 @@ Exit Criteria:
 
 11. Just when you thought you could get away with it: Write up a nice unit test to validate the 'rest' action stack creator, and try to think up some diverse use cases since it contains the first iteration of the reusable floor finder function.
 
-### 12. Revise the Colonist's updateNeeds method to stop its forEach loop at the first need that crosses its threshold (and has not been declared unavailable). Unit test and sanity check that this works properly.
+12. Revise the Colonist's updateNeeds method to stop its forEach loop at the first need that crosses its threshold (and has not been declared unavailable). Unit test and sanity check that this works properly.
 
-### 13. Update the Module's punchIn method to return a boolean representing the punchIn's success status. Have it reject punches when it is at is maximum capacity. Unit test.
+13. Update the Module's punchIn method to return a boolean representing the punchIn's success status. Have it reject punches when it is at is maximum capacity. Unit test.
 
-### 14. For the Colonist's enterModule method, if it receives a false, end the current action (the colonist has just tried to punch into an occupied module). Unit test this as well.
+14. For the Colonist's enterModule method, if it receives a false, end the current action (the colonist has just tried to punch into an occupied module). Unit test this as well. And try to catch it happening with a manual sanity check/temporary console log.
 
-### 13. Consider a way to get Colonists to modules that are separated by more than just a ladder/single surface.
+### 13. Find a way to allow Colonists to detect a module that is on the ground when they are on a non-ground floor. Validate with unit test, please (this works only for the get-rest action at the moment since it's the only function to use the new pathfinding logic).
+
+### 14. Since the CreateConsumeActionStack function is a beast that doesn't want to be tampered with, see if we can just add a clause to tell the Colonist to go to the ground floor if they are on a non-ground floor and cannot find their way to a resource-bearing module. Validate with unit test (And make sure this doesn't break any of the other ones!).
 
 ### 14. Investigate the issue that happens when a non-ground Floor is extended horizontally onto the ground (as happens when building into the side of a hill, say).
 

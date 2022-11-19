@@ -565,7 +565,9 @@ export default class ColonistData {
             const mod = infra.getModuleFromID(this._currentAction.buildingId);
             if (mod) {
                 const accessGranted = mod.punchIn(this._id);
-                if (!accessGranted) this.resolveAction();   // If punchout is rejected (i.e. if module is full) end the action
+                if (!accessGranted) {
+                    this.resolveAction();   // If punchout is rejected (i.e. if module is full) end the action
+                }
             } else {
                 console.log(`Error: ${this._name} unable to enter Module ${this._currentAction.buildingId}. Reason: Module data not found.`);
             }

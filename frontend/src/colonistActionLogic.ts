@@ -120,19 +120,22 @@ export const createRestActionStack = (colonistCoords: Coords, standingOnId: stri
 // Reusable function to check if a module's floor is accessible (via same surface or single ladder) and return an action stack that gets to that module (if possible)
 export const getPathToModule = (infra: Infrastructure, modId: number, modCoords: Coords, standingOn: string | number, colCoords: Coords) => {
     let stack: ColonistAction[] = [];
-    // 1 - Find the floor
-    const floor = infra._data.getFloorFromModuleId(modId);
-    if (floor) {
+    // 1 - A - Find the module's floor
+    const destFloor = infra._data.getFloorFromModuleId(modId);
+    // 1 - B - Find the colonist's floor
+    const startFloorId = infra._data.getFloorIdFromCoords({ x: colCoords.x, y: colCoords.y });
+    const startFloor = infra._data.getFloorFromId(startFloorId || 0);   // If the floor is not found, use ID = 0 to fail gracefully
+    if (destFloor) {
         // 2 - A - Destination is on same surface as colonist
-        if (determineIfColonistIsOnSameSurface(floor, standingOn)) {
+        if (determineIfColonistIsOnSameSurface(destFloor, standingOn)) {
             if (colCoords.x !== modCoords.x) {
                 stack.push(addAction("move", modCoords)); // If colonist is not already at the module, add move action
             }
-        } else if (floor._connectors.length > 0){
+        } else if (destFloor._connectors.length > 0){
         // 2 - B - Destination is on different surface (floor) and said floor has at least one elevator/ladder attached 
             // For each elevator, check if it reaches the colonist's standingOnId
             let solved = false;
-            floor._connectors.forEach((elevId) => {
+            destFloor._connectors.forEach((elevId) => {
                 if (!solved) {
                     const elevator = infra._data.getElevatorFromId(elevId);
                     // Determine 2 possible success criteria for an elevator to recommend itself:
@@ -142,11 +145,26 @@ export const getPathToModule = (infra: Infrastructure, modId: number, modCoords:
                     const floors = infra._data.getFloorsFromElevatorId(elevId);
                     const reachesFloor = elevator && floors.find((floor) => floor._id === standingOn as number);
                     if (grounded) {
-                        stack = stack.concat(climbLadderFromGroundActions(modCoords, floor, elevator));
+                        stack = stack.concat(climbLadderFromGroundActions(modCoords, destFloor, elevator));
                         solved = true;
                     } else if (reachesFloor){
                         // If elevator reaches the (non-ground) floor the colonist is on, get on at floor's height (stack complete)
-                        stack = stack.concat(climbLadderFromFloorActions(modCoords, floor, elevator, colCoords.y));
+                        stack = stack.concat(climbLadderFromFloorActions(modCoords, destFloor, elevator, colCoords.y));
+                        solved = true;
+                    }
+                }
+            })
+        } else if (startFloor && startFloor._connectors.length > 0) {
+            // 2 - C - Colonist is on a non-ground floor that has an elevator to the ground zone that the module is on
+            // For each elevator on the colonist's floor, check if it goes to one of the target floor's ground zones
+            let solved = false;
+            startFloor._connectors.forEach((id) => {
+                if (!solved) {
+                    const elevator = infra._data.getElevatorFromId(id);
+                    const reachesZone = elevator && destFloor.getFloorGroundZones().includes(elevator.groundZoneId);
+                    if (reachesZone) {
+                        // Tell the colonist to climb to the bottom of the ladder before walking to the target module
+                        stack = stack.concat(climbLadderFromFloorActions(modCoords, destFloor, elevator, colCoords.y, true));
                         solved = true;
                     }
                 }
@@ -208,23 +226,25 @@ export const createProductionActionStack = (colonistCoords: Coords, standingOnId
 }
 
 // Action stack creation expeditor for when the colonist has to walk across the map, then climb a ladder, then possibly move again
-export const climbLadderFromGroundActions = (jobCoords: Coords, floor: Floor, elevator: Elevator) => {
+export const climbLadderFromGroundActions = (modCoords: Coords, floor: Floor, elevator: Elevator) => {
     const stack: ColonistAction[] = [];
     // Only add the first (chronologically last) 'move' if the module is at a different x coordinate than the ladder
-    if (jobCoords.x !== elevator.x) {
-        stack.push(addAction("move", { x: jobCoords.x, y: jobCoords.y }));
+    if (modCoords.x !== elevator.x) {
+        stack.push(addAction("move", { x: modCoords.x, y: modCoords.y }));
     }
     stack.push(addAction("climb", { x: elevator.x, y: floor._elevation - 1 }, 0, elevator.id));
     stack.push(addAction("move", { x: elevator.x, y: elevator.bottom }));
     return stack;
 }
 
-export const climbLadderFromFloorActions = (jobCoords: Coords, floor: Floor, elevator: Elevator, y: number) => {
+// Action stack creation expeditor for when the colonist is on a non-ground floor, and has to climb a ladder to another floor OR to the bottom of the ladder (if groundFloor is true, climb down to the bottom instead of the destination floor's altitude)
+export const climbLadderFromFloorActions = (modCoords: Coords, floor: Floor, elevator: Elevator, y: number, groundFloor?: boolean) => {
     const stack: ColonistAction[] = [];
-    if (jobCoords.x !== elevator.x) {
-        stack.push(addAction("move", { x: jobCoords.x, y: jobCoords.y }));
+    if (modCoords.x !== elevator.x) {
+        stack.push(addAction("move", { x: modCoords.x, y: modCoords.y }));
     }
-    stack.push(addAction("climb", { x: elevator.x, y: floor._elevation - 1 }, 0, elevator.id));
+    const ladderExitHeight = groundFloor ? elevator.bottom : floor._elevation - 1;
+    stack.push(addAction("climb", { x: elevator.x, y: ladderExitHeight }, 0, elevator.id));
     stack.push(addAction("move", { x: elevator.x, y: y }));
     return stack;
 }
