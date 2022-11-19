@@ -43,7 +43,6 @@ export default class Industry {
         this._roles.forEach((role) => {
             this.updateJobsForRole(infra, role.name);
         })
-        console.log(this._jobs);
     }
 
     // Updates the jobs for a specific role from its string name

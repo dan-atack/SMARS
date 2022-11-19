@@ -577,8 +577,9 @@ export default class Engine extends View {
         this._hasLanded = true;
         this.placeInitialStructures();
         this.createModal(false, modalData[1]);
-        // Add two new colonists, one at each end of the landing zone (Y value is -2 since it is the Colonist's head level)
+        // Add three new colonists, spread across the landing zone (Y value is -2 since it is the Colonist's head level)
         this._population.addColonist(this._landingSiteCoords[0], this._landingSiteCoords[1] - 2);
+        this._population.addColonist(this._landingSiteCoords[0] + 3, this._landingSiteCoords[1] - 2);
         this._population.addColonist(this._landingSiteCoords[0] + 7, this._landingSiteCoords[1] - 2);
     }
 

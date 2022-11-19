@@ -88,6 +88,27 @@ const prodModInfo: ModuleInfo = {
     shapes: []
 }
 
+const crewModuleData: ModuleInfo = {
+    name: "Crew Quarters",
+    width: 4,
+    height: 3,
+    type: "Life Support",
+    pressurized: true,
+    columnStrength: 10,
+    durability: 100,
+    buildCosts:[
+        ["money", 100000],  // money
+    ],
+    maintenanceCosts: [
+        ["power", 1]
+    ],
+    storageCapacity: [
+        ["oxygen", 1000]    // oxygen, water, food
+    ],
+    crewCapacity: 2,
+    shapes: []
+}
+
 // Test Connector Data
 const connectorInfo: ConnectorInfo = {
     name: "Ladder",
@@ -812,6 +833,46 @@ describe("ColonistData", () => {
                 coords: { x: 5, y: 28 },   // NOTE: Climb action takes into account the Colonist's HEAD level, not FOOT level
                 duration: 0,
                 buildingId: 2004
+            }
+        ])
+    })
+
+    // 10 - If the colonist needs rest, they can find a path to the nearest crew quarters, even if it is up a ladder
+    test("Action Determination for production jobs works when colonist is on same zone as production site", () => {
+        resetColonistData();
+        // Colonist is on the ground
+        colonistData._x = 2;
+        colonistData._y = 31;   // Head is one above (lower integer) the feet, which are one higher than the topography value
+        colonistData.detectTerrainBeneath(mockMap, mockInfra);
+        // Add new crew quarters module to second floor
+        mockInfra.addModule(9, 27, crewModuleData, mockMap._topography, mockMap._zones, 1006);
+        // Make Colonist tired
+        colonistData._needs.rest = 16;
+        // Validate test conditions
+        expect(colonistData._actionStack.length).toBe(0);
+        expect(colonistData._currentAction).toBe(null);
+        // Initiate test: Colonist determines they need rest and forms a plan to get to the Crew Quarters
+        colonistData.handleHourlyUpdates(mockInfra, mockMap, indy);
+        // Expect results: Current action is to walk to the ladder, and 3 other actions are: climb, move, produce (farm)
+        expect(colonistData._actionStack.length).toBe(2);
+        expect(colonistData._currentAction).toStrictEqual({
+            type: "move",
+            coords: { x: 10, y: 32 },
+            duration: 0,
+            buildingId: 0
+        });
+        expect(colonistData._actionStack).toStrictEqual([
+            {
+                type: "rest",
+                coords: { x: 10, y: 29 },
+                duration: 480,
+                buildingId: 1006
+            },
+            {
+                type: "climb",
+                coords: { x: 10, y: 28 },
+                duration: 0,
+                buildingId: 2002
             }
         ])
     })

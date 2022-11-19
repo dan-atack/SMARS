@@ -96,7 +96,7 @@ export const createRestActionStack = (colonistCoords: Coords, standingOnId: stri
             if (!(stackComplete) && mod._crewPresent.length < mod._moduleInfo.crewCapacity) {
                 // Have colonists enter at different ends of the module if it is partially occupied when they get there
                 const coords = { x: mod._x + (mod._crewPresent.length * 2) + 1, y: mod._y + mod._height - 1}
-                stack.push(addAction("rest", coords, 640, mod._id));    // Duration = 480 minutes = 8 hours' sleep
+                stack.push(addAction("rest", coords, 480, mod._id));    // Duration = 480 minutes = 8 hours' sleep
                 // 3 - Then, find out if it is on the same surface as the colonist
                 stack = stack.concat(getPathToModule(infra, mod._id, coords, standingOnId, colonistCoords));
                 // 4- If stack has only 'rest' action at this point and zones do not match, the module is inaccessible
@@ -126,7 +126,6 @@ export const getPathToModule = (infra: Infrastructure, modId: number, modCoords:
         // 2 - A - Destination is on same surface as colonist
         if (determineIfColonistIsOnSameSurface(floor, standingOn)) {
             if (colCoords.x !== modCoords.x) {
-                console.log("Adding move action");
                 stack.push(addAction("move", modCoords)); // If colonist is not already at the module, add move action
             }
         } else if (floor._connectors.length > 0){
@@ -156,7 +155,6 @@ export const getPathToModule = (infra: Infrastructure, modId: number, modCoords:
     } else {
         console.log(`Error: Floor data not found for module ${modId}`);
     }
-    console.log(stack);
     return stack;
 }
 
@@ -199,7 +197,7 @@ export const createProductionActionStack = (colonistCoords: Coords, standingOnId
         }
         // If stack only contains initial production job by this point, set its length to zero (no connection found to job site)
         if (stack.length === 1 && !(determineIfColonistIsOnSameSurface(floor, standingOnId))) {
-            console.log(`Warning: Floor ${floor._id} is inaccessible for ${job.type} work.`);
+            // console.log(`Warning: Floor ${floor._id} is inaccessible for ${job.type} work.`);
             stack = [];
         }
     } else {
@@ -255,7 +253,7 @@ export const findElevatorToGround = (x: number, floorId: number, infra: Infrastr
         if (nearestId !== 0) {
             return infra._data.getElevatorFromId(nearestId);
         } else {
-            console.log(`No ladder found from floor ${floorId} to any ground zones.`);
+            // console.log(`No ladder found from floor ${floorId} to any ground zones.`);
             return null;
         }
     } else {
@@ -299,11 +297,11 @@ export const findElevatorFromGroundToFloor = (floor: Floor, standingOnId: string
             return infra._data.getElevatorFromId(nearestId);
         // If no suitable ladder is found, return a null
         } else {
-            console.log(`No ladder matching zone ID ${standingOnId} found.`);
+            // console.log(`No ladder matching zone ID ${standingOnId} found.`);
             return null;
         }
     } else {
-        console.log(`No elevator connections found to floor ${floor._id}`);
+        // console.log(`No elevator connections found to floor ${floor._id}`);
         return null;
     }
 }
@@ -316,7 +314,7 @@ export const findModulesWithResource = (resource: Resource, currentPosition: Coo
         const nearestModuleLocation = infra.findModuleLocationFromID(nearestModuleId);
         return { id: nearestModuleId, coords: nearestModuleLocation };
     } else {
-        console.log(`No modules found containing ${resource[0]}`);
+        // console.log(`No modules found containing ${resource[0]}`);
         return null;
     }
 }
@@ -339,7 +337,7 @@ export const determineIfColonistIsOnSameSurface = (floor: Floor, standingOnId: n
     const sameZone = floor._groundFloorZones.find((zone) => zone.id === standingOnId);
     const sameFloor = floor._id === standingOnId;
     if (sameZone || sameFloor) {
-        console.log(`Colonist is on same ${sameZone ? 'map zone' : 'floor'} as destination.`);
+        // console.log(`Colonist is on same ${sameZone ? 'map zone' : 'floor'} as destination.`);
         return true;
     } else {
         // console.log(`Colonist is not on same surface as module`);

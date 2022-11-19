@@ -95,12 +95,15 @@ export default class ColonistData {
 
     // NEEDS, ROLE AND GOAL-ORIENTED METHODS
 
-    // This may take arguments some day, like how much the Colonist has exerted himself since the last update
+    // Increases colonist needs, but only up to the need threshold if they are asleep
     updateNeeds = () => {
-        // TODO: Add complexity to the rates of change
         this._needs.food += 1;
         this._needs.water += 1;
         this._needs.rest += 1;
+        if (this._currentAction?.type === "rest") { // Limit need increases for food and water while colonist is resting
+            this._needs.food = Math.min(this._needs.food, this._needThresholds.food);
+            this._needs.water = Math.min(this._needs.food, this._needThresholds.water);
+        }
     }
 
     // Tells the colonist to assume that all needs can be checked for again
@@ -153,7 +156,6 @@ export default class ColonistData {
     checkForJobs = (infra: Infrastructure, map: Map, industry: Industry) => {
         const job = industry.getJob(this._role[0]);
         if (job) {  // Set the Job type as the new goal if a job is found; otherwise this will fall through to the default case
-            console.log(`Setting goal for ${this._name}: ${job.type}`);
             this.addAction(job.type, job.coords, job.duration, job.buildingId); // Make the job the first item in the action stack
             this.setGoal(job.type, infra, map, job);     // Then determine how to get to the job site
         }
@@ -164,7 +166,6 @@ export default class ColonistData {
     setGoal = (goal: string, infra?: Infrastructure, map?: Map, job?: ColonistAction) => {
         this._currentGoal = goal;
         if (infra && map) {
-            console.log(`Setting goal for ${this._name}: ${goal}`);
             this.determineActionsForGoal(infra, map, job);  // If there is a job, pass it to action stack determinator
         } else if (this._currentGoal !== "") {
             console.log(`Error: Infra/Map data missing for non-empty colonist goal: ${this._currentGoal}`);
@@ -241,7 +242,6 @@ export default class ColonistData {
                 if (this._actionStack.length === 0) this._needsAvailable.food = 0;
                 break;
             case "get-rest":
-                console.log("I'm so tired. I haven't slept a wink.");
                 this._actionStack = createRestActionStack(currentPosition, this._standingOnId, infra);
                 if (this._actionStack.length === 0) this._needsAvailable.rest = 0;
                 break;

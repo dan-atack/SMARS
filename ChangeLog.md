@@ -1989,10 +1989,10 @@ Now that the Colonists are able to put in a hard day's work at the farm module, 
 
 Exit Criteria:
 
-- Colonists sleep for 8 hours every day
-- When they exceed their rest need threshold, Colonists will go to the nearest Crew Quarters module and perform the sleep action
-- Colonists' other needs do not grow beyond their thresholds while the colonist is sleeping
-- Colonists have a sleep animation and are sent to different positions in the sleeping module
+- [DONE] Colonists sleep for 8 hours every day
+- [DONE] When they exceed their rest need threshold, Colonists go to the nearest Crew Quarters module and perform the rest action
+- [DONE] Colonists' other needs do not grow beyond their thresholds while the colonist is sleeping
+- [DONE] Colonists have a sleep animation and are sent to different positions in the sleeping module
 - Crew Quarters module respects its capacity limits in terms of allowing punching in and punching out
 - Add a third initial colonist to new games to see what happens when the sleeping module capacity is exceeded
 
@@ -2014,9 +2014,13 @@ Exit Criteria:
 
 9. For the 'rest' action resolution, make ALL of the colonist's need for rest go away (reset to zero). ALSO, make sure the punch the colonist out from the crew quarters or it will appear to remain occupied after they leave, blocking future opportunities for sleeping.
 
-### 10. Add some logic to the Colonist's updateNeeds method to only increase the need for food or water up to the threshold for these needs if the Colonist is currently performing the 'rest' action (so they do not wake up terribly hungry or dehydrated - but just hungry/thirsty enough to enjoy a good breakfast!).
+10. Add some logic to the Colonist's updateNeeds method to only increase the need for food or water up to the threshold for these needs if the Colonist is currently performing the 'rest' action (so they do not wake up terribly hungry or dehydrated - but just hungry/thirsty enough to enjoy a good breakfast!).
 
-### 11. Just when you thought you could get away with it: Write up some nice unit tests to validate the 'rest' action stack creator, and try to think up some diverse use cases since it contains the first iteration of the reusable floor finder function (the ColonistActionLogic's new getPathToModule function!).
+### 11. Just when you thought you could get away with it: Write up a nice unit test to validate the 'rest' action stack creator, and try to think up some diverse use cases since it contains the first iteration of the reusable floor finder function.
+
+### 12. Revise the Colonist's updateNeeds method to stop its forEach loop at the first need that crosses its threshold (and has not been declared unavailable).
+
+### 13. Consider a way to get Colonists to modules that are separated by more than just a ladder/single surface.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
@@ -2057,6 +2061,10 @@ As the game matures, it will be more and more desirable to separate features tha
 14. [8: Major Gameplay issue] In some circumstances, colonists will climb empty space (in the observed instance, the place where the climb action took place was in between two actual ladders) as though it were an actual ladder.
 
 ### 15. [2: UX / Inaccurate info display] The Earth date on the Earth screen is broken. It appears to not take the date from the save game data into account.
+
+### 16. [5: Significant Gameplay issue] When a new module is placed on the ground in a position that makes it flush with an existing floor, Colonists walking across it will momentarily climb up into the air for one block before falling back down. This is likely caused by the incompleteness of the Floor creation/merging strategy used by the Infrastructure Data class.
+
+### 17. [5: Significant Gameplay issue] When a Colonist has passed their need threshold for rest, their attempts to satisfy any other need are trumped since the needs calculation uses a forEach loop whose last member is 'rest.' This causes Colonists to freeze up in some circumstances, as they are not able to fulfill eat/drink needs even if the rest availability status has been set to 0 (meaning that they should ignore it and try to fulfill one of the other two needs).
 
 ## Technical Debt Issues:
 
