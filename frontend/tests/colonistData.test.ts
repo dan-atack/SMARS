@@ -888,6 +888,62 @@ describe("ColonistData", () => {
         ])
     })
 
+    // 11 - This tests if the colonist can get down from a non-ground floor to find a resource module that's on the ground, even when it's not connected to the colonist's floor directly via a ladder
+    test("Colonist can find their way to a module on the surface from a non-ground floor for consume or rest action", () => {
+        // Use new buildings: a cantina on its own, and two storage rooms in a stack, with the colonist on top and of course a ladder to reach the upper floor
+        const infra = new Infrastructure();
+        infra._data.setup(mockMap._mapData.length);
+        infra.addModule(0, 30, cantinaModuleInfo, mockMap._topography, mockMap._zones, 1001);
+        infra.addModule(10, 30, storageModuleInfo, mockMap._topography, mockMap._zones, 1002);
+        infra.addModule(10, 27, storageModuleInfo, mockMap._topography, mockMap._zones, 1003);
+        infra.addConnector({ x: 11, y: 32 }, { x: 11, y: 27 }, connectorInfo, mockMap, 2001);
+        // Provision the lone cantina
+        infra.addResourcesToModule(1001, ["water", 1000]);
+        resetColonistData();
+        // Colonist is on the second floor
+        colonistData._x = 10;
+        colonistData._y = 28;   // Head is one above (lower integer) the feet, which are one higher than the topography value
+        colonistData.detectTerrainBeneath(mockMap, infra);
+        // Validate that colonist stands on the second floor
+        expect(colonistData._standingOnId).toBe(1006);
+        // Make Colonist thirsty
+        colonistData._needs.water = 16;
+        // Validate test conditions
+        expect(colonistData._actionStack.length).toBe(0);
+        expect(colonistData._currentAction).toBe(null);
+        // Initiate test: Colonist determines they need to get a drink and forms a plan to get down to the cantina
+        colonistData.handleHourlyUpdates(infra, mockMap, indy);
+        expect(colonistData._currentGoal).toBe("get-water");
+        // Expect results: Current action is to walk to the ladder, and 3 other actions are: climb, move, drink
+        expect(colonistData._actionStack.length).toBe(3);
+        expect(colonistData._currentAction).toStrictEqual({
+            type: "move",
+            coords: { x: 11, y: 29 },
+            duration: 0,
+            buildingId: 0
+        });
+        expect(colonistData._actionStack).toStrictEqual([
+            {
+                type: "drink",
+                coords: { x: 0, y: 32 },
+                duration: 17,           // Duration is one higher than the initial spec since it grew with the hourly update!
+                buildingId: 1001
+            },
+            {
+                type: "move",
+                coords: { x: 0, y: 32 },
+                duration: 0,
+                buildingId: 0
+            },
+            {
+                type: "climb",
+                coords: { x: 11, y: 31 },
+                duration: 0,
+                buildingId: 2001
+            }
+        ])
+    })
+
     // TODO: Test updatePosition method!!!
 
     test("Can detect when the colonist is standing on a floor vs on a map zone", () => {

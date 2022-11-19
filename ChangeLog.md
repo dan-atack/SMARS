@@ -2024,11 +2024,9 @@ Exit Criteria:
 
 14. For the Colonist's enterModule method, if it receives a false, end the current action (the colonist has just tried to punch into an occupied module). Unit test this as well. And try to catch it happening with a manual sanity check/temporary console log.
 
-### 13. Find a way to allow Colonists to detect a module that is on the ground when they are on a non-ground floor. Validate with unit test, please (this works only for the get-rest action at the moment since it's the only function to use the new pathfinding logic).
+### 13. Find a way to allow Colonists to detect a module that is on the ground when they are on a non-ground floor. Validate with unit test for a consume action as well as for the rest action. We have seen what happens when unit test coverage is lacking!
 
-### 14. Since the CreateConsumeActionStack function is a beast that doesn't want to be tampered with, see if we can just add a clause to tell the Colonist to go to the ground floor if they are on a non-ground floor and cannot find their way to a resource-bearing module. Validate with unit test (And make sure this doesn't break any of the other ones!).
-
-### 14. Investigate the issue that happens when a non-ground Floor is extended horizontally onto the ground (as happens when building into the side of a hill, say).
+### 14. Add one last ColonistActionLogic function, to be called by the consume and rest action stack determinators in the event of an action stack being considered a failure (i.e. module path not found). Have this method check if the colonist is on a non-ground floor, and if so, tell them to simply find the nearest elevator and climb it to the ground (get off at elevator.bottom - 1 to avoid going into the ground, haha). This way, even if colonists get stuck on an upper floor (with no ground floor modules to tempt them this could still happen) they will eventually come down, at which point they'll presumably have an easier time finding what they need on the next attempt. Best of all, since they'll actually have an action stack when this routine finishes, they can immediately look again for the missing resource since they only get told that the resource is unavailable when the action stack comes back empty. Validate this with a unit test (naturally).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
@@ -2072,7 +2070,7 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ### 16. [5: Significant Gameplay issue] When a new module is placed on the ground in a position that makes it flush with an existing floor, Colonists walking across it will momentarily climb up into the air for one block before falling back down. This is likely caused by the incompleteness of the Floor creation/merging strategy used by the Infrastructure Data class.
 
-### 17. [5: Significant Gameplay issue] When a Colonist has passed their need threshold for rest, their attempts to satisfy any other need are trumped since the needs calculation uses a forEach loop whose last member is 'rest.' This causes Colonists to freeze up in some circumstances, as they are not able to fulfill eat/drink needs even if the rest availability status has been set to 0 (meaning that they should ignore it and try to fulfill one of the other two needs).
+17. [5: Significant Gameplay issue] When a Colonist has passed their need threshold for rest, their attempts to satisfy any other need are overridden since the needs calculation uses a forEach loop whose last member is 'rest.' This causes Colonists to freeze up in some circumstances, as they are not able to fulfill eat/drink needs even if the rest availability status has been set to 0 (meaning that they should ignore it and try to fulfill one of the other two needs).
 
 ## Technical Debt Issues:
 
