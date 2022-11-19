@@ -137,13 +137,15 @@ export default class ColonistData {
 
     // Sub-routine 1 for updateGoal method: Checks if any needs have reached their threshold
     checkForNeeds = (infra: Infrastructure, map: Map) => {
+        let needSet = false;        // Only keep looping so long as no need has been set
         Object.keys(this._needs).forEach((need) => {
             // Check each need to see if it has A) crossed its threshold and B) is still believed to be available
             // @ts-ignore
-            if (this._needs[need] >= this._needThresholds[need] && this._needsAvailable[need]) {
+            if (this._needs[need] >= this._needThresholds[need] && this._needsAvailable[need] && !(needSet)) {
                 // When setting new goal, clear out the current action - UNLESS it's a 'climb' action, in which case wait
                 if (this._currentAction?.type !== "climb") {
                     this.resolveAction();
+                    needSet = true;     // Tell the forEach loop to stop looking once a need is set
                     this.setGoal(`get-${need}`, infra, map);
                 } else {
                     console.log(`Colonist ${this._id} is climbing - delaying new action start.`);
@@ -562,7 +564,8 @@ export default class ColonistData {
         if (this._currentAction && this._currentAction.coords.x === this._x && this._currentAction.coords.y === this._y + 1) {
             const mod = infra.getModuleFromID(this._currentAction.buildingId);
             if (mod) {
-                mod.punchIn(this._id);
+                const accessGranted = mod.punchIn(this._id);
+                if (!accessGranted) this.resolveAction();   // If punchout is rejected (i.e. if module is full) end the action
             } else {
                 console.log(`Error: ${this._name} unable to enter Module ${this._currentAction.buildingId}. Reason: Module data not found.`);
             }

@@ -178,8 +178,14 @@ export default class Module {
 
     // SECTION 3: WORK-RELATED METHODS (FOR PRODUCTION MODULES ONLY)
 
+    // Allows a Colonist to enter the module if it isn't already at max capacity
     punchIn = (colonistId: number) => {
-        this._crewPresent.push(colonistId);
+        if (this._crewPresent.length < this._moduleInfo.crewCapacity) {
+            this._crewPresent.push(colonistId);
+            return true;    // Let the Colonist know if their punch-in attempt has succeeded
+        } else {
+            return false;   // Let the Colonist know if their punch-in attempt has failed
+        }
     }
 
     punchOut = (colonistId: number) => {

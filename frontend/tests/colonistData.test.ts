@@ -206,6 +206,17 @@ describe("ColonistData", () => {
         expect(colonistData._currentGoal).toBe("get-water");
     })
 
+    test("When multiple needs have passed their threshold, the first one to be considered becomes the goal", () => {
+        resetColonistData();
+        colonistData._needs = {
+            water: 5,
+            food: 7,
+            rest: 20
+        };
+        colonistData.handleHourlyUpdates(mockInfra, mockMap, indy);
+        expect(colonistData._currentGoal).toBe("get-water");
+    })
+
     test("StartGoalProgress will set the first action in a pre-filled action stack to the current action", () => {
         // Setup test conditions
         resetColonistData();
@@ -838,7 +849,7 @@ describe("ColonistData", () => {
     })
 
     // 10 - If the colonist needs rest, they can find a path to the nearest crew quarters, even if it is up a ladder
-    test("Action Determination for production jobs works when colonist is on same zone as production site", () => {
+    test("Action Determination for get-rest finds path to nearest Sleeping Quarters", () => {
         resetColonistData();
         // Colonist is on the ground
         colonistData._x = 2;
@@ -891,5 +902,22 @@ describe("ColonistData", () => {
         colonistData._y = 28;
         colonistData.detectTerrainBeneath(mockMap, mockInfra);
         expect(colonistData._standingOnId).toBe(1004);
+    })
+
+    test("Will end the current action if an attempt is made to punch into an already-full module", () => {
+        resetColonistData();
+        // Colonist is on the ground
+        colonistData._x = 3;
+        colonistData._y = 31;   // Head is one above (lower integer) the feet, which are one higher than the topography value
+        colonistData.detectTerrainBeneath(mockMap, mockInfra);
+        colonistData._currentAction = {
+            type: "farm",
+            coords: { x: 6, y: 27 },
+            duration: 30,
+            buildingId: 1005
+        };
+        mockInfra._modules[5].punchIn(9999);                // Add a fake punch-in to the production module to make it 'full'
+        colonistData.enterModule(mockInfra);                // Try to punch in
+        expect(colonistData._currentAction).toBe(null);     // It should cancel the current action
     })
 });

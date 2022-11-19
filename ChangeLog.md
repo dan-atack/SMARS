@@ -2016,11 +2016,17 @@ Exit Criteria:
 
 10. Add some logic to the Colonist's updateNeeds method to only increase the need for food or water up to the threshold for these needs if the Colonist is currently performing the 'rest' action (so they do not wake up terribly hungry or dehydrated - but just hungry/thirsty enough to enjoy a good breakfast!).
 
-### 11. Just when you thought you could get away with it: Write up a nice unit test to validate the 'rest' action stack creator, and try to think up some diverse use cases since it contains the first iteration of the reusable floor finder function.
+11. Just when you thought you could get away with it: Write up a nice unit test to validate the 'rest' action stack creator, and try to think up some diverse use cases since it contains the first iteration of the reusable floor finder function.
 
-### 12. Revise the Colonist's updateNeeds method to stop its forEach loop at the first need that crosses its threshold (and has not been declared unavailable).
+### 12. Revise the Colonist's updateNeeds method to stop its forEach loop at the first need that crosses its threshold (and has not been declared unavailable). Unit test and sanity check that this works properly.
+
+### 13. Update the Module's punchIn method to return a boolean representing the punchIn's success status. Have it reject punches when it is at is maximum capacity. Unit test.
+
+### 14. For the Colonist's enterModule method, if it receives a false, end the current action (the colonist has just tried to punch into an occupied module). Unit test this as well.
 
 ### 13. Consider a way to get Colonists to modules that are separated by more than just a ladder/single surface.
+
+### 14. Investigate the issue that happens when a non-ground Floor is extended horizontally onto the ground (as happens when building into the side of a hill, say).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
