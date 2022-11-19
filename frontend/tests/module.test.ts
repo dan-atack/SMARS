@@ -96,7 +96,7 @@ const productionModuleInfo: ModuleInfo = {
         ["food", 1000],
         ["power", 1000]     // Limited internal batteries
     ],
-    crewCapacity: 1,
+    crewCapacity: 2,
     shapes: []
 }
 
@@ -333,7 +333,17 @@ describe("ModuleData", () => {
         expect(prodModule._crewPresent).toStrictEqual([5000]);
     })
 
+    test("punchIn only allows the Colonist to enter if the module is not already full", () => {
+        // Module has a capacity of 2 and only one current tenant, so add two more, one at a time
+        const homer = 5001;
+        const homerS = 5002;
+        expect(prodModule.punchIn(homer)).toBe(true);       // Room for one more?
+        expect(prodModule.punchIn(homerS)).toBe(false);     // It says 'no homerS'. We're allowed to have one!
+    })
+
     test("PunchOut removes a colonist ID from the list of crew present", () => {
+        // Setup test by going back down to one occupant
+        prodModule.punchOut(5002);
         const otherId = 5001;
         prodModule.punchIn(otherId);
         expect(prodModule._crewPresent).toStrictEqual([5000, 5001]);    // Add a second ID to the list for fun

@@ -84,6 +84,16 @@ export default class Module {
         return qty;
     }
 
+    // Called by the Industry class to determine if a module can produce (convert inputs to outputs) right now
+    hasProductionInputs () {
+        let provisioned = true;
+        // Check each input resource against the current quantity; if any resource is lacking, return false
+        this._moduleInfo.productionInputs?.forEach((res) => {
+            if (this.getResourceQuantity(res[0]) < res[1]) provisioned = false;
+        });
+        return provisioned;
+    }
+
     // SECTION 2: RESOURCE SHIPPING/RECEIVING METHODS
 
     // Called by the Infra class every hour, returns a list of the resource requests for this Module
@@ -111,16 +121,6 @@ export default class Module {
         return reqs;
     }
 
-    // Called by the Industry class to determine if a module can produce (convert inputs to outputs) right now
-    hasProductionInputs () {
-        let provisioned = true;
-        // Check each input resource against the current quantity; if any resource is lacking, return false
-        this._moduleInfo.productionInputs?.forEach((res) => {
-            if (this.getResourceQuantity(res[0]) < res[1]) provisioned = false;
-        });
-        return provisioned;
-    }
-
     // Try to add a resource and return the quantity actually added
     addResource (resource: Resource) {
         // Check if resource is in the module's capacity list
@@ -140,6 +140,7 @@ export default class Module {
                 } else {           // If capacity does not match amount to be added, set to max capacity and return the difference
                     // @ts-ignore
                     this._resources.find(res => res[0] === resource[0])[1] = capacity;
+                    console.log(`Warning: Was only able to add ${spaceAvail} ${resource[0]} to module ${this._id}.`);
                     return spaceAvail;  // Return the amount added (in this case, the total amount of space available)
                 }
             }
@@ -177,13 +178,17 @@ export default class Module {
 
     // SECTION 3: WORK-RELATED METHODS (FOR PRODUCTION MODULES ONLY)
 
+    // Allows a Colonist to enter the module if it isn't already at max capacity
     punchIn = (colonistId: number) => {
-        console.log(`Colonist ${colonistId} punching in.`);
-        this._crewPresent.push(colonistId);
+        if (this._crewPresent.length < this._moduleInfo.crewCapacity) {
+            this._crewPresent.push(colonistId);
+            return true;    // Let the Colonist know if their punch-in attempt has succeeded
+        } else {
+            return false;   // Let the Colonist know if their punch-in attempt has failed
+        }
     }
 
     punchOut = (colonistId: number) => {
-        console.log(`Colonist ${colonistId} punching out.`);
         this._crewPresent = this._crewPresent.filter((id) => id !== colonistId);
     }
 

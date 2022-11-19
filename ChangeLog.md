@@ -1981,6 +1981,53 @@ Exit Criteria:
 
 31. Lastly, pass the Industry class down to the colonist's checkActionStatus method from its handleMinutelyUpdates method, so that the farm action resolution block can call the updateJobsForRole method for that role before resolving the action (but after resolving the module's production, in order to come after the Module's punchOut method call). This should allow the Industry class to re-create the jobs list for that role before the Colonist leaves the module, allowing them to simply take another shift there right away rather than having to wait for the hourly update to regenerate the job. Validate with manual sanity check (i.e. just watch to see if the colonists will do several back-to-back rounds of production before stopping).
 
+## Chapter Thirty-Six: Bed Time for the Colonists (Difficulty Estimate: 3 for some tight refactoring and upgrades to the colonist movement logic system)
+
+### November 15, 2022
+
+Now that the Colonists are able to put in a hard day's work at the farm module, it is time for them to finally be able to take a well-earned rest. The need for rest has been allowed to accumulate for some time now, but has been removed from relevance in the game by setting the threshold to an insanely high value. Now, to complete the Colonist's daily routine, the threshold will be lowered, and a mechanism put into place to allow Colonists to fulfill the need and get some rest. This routine will be similar to the way consumption and production operate, in that the Colonist will attempt to find their way to a particular module (in this case the Crew Quarters) and perform an action there (in this case, rest). Unlike the other two needs, the duration of the sleep action will not scale based on the Colonist's tiredness (need level), and the action will also take a much longer time to resolve than the other ones (colonists will sleep 8 hours per day to maintain their vigour). Also, since the duration of the sleep action will be long enough for both the food and water needs to go from zero to well over their thresholds, we should come up with a mechanism to limit the increase of these needs while the colonist is sleeping. Ideally they should be allowed to increase up to their thresholds but not beyond them, so that the Colonist always wakes up hungry and thirsty (and thus has breakfast before going off to work for the day).
+
+Exit Criteria:
+
+- [DONE] Colonists sleep for 8 hours every day
+- [DONE] When they exceed their rest need threshold, Colonists go to the nearest Crew Quarters module and perform the rest action
+- [DONE] Colonists' other needs do not grow beyond their thresholds while the colonist is sleeping
+- [DONE] Colonists have a sleep animation and are sent to different positions in the sleeping module
+- [DONE] Crew Quarters module respects its capacity limits in terms of allowing punching in and punching out
+- [DONE] Add a third initial colonist to new games to see what happens when the sleeping module capacity is exceeded - ADDENDUM: They sleep in shifts!!!
+
+1. Reduce the Colonist class's rest threshold from 2000 to 16, and see what happens. Expectation is that they will freeze up as soon as their current goal is completed.
+
+2. Add a new case to the Colonist's DetermineActionsForGoal block for "get-rest", and have it do a simple console log for now.
+
+3. Add a new function in the ColonistActionLogic file, called createRestActionStack, to find the path to the nearest available crew quarters for the colonist to sleep in. Again, just make it a console log for now, plus return an empty list. Call it from the Colonist's "get-rest" case.
+
+4. Rename the Colonist's produce method to enterModule, and have the startAction case for "sleep" call this method as well (punching in to a production module is the same, from the module's point of view, as slouching into the sleeping quarters).
+
+5. Add a case to the startMovement block to start the "sleep" move (which will not be much of a move at all, surprise).
+
+6. Now, start to fill out the rest of the rest action (hahaha) stack determinator function, starting by adding the 'rest' action itself, which will take place in the crew quarters module.
+
+7. Make a separate, reusable function for the ColonistActionLogic that can find the way to a module when given its ID and coordinates, as well as the ID of the surface the Colonist is standing on, plus their coordinates. Integrate this into the Rest Stack Creation function.
+
+8. Add a simple animation for the 'rest' action so colonists don't disappear when they go to bed.
+
+9. For the 'rest' action resolution, make ALL of the colonist's need for rest go away (reset to zero). ALSO, make sure the punch the colonist out from the crew quarters or it will appear to remain occupied after they leave, blocking future opportunities for sleeping.
+
+10. Add some logic to the Colonist's updateNeeds method to only increase the need for food or water up to the threshold for these needs if the Colonist is currently performing the 'rest' action (so they do not wake up terribly hungry or dehydrated - but just hungry/thirsty enough to enjoy a good breakfast!).
+
+11. Just when you thought you could get away with it: Write up a nice unit test to validate the 'rest' action stack creator, and try to think up some diverse use cases since it contains the first iteration of the reusable floor finder function.
+
+12. Revise the Colonist's updateNeeds method to stop its forEach loop at the first need that crosses its threshold (and has not been declared unavailable). Unit test and sanity check that this works properly.
+
+13. Update the Module's punchIn method to return a boolean representing the punchIn's success status. Have it reject punches when it is at is maximum capacity. Unit test.
+
+14. For the Colonist's enterModule method, if it receives a false, end the current action (the colonist has just tried to punch into an occupied module). Unit test this as well. And try to catch it happening with a manual sanity check/temporary console log.
+
+15. Find a way to allow Colonists to detect a module that is on the ground when they are on a non-ground floor. Validate with unit test for a consume action. You can never have too many unit tests -- WE NEED TOTAL COVERAGE!!!
+
+16. Add one last ColonistActionLogic function, to be called by the consume, rest and produce action stack determinators in the event of an action stack being considered a failure (i.e. the path to the desired module/s was not found). Have this function check if the colonist is on a non-ground floor, and if so, tell them to simply find the nearest elevator and climb it to the ground (get off at elevator.bottom - 1 to avoid going underground, haha). This way, even if colonists get stuck on an upper floor (with no ground floor modules to tempt them this could still happen) they will eventually come down, at which point they'll phave an easier time finding what they need on the next attempt. Best of all, since they'll actually have an action stack when this routine finishes, they can immediately look again for the missing resource since they only get told that the resource is unavailable when the action stack comes back empty. Validate this with a unit test (naturally).
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
@@ -2020,6 +2067,10 @@ As the game matures, it will be more and more desirable to separate features tha
 14. [8: Major Gameplay issue] In some circumstances, colonists will climb empty space (in the observed instance, the place where the climb action took place was in between two actual ladders) as though it were an actual ladder.
 
 ### 15. [2: UX / Inaccurate info display] The Earth date on the Earth screen is broken. It appears to not take the date from the save game data into account.
+
+### 16. [5: Significant Gameplay issue] When a new module is placed on the ground in a position that makes it flush with an existing floor, Colonists walking across it will momentarily climb up into the air for one block before falling back down. This is likely caused by the incompleteness of the Floor creation/merging strategy used by the Infrastructure Data class.
+
+17. [5: Significant Gameplay issue] When a Colonist has passed their need threshold for rest, their attempts to satisfy any other need are overridden since the needs calculation uses a forEach loop whose last member is 'rest.' This causes Colonists to freeze up in some circumstances, as they are not able to fulfill eat/drink needs even if the rest availability status has been set to 0 (meaning that they should ignore it and try to fulfill one of the other two needs).
 
 ## Technical Debt Issues:
 
