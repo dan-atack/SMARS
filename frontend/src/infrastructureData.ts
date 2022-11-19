@@ -348,13 +348,13 @@ export default class InfrastructureData {
         }
     }
 
-    // Takes a set of coordinates and returns just the ID of the floor (if any) that those coords stand atop of
-    getFloorIdFromCoords (coords: Coords) {
+    // Takes a set of coordinates and returns the whole floor (if any) that those coords stand atop of
+    getFloorFromCoords (coords: Coords) {
         const floor = this._floors.find((fl) => {
             return fl._elevation === coords.y && fl._leftSide <= coords.x && fl._rightSide >= coords.x;
         })
         if (floor !== undefined) {
-            return floor._id;
+            return floor;
         } else {
             console.log(`Coordinates (${coords.x}, ${coords.y}) are not on any floor`);
             return null;

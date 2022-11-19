@@ -304,6 +304,7 @@ export default class ColonistData {
                         this._needs.rest = 0;   // Always awake fully rested - must be nice!!
                         this.exitModule(infra); // Don't forget to officially exit the module when leaving
                         this.resolveAction();
+                        this.checkForNextAction(infra);
                     }
                 // Housekeeping: Keep options in sync with startAction and startMovement methods and animationFunctions.ts
             }
@@ -377,11 +378,11 @@ export default class ColonistData {
     }
 
     updateFloorZone = (infra: Infrastructure) => {
-        const id = infra._data.getFloorIdFromCoords({ x: this._x, y: this._y + 1 });    // Plus one to Y for foot level
-        if (id) {
-            this._standingOnId = id;
+        const floor = infra._data.getFloorFromCoords({ x: this._x, y: this._y + 1 });    // Plus one to Y for foot level
+        if (floor) {
+            this._standingOnId = floor._id;
         } else {
-            console.log(`Error: Colonist ${this._id} at (${this._x}, ${this._y}) is not standing on anything!`);
+            console.log(`Error: Colonist ${this._name} at (${this._x}, ${this._y}) is not standing on anything!`);
             // Drop the colonist down one level if they are not standing on anything ??
             this._y++;
         }

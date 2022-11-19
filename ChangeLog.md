@@ -1981,7 +1981,7 @@ Exit Criteria:
 
 31. Lastly, pass the Industry class down to the colonist's checkActionStatus method from its handleMinutelyUpdates method, so that the farm action resolution block can call the updateJobsForRole method for that role before resolving the action (but after resolving the module's production, in order to come after the Module's punchOut method call). This should allow the Industry class to re-create the jobs list for that role before the Colonist leaves the module, allowing them to simply take another shift there right away rather than having to wait for the hourly update to regenerate the job. Validate with manual sanity check (i.e. just watch to see if the colonists will do several back-to-back rounds of production before stopping).
 
-## Chapter Thirty-Six: Bed Time for the Colonists (Difficulty Estimate: TBD)
+## Chapter Thirty-Six: Bed Time for the Colonists (Difficulty Estimate: 3 for some tight refactoring and upgrades to the colonist movement logic system)
 
 ### November 15, 2022
 
@@ -1993,8 +1993,8 @@ Exit Criteria:
 - [DONE] When they exceed their rest need threshold, Colonists go to the nearest Crew Quarters module and perform the rest action
 - [DONE] Colonists' other needs do not grow beyond their thresholds while the colonist is sleeping
 - [DONE] Colonists have a sleep animation and are sent to different positions in the sleeping module
-- Crew Quarters module respects its capacity limits in terms of allowing punching in and punching out
-- Add a third initial colonist to new games to see what happens when the sleeping module capacity is exceeded
+- [DONE] Crew Quarters module respects its capacity limits in terms of allowing punching in and punching out
+- [DONE] Add a third initial colonist to new games to see what happens when the sleeping module capacity is exceeded - ADDENDUM: They sleep in shifts!!!
 
 1. Reduce the Colonist class's rest threshold from 2000 to 16, and see what happens. Expectation is that they will freeze up as soon as their current goal is completed.
 
@@ -2024,9 +2024,9 @@ Exit Criteria:
 
 14. For the Colonist's enterModule method, if it receives a false, end the current action (the colonist has just tried to punch into an occupied module). Unit test this as well. And try to catch it happening with a manual sanity check/temporary console log.
 
-### 13. Find a way to allow Colonists to detect a module that is on the ground when they are on a non-ground floor. Validate with unit test for a consume action as well as for the rest action. We have seen what happens when unit test coverage is lacking!
+15. Find a way to allow Colonists to detect a module that is on the ground when they are on a non-ground floor. Validate with unit test for a consume action. You can never have too many unit tests -- WE NEED TOTAL COVERAGE!!!
 
-### 14. Add one last ColonistActionLogic function, to be called by the consume and rest action stack determinators in the event of an action stack being considered a failure (i.e. module path not found). Have this method check if the colonist is on a non-ground floor, and if so, tell them to simply find the nearest elevator and climb it to the ground (get off at elevator.bottom - 1 to avoid going into the ground, haha). This way, even if colonists get stuck on an upper floor (with no ground floor modules to tempt them this could still happen) they will eventually come down, at which point they'll presumably have an easier time finding what they need on the next attempt. Best of all, since they'll actually have an action stack when this routine finishes, they can immediately look again for the missing resource since they only get told that the resource is unavailable when the action stack comes back empty. Validate this with a unit test (naturally).
+16. Add one last ColonistActionLogic function, to be called by the consume, rest and produce action stack determinators in the event of an action stack being considered a failure (i.e. the path to the desired module/s was not found). Have this function check if the colonist is on a non-ground floor, and if so, tell them to simply find the nearest elevator and climb it to the ground (get off at elevator.bottom - 1 to avoid going underground, haha). This way, even if colonists get stuck on an upper floor (with no ground floor modules to tempt them this could still happen) they will eventually come down, at which point they'll phave an easier time finding what they need on the next attempt. Best of all, since they'll actually have an action stack when this routine finishes, they can immediately look again for the missing resource since they only get told that the resource is unavailable when the action stack comes back empty. Validate this with a unit test (naturally).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
