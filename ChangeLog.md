@@ -2058,13 +2058,13 @@ Exit Criteria:
 
 4. Add a new Colonist method, updateMorale, which takes a number as its only parameter, and adds this (the number can be negative) to the colonist's current morale value. Validate this method on its own with a very basic unit test.
 
-### 5. Add another Colonist method, determineMoraleForNeeds, which checks the colonist's current needs vs their thresholds, and then calls the updateMorale method to reduce morale by 1 for each need whose current value exceeds the threshold value by more than 1. Validate this with a more thorough unit test.
+5. Add another Colonist method, determineMoraleChangeForNeeds, which checks the colonist's current needs vs their thresholds, and then calls the updateMorale method to reduce morale by 1 for each need whose current value exceeds the threshold value by more than 1... or better yet, add a 'tolerance' variable to the Colonist Date clas, to allow customizability on the amount by which a need has to exceed its threshold before lowering morale. Validate this with a more thorough unit test.
 
-### 6. Integrate the Colonist's morale updater method into the hourly updates handler, to be called after the needs updater has been called. Validate this with a unit test also (is this an integration test?).
+6. Integrate the Colonist's morale updater method into the hourly updates handler, to be called after the needs updater has been called. Validate with in-game sanity check.
 
-### 7. Move the new colonist unit tests off into their own file, called ColonistMorale.test.ts, to start differentiating between different types of tests (and to ensure a cleaner environment for new tests that don't need Infrastructure/map data).
+7. Move the new colonist unit tests off into their own file, called ColonistMorale.test.ts, to start differentiating between different types of tests (and to ensure a cleaner environment for new tests that don't need Infrastructure/map data).
 
-### 8. Add a call to the updateMorale method to the action resolve case for eat, drink and rest, to add one morale whenever the colonist resolves one of these actions. Validate with unit test.
+8. Add a call to the updateMorale method to the action resolve case for eat, drink and rest, to add one morale whenever the colonist resolves one of these actions. Validate with unit test.
 
 ### 9. Update the Inspect Display for Colonists to show their morale below their needs chart, and have the font colour reflect the fullness of their morale (note: do we want a bar instead of a numerical display?)
 
