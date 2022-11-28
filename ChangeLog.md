@@ -2040,10 +2040,10 @@ Exit Criteria:
 - New colonists arrive via a drop-pod, which will have a landing animation like the one at the beginning of the game
 - Drop pods land on a random area of the map, away from the base structures
 - All maps are updated to only contain one zone, so that new arrivals do not get stuck (legacy saves need not be supported)
-- Colonists' morale scores are introduced, and are shown in the Colonist Inspect Tool display
-- Colonists gain one point of morale every time they satisfy a need
-- Colonists lose one point of morale every time a need exceeds its threshold by 2 or more (i.e. goes into the red)
-- Colonists' sleep need stops increasing once they begin to perform the 'rest' action
+- [DONE] Colonists have a morale score, from 0 to 100, shown in the Colonist Inspect Tool display
+- [DONE] Colonists gain one point of morale every time they satisfy a need
+- [DONE] Colonists lose one point of morale every time a need exceeds its threshold by 2 or more (i.e. goes into the red)
+- [DONE] Colonists' sleep need stops increasing once they begin to perform the 'rest' action
 - Population page's colonists roster is paginated, to allow for adding new rows without cluttering the page
 - Earth page displays the correct Earth date, as well as the current date on SMARS (long version of the in-game date)
 - Earth page also displays the Earth/SMARS date for the next anticipated colonist landing
@@ -2066,11 +2066,17 @@ Exit Criteria:
 
 8. Add a call to the updateMorale method to the action resolve case for eat, drink and rest, to add one morale whenever the colonist resolves one of these actions. Validate with unit test.
 
-### 9. Update the Inspect Display for Colonists to show their morale below their needs chart, and have the font colour reflect the fullness of their morale (note: do we want a bar instead of a numerical display?)
+9. Update the Inspect Display for Colonists to show their morale below their needs chart, and have the font colour reflect the fullness of their morale.
 
 10. Add the Colonist's morale to their save data, and in the constructor add some logic to either use the saved morale value or 50 as a default when loading a colonist. Validate with in-game sanity check.
 
-### 11. Look at the Load Game screen to remember how to implement a pagination system, then begin applying that to the Population View.
+11. Look at the Load Game screen to remember how to implement a pagination system, then apply that to the Population View. Make sure to test that the view opens/closes as expected, and resets the pagination for the Colonist rows each time the view is closed.
+
+### 12. Add a list of ten adjectives, each of which will correspond to a 10-point section of the colony's average morale score.
+
+### 13. In the Population View screen, add up the colonists' morale and find its average, then map that to the corresponding adjective from the above-mentioned list, and display that instead of the flavour text ("plucky") that is currently shown for the colony's morale rating.
+
+### 14. Reposition the Population View's message text to make it appear just below the 'Next' button, and have it show, as a default value, the current and total number of colonists in the base (e.g. 'showing records for colonists 1 - 4 out of 5').
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

@@ -581,6 +581,8 @@ export default class Engine extends View {
         this._population.addColonist(this._landingSiteCoords[0], this._landingSiteCoords[1] - 2);
         this._population.addColonist(this._landingSiteCoords[0] + 3, this._landingSiteCoords[1] - 2);
         this._population.addColonist(this._landingSiteCoords[0] + 7, this._landingSiteCoords[1] - 2);
+        this._population.addColonist(this._landingSiteCoords[0] + 6, this._landingSiteCoords[1] - 2);
+        this._population.addColonist(this._landingSiteCoords[0] + 5, this._landingSiteCoords[1] - 2);
     }
 
     // Loads the first base structures after the dust clears from the landing sequence
