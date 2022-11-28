@@ -42,15 +42,18 @@ export type ColonistNeeds = {
     rest: number,
 };
 
+export type ColonistRole = [string, number];
+
 export type ColonistSaveData = {
     id: number,
     name: string,
     x: number,
     y: number,
-    role: [string, number],
+    role: ColonistRole,
     needs: ColonistNeeds,
+    morale: number,
     goal: string,
-    currentAction: ColonistAction,
+    currentAction: ColonistAction | null,
     actionStack: ColonistAction[],
     actionTimeElapsed: number,
     isMoving: boolean,

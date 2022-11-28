@@ -111,6 +111,7 @@ export default class Population {
                 y: colonist._data._y,
                 role: colonist._data._role,
                 needs: colonist._data._needs,
+                morale: colonist._data._morale,
                 goal: colonist._data._currentGoal,
                 currentAction: colonist._data._currentAction,
                 actionStack: colonist._data._actionStack,

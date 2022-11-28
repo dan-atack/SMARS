@@ -2028,6 +2028,50 @@ Exit Criteria:
 
 16. Add one last ColonistActionLogic function, to be called by the consume, rest and produce action stack determinators in the event of an action stack being considered a failure (i.e. the path to the desired module/s was not found). Have this function check if the colonist is on a non-ground floor, and if so, tell them to simply find the nearest elevator and climb it to the ground (get off at elevator.bottom - 1 to avoid going underground, haha). This way, even if colonists get stuck on an upper floor (with no ground floor modules to tempt them this could still happen) they will eventually come down, at which point they'll phave an easier time finding what they need on the next attempt. Best of all, since they'll actually have an action stack when this routine finishes, they can immediately look again for the missing resource since they only get told that the resource is unavailable when the action stack comes back empty. Validate this with a unit test (naturally).
 
+## Chapter Thirty-Seven: Smartian Immigration (Difficulty Estimate: 5, for introducing new concepts such as colonist morale, pagination of the Population view, and the incoming colonist drop pod animation)
+
+### November 24, 2022
+
+Now that our initial Smartian colonists have settled into their basic routine, it's time to let the good people of Earth know how wonderful it is on the New World, and to invite more people to join the colony! This chapter will focus on implementing a system for expanding the base's population (without diving into the more complicated question of Smartian reproduction) by adding new 'immigrants' from Earth every two Earth years - the interval between ideal Hohmann transfer opportunities (the actual amount is 26 months but we'll round that down for simplicity's sake). The number of immigrants will be small (between 1 and 3 per cycle) and will always be determined in advance, based on the current colonists' collective morale - which will be determined for each colonist based on how successfully their needs are being met. At the start of the game there will be a standing order to add two more colonists at the beginning of mission year 1, and at that time, a calculation will be made of the average morale of the original colonists to decide how many more will set out from Earth in the next wave. New colonists will arrive via a parachute-deployed drop-pod, which will look a little bit like the lander shown at the beginning of the game, and which will disappear after the landing animation sequence finishes. All of the colonists who land each (Smartian) year will emerge from the same pod, and their landing site will be randomly selected. Once landed, the new colonists will start hungry, thirsty and tired, so they will immediately be compelled to move towards the base to satisfy their needs after a long journey through space. Once their needs have been taken care of, they can be assigned duties in the base and will be just like the original batch of colonists.
+
+Exit Criteria:
+
+- Every game year, a new batch of colonists will arrive from Earth to join the colony
+- New colonists arrive via a drop-pod, which will have a landing animation like the one at the beginning of the game
+- Drop pods land on a random area of the map, away from the base structures
+- All maps are updated to only contain one zone, so that new arrivals do not get stuck (legacy saves need not be supported)
+- Colonists' morale scores are introduced, and are shown in the Colonist Inspect Tool display
+- Colonists gain one point of morale every time they satisfy a need
+- Colonists lose one point of morale every time a need exceeds its threshold by 2 or more (i.e. goes into the red)
+- Colonists' sleep need stops increasing once they begin to perform the 'rest' action
+- Population page's colonists roster is paginated, to allow for adding new rows without cluttering the page
+- Earth page displays the correct Earth date, as well as the current date on SMARS (long version of the in-game date)
+- Earth page also displays the Earth/SMARS date for the next anticipated colonist landing
+- Earth page also displays the projected launch date for the next batch of new colonists (not the same as the landing date)
+- All maps in the database are revised/replaced so that they all have only one zone (so new colonists cannot get stuck)
+
+1. Go through the maps in the game's database and delete all of the ones that have cliffs/multiple map zones, to prevent newly landed colonists from becoming stuck/isolated when they arrive.
+
+2. For each map that was deleted, replace it with a new one that meets the desired specifications.
+
+3. Add a new field to the Colonist class for morale, which will be a number from 0 to 100. In fact, add two fields, morale and maxMorale, to restrict the range of possible values (apparently TS does not have a built-in way to limit a number's value in the type declaration, as far as I can tell at least). Colonists start with 50 morale in their constructor function.
+
+4. Add a new Colonist method, updateMorale, which takes a number as its only parameter, and adds this (the number can be negative) to the colonist's current morale value. Validate this method on its own with a very basic unit test.
+
+### 5. Add another Colonist method, determineMoraleForNeeds, which checks the colonist's current needs vs their thresholds, and then calls the updateMorale method to reduce morale by 1 for each need whose current value exceeds the threshold value by more than 1. Validate this with a more thorough unit test.
+
+### 6. Integrate the Colonist's morale updater method into the hourly updates handler, to be called after the needs updater has been called. Validate this with a unit test also (is this an integration test?).
+
+### 7. Move the new colonist unit tests off into their own file, called ColonistMorale.test.ts, to start differentiating between different types of tests (and to ensure a cleaner environment for new tests that don't need Infrastructure/map data).
+
+### 8. Add a call to the updateMorale method to the action resolve case for eat, drink and rest, to add one morale whenever the colonist resolves one of these actions. Validate with unit test.
+
+### 9. Update the Inspect Display for Colonists to show their morale below their needs chart, and have the font colour reflect the fullness of their morale (note: do we want a bar instead of a numerical display?)
+
+10. Add the Colonist's morale to their save data, and in the constructor add some logic to either use the saved morale value or 50 as a default when loading a colonist. Validate with in-game sanity check.
+
+### 11. Look at the Load Game screen to remember how to implement a pagination system, then begin applying that to the Population View.
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
@@ -2132,15 +2176,13 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ### 2. Enable the player to highlight a row in the Population View screen, and have that screen open with a particular colonist highlighted if it is opened via clicking the 'Change Role' button mentioned in the above point.
 
+## Section X.1: World Editor Suite Improvements
+
+### 1. Use shell scripts with arguments to replace manual steps in the map upload process from the World Editor suite's readme file.
+
 ### Exit Criteria for backend save/load game chapter:
 
 - [DONE]It is possible to create a new saved game file for a given user.
 - It is possible to update a saved game file for a given user.
 - [DONE]It is possible to retrieve a list of saved games for a given user.
 - [DONE]It is possible to retrieve all of the game data for a specific saved game file.
-
-## Chapter XX: DevOps Interlude and First Deployment! (Aim to complete deployment by June of 2022)
-
-- Dev mode environment variable enables some information displays in the world screen area
-- Build/test pipeline update
-- Deploy the backend to Heroku?? AWS???!

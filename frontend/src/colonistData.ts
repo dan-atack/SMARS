@@ -28,6 +28,8 @@ export default class ColonistData {
     _needs: ColonistNeeds;          // Keep track of the colonist's needs to help them choose what to do with their lives
     _needThresholds: ColonistNeeds; // Separately keep track of the various thresholds for each type of need
     _needsAvailable: ColonistNeeds; // Also, keep track of whether any needs are unavailable (0 = unavailable, 1 = available)
+    _morale: number;                // Morale is determined by how readily the colonist's needs are met
+    _maxMorale: number;             // Allow adjustable maximum morale limit
     _currentGoal: string;           // String name of the Colonist's current goal (e.g. "get food", "get rest", "explore", etc.)
     _actionStack: ColonistAction[]; // Actions, from last to first, that the colonist will perform to achieve their current goal
     _currentAction: ColonistAction | null; // The individual action that is currently being undertaken (if any)
@@ -66,6 +68,8 @@ export default class ColonistData {
             food: 1,
             rest: 1
         };
+        this._morale = saveData?.morale ? saveData.morale : 50;     // Load saved morale, or default to 50 (normal morale)
+        this._maxMorale = 100;                                      // Set morale limit
         this._currentGoal = saveData ? saveData.goal : "explore"    // Load saved goal, or go exploring (for new colonists).
         this._actionStack = saveData?.actionStack ? saveData.actionStack : [];   // Load saved action stack or default to empty
         this._currentAction = saveData?.currentAction ? saveData.currentAction : null;  // Load current action or default to null
@@ -588,6 +592,18 @@ export default class ColonistData {
             } else {
                 console.log(`Error: ${this._name} unable to exit Module ${this._currentAction.buildingId}. Reason: Module data not found.`);
             }
+        }
+    }
+
+    // MORALE METHODS (Not to be confused with 'moral methods')
+
+    // Takes a number (positive or negative) and modifies the colonist's current morale
+    updateMorale = (delta: number) => {
+        this._morale += delta;
+        if (delta > 0) {
+            this._morale = Math.min(this._morale, this._maxMorale); // If morale is increasing, make sure to respect the max value
+        } else {
+            this._morale = Math.max(this._morale, 0);   // If morale is decreasing, make sure it doesn't go below zero
         }
     }
 
