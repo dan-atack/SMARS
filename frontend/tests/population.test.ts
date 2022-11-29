@@ -27,4 +27,21 @@ describe("Population", () => {
         expect(population._colonists[0]._data._role[0]).toBe("farmer");             // Role is assigned if colonist exists
         expect(population.assignColonistRole(8000, ["farmer", 1001])).toBe(null);   // If colonist ID does not exist return null
     })
+
+    test("Can calculate the average morale of all the colonists each hour", () => {
+        population.addColonist(0, 0);                   // Add a second colonist
+        expect(population._averageMorale).toBe(50);     // Default value is 50
+        population.addColonist(0, 0);                   // Add a third colonist
+        population._colonists[0]._data._morale = 80;    // Increase one colonist's morale by 30
+        population.updateMoraleRating();
+        expect(population._averageMorale).toBe(60);     // Average morale = 50 + 50 + 80 / 3 = 60
+        // Reduce one colonist's morale by one point
+        population._colonists[1]._data._morale = 49;
+        population.updateMoraleRating();
+        expect(population._averageMorale).toBe(60);     // Average morale is rounded to the nearest integer (rounded up)
+        // Reduce one colonist's morale by one more point
+        population._colonists[1]._data._morale = 48;
+        population.updateMoraleRating();
+        expect(population._averageMorale).toBe(59);     // Average morale is rounded to the nearest integer (rounded down)
+    })
 })

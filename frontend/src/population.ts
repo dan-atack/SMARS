@@ -12,12 +12,13 @@ export default class Population {
     _colonists: Colonist[];
     _colonistsCurrentSerial: number;    // Needed to individually tag colonists when they are created (starts at zero)
     _colonistSerialBase: number;        // Serial base = the large number added to the current serial index (Which starts at zero)
+    _averageMorale: number;             // Calculate the average morale level of the colonists
 
     constructor() {
         this._colonists = [];                   // Default population is zero.
         this._colonistsCurrentSerial = 0;       // Current serial always starts at zero
         this._colonistSerialBase = 9000;        // Colonists are from the 9000 series!
-
+        this._averageMorale = 50;               // Default value is 50, which is what new colonists start with
     }
 
     // SECTION 1: ADDING POPULATION (COLONISTS)
@@ -68,10 +69,21 @@ export default class Population {
         })
     }
 
+    // Calls each colonist's hourly updates routine, then gets the average morale each hour
     handleColonistHourlyUpdates = (infra: Infrastructure, map: Map, industry: Industry) => {
         this._colonists.forEach((colonist) => {
             colonist._data.handleHourlyUpdates(infra, map, industry);
-        })
+        });
+        this.updateMoraleRating();
+    }
+
+    // Called after each hourly update, to get the average morale of all the colonists in the base
+    updateMoraleRating = () => {
+        let total = 0;
+        this._colonists.forEach((col) => {
+            total += col._data._morale;
+        });
+        this._averageMorale = Math.round(total / this._colonists.length);
     }
 
     // SECTION 3: COLONIST ROLE MANAGEMENT
@@ -139,6 +151,7 @@ export default class Population {
         } else {
             console.log("Warning: No colonist data in save file.");
         }
+        this.updateMoraleRating();      // Update morale as soon as colonist is loaded
     }
 
     // Gets horizontal offset and fps (game speed) data from the Engine's render method

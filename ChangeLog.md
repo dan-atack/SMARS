@@ -2039,16 +2039,15 @@ Exit Criteria:
 - Every game year, a new batch of colonists will arrive from Earth to join the colony
 - New colonists arrive via a drop-pod, which will have a landing animation like the one at the beginning of the game
 - Drop pods land on a random area of the map, away from the base structures
-- All maps are updated to only contain one zone, so that new arrivals do not get stuck (legacy saves need not be supported)
+- [DONE] All maps are updated to only contain one zone, so that new arrivals do not get stuck (legacy saves need not be supported)
 - [DONE] Colonists have a morale score, from 0 to 100, shown in the Colonist Inspect Tool display
 - [DONE] Colonists gain one point of morale every time they satisfy a need
 - [DONE] Colonists lose one point of morale every time a need exceeds its threshold by 2 or more (i.e. goes into the red)
 - [DONE] Colonists' sleep need stops increasing once they begin to perform the 'rest' action
-- Population page's colonists roster is paginated, to allow for adding new rows without cluttering the page
+- [DONE] Population page's colonists roster is paginated, to allow for adding new rows without cluttering the page
 - Earth page displays the correct Earth date, as well as the current date on SMARS (long version of the in-game date)
 - Earth page also displays the Earth/SMARS date for the next anticipated colonist landing
 - Earth page also displays the projected launch date for the next batch of new colonists (not the same as the landing date)
-- All maps in the database are revised/replaced so that they all have only one zone (so new colonists cannot get stuck)
 
 1. Go through the maps in the game's database and delete all of the ones that have cliffs/multiple map zones, to prevent newly landed colonists from becoming stuck/isolated when they arrive.
 
@@ -2072,11 +2071,13 @@ Exit Criteria:
 
 11. Look at the Load Game screen to remember how to implement a pagination system, then apply that to the Population View. Make sure to test that the view opens/closes as expected, and resets the pagination for the Colonist rows each time the view is closed.
 
-### 12. Add a list of ten adjectives, each of which will correspond to a 10-point section of the colony's average morale score.
+12. Add a list of ten adjectives, each of which will correspond to a 10-point section of the colony's average morale score.
 
-### 13. In the Population View screen, add up the colonists' morale and find its average, then map that to the corresponding adjective from the above-mentioned list, and display that instead of the flavour text ("plucky") that is currently shown for the colony's morale rating.
+13. Have the Population class add up the colonists' morale and find its average. Read that value in the PopulationView screen, and then map that to the corresponding adjective from the above-mentioned list, and display that instead of the flavour text ("plucky") that is currently shown for the colony's morale rating. Add a unit test to the Population class to validate the average morale is calculated correctly.
 
-### 14. Reposition the Population View's message text to make it appear just below the 'Next' button, and have it show, as a default value, the current and total number of colonists in the base (e.g. 'showing records for colonists 1 - 4 out of 5').
+14. Reposition the Population View's message text to make it appear just below the 'Next' button, and have it show, as a default value, the current and total number of colonists in the base (e.g. 'showing records for colonists 1 - 4 out of 5').
+
+15. Update the PopulationRow to display the colonist's morale in the second column, and their name in the first (eliminating the ID display).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

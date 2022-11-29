@@ -107,8 +107,8 @@ export default class PopulationRow {
         p5.fill(constants.GREEN_TERMINAL);
         p5.textSize(18);
         // Text all at once after the boxes are rendered
-        p5.text(this._colonist._data._id, this._colEdges[0] + this._colWidths[0] / 2, this._y + this._height / 2);
-        p5.text(this._colonist._data._name, this._colEdges[1] + this._colWidths[1] / 2, this._y + this._height / 2);
+        p5.text(this._colonist._data._name, this._colEdges[0] + this._colWidths[0] / 2, this._y + this._height / 2);
+        p5.text(this._colonist._data._morale, this._colEdges[1] + this._colWidths[1] / 2, this._y + this._height / 2);
         p5.text(this._colonist._data._role[0], this._colEdges[2] + this._colWidths[2] / 2, this._y + this._height / 2);
         this._buttons.forEach((btn) => {
             btn.render(p5);

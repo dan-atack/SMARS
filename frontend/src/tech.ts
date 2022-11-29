@@ -13,9 +13,6 @@ export default class TechTree extends View {
 
     setup = () => {
         this.currentView = true;
-        const p5 = this._p5;
-        p5.background(constants.APP_BACKGROUND);
-        p5.text("Science page", constants.SCREEN_WIDTH / 2, 128);
     }
 
     render = () => {
