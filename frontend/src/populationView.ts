@@ -23,8 +23,8 @@ export default class PopulationView extends View {
     _adjectives: string[];
     _moraleIndex: number;                   // The adjectives list index to be used when describing the colony's overall morale
 
-    constructor(p5: P5, changeView: (newView: string) => void) {
-        super(p5, changeView);
+    constructor(changeView: (newView: string) => void) {
+        super(changeView);
         this._population = null;           // By default there is zero population (gets set by the setup routine)
         this._rows = [];
         this._rowIndent = 64;
@@ -157,8 +157,7 @@ export default class PopulationView extends View {
         this._moraleIndex = Math.floor(population._averageMorale / 10);
     }
 
-    render = () => {
-        const p5 = this._p5;
+    render = (p5: P5) => {
         p5.background(constants.APP_BACKGROUND);
         p5.stroke(constants.ALMOST_BLACK);
         p5.fill(constants.GREEN_TERMINAL);

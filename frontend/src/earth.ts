@@ -9,17 +9,14 @@ export default class Earth extends View {
     earthDate: Date;
     dateRemainder: number;
 
-    constructor(p5: P5, changeView: (newView: string) => void) {
-        super(p5, changeView);
+    constructor(changeView: (newView: string) => void) {
+        super(changeView);
         this.earthDate = new Date("January 1, 2030");       // Game starts on new year's day, 2030
         this.dateRemainder = 0;                             // Keep track of the remainder when adding days
     }
 
     setup = () => {
         this.currentView = true;
-        const p5 = this._p5;
-        p5.background(constants.APP_BACKGROUND);
-        p5.text("Earth Diplomacy page", constants.SCREEN_WIDTH / 2, 128);
     }
 
     setEarthDate = (addDays: number) => {
@@ -32,8 +29,7 @@ export default class Earth extends View {
         }
     }
 
-    render = () => {
-        const p5 = this._p5;
+    render = (p5: P5) => {
         p5.background(constants.APP_BACKGROUND);
         p5.fill(constants.GREEN_TERMINAL);
         p5.text("Earth diplomacy page rendered", constants.SCREEN_WIDTH / 2, 384);

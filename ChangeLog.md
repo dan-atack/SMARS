@@ -2079,6 +2079,14 @@ Exit Criteria:
 
 15. Update the PopulationRow to display the colonist's morale in the second column, and their name in the first (eliminating the ID display).
 
+### 16. In order to permit still wider unit test coverage, remove the P5 dependency from the View class constructor, and fix all 4 sub-classes (industryView, populationView, tech and earth).
+
+### 17. Create a basic unit test file for each View screen, with a simple define <function> test for each.
+
+### 18. Fix the Earth view's Earth date field so that it either starts at January 1st, 2030, or takes an argument to the constructor function to load a saved game date. Add the current Earth date as well as the remainder quantity to the save game data object, so that the date doesn't slip between saves.
+
+### 19. When calculating the 'remainder' for Earth date updates, round the value to 2 decimal points so we don't get any ridiculous floating point value errors. Validate this, and THEN get rid of the 'change' display.
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.

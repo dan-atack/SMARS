@@ -7,16 +7,15 @@ import { constants } from "./constants";
 export default class IndustryView extends View {
     // Industry overview Types:
 
-    constructor(p5: P5, changeView: (newView: string) => void) {
-        super(p5, changeView);
+    constructor(changeView: (newView: string) => void) {
+        super(changeView);
     }
 
     setup = () => {
         this.currentView = true;
     }
 
-    render = () => {
-        const p5 = this._p5;
+    render = (p5: P5) => {
         p5.background(constants.APP_BACKGROUND);
         p5.fill(constants.GREEN_TERMINAL);
         p5.text("Colony Industry Report", constants.SCREEN_WIDTH / 2, 64);

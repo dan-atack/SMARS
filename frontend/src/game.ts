@@ -37,10 +37,10 @@ export default class Game extends Screen {
         this.switchScreen = switchScreen;
         // Pass view and screen changer functions to the engine (For the sidebar to use)
         this._engine = new Engine(p5, this.switchScreen, this.changeView, this.updateEarthData);
-        this._population = new PopulationView(p5, this.changeView);
-        this._techTree = new TechTree(p5, this.changeView);
-        this._earth = new Earth(p5, this.changeView) // There IS no planet B!!!
-        this._industry = new IndustryView(p5, this.changeView);
+        this._population = new PopulationView(this.changeView);
+        this._techTree = new TechTree(this.changeView);
+        this._earth = new Earth(this.changeView) // There IS no planet B!!!
+        this._industry = new IndustryView(this.changeView);
         // this._logbook = new Logbook(p5, this.changeView);        // On hold pending investigation into why we need it.
         this._views = [this._engine, this._population, this._techTree, this._earth, this._industry];
         this._gameData = {          // Default values will be overridden
@@ -190,10 +190,10 @@ export default class Game extends Screen {
             this._engine._sidebar.setMenuOpen(false);       // And reset the flag!?
         }
         if (this._engine.currentView) this._engine.render();
-        if (this._earth.currentView) this._earth.render();
-        if (this._industry.currentView) this._industry.render();
-        if (this._techTree.currentView) this._techTree.render();
-        if (this._population.currentView) this._population.render();
+        if (this._earth.currentView) this._earth.render(this._p5);
+        if (this._industry.currentView) this._industry.render(this._p5);
+        if (this._techTree.currentView) this._techTree.render(this._p5);
+        if (this._population.currentView) this._population.render(this._p5);
     }
 
 }

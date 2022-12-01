@@ -5,7 +5,6 @@ import { constants } from "./constants";
 
 export default class View {
     // View essential types:
-    _p5: P5;
     _width: number;
     _height: number;
     _header: string;    // Title field for descendent classes
@@ -13,8 +12,7 @@ export default class View {
     changeView: (newView: string) => void;
     _buttons: Button[];
 
-    constructor(p5: P5, changeView: (newView: string) => void) {
-        this._p5 = p5;
+    constructor(changeView: (newView: string) => void) {
         this._width = constants.SCREEN_WIDTH;
         this._height = constants.SCREEN_HEIGHT;
         this._header = ""   // Display title for the view; can be set individually by inheritor classes
@@ -46,8 +44,7 @@ export default class View {
     }
 
     // Don't put too much in here as most of the descendent classes will override this:
-    render = () => {
-        const p5 = this._p5;    // For convenience
+    render = (p5: P5) => {
         p5.background(constants.APP_BACKGROUND);
         this._buttons.forEach((button) => {
             button.render(p5);
