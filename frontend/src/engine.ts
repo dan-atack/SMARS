@@ -30,6 +30,7 @@ if (process.env.ENVIRONMENT) console.log(process.env.ENVIRONMENT);
 
 export default class Engine extends View {
     // Engine types
+    _p5: P5;                    // Although the View class no longer uses it in the constructor, the Engine still does
     _sidebar: Sidebar;
     _sidebarExtended: boolean;
     _gameData: GameData | null  // Data object for a new game
@@ -74,7 +75,8 @@ export default class Engine extends View {
     getConnectorInfo: (setter: (selectedConnector: ConnectorInfo, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => void, category: string, type: string, name: string, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => void;
 
     constructor(p5: P5, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, updateEarthData: () => void) {
-        super(p5, changeView);
+        super(changeView);
+        this._p5 = p5;
         this.switchScreen = switchScreen;
         this.updateEarthData = updateEarthData;
         this.getModuleInfo = getOneModule;

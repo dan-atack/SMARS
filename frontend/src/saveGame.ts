@@ -36,14 +36,18 @@ export type ConnectorSaveInfo = {
 }
 
 export type SaveInfo = {
-    game_name: string,           // Save game name
-    username: string,            // Name of the username associated with this save
-    time: Date,                  // Timestamp for the save file
-    game_time: GameTime,
-    difficulty: string,          // Easy, medium or hard - values will be inserted into switch cases throughout the game
-    map_type: string,            // From the game's initial settings
-    terrain: number[][],         // The 'map' consists of terrain plus structures plus sprites
-    random_events: boolean,      // From the game's initial settings
+    game_name: string,          // Save game name
+    username: string,           // Name of the username associated with this save
+    time: Date,                 // Timestamp for the save file
+    game_time: GameTime,        // Smars date
+    earth_date: {
+        date: Date,
+        remainder: number
+    }                           // Earth date includes a date element and a number for the remainder, which is a fraction of a day
+    difficulty: string,         // Easy, medium or hard - values will be inserted into switch cases throughout the game
+    map_type: string,           // From the game's initial settings
+    terrain: number[][],        // The 'map' consists of terrain plus structures plus sprites
+    random_events: boolean,     // From the game's initial settings
     modules: ModuleSaveInfo[],
     connectors: ConnectorSaveInfo[],
     resources: Resource[],

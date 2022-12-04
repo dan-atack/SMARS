@@ -64,19 +64,25 @@ export type ColonistSaveData = {
     facing: string
 };
 
+export type GameTime = {
+    minute: number,
+    hour: number,
+    cycle: string,
+    sol: number,    // The Smartian day is called a 'Sol'
+    year: number    // Smartian year (AKA mission year) is the amount of times SMARS has orbited the sun since mission start (Lasts approximately twice as long as a Terrestrial year).
+}
+
 // Template for new save game info (copy from SaveGame.ts):
 
 export type SaveInfo = {
     game_name: string           // Save game name
     username: string            // Name of the username associated with this save
     time: Date                  // Timestamp for the save file
-    game_time: {                // The time on SMARS
-        minute: number,
-        hour: number,
-        cycle: string,
-        sol: number,
-        year: number
-    }
+    game_time: GameTime,        // Smars date
+    earth_date: {
+        date: Date,
+        remainder: number
+    }                           // Earth date includes a date element and a number for the remainder, which is a fraction of a day
     difficulty: string          // Easy, medium or hard - values will be inserted into switch cases throughout the game
     map_type: string            // From the game's initial settings
     terrain: number[][]         // The 'map' consists of terrain plus structures plus sprites

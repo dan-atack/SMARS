@@ -2079,13 +2079,15 @@ Exit Criteria:
 
 15. Update the PopulationRow to display the colonist's morale in the second column, and their name in the first (eliminating the ID display).
 
-### 16. In order to permit still wider unit test coverage, remove the P5 dependency from the View class constructor, and fix all 4 sub-classes (industryView, populationView, tech and earth).
+16. In order to permit still wider unit test coverage, remove the P5 dependency from the View class constructor, and fix all 4 sub-classes (industryView, populationView, tech and earth).
 
-### 17. Create a basic unit test file for each View screen, with a simple define <function> test for each.
+17. Create a basic unit test file for each View screen, with a simple define <function> test for each.
 
-### 18. Fix the Earth view's Earth date field so that it either starts at January 1st, 2030, or takes an argument to the constructor function to load a saved game date. Add the current Earth date as well as the remainder quantity to the save game data object, so that the date doesn't slip between saves.
+18. Fix the Earth view's Earth date field so that it either starts at January 1st, 2030, or takes an argument to the a new loadSavedDate method to load a saved game date. Add the current Earth date as well as the remainder quantity to the save game data object, so that the date doesn't slip between saves.
 
-### 19. When calculating the 'remainder' for Earth date updates, round the value to 2 decimal points so we don't get any ridiculous floating point value errors. Validate this, and THEN get rid of the 'change' display.
+19. To avoid floating point math issues when calculating the date remainder, change the value in the constants file from 7.15 to 715 and include instructions to divide the value by 100 and collect the remainder from that instead.
+
+20. Add new values to the game's constants file for Hohmann transfer interval duration, interplanetary flight time, and pre-flight preparation time, all in terms of Earth days.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
@@ -2130,6 +2132,8 @@ As the game matures, it will be more and more desirable to separate features tha
 ### 16. [5: Significant Gameplay issue] When a new module is placed on the ground in a position that makes it flush with an existing floor, Colonists walking across it will momentarily climb up into the air for one block before falling back down. This is likely caused by the incompleteness of the Floor creation/merging strategy used by the Infrastructure Data class.
 
 17. [5: Significant Gameplay issue] When a Colonist has passed their need threshold for rest, their attempts to satisfy any other need are overridden since the needs calculation uses a forEach loop whose last member is 'rest.' This causes Colonists to freeze up in some circumstances, as they are not able to fulfill eat/drink needs even if the rest availability status has been set to 0 (meaning that they should ignore it and try to fulfill one of the other two needs).
+
+### 18. [5: Significant Gameplay issue] When a Colonist is going to produce in a module on a non-ground floor, they can sometimes start to climb a ladder that is attached to that floor, but that does not go all the way to the ground where they begin to climb it. Colonist appears to climb an invisible ladder until they reach the bottom of the actual ladder, which they continue to climb to the destination. Because the Colonist does not totally freeze up this is considered only a moderate level of severity.
 
 ## Technical Debt Issues:
 

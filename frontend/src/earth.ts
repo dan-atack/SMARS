@@ -19,13 +19,27 @@ export default class Earth extends View {
         this.currentView = true;
     }
 
-    setEarthDate = (addDays: number) => {
-        this.dateRemainder += addDays % 1;      // Add the remainder first
-        if (this.dateRemainder >= 1) {
-            this.earthDate.setDate(this.earthDate.getDate() + addDays + this.dateRemainder);
-            this.dateRemainder = this.dateRemainder % 1;    // If remainder is bigger than one, add one then get the remainder's remainder
+    // Optionally load the Earth date from a saved game, if it's there
+    loadSavedDate = (earthDate?: { date: Date, remainder: number }) => {
+        console.log(earthDate);
+        if (earthDate) {
+            const date = new Date(earthDate.date);
+            this.earthDate = date;
+            this.dateRemainder = earthDate.remainder;
         } else {
-            this.earthDate.setDate(this.earthDate.getDate() + addDays);
+            console.log("Legacy save loaded. No Earth date data available.");
+        }
+    }
+
+    // Adds 7.15 days to the Earth date for every game hour that passes
+    setEarthDate = (addDays: number) => {
+        // Date remainder value must be divided by 100 since we only use integers (ie 7.15 is passed to this function as 715)
+        this.dateRemainder += addDays % 100;      // Add the remainder first
+        if (this.dateRemainder >= 100) {
+            this.earthDate.setDate(this.earthDate.getDate() + addDays / 100 + 1);
+            this.dateRemainder = this.dateRemainder % 100;    // If remainder is bigger than 100, add one then get the remainder's remainder
+        } else {
+            this.earthDate.setDate(this.earthDate.getDate() + addDays / 100 );
         }
     }
 
