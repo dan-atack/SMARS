@@ -69,7 +69,7 @@ export default class Game extends Screen {
         p5.textAlign(p5.CENTER, p5.CENTER);
         if (!this._gameLoaded && this._loadGameData) {      // Loading a SAVED game
             this._engine.setupSavedGame(this._loadGameData);
-            this._earth.loadSavedDate(this._loadGameData.earth_date);
+            this._earth.loadSavedDate(this._loadGameData.earth_dates);
             this._gameLoaded = true;
         } else if (!this._gameLoaded) {                     // Loading a NEW game
             this._engine.setupNewGame(this._gameData);
@@ -103,7 +103,7 @@ export default class Game extends Screen {
     }
 
     updateEarthData = () => {
-        this._earth.setEarthDate(constants.EARTH_DAY_HUNDREDTHS_PER_HOUR); // Add 7.15 days to Earth calendar for every hour that passes on SMARS
+        this._earth.handleWeeklyUpdates(); // Update the Earth calendar for every hour that passes on SMARS (in game time)
     }
 
     // Pass data from the pre-game setup screen and username from the App itself, to the game with this method:
@@ -148,9 +148,11 @@ export default class Game extends Screen {
             username: this._username,
             time: new Date (),
             game_time: this._engine._gameTime,
-            earth_date: {
-                date: this._earth.earthDate,
-                remainder: this._earth.dateRemainder
+            earth_dates: {
+                date: this._earth._earthDate,
+                remainder: this._earth._dateRemainder,
+                nextLaunch: this._earth._nextLaunchDate,
+                nextLanding: this._earth._nextLandingDate
             },
             difficulty: this._gameData.difficulty,
             map_type: this._gameData.mapType,

@@ -2089,6 +2089,24 @@ Exit Criteria:
 
 20. Add new values to the game's constants file for Hohmann transfer interval duration, interplanetary flight time, and pre-flight preparation time, all in terms of Earth days.
 
+21. Using the newly added preflight prep time constant, have the Earth view calculate the initial value for both the next launch from Earth and the next landing in its constructor, and display these values on the Earth view. Validate with unit test.
+
+22. Update the Earth dates save data field to include the next launch and landing dates. Validate with in-game sanity check. Only allow save data to replace the default values if all of the Earth date data (including launch and landing dates) are present.
+
+23. Give the Earth view a new method called checkEventDatesForUpdate. Call it on each hourly update and have it console log when either the launch date or the landing date is passed by the current Earth date. Do a unit test of this basic functionality with the initial launch and landing dates created by the constructor.
+
+### 24. When either the launch or the landing date is passed, replace it with a new date by adding the Hohmann transfer interval constant to it.
+
+25. Add a top-level updater to the Earth view to handle the full sequence of weekly events, starting with the Earth date update (Which also doesn't need any argument to execute since it just uses a game constant as its sole input).
+
+### 25. Add another simple Earth method called isShipInTransit, which checks if the next launch date is later than the next landing date. If it is, there is a ship in transit. Insert this method into the renderer to optionally show text about the next mission that has been sent from Earth.
+
+### 26. Add a field to the Earth view to record the number of colonists on the current flight, once a launch is made. Additionally, add a field to indicate whether or not there is a flight en route at the moment. Give this a default value of 2 and display it on the Earth view.
+
+### 27. Change the Engine's new game parameters to start new games with 4 colonists. That'll be the magic number for the game's initial release.
+
+### 28.
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
