@@ -11,6 +11,7 @@ export default class Earth extends View {
     _nextLaunchDate: Date;              // Keep track of next launch and landing dates
     _nextLandingDate: Date;
     _flightEnRoute: boolean;            // Track whether or not there is currently a flight incoming
+    _colonistsEnRoute: number           // The anticipated / actual number of colonists on the next flight
     // Formatting points
     _leftIndent: number;
     _sunCenterX: number;
@@ -30,6 +31,7 @@ export default class Earth extends View {
         this._nextLandingDate = new Date("January 1, 2030");
         this._nextLandingDate.setDate(this._nextLandingDate.getDate() + constants.HOHMANN_TRANSFER_INTERVAL);
         this._flightEnRoute = false;    // At the start of the game no flight is underway. You are on your own for now.
+        this._colonistsEnRoute = 2;     // The value is 'anticipated' until a launch occurs, then it gets locked in
         // Model Solar System coords (tODO: Replace with a proper system)
         this._leftIndent = 64;
         this._sunCenterX = 540;
@@ -48,7 +50,11 @@ export default class Earth extends View {
     
     // SECTION 1 - TOP LEVEL UPDATER (RUNS ONCE PER EARTH WEEK \ GAME HOUR)
 
-    handleWeeklyUpdates = () => {
+    // Takes one parameter: the number of colonists to go on the next launch
+    handleWeeklyUpdates = (colonists: number) => {
+        if (!this._colonistsEnRoute) {      // Only allow if the rocket is not already en route!
+            this.setColonists(colonists);
+        }
         this.updateEarthDate();
         const ev = this.checkEventDatesForUpdate();
         this.setNextEventDate(ev);  // If either a launch or a landing has occurred, schedule the next one
@@ -96,16 +102,29 @@ export default class Earth extends View {
             launch: false,
             landing: false
         }
-        // Check if launch date has arrived
+        // Check if launch date has arrived and set flight to true if so
         if (this._earthDate > this._nextLaunchDate) {
             console.log("A new rocket has been launched from Earth.");
             ev.launch = true;
-        // Check if landing date has arrived
+            this._flightEnRoute = true;
+        // Check if landing date has arrived and set flight to false if so
         } else if (this._earthDate > this._nextLandingDate) {
             console.log("A new rocket has been landed on SMARS!");
             ev.landing = true;
+            this._flightEnRoute = false;
         }
         return ev;
+    }
+
+    // SECTION 5 - SETTER FUNCTIONS
+
+    // Allow the number of colonists on the next launch to be updated only if the launch hasn't yet occurred!
+    setColonists = (colonists: number) => {
+        if (!this._colonistsEnRoute) {
+            this._colonistsEnRoute = colonists;
+        } else {
+            console.log("Warning: Cannot set the number of colonists on the next rocket because it is already in flight!!");
+        }
     }
 
     // Called by the event checker whenever the launch / landing date is surpassed by the current date
@@ -125,8 +144,12 @@ export default class Earth extends View {
         p5.textAlign(p5.LEFT);
         p5.textSize(24);
         p5.text(`Earth Date: ${this._earthDate.toISOString().slice(0, 10)}`, 64, 256);
-        p5.text(`Next launch date: ${this._nextLaunchDate.toISOString().slice(0, 10)}`, 64, 320);
-        p5.text(`Next Landing date: ~ ${this._nextLandingDate.toISOString().slice(0, 10)}`, 64, 384);
+        if (this._flightEnRoute) {
+            p5.text(`Next mission landing date: ${this._nextLandingDate.toISOString().slice(0, 10)}`, 64, 320);
+        } else {
+            p5.text(`Next mission launch date: ${this._nextLaunchDate.toISOString().slice(0, 10)}`, 64, 320);
+        }
+        p5.text(`Number of new colonists ${this._flightEnRoute ? ""  : "anticipated"} on next flight: ${this._colonistsEnRoute}`, 64, 384);
         this._buttons.forEach((button) => {
             button.render(p5);
         })

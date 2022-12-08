@@ -103,7 +103,7 @@ export default class Game extends Screen {
     }
 
     updateEarthData = () => {
-        this._earth.handleWeeklyUpdates(); // Update the Earth calendar for every hour that passes on SMARS (in game time)
+        this._earth.handleWeeklyUpdates(0); // Update the Earth calendar for every hour that passes on SMARS (in game time)
     }
 
     // Pass data from the pre-game setup screen and username from the App itself, to the game with this method:

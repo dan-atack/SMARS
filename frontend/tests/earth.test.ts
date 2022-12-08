@@ -50,14 +50,14 @@ describe("Earth View Tests", () => {
         earth._earthDate = preLaunch;
         expect(earth._earthDate.toISOString().slice(0, 10)).toBe("2031-06-01");     // Set date to right before the first launch
         expect(earth._nextLaunchDate.toISOString().slice(0, 10)).toBe("2031-06-02");    // Validate the original launch date
-        earth.handleWeeklyUpdates();                                                    // Run weekly updater
+        earth.handleWeeklyUpdates(0);                                                    // Run weekly updater
         expect(earth._nextLaunchDate.toISOString().slice(0, 10)).toBe("2033-08-01");    // Validate new launch date
         // PART 2: VERIFYING LANDING DATE UPDATE
         const preLanding = new Date("March 1, 2032");
         earth._earthDate = preLanding;
         expect(earth._earthDate.toISOString().slice(0, 10)).toBe("2032-03-01");     // Set date to right before the first landing
         expect(earth._nextLandingDate.toISOString().slice(0, 10)).toBe("2032-03-02");   // Validate the original landing date
-        earth.handleWeeklyUpdates();                                                    // Run weekly updater
+        earth.handleWeeklyUpdates(0);                                                    // Run weekly updater
         expect(earth._nextLandingDate.toISOString().slice(0, 10)).toBe("2034-05-02");   // Validate new landing date
     })
 

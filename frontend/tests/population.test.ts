@@ -44,4 +44,24 @@ describe("Population", () => {
         population.updateMoraleRating();
         expect(population._averageMorale).toBe(59);     // Average morale is rounded to the nearest integer (rounded down)
     })
+
+    test("Can calculate how many new colonists to send on the next rocket", () => {
+        // Manually set morale and then measure
+        population._averageMorale = 0;
+        expect(population.determineColonistsForNextLaunch()).toBe(0);
+        population._averageMorale = 24;
+        expect(population.determineColonistsForNextLaunch()).toBe(0);
+        population._averageMorale = 25;
+        expect(population.determineColonistsForNextLaunch()).toBe(1);
+        population._averageMorale = 49.5;
+        expect(population.determineColonistsForNextLaunch()).toBe(1);
+        population._averageMorale = 50;
+        expect(population.determineColonistsForNextLaunch()).toBe(2);
+        population._averageMorale = 75;
+        expect(population.determineColonistsForNextLaunch()).toBe(3);
+        population._averageMorale = 99.99;
+        expect(population.determineColonistsForNextLaunch()).toBe(3);
+        population._averageMorale = 100;
+        expect(population.determineColonistsForNextLaunch()).toBe(4);
+    } )
 })

@@ -2095,17 +2095,21 @@ Exit Criteria:
 
 23. Give the Earth view a new method called checkEventDatesForUpdate. Call it on each hourly update and have it console log when either the launch date or the landing date is passed by the current Earth date. Do a unit test of this basic functionality with the initial launch and landing dates created by the constructor.
 
-### 24. When either the launch or the landing date is passed, replace it with a new date by adding the Hohmann transfer interval constant to it. Validate this with unit tests and a manual sanity check, as it (in tandem with the item below) represents the completion of the basic Earth launch/landing scheduling system.
+24. When either the launch or the landing date is passed, replace it with a new date by adding the Hohmann transfer interval constant to it. Validate this with unit tests and a manual sanity check, as it (in tandem with the item below) represents the completion of the basic Earth launch/landing scheduling system.
 
 25. Add a top-level updater to the Earth view to handle the full sequence of weekly events, starting with the Earth date update (Which also doesn't need any argument to execute since it just uses a game constant as its sole input).
 
-### 25. Add another simple Earth method called isShipInTransit, which checks if the next launch date is later than the next landing date. If it is, there is a ship in transit. Insert this method into the renderer to optionally show text about the next mission that has been sent from Earth.
+26. Add another simple Earth view field called shipInTransit, which is set to true by the launch event and false by the landing event. Insert this method into the renderer to optionally show text about the next mission that has been sent from Earth.
 
-### 26. Add a field to the Earth view to record the number of colonists on the current flight, once a launch is made. Additionally, add a field to indicate whether or not there is a flight en route at the moment. Give this a default value of 2 and display it on the Earth view.
+### 26. Add a field to the Earth view to record the number of colonists on the current flight, once a launch is made. Give this a default value of 2 and display it on the Earth view only when a flight is en route to SMARS. Then add it to the game's save data and validate that it can be loaded from a save.
 
 ### 27. Change the Engine's new game parameters to start new games with 4 colonists. That'll be the magic number for the game's initial release.
 
-### 28.
+### 28. On the Earth view, add a text field to display the anticipated / actual number of colonists on the next flight. Change the phrasing from 'anticipated' to '' based on the flightEnRoute variable.
+
+### 29. Add a method to the Population class to determine how many new colonists should be sent from Earth based on the colony's current morale rating, so that if morale is below 25 no one gets sent, 25 - 49 = 1 colonist, 50 - 74 = 2 colonists, 75 - 99 = 3 colonists and 100 morale = 4 new colonists sent on the next rocket. Call this method from the Game component for every hourly update, and once a flight is en route, lock the value in by storing it on the Earth view component (so that the number of people being sent can't change once the flight is launched!)
+
+### 30. When each flight arrives, notify the Engine of the number of colonists that will be landing.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

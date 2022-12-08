@@ -11,7 +11,7 @@ import Population from "./population";
 import Modal, { EventData } from "./modal";
 import Lander from "./lander";
 import MouseShadow from "./mouseShadow";
-// Component shapes for Inspect Tool
+// Component display shapes for Inspect Tool
 import Block from "./block";
 import Colonist from "./colonist";
 import Connector from "./connector";

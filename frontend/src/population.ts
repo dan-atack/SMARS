@@ -77,6 +77,8 @@ export default class Population {
         this.updateMoraleRating();
     }
 
+    // SECTION 3: COLONIST MORALE FUNCTIONS
+
     // Called after each hourly update, to get the average morale of all the colonists in the base
     updateMoraleRating = () => {
         let total = 0;
@@ -86,7 +88,12 @@ export default class Population {
         this._averageMorale = Math.round(total / this._colonists.length);
     }
 
-    // SECTION 3: COLONIST ROLE MANAGEMENT
+    // Based on the current average morale of the colony, determine how many new people to +
+    determineColonistsForNextLaunch = () => {
+        return Math.floor(this._averageMorale / 25);
+    }
+
+    // SECTION 4: COLONIST ROLE MANAGEMENT
 
     assignColonistRole = (colonistID: number, role: [string, number]) => {
         const colonist = this._colonists.find((col) => col._data._id === colonistID);
@@ -98,7 +105,7 @@ export default class Population {
         }
     }
 
-    // SECTION 4: COLONIST INFO API (GETTER FUNCTIONS)
+    // SECTION 5: COLONIST INFO API (GETTER FUNCTIONS)
 
     getColonistDataFromCoords = (coords: Coords) => {
         const colonists = this._colonists.find((col) => {
@@ -111,7 +118,7 @@ export default class Population {
         }
     }
 
-    // SECTION 5: COLONIST SAVE/LOAD DATA MANAGEMENT
+    // SECTION 6: COLONIST SAVE/LOAD DATA MANAGEMENT
 
     prepareColonistSaveData = () => {
         const colonistData: ColonistSaveData[] = [];
