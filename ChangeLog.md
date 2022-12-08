@@ -2095,7 +2095,7 @@ Exit Criteria:
 
 23. Give the Earth view a new method called checkEventDatesForUpdate. Call it on each hourly update and have it console log when either the launch date or the landing date is passed by the current Earth date. Do a unit test of this basic functionality with the initial launch and landing dates created by the constructor.
 
-### 24. When either the launch or the landing date is passed, replace it with a new date by adding the Hohmann transfer interval constant to it.
+### 24. When either the launch or the landing date is passed, replace it with a new date by adding the Hohmann transfer interval constant to it. Validate this with unit tests and a manual sanity check, as it (in tandem with the item below) represents the completion of the basic Earth launch/landing scheduling system.
 
 25. Add a top-level updater to the Earth view to handle the full sequence of weekly events, starting with the Earth date update (Which also doesn't need any argument to execute since it just uses a game constant as its sole input).
 

@@ -51,7 +51,7 @@ export default class Earth extends View {
     handleWeeklyUpdates = () => {
         this.updateEarthDate();
         const ev = this.checkEventDatesForUpdate();
-        console.log(ev);
+        this.setNextEventDate(ev);  // If either a launch or a landing has occurred, schedule the next one
     }
 
     // SECTION 2 - LOADING SAVE DATA
@@ -111,6 +111,11 @@ export default class Earth extends View {
     // Called by the event checker whenever the launch / landing date is surpassed by the current date
     setNextEventDate = (ev: { launch: boolean, landing: boolean }) => {
         // Using the current date, schedule the next launch / landing date
+        if (ev.launch) {
+            this._nextLaunchDate.setDate((this._nextLaunchDate.getDate() + constants.HOHMANN_TRANSFER_INTERVAL));
+        } else if (ev.landing) {
+            this._nextLandingDate.setDate((this._nextLandingDate.getDate() + constants.HOHMANN_TRANSFER_INTERVAL));
+        }
     }
 
     render = (p5: P5) => {

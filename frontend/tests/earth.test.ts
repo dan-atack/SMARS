@@ -35,12 +35,30 @@ describe("Earth View Tests", () => {
         const saveDate = new Date("May 21, 2031");      // Set the date to slighly before the initial landing date
         earth._earthDate = saveDate;                    // Just set the Earth date, to keep the other defaults
         expect(earth._earthDate.toISOString().slice(0, 10)).toBe("2031-05-21");     // Validate test conditions
-        earth.handleWeeklyUpdates();
+        earth.updateEarthDate();
         expect(earth._earthDate.toISOString().slice(0, 10)).toBe("2031-05-28");     // One week (7.15 days) after loaded date
         expect(earth.checkEventDatesForUpdate()).toStrictEqual({ launch: false, landing: false });                   
-        earth.handleWeeklyUpdates();
+        earth.updateEarthDate();
         expect(earth._earthDate.toISOString().slice(0, 10)).toBe("2031-06-04");     // Two weeks later = after launch date
         expect(earth.checkEventDatesForUpdate()).toStrictEqual({ launch: true, landing: false });
+    })
+
+    test("Weekly updater updates next launch / landing date when either event occurs, via the setNextEventDate method", () => {
+        // PART 1: VERIFYING LAUNCH DATE UPDATE
+        const earth = new Earth(changeView);
+        const preLaunch = new Date("June 1, 2031");
+        earth._earthDate = preLaunch;
+        expect(earth._earthDate.toISOString().slice(0, 10)).toBe("2031-06-01");     // Set date to right before the first launch
+        expect(earth._nextLaunchDate.toISOString().slice(0, 10)).toBe("2031-06-02");    // Validate the original launch date
+        earth.handleWeeklyUpdates();                                                    // Run weekly updater
+        expect(earth._nextLaunchDate.toISOString().slice(0, 10)).toBe("2033-08-01");    // Validate new launch date
+        // PART 2: VERIFYING LANDING DATE UPDATE
+        const preLanding = new Date("March 1, 2032");
+        earth._earthDate = preLanding;
+        expect(earth._earthDate.toISOString().slice(0, 10)).toBe("2032-03-01");     // Set date to right before the first landing
+        expect(earth._nextLandingDate.toISOString().slice(0, 10)).toBe("2032-03-02");   // Validate the original landing date
+        earth.handleWeeklyUpdates();                                                    // Run weekly updater
+        expect(earth._nextLandingDate.toISOString().slice(0, 10)).toBe("2034-05-02");   // Validate new landing date
     })
 
 })
