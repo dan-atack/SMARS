@@ -70,6 +70,7 @@ export default class Game extends Screen {
         if (!this._gameLoaded && this._loadGameData) {      // Loading a SAVED game
             this._engine.setupSavedGame(this._loadGameData);
             this._earth.loadSavedDate(this._loadGameData.earth_dates);
+            this._earth.loadSavedFlightData(this._loadGameData.flight_data);
             this._gameLoaded = true;
         } else if (!this._gameLoaded) {                     // Loading a NEW game
             this._engine.setupNewGame(this._gameData);
@@ -103,7 +104,8 @@ export default class Game extends Screen {
     }
 
     updateEarthData = () => {
-        this._earth.handleWeeklyUpdates(0); // Update the Earth calendar for every hour that passes on SMARS (in game time)
+        const colonists = this._engine._population.determineColonistsForNextLaunch();
+        this._earth.handleWeeklyUpdates(colonists); // Update the Earth calendar for every hour that passes on SMARS (in game time)
     }
 
     // Pass data from the pre-game setup screen and username from the App itself, to the game with this method:
@@ -153,6 +155,10 @@ export default class Game extends Screen {
                 remainder: this._earth._dateRemainder,
                 nextLaunch: this._earth._nextLaunchDate,
                 nextLanding: this._earth._nextLandingDate
+            },
+            flight_data: {
+                colonists: this._earth._colonistsEnRoute,
+                en_route: this._earth._flightEnRoute
             },
             difficulty: this._gameData.difficulty,
             map_type: this._gameData.mapType,

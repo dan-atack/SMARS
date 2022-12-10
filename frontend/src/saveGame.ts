@@ -45,6 +45,10 @@ export type SaveInfo = {
         remainder: number,
         nextLaunch: Date,       // ... As well as the next launch and landing dates currently scheduled
         nextLanding: Date
+    },
+    flight_data: {              // Flight data contains information about the current flight/s coming from Earth
+        en_route: boolean
+        colonists: number
     }
     difficulty: string,         // Easy, medium or hard - values will be inserted into switch cases throughout the game
     map_type: string,           // From the game's initial settings

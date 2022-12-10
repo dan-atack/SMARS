@@ -52,8 +52,11 @@ export default class Earth extends View {
 
     // Takes one parameter: the number of colonists to go on the next launch
     handleWeeklyUpdates = (colonists: number) => {
-        if (!this._colonistsEnRoute) {      // Only allow if the rocket is not already en route!
+        if (!(this._flightEnRoute)) {      // Only allow if the rocket is not already en route!
+            console.log(`Updating immigration target to ${colonists} for next launch.`);
             this.setColonists(colonists);
+        } else {
+            console.log(`Cannot update immigration target to ${colonists} while rocket is in flight!`);
         }
         this.updateEarthDate();
         const ev = this.checkEventDatesForUpdate();
@@ -62,7 +65,7 @@ export default class Earth extends View {
 
     // SECTION 2 - LOADING SAVE DATA
 
-    // Optionally load the data from a saved game, if it's there
+    // Optionally load the date data from a saved game, if it's there
     loadSavedDate = (earthDates?: { date: Date, remainder: number, nextLaunch: Date, nextLanding: Date }) => {
         console.log(earthDates);
         // Only load complete earth data (including launch and landing date info)
@@ -76,6 +79,18 @@ export default class Earth extends View {
             this._dateRemainder = earthDates.remainder;
         } else {
             console.log("Legacy save loaded. Earth date data not retreivable.");
+        }
+    }
+
+    // Optionally load the current flight data from a saved game
+    loadSavedFlightData = (data?: { en_route: boolean, colonists: number }) => {
+        if (data) {
+            this.setColonists(data.colonists);
+            if (data.en_route) {
+                this._flightEnRoute = data.en_route;
+            }
+        } else {
+            console.log("Colonists en route data not found. Using default value.");
         }
     }
 
@@ -118,13 +133,9 @@ export default class Earth extends View {
 
     // SECTION 5 - SETTER FUNCTIONS
 
-    // Allow the number of colonists on the next launch to be updated only if the launch hasn't yet occurred!
+    // Update the number of colonists on the current ship - even if it has launched (to permit loading save data)
     setColonists = (colonists: number) => {
-        if (!this._colonistsEnRoute) {
-            this._colonistsEnRoute = colonists;
-        } else {
-            console.log("Warning: Cannot set the number of colonists on the next rocket because it is already in flight!!");
-        }
+        this._colonistsEnRoute = colonists;
     }
 
     // Called by the event checker whenever the launch / landing date is surpassed by the current date
@@ -149,7 +160,7 @@ export default class Earth extends View {
         } else {
             p5.text(`Next mission launch date: ${this._nextLaunchDate.toISOString().slice(0, 10)}`, 64, 320);
         }
-        p5.text(`Number of new colonists ${this._flightEnRoute ? ""  : "anticipated"} on next flight: ${this._colonistsEnRoute}`, 64, 384);
+        p5.text(`Number of new colonists ${this._flightEnRoute ? ""  : "anticipated "}on ${this._flightEnRoute ? "current" : "next"} flight: ${this._colonistsEnRoute}`, 64, 384);
         this._buttons.forEach((button) => {
             button.render(p5);
         })

@@ -79,10 +79,16 @@ export type SaveInfo = {
     username: string            // Name of the username associated with this save
     time: Date                  // Timestamp for the save file
     game_time: GameTime,        // Smars date
-    earth_date: {
+    earth_dates: {              // Earth dates includes a date element and a number for the remainder, which is a fraction of a day
         date: Date,
-        remainder: number
-    }                           // Earth date includes a date element and a number for the remainder, which is a fraction of a day
+        remainder: number,
+        nextLaunch: Date,       // ... As well as the next launch and landing dates currently scheduled
+        nextLanding: Date
+    },
+    flight_data: {              // Flight data contains information about the current flight/s coming from Earth
+        en_route: boolean
+        colonists: number
+    }
     difficulty: string          // Easy, medium or hard - values will be inserted into switch cases throughout the game
     map_type: string            // From the game's initial settings
     terrain: number[][]         // The 'map' consists of terrain plus structures plus sprites
