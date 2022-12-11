@@ -10,6 +10,7 @@ import Economy from "./economy";
 import Population from "./population";
 import Modal, { EventData } from "./modal";
 import Lander from "./lander";
+import DropPod from "./dropPod";
 import MouseShadow from "./mouseShadow";
 // Component display shapes for Inspect Tool
 import Block from "./block";
@@ -41,8 +42,8 @@ export default class Engine extends View {
     _economy: Economy;
     _population: Population;
     _modal: Modal | null;
-    _animation: Lander | null;  // This field holds the current entity being used to control animations, if there is one
-    _mouseShadow: MouseShadow | null;   // This field will hold a mouse shadow entity if a building is being placed
+    _animation: Lander | DropPod | null; // This field holds the current entity being used to control animations, if there is one
+    _mouseShadow: MouseShadow | null;    // This field will hold a mouse shadow entity if a building is being placed
     // Map scrolling control
     _horizontalOffset: number;  // This will be used to offset all elements in the game's world, starting with the map
     _scrollDistance: number;    // Pixels from the edge of the world area in which scrolling occurs
@@ -56,6 +57,8 @@ export default class Engine extends View {
     selectedBuilding: ModuleInfo | ConnectorInfo | null;    // Data storage for when the user is about to place a new structure
     selectedBuildingCategory: string    // String name of the selected building category (if any)
     inspecting: Colonist | Connector | Module | Block | null;   // Pointer to the current item being inspected, if any
+    // Event control
+    _currentEvent: string;      // String code name for an event that requires a temporary wait period (e.g. new colonists landing)
     // In-game time control
     gameOn: boolean;            // If the game is on then the time ticker advances; if not it doesn't
     _tick: number;              // Updated every frame; keeps track of when to advance the game's clock
@@ -104,6 +107,7 @@ export default class Engine extends View {
         this.selectedBuilding = null;   // There is no building info selected by default.
         this.selectedBuildingCategory = "";  // Keep track of whether the selected building is a module or connector
         this.inspecting = null;         // Keep track of selected item; default is null
+        this._currentEvent = "";        // Keep track of whether there is an event going on
         // Time-keeping:
         // TODO: Make the clock its own component, to de-clutter the Engine.
         this.gameOn = true;             // By default the game is on when the Engine starts
@@ -569,7 +573,7 @@ export default class Engine extends View {
         const destination = this._landingSiteCoords[1] * constants.BLOCK_WIDTH;
         this.setWaitTime(wait);
         // Setup landing animation with 
-        this._animation = new Lander(this._p5, x, -120, destination, wait - 120);
+        this._animation = new Lander(x, -120, destination, wait - 120);
     }
 
     // This method sets up the UI after the landing animation has finished
@@ -644,8 +648,32 @@ export default class Engine extends View {
         const distance = Math.floor(Math.random() * 10) + 2;    // Set a distance of 2 - 11 from either edge
         const location = direction ? distance : this._map._topography.length - distance;
         const surfaceAltitude = this._map._topography[location];
+        // Convert values into pixels for drop pod constructor
+        const pixelLocation = location * constants.BLOCK_WIDTH;
         const landingDistance = (surfaceAltitude) * constants.BLOCK_WIDTH;
         console.log(`Direction: ${direction ? "Left" : "Right"}.\nDistance: ${distance}.\nLocation: ${location}\nSurface: ${surfaceAltitude}\nLanding Distance: ${landingDistance}`);
+        const wait = 600;   // Set wait period to be about 10 seconds
+        this.setCurrentEvent("colonist-drop", wait);
+        // Relocate the screen to look at the landing
+        this._horizontalOffset = direction ? 0 : this._map._maxOffset;
+        const duration = wait - 120;    // Allow the animation to linger a moment before disappearing
+        this._animation = new DropPod(pixelLocation, 0, landingDistance, duration);
+    }
+
+    //// EVENT CONTROL METHODS ////
+
+    // Used to set a waiting period that will resolve after a certain period of time
+    setCurrentEvent = (name: string, duration: number) => {
+        this._currentEvent = name;
+        this.setMouseContext("wait");
+        this.setWaitTime(duration);
+        this.ticksPerMinute = 20;       // Set time rate to 'fast' mode (basic standard)
+    }
+
+    // Resolves whatever the current event is, and terminates any animation that might have been shown
+    resolveCurrentEvent = () => {
+        this._currentEvent = "";
+        this._animation = null;
     }
 
     //// RESOURCE CONSUMPTION METHODS ////
@@ -743,10 +771,18 @@ export default class Engine extends View {
         }
     }
 
-    // Check if additional functions should be called at the end of a wait period
+    // Check if additional functions should be called at the end of a wait period (currently just used for new games)
     resolveWaitPeriod = () => {
         if (!this._hasLanded) {
             this.completeLandingSequence();
+        } else {
+            switch(this._currentEvent) {
+                case "colonist-drop":
+                    // TODO: Find out how many colonists and where to spawn them
+                    // this._population.addColonist(this._landingSiteCoords[0], this._landingSiteCoords[1] - 2);
+                    this.resolveCurrentEvent();
+                    break;
+            }
         }
     }
 
@@ -915,7 +951,7 @@ export default class Engine extends View {
         p5.background(constants.APP_BACKGROUND);
         this.renderMouseShadow();                               // Render mouse shadow first
         if (this._animation) {
-            this._animation.render(this._horizontalOffset);     // Render animation second
+            this._animation.render(p5, this._horizontalOffset);     // Render animation second
         }
         this._map.render(p5, this._horizontalOffset);               // Render map third
         this._infrastructure.render(this._p5, this._horizontalOffset);    // Render infrastructure fourth
