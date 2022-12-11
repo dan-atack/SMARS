@@ -2036,7 +2036,7 @@ Now that our initial Smartian colonists have settled into their basic routine, i
 
 Exit Criteria:
 
-- Every game year, a new batch of colonists will arrive from Earth to join the colony
+- [DONE] Every 26 Earth months, a new batch of colonists will arrive from Earth to join the colony
 - New colonists arrive via a drop-pod, which will have a landing animation like the one at the beginning of the game
 - Drop pods land on a random area of the map, away from the base structures
 - [DONE] All maps are updated to only contain one zone, so that new arrivals do not get stuck (legacy saves need not be supported)
@@ -2045,9 +2045,9 @@ Exit Criteria:
 - [DONE] Colonists lose one point of morale every time a need exceeds its threshold by 2 or more (i.e. goes into the red)
 - [DONE] Colonists' sleep need stops increasing once they begin to perform the 'rest' action
 - [DONE] Population page's colonists roster is paginated, to allow for adding new rows without cluttering the page
-- Earth page displays the correct Earth date, as well as the current date on SMARS (long version of the in-game date)
-- Earth page also displays the Earth/SMARS date for the next anticipated colonist landing
-- Earth page also displays the projected launch date for the next batch of new colonists (not the same as the landing date)
+- [DONE] Earth page displays the correct Earth date
+- [DONE] Earth page also displays the Earth/SMARS date for the next anticipated colonist landing
+- [DONE] Earth page also displays the projected launch date for the next batch of new colonists (not the same as the landing date)
 
 1. Go through the maps in the game's database and delete all of the ones that have cliffs/multiple map zones, to prevent newly landed colonists from becoming stuck/isolated when they arrive.
 
@@ -2109,7 +2109,13 @@ Exit Criteria:
 
 30. Add a method to the Population class to determine how many new colonists should be sent from Earth based on the colony's current morale rating, so that if morale is below 25 no one gets sent, 25 - 49 = 1 colonist, 50 - 74 = 2 colonists, 75 - 99 = 3 colonists and 100 morale = 4 new colonists sent on the next rocket. Call this method from the Game component for every hourly update, and once a flight is en route, lock the value in by storing it on the Earth view component (so that the number of people being sent can't change once the flight is launched!)
 
-### 30. When each flight arrives, notify the Engine of the number of colonists that will be landing. Do this by having the Earth view return a number, representing the amount of new colonists, from its weekly updater method whenever a landing occurs. The Game can read this value after each hourly update, and if there is a value, it tells the Engine to initiate a landing sequence (starting with a console log about the fact). Unit test that the Earth view only returns a number on the update in which a landing takes place.
+31. When each flight arrives, notify the Engine of the number of colonists that will be landing. Do this by having the Earth view return a number, representing the amount of new colonists, from its weekly updater method whenever a landing occurs. The Game can read this value after each hourly update, and if there is a value, it tells the Engine to initiate a landing sequence (starting with a console log about the fact). Unit test that the Earth view only returns a number on the update in which a landing takes place.
+
+### 32. Instead of checking for empty columns, just have the new colonists land 1 - 10 columns away from either the right or left edge of the map. For the moment we will not worry about the landing pod's footprint, as the landing area will only be one block wide (even if the animation for the pod looks larger this will not matter as the pod will disappear after touching down). Tell the Engine to console log the chosen landing column, as well as the vertical distance that needs to be covered for that column.
+
+### 34. Create the Drop Pod class, which can be roughly modeled on the Lander class, to show the new Colonists descending to the planet's surface. Its sprite should be a simple trapezoid with a circular window in the middle and a large semi-circular arc as a parachute, with three line segments linking the edges of the parachute to the capsule. For bonus points, give the parachute a stripe down the middle. The key thing for the Lander to work properly is for it to have its render function call its advanceAnimation function to update its position every frame.
+
+### 35. Update the Engine's animation field to include the Drop Pod as well as the Lander from the game's start sequence. Then, update the Engine's startNewColonistsLanding method to create a new animation for the drop pod when the landing sequence starts, and see what happens.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
@@ -2202,6 +2208,10 @@ As the game matures, it will be more and more desirable to separate features tha
 ## Section A.2: Advanced Module Features
 
 ### 1. Add a "roles" property to the Module Info type description (and thus to all existing modules in the DB) that contains a list of at least one string describing the role that a module plays (e.g. 'storage', 'dispensary', 'rest', 'science', etc.). This will help colonists figure out which module to go to when they have jobs, as well as restrict where resources can be accessed by colonists (so they have to eat at the cantina instead of being able to visit the store room instead, for instance). Addendum: This might not be the way things eventually end up going, but it's worth keeping around for consideration.
+
+## Section A.3: Base Resource Management
+
+### 1. There needs to be a way to ensure that production outputs are moved out of their production modules and into storage modules, to prevent waste. A possible quick fix would involve a secondary set of resource re-allocation checks by the Infra class. We could also introduce a 'logistics' role for Colonists that would involve shuttling resources and maybe other items as well from place to place, like little UPS courriers.
 
 # Annex B: Aesthetic Considerations for First Release
 

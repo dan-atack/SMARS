@@ -55,8 +55,6 @@ export default class Earth extends View {
         if (!(this._flightEnRoute)) {      // Only allow if the rocket is not already en route!
             console.log(`Updating immigration target to ${colonists} for next launch.`);
             this.setColonists(colonists);
-        } else {
-            console.log(`Cannot update immigration target to ${colonists} while rocket is in flight!`);
         }
         this.updateEarthDate();
         const ev = this.checkEventDatesForUpdate();
@@ -73,7 +71,6 @@ export default class Earth extends View {
 
     // Optionally load the date data from a saved game, if it's there
     loadSavedDate = (earthDates?: { date: Date, remainder: number, nextLaunch: Date, nextLanding: Date }) => {
-        console.log(earthDates);
         // Only load complete earth data (including launch and landing date info)
         if (earthDates && earthDates.nextLaunch) {
             const date = new Date(earthDates.date);

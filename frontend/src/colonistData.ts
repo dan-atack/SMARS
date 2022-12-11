@@ -359,7 +359,7 @@ export default class ColonistData {
                     this.enterModule(infra);    // Begin resting by entering the sleeping quarters
             }
         } else {
-            console.log('Warning: Unable to start action because the action stack is empty.')
+            // console.log('Warning: Unable to start action because the action stack is empty.');
         }
     }
 
@@ -620,7 +620,7 @@ export default class ColonistData {
             //@ts-ignore
             const deprivation = this._needs[need] - this._needThresholds[need] > this._tolerance;
             if (deprivation) {
-                console.log(`${this._name} is suffering from a lack of ${need}`);
+                // console.log(`${this._name} is suffering from a lack of ${need}`);
                 this.updateMorale(-1);
             }
         })

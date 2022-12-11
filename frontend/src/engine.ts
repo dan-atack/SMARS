@@ -635,6 +635,19 @@ export default class Engine extends View {
         };
     }
 
+    //// LANDING SEQUENCE METHODS FOR NEWLY ARRIVING COLONISTS (SMARS IMMIGRATION) ////
+
+    startNewColonistsLanding = (colonists: number) => {
+        console.log(`${colonists} new colonists are now landing!`);
+        // Get a location for the landing
+        const direction = Math.random() > 0.5 ? 1 : 0;          // 1 = landing is near to left edge of the map, 0 = right edge
+        const distance = Math.floor(Math.random() * 10) + 2;    // Set a distance of 2 - 11 from either edge
+        const location = direction ? distance : this._map._topography.length - distance;
+        const surfaceAltitude = this._map._topography[location];
+        const landingDistance = (surfaceAltitude) * constants.BLOCK_WIDTH;
+        console.log(`Direction: ${direction ? "Left" : "Right"}.\nDistance: ${distance}.\nLocation: ${location}\nSurface: ${surfaceAltitude}\nLanding Distance: ${landingDistance}`);
+    }
+
     //// RESOURCE CONSUMPTION METHODS ////
 
     updateEconomyDisplay = () => {

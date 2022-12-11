@@ -6,7 +6,7 @@ export default class Lander {
     // Lander types:
     _p5: P5;
     _x: number;             // The MIDDLE of the lander's lateral position, in pixels
-    _y: number;             // Lander's altitude, in pixels (0 being the top of the screen)
+    _y: number;             // Lander's starting altitude, in pixels (0 being the top of the screen)
     _width: number;
     _height: number;
     _start: number;         // Initial altitude (0)
