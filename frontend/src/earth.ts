@@ -61,6 +61,12 @@ export default class Earth extends View {
         this.updateEarthDate();
         const ev = this.checkEventDatesForUpdate();
         this.setNextEventDate(ev);  // If either a launch or a landing has occurred, schedule the next one
+        // Lastly, if a landing has taken place, inform the Game component how many colonists have just landed
+        if (ev.landing) {
+            return this._colonistsEnRoute
+        } else {
+            return null;    // If no landing has taken place return a null to the Game component
+        }
     }
 
     // SECTION 2 - LOADING SAVE DATA

@@ -105,7 +105,9 @@ export default class Game extends Screen {
 
     updateEarthData = () => {
         const colonists = this._engine._population.determineColonistsForNextLaunch();
-        this._earth.handleWeeklyUpdates(colonists); // Update the Earth calendar for every hour that passes on SMARS (in game time)
+        // Update the Earth calendar for every hour that passes on SMARS (in game time) and check if a landing has taken place
+        const landing = this._earth.handleWeeklyUpdates(colonists);
+        console.log(landing);
     }
 
     // Pass data from the pre-game setup screen and username from the App itself, to the game with this method:

@@ -61,4 +61,16 @@ describe("Earth View Tests", () => {
         expect(earth._nextLandingDate.toISOString().slice(0, 10)).toBe("2034-05-02");   // Validate new landing date
     })
 
+    test("Weekly updater returns the number of colonists making a landing on the update when a landing occurs", () => {
+        const earth = new Earth(changeView);
+        // Start with a date that is one week too early
+        const preLanding = new Date("February 22, 2032");
+        earth._earthDate = preLanding;
+        earth._flightEnRoute = true;    // Lock in default value of 2 colonists being sent
+        // Update should return a null whenever there is not a landing taking place
+        expect(earth.handleWeeklyUpdates(3)).toBe(null);
+        // When a landing does take place, the update should return the number of colonists about to land
+        expect(earth.handleWeeklyUpdates(3)).toBe(2);
+    })
+
 })

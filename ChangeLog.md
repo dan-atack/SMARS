@@ -2103,13 +2103,13 @@ Exit Criteria:
 
 27. Add a field to the Earth view to record the number of colonists on the current flight, once a launch is made. Give this a default value of 2 and display it on the Earth view only when a flight is en route to SMARS. Then add it to the game's save data and validate that it can be loaded from a save.
 
-### 27. Change the Engine's new game parameters to start new games with 4 colonists. That'll be the magic number for the game's initial release.
+28. Change the Engine's new game parameters to start new games with 4 colonists. That'll be the magic number for the game's initial release.
 
-28. On the Earth view, add a text field to display the anticipated / actual number of colonists on the next flight. Change the phrasing from 'anticipated' to '' based on the flightEnRoute variable.
+29. On the Earth view, add a text field to display the anticipated / actual number of colonists on the next flight. Change the phrasing from 'anticipated' to '' based on the flightEnRoute variable.
 
-29. Add a method to the Population class to determine how many new colonists should be sent from Earth based on the colony's current morale rating, so that if morale is below 25 no one gets sent, 25 - 49 = 1 colonist, 50 - 74 = 2 colonists, 75 - 99 = 3 colonists and 100 morale = 4 new colonists sent on the next rocket. Call this method from the Game component for every hourly update, and once a flight is en route, lock the value in by storing it on the Earth view component (so that the number of people being sent can't change once the flight is launched!)
+30. Add a method to the Population class to determine how many new colonists should be sent from Earth based on the colony's current morale rating, so that if morale is below 25 no one gets sent, 25 - 49 = 1 colonist, 50 - 74 = 2 colonists, 75 - 99 = 3 colonists and 100 morale = 4 new colonists sent on the next rocket. Call this method from the Game component for every hourly update, and once a flight is en route, lock the value in by storing it on the Earth view component (so that the number of people being sent can't change once the flight is launched!)
 
-### 30. When each flight arrives, notify the Engine of the number of colonists that will be landing.
+### 30. When each flight arrives, notify the Engine of the number of colonists that will be landing. Do this by having the Earth view return a number, representing the amount of new colonists, from its weekly updater method whenever a landing occurs. The Game can read this value after each hourly update, and if there is a value, it tells the Engine to initiate a landing sequence (starting with a console log about the fact). Unit test that the Earth view only returns a number on the update in which a landing takes place.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
