@@ -581,10 +581,9 @@ export default class Engine extends View {
         this.createModal(false, modalData[1]);
         // Add three new colonists, spread across the landing zone (Y value is -2 since it is the Colonist's head level)
         this._population.addColonist(this._landingSiteCoords[0], this._landingSiteCoords[1] - 2);
-        this._population.addColonist(this._landingSiteCoords[0] + 3, this._landingSiteCoords[1] - 2);
-        this._population.addColonist(this._landingSiteCoords[0] + 7, this._landingSiteCoords[1] - 2);
-        this._population.addColonist(this._landingSiteCoords[0] + 6, this._landingSiteCoords[1] - 2);
+        this._population.addColonist(this._landingSiteCoords[0] + 2, this._landingSiteCoords[1] - 2);
         this._population.addColonist(this._landingSiteCoords[0] + 5, this._landingSiteCoords[1] - 2);
+        this._population.addColonist(this._landingSiteCoords[0] + 7, this._landingSiteCoords[1] - 2);
     }
 
     // Loads the first base structures after the dust clears from the landing sequence

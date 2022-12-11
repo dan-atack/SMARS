@@ -2105,7 +2105,7 @@ Exit Criteria:
 
 ### 27. Change the Engine's new game parameters to start new games with 4 colonists. That'll be the magic number for the game's initial release.
 
-### 28. On the Earth view, add a text field to display the anticipated / actual number of colonists on the next flight. Change the phrasing from 'anticipated' to '' based on the flightEnRoute variable.
+28. On the Earth view, add a text field to display the anticipated / actual number of colonists on the next flight. Change the phrasing from 'anticipated' to '' based on the flightEnRoute variable.
 
 29. Add a method to the Population class to determine how many new colonists should be sent from Earth based on the colony's current morale rating, so that if morale is below 25 no one gets sent, 25 - 49 = 1 colonist, 50 - 74 = 2 colonists, 75 - 99 = 3 colonists and 100 morale = 4 new colonists sent on the next rocket. Call this method from the Game component for every hourly update, and once a flight is en route, lock the value in by storing it on the Earth view component (so that the number of people being sent can't change once the flight is launched!)
 

@@ -81,11 +81,13 @@ export default class Population {
 
     // Called after each hourly update, to get the average morale of all the colonists in the base
     updateMoraleRating = () => {
-        let total = 0;
-        this._colonists.forEach((col) => {
-            total += col._data._morale;
-        });
-        this._averageMorale = Math.round(total / this._colonists.length);
+        if (this._colonists.length > 0) {   // Only allow morale updates when the colonists have actually landed!
+            let total = 0;
+            this._colonists.forEach((col) => {
+                total += col._data._morale;
+            });
+            this._averageMorale = Math.round(total / this._colonists.length);
+        }
     }
 
     // Based on the current average morale of the colony, determine how many new people to +
