@@ -671,11 +671,11 @@ export default class Engine extends View {
         this.setCurrentEvent(ev, wait);
         // Relocate the screen to look at the landing
         this._horizontalOffset = direction ? 0 : this._map._maxOffset;
-        const duration = wait - 120;    // Allow the animation to linger a moment before disappearing
+        const duration = wait - 150;    // Allow the animation to linger a moment before disappearing
         this._animation = new DropPod(pixelLocation, 0, landingDistance, duration);
     }
 
-    //// EVENT CONTROL METHODS ////
+    //// SPECIAL EVENT AND WAIT-TIME METHODS ////
 
     // Sets the current event and sets mouse context to 'wait' for an optional specified time
     setCurrentEvent = (ev: { type: string, coords: Coords, value: number }, duration?: number) => {
@@ -695,11 +695,43 @@ export default class Engine extends View {
     resolveCurrentEvent = () => {
         this._currentEvent = { 
             type: "",
-            coords: {x : 0, y: 0 },
+            coords: { x : 0, y: 0 },
             value: 0
         };
         this._animation = null;
         this.setMouseContext("inspect");
+    }
+
+    // Methods for controlling wait times
+    setWaitTime = (time: number) => {
+        this._waitTime = time;  // Time is given in number of frames, so a value of ~ 50 equals 1 second in real time
+    }
+
+    advanceWaitTime = () => {
+        if (this._waitTime > 0) {
+            this._waitTime--;
+        }
+        if (this._waitTime <= 0) {
+            // Resolve wait by resetting mouse context and possibly calling additional functions
+            this.setMouseContext("inspect");
+            this.resolveWaitPeriod();
+        }
+    }
+
+    // Check if additional functions should be called at the end of a wait period (currently just used for new games)
+    resolveWaitPeriod = () => {
+        if (!this._hasLanded) {
+            this.completeLandingSequence();
+        } else {
+            switch(this._currentEvent.type) {
+                case "colonist-drop":
+                    for (let i = 0; i < this._currentEvent.value; i++) {
+                        this._population.addColonist(this._currentEvent.coords.x + i % 2, this._currentEvent.coords.y);
+                    }
+                    this.resolveCurrentEvent();
+                    break;
+            }
+        }
     }
 
     //// RESOURCE CONSUMPTION METHODS ////
@@ -777,38 +809,6 @@ export default class Engine extends View {
                         this._gameTime.hour = 1;     // Hour never resets to zero
                     }
                 } 
-            }
-        }
-    }
-
-    // Methods for controlling wait times
-    setWaitTime = (time: number) => {
-        this._waitTime = time;  // Time is given in number of frames, so a value of ~ 50 equals 1 second in real time
-    }
-
-    advanceWaitTime = () => {
-        if (this._waitTime > 0) {
-            this._waitTime--;
-        }
-        if (this._waitTime <= 0) {
-            // Resolve wait by resetting mouse context and possibly calling additional functions
-            this.setMouseContext("inspect");
-            this.resolveWaitPeriod();
-        }
-    }
-
-    // Check if additional functions should be called at the end of a wait period (currently just used for new games)
-    resolveWaitPeriod = () => {
-        if (!this._hasLanded) {
-            this.completeLandingSequence();
-        } else {
-            switch(this._currentEvent.type) {
-                case "colonist-drop":
-                    for (let i = 0; i < this._currentEvent.value; i++) {
-                        this._population.addColonist(this._currentEvent.coords.x + i % 2, this._currentEvent.coords.y);
-                    }
-                    this.resolveCurrentEvent();
-                    break;
             }
         }
     }
