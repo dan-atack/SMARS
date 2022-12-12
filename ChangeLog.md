@@ -2113,11 +2113,15 @@ Exit Criteria:
 
 32. Instead of checking for empty columns, just have the new colonists land 1 - 10 columns away from either the right or left edge of the map. For the moment we will not worry about the landing pod's footprint, as the landing area will only be one block wide (even if the animation for the pod looks larger this will not matter as the pod will disappear after touching down). Tell the Engine to console log the chosen landing column, as well as the vertical distance that needs to be covered for that column.
 
-### 33. Factor P5 out of the Lander class, as preparation for extending it when creating the DropPod class.
+33. Factor P5 out of the Lander class, as preparation for extending it when creating the DropPod class.
 
-### 34. Create the Drop Pod class, which can be an inheritance class based on the Lander. Its job will be to show the new Colonists descending to the planet's surface. Its sprite should be a simple trapezoid with a circular window in the middle and a large semi-circular arc as a parachute, with three line segments linking the edges of the parachute to the capsule. For bonus points, give the parachute a stripe down the middle. The key thing for the Lander to work properly is for it to have its render function call its advanceAnimation function to update its position every frame.
+34. Create the Drop Pod class, which can be an inheritance class based on the Lander. Its job will be to show the new Colonists descending to the planet's surface. Its sprite should be a simple trapezoid with a circular window in the middle and a large semi-circular arc as a parachute, with three line segments linking the edges of the parachute to the capsule. For bonus points, give the parachute a stripe down the middle. The key thing for the Lander to work properly is for it to have its render function call its advanceAnimation function to update its position every frame.
 
-### 35. Update the Engine's animation field to include the Drop Pod as well as the Lander from the game's start sequence. Then, update the Engine's startNewColonistsLanding method to create a new animation for the drop pod when the landing sequence starts, and see what happens.
+35. Update the Engine's animation field to include the Drop Pod as well as the Lander from the game's start sequence. Then, update the Engine's startNewColonistsLanding method to create a new animation for the drop pod when the landing sequence starts, and see what happens.
+
+36. Add an event management system to the Engine so that it can hold the game in wait mode while various animations play.
+
+### 37. Add some logic to the DropPod's animation so that the parachute continues to descend after the landing completes, like the dust cloud for the original lander does.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

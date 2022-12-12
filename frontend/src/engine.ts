@@ -58,7 +58,11 @@ export default class Engine extends View {
     selectedBuildingCategory: string    // String name of the selected building category (if any)
     inspecting: Colonist | Connector | Module | Block | null;   // Pointer to the current item being inspected, if any
     // Event control
-    _currentEvent: string;      // String code name for an event that requires a temporary wait period (e.g. new colonists landing)
+    _currentEvent: {
+        type: string,       // Type aka name (e.g. colonist-landing, meteor, etc)
+        coords: Coords,     // The location of the event
+        value: number       // Intensity of the event (number of colonists, power of meteor strike, etc)
+    };
     // In-game time control
     gameOn: boolean;            // If the game is on then the time ticker advances; if not it doesn't
     _tick: number;              // Updated every frame; keeps track of when to advance the game's clock
@@ -107,7 +111,11 @@ export default class Engine extends View {
         this.selectedBuilding = null;   // There is no building info selected by default.
         this.selectedBuildingCategory = "";  // Keep track of whether the selected building is a module or connector
         this.inspecting = null;         // Keep track of selected item; default is null
-        this._currentEvent = "";        // Keep track of whether there is an event going on
+        this._currentEvent = {
+            type: "",
+            coords: { x: 0, y: 0 },
+            value: 0
+        };        // Keep track of whether there is an event going on
         // Time-keeping:
         // TODO: Make the clock its own component, to de-clutter the Engine.
         this.gameOn = true;             // By default the game is on when the Engine starts
@@ -647,13 +655,20 @@ export default class Engine extends View {
         const direction = Math.random() > 0.5 ? 1 : 0;          // 1 = landing is near to left edge of the map, 0 = right edge
         const distance = Math.floor(Math.random() * 10) + 2;    // Set a distance of 2 - 11 from either edge
         const location = direction ? distance : this._map._topography.length - distance;
-        const surfaceAltitude = this._map._topography[location];
+        // Get the highest elevation of two adjacent columns as surface altitude to prevent colonists falling into the ground
+        const surfaceAltitude = Math.min(this._map._topography[location], this._map._topography[location + 1]);
         // Convert values into pixels for drop pod constructor
         const pixelLocation = location * constants.BLOCK_WIDTH;
         const landingDistance = (surfaceAltitude) * constants.BLOCK_WIDTH;
         console.log(`Direction: ${direction ? "Left" : "Right"}.\nDistance: ${distance}.\nLocation: ${location}\nSurface: ${surfaceAltitude}\nLanding Distance: ${landingDistance}`);
+        // Create event object
+        const ev = {
+            type: "colonist-drop",
+            coords: { x: location, y: surfaceAltitude - 2},
+            value: colonists
+        }
         const wait = 600;   // Set wait period to be about 10 seconds
-        this.setCurrentEvent("colonist-drop", wait);
+        this.setCurrentEvent(ev, wait);
         // Relocate the screen to look at the landing
         this._horizontalOffset = direction ? 0 : this._map._maxOffset;
         const duration = wait - 120;    // Allow the animation to linger a moment before disappearing
@@ -662,18 +677,29 @@ export default class Engine extends View {
 
     //// EVENT CONTROL METHODS ////
 
-    // Used to set a waiting period that will resolve after a certain period of time
-    setCurrentEvent = (name: string, duration: number) => {
-        this._currentEvent = name;
-        this.setMouseContext("wait");
-        this.setWaitTime(duration);
-        this.ticksPerMinute = 20;       // Set time rate to 'fast' mode (basic standard)
+    // Sets the current event and sets mouse context to 'wait' for an optional specified time
+    setCurrentEvent = (ev: { type: string, coords: Coords, value: number }, duration?: number) => {
+        if (ev.type !== "") {
+            this._currentEvent = ev;
+            this.setMouseContext("wait");
+            duration ? this.setWaitTime(duration) : this.setWaitTime(120);  // Default to 2.5 second wait time
+            this.ticksPerMinute = 20;       // Set time rate to 'fast' mode (basic standard)
+        } else {
+            console.log("Error setting current event:");
+            console.log(ev);
+        }
+        
     }
 
     // Resolves whatever the current event is, and terminates any animation that might have been shown
     resolveCurrentEvent = () => {
-        this._currentEvent = "";
+        this._currentEvent = { 
+            type: "",
+            coords: {x : 0, y: 0 },
+            value: 0
+        };
         this._animation = null;
+        this.setMouseContext("inspect");
     }
 
     //// RESOURCE CONSUMPTION METHODS ////
@@ -776,10 +802,11 @@ export default class Engine extends View {
         if (!this._hasLanded) {
             this.completeLandingSequence();
         } else {
-            switch(this._currentEvent) {
+            switch(this._currentEvent.type) {
                 case "colonist-drop":
-                    // TODO: Find out how many colonists and where to spawn them
-                    // this._population.addColonist(this._landingSiteCoords[0], this._landingSiteCoords[1] - 2);
+                    for (let i = 0; i < this._currentEvent.value; i++) {
+                        this._population.addColonist(this._currentEvent.coords.x + i % 2, this._currentEvent.coords.y);
+                    }
                     this.resolveCurrentEvent();
                     break;
             }
