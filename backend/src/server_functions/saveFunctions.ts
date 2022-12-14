@@ -42,15 +42,18 @@ export type ColonistNeeds = {
     rest: number,
 };
 
+export type ColonistRole = [string, number];
+
 export type ColonistSaveData = {
     id: number,
     name: string,
     x: number,
     y: number,
-    role: [string, number],
+    role: ColonistRole,
     needs: ColonistNeeds,
+    morale: number,
     goal: string,
-    currentAction: ColonistAction,
+    currentAction: ColonistAction | null,
     actionStack: ColonistAction[],
     actionTimeElapsed: number,
     isMoving: boolean,
@@ -61,18 +64,30 @@ export type ColonistSaveData = {
     facing: string
 };
 
+export type GameTime = {
+    minute: number,
+    hour: number,
+    cycle: string,
+    sol: number,    // The Smartian day is called a 'Sol'
+    year: number    // Smartian year (AKA mission year) is the amount of times SMARS has orbited the sun since mission start (Lasts approximately twice as long as a Terrestrial year).
+}
+
 // Template for new save game info (copy from SaveGame.ts):
 
 export type SaveInfo = {
     game_name: string           // Save game name
     username: string            // Name of the username associated with this save
     time: Date                  // Timestamp for the save file
-    game_time: {                // The time on SMARS
-        minute: number,
-        hour: number,
-        cycle: string,
-        sol: number,
-        year: number
+    game_time: GameTime,        // Smars date
+    earth_dates: {              // Earth dates includes a date element and a number for the remainder, which is a fraction of a day
+        date: Date,
+        remainder: number,
+        nextLaunch: Date,       // ... As well as the next launch and landing dates currently scheduled
+        nextLanding: Date
+    },
+    flight_data: {              // Flight data contains information about the current flight/s coming from Earth
+        en_route: boolean
+        colonists: number
     }
     difficulty: string          // Easy, medium or hard - values will be inserted into switch cases throughout the game
     map_type: string            // From the game's initial settings

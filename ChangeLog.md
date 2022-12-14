@@ -2028,6 +2028,105 @@ Exit Criteria:
 
 16. Add one last ColonistActionLogic function, to be called by the consume, rest and produce action stack determinators in the event of an action stack being considered a failure (i.e. the path to the desired module/s was not found). Have this function check if the colonist is on a non-ground floor, and if so, tell them to simply find the nearest elevator and climb it to the ground (get off at elevator.bottom - 1 to avoid going underground, haha). This way, even if colonists get stuck on an upper floor (with no ground floor modules to tempt them this could still happen) they will eventually come down, at which point they'll phave an easier time finding what they need on the next attempt. Best of all, since they'll actually have an action stack when this routine finishes, they can immediately look again for the missing resource since they only get told that the resource is unavailable when the action stack comes back empty. Validate this with a unit test (naturally).
 
+## Chapter Thirty-Seven: Smartian Immigration (Difficulty Estimate: 5, for introducing new concepts such as colonist morale, pagination of the Population view, and the incoming colonist drop pod animation)
+
+### November 24, 2022
+
+Now that our initial Smartian colonists have settled into their basic routine, it's time to let the good people of Earth know how wonderful it is on the New World, and to invite more people to join the colony! This chapter will focus on implementing a system for expanding the base's population (without diving into the more complicated question of Smartian reproduction) by adding new 'immigrants' from Earth every 26 Earth months - the interval between ideal Hohmann transfer opportunities. The number of immigrants will be small (between 1 and 3 per cycle) and will always be determined in advance, based on the current colonists' collective morale - which will be determined for each colonist based on how successfully their needs are being met. At the start of the game there will be a standing order to add two more colonists when the next launch date arrives, and at that time, a calculation will be made of the average morale of the original colonists to decide how many more will set out from Earth in the next wave. New colonists will arrive via a parachute-deployed drop-pod, which will look a little bit like the lander shown at the beginning of the game, and which will disappear after the landing animation sequence finishes. All of the colonists who land each (Smartian) year will emerge from the same pod, and their landing site will be randomly selected. Once landed, the new colonists can immediately be assigned roles in the colony, and can be viewed on the (now paginated) population view screen.
+
+Exit Criteria:
+
+- [DONE] Every 26 Earth months, a new batch of colonists will arrive from Earth to join the colony
+- [DONE] New colonists arrive via a drop-pod, which will have a landing animation like the one at the beginning of the game
+- [DONE] Drop pods land on a randomly chosen column towards either the right or left edge of the map
+- [DONE] All maps are updated to only contain one zone, so that new arrivals do not get stuck (legacy saves need not be supported)
+- [DONE] Colonists have a morale score, from 0 to 100, shown in the Colonist Inspect Tool display
+- [DONE] Colonists gain one point of morale every time they satisfy a need
+- [DONE] Colonists lose one point of morale every time a need exceeds its threshold by 2 or more (i.e. goes into the red)
+- [DONE] Colonists' sleep need stops increasing once they begin to perform the 'rest' action
+- [DONE] Population page's colonists roster is paginated, to allow for adding new rows without cluttering the page
+- [DONE] Earth page displays the correct Earth date
+- [DONE] Earth page also displays the Earth/SMARS date for the next anticipated colonist landing
+- [DONE] Earth page also displays the projected launch date for the next batch of new colonists (not the same as the landing date)
+
+1. Go through the maps in the game's database and delete all of the ones that have cliffs/multiple map zones, to prevent newly landed colonists from becoming stuck/isolated when they arrive.
+
+2. For each map that was deleted, replace it with a new one that meets the desired specifications.
+
+3. Add a new field to the Colonist class for morale, which will be a number from 0 to 100. In fact, add two fields, morale and maxMorale, to restrict the range of possible values (apparently TS does not have a built-in way to limit a number's value in the type declaration, as far as I can tell at least). Colonists start with 50 morale in their constructor function.
+
+4. Add a new Colonist method, updateMorale, which takes a number as its only parameter, and adds this (the number can be negative) to the colonist's current morale value. Validate this method on its own with a very basic unit test.
+
+5. Add another Colonist method, determineMoraleChangeForNeeds, which checks the colonist's current needs vs their thresholds, and then calls the updateMorale method to reduce morale by 1 for each need whose current value exceeds the threshold value by more than 1... or better yet, add a 'tolerance' variable to the Colonist Date clas, to allow customizability on the amount by which a need has to exceed its threshold before lowering morale. Validate this with a more thorough unit test.
+
+6. Integrate the Colonist's morale updater method into the hourly updates handler, to be called after the needs updater has been called. Validate with in-game sanity check.
+
+7. Move the new colonist unit tests off into their own file, called ColonistMorale.test.ts, to start differentiating between different types of tests (and to ensure a cleaner environment for new tests that don't need Infrastructure/map data).
+
+8. Add a call to the updateMorale method to the action resolve case for eat, drink and rest, to add one morale whenever the colonist resolves one of these actions. Validate with unit test.
+
+9. Update the Inspect Display for Colonists to show their morale below their needs chart, and have the font colour reflect the fullness of their morale.
+
+10. Add the Colonist's morale to their save data, and in the constructor add some logic to either use the saved morale value or 50 as a default when loading a colonist. Validate with in-game sanity check.
+
+11. Look at the Load Game screen to remember how to implement a pagination system, then apply that to the Population View. Make sure to test that the view opens/closes as expected, and resets the pagination for the Colonist rows each time the view is closed.
+
+12. Add a list of ten adjectives, each of which will correspond to a 10-point section of the colony's average morale score.
+
+13. Have the Population class add up the colonists' morale and find its average. Read that value in the PopulationView screen, and then map that to the corresponding adjective from the above-mentioned list, and display that instead of the flavour text ("plucky") that is currently shown for the colony's morale rating. Add a unit test to the Population class to validate the average morale is calculated correctly.
+
+14. Reposition the Population View's message text to make it appear just below the 'Next' button, and have it show, as a default value, the current and total number of colonists in the base (e.g. 'showing records for colonists 1 - 4 out of 5').
+
+15. Update the PopulationRow to display the colonist's morale in the second column, and their name in the first (eliminating the ID display).
+
+16. In order to permit still wider unit test coverage, remove the P5 dependency from the View class constructor, and fix all 4 sub-classes (industryView, populationView, tech and earth).
+
+17. Create a basic unit test file for each View screen, with a simple define <function> test for each.
+
+18. Fix the Earth view's Earth date field so that it either starts at January 1st, 2030, or takes an argument to the a new loadSavedDate method to load a saved game date. Add the current Earth date as well as the remainder quantity to the save game data object, so that the date doesn't slip between saves.
+
+19. To avoid floating point math issues when calculating the date remainder, change the value in the constants file from 7.15 to 715 and include instructions to divide the value by 100 and collect the remainder from that instead.
+
+20. Add new values to the game's constants file for Hohmann transfer interval duration, interplanetary flight time, and pre-flight preparation time, all in terms of Earth days.
+
+21. Using the newly added preflight prep time constant, have the Earth view calculate the initial value for both the next launch from Earth and the next landing in its constructor, and display these values on the Earth view. Validate with unit test.
+
+22. Update the Earth dates save data field to include the next launch and landing dates. Validate with in-game sanity check. Only allow save data to replace the default values if all of the Earth date data (including launch and landing dates) are present.
+
+23. Give the Earth view a new method called checkEventDatesForUpdate. Call it on each hourly update and have it console log when either the launch date or the landing date is passed by the current Earth date. Do a unit test of this basic functionality with the initial launch and landing dates created by the constructor.
+
+24. When either the launch or the landing date is passed, replace it with a new date by adding the Hohmann transfer interval constant to it. Validate this with unit tests and a manual sanity check, as it (in tandem with the item below) represents the completion of the basic Earth launch/landing scheduling system.
+
+25. Add a top-level updater to the Earth view to handle the full sequence of weekly events, starting with the Earth date update (Which also doesn't need any argument to execute since it just uses a game constant as its sole input).
+
+26. Add another simple Earth view field called shipInTransit, which is set to true by the launch event and false by the landing event. Insert this method into the renderer to optionally show text about the next mission that has been sent from Earth.
+
+27. Add a field to the Earth view to record the number of colonists on the current flight, once a launch is made. Give this a default value of 2 and display it on the Earth view only when a flight is en route to SMARS. Then add it to the game's save data and validate that it can be loaded from a save.
+
+28. Change the Engine's new game parameters to start new games with 4 colonists. That'll be the magic number for the game's initial release.
+
+29. On the Earth view, add a text field to display the anticipated / actual number of colonists on the next flight. Change the phrasing from 'anticipated' to '' based on the flightEnRoute variable.
+
+30. Add a method to the Population class to determine how many new colonists should be sent from Earth based on the colony's current morale rating, so that if morale is below 25 no one gets sent, 25 - 49 = 1 colonist, 50 - 74 = 2 colonists, 75 - 99 = 3 colonists and 100 morale = 4 new colonists sent on the next rocket. Call this method from the Game component for every hourly update, and once a flight is en route, lock the value in by storing it on the Earth view component (so that the number of people being sent can't change once the flight is launched!)
+
+31. When each flight arrives, notify the Engine of the number of colonists that will be landing. Do this by having the Earth view return a number, representing the amount of new colonists, from its weekly updater method whenever a landing occurs. The Game can read this value after each hourly update, and if there is a value, it tells the Engine to initiate a landing sequence (starting with a console log about the fact). Unit test that the Earth view only returns a number on the update in which a landing takes place.
+
+32. Instead of checking for empty columns, just have the new colonists land 1 - 10 columns away from either the right or left edge of the map. For the moment we will not worry about the landing pod's footprint, as the landing area will only be one block wide (even if the animation for the pod looks larger this will not matter as the pod will disappear after touching down). Tell the Engine to console log the chosen landing column, as well as the vertical distance that needs to be covered for that column.
+
+33. Factor P5 out of the Lander class, as preparation for extending it when creating the DropPod class.
+
+34. Create the Drop Pod class, which can be an inheritance class based on the Lander. Its job will be to show the new Colonists descending to the planet's surface. Its sprite should be a simple trapezoid with a circular window in the middle and a large semi-circular arc as a parachute, with three line segments linking the edges of the parachute to the capsule. For bonus points, give the parachute a stripe down the middle. The key thing for the Lander to work properly is for it to have its render function call its advanceAnimation function to update its position every frame.
+
+35. Update the Engine's animation field to include the Drop Pod as well as the Lander from the game's start sequence. Then, update the Engine's startNewColonistsLanding method to create a new animation for the drop pod when the landing sequence starts, and see what happens.
+
+36. Add an event management system to the Engine so that it can hold the game in wait mode while various animations play.
+
+37. Add some logic to the DropPod's animation so that the parachute continues to descend after the landing completes, like the dust cloud for the original lander does.
+
+## Chapter Thirty-Eight: What's Mine is Mine (Difficulty Estimate: TBD)
+
+### December 12, 2022
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
@@ -2071,6 +2170,8 @@ As the game matures, it will be more and more desirable to separate features tha
 ### 16. [5: Significant Gameplay issue] When a new module is placed on the ground in a position that makes it flush with an existing floor, Colonists walking across it will momentarily climb up into the air for one block before falling back down. This is likely caused by the incompleteness of the Floor creation/merging strategy used by the Infrastructure Data class.
 
 17. [5: Significant Gameplay issue] When a Colonist has passed their need threshold for rest, their attempts to satisfy any other need are overridden since the needs calculation uses a forEach loop whose last member is 'rest.' This causes Colonists to freeze up in some circumstances, as they are not able to fulfill eat/drink needs even if the rest availability status has been set to 0 (meaning that they should ignore it and try to fulfill one of the other two needs).
+
+### 18. [5: Significant Gameplay issue] When a Colonist is going to produce in a module on a non-ground floor, they can sometimes start to climb a ladder that is attached to that floor, but that does not go all the way to the ground where they begin to climb it. Colonist appears to climb an invisible ladder until they reach the bottom of the actual ladder, which they continue to climb to the destination. Because the Colonist does not totally freeze up this is considered only a moderate level of severity.
 
 ## Technical Debt Issues:
 
@@ -2118,6 +2219,10 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ### 1. Add a "roles" property to the Module Info type description (and thus to all existing modules in the DB) that contains a list of at least one string describing the role that a module plays (e.g. 'storage', 'dispensary', 'rest', 'science', etc.). This will help colonists figure out which module to go to when they have jobs, as well as restrict where resources can be accessed by colonists (so they have to eat at the cantina instead of being able to visit the store room instead, for instance). Addendum: This might not be the way things eventually end up going, but it's worth keeping around for consideration.
 
+## Section A.3: Base Resource Management
+
+### 1. There needs to be a way to ensure that production outputs are moved out of their production modules and into storage modules, to prevent waste. A possible quick fix would involve a secondary set of resource re-allocation checks by the Infra class. We could also introduce a 'logistics' role for Colonists that would involve shuttling resources and maybe other items as well from place to place, like little UPS courriers.
+
 # Annex B: Aesthetic Considerations for First Release
 
 ## Section B.1: Colonist Personalities
@@ -2132,15 +2237,13 @@ As the game matures, it will be more and more desirable to separate features tha
 
 ### 2. Enable the player to highlight a row in the Population View screen, and have that screen open with a particular colonist highlighted if it is opened via clicking the 'Change Role' button mentioned in the above point.
 
+## Section X.1: World Editor Suite Improvements
+
+### 1. Use shell scripts with arguments to replace manual steps in the map upload process from the World Editor suite's readme file.
+
 ### Exit Criteria for backend save/load game chapter:
 
 - [DONE]It is possible to create a new saved game file for a given user.
 - It is possible to update a saved game file for a given user.
 - [DONE]It is possible to retrieve a list of saved games for a given user.
 - [DONE]It is possible to retrieve all of the game data for a specific saved game file.
-
-## Chapter XX: DevOps Interlude and First Deployment! (Aim to complete deployment by June of 2022)
-
-- Dev mode environment variable enables some information displays in the world screen area
-- Build/test pipeline update
-- Deploy the backend to Heroku?? AWS???!

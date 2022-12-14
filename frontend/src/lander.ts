@@ -4,9 +4,8 @@ import { constants } from "./constants";
 
 export default class Lander {
     // Lander types:
-    _p5: P5;
     _x: number;             // The MIDDLE of the lander's lateral position, in pixels
-    _y: number;             // Lander's altitude, in pixels (0 being the top of the screen)
+    _y: number;             // Lander's starting altitude, in pixels (0 being the top of the screen)
     _width: number;
     _height: number;
     _start: number;         // Initial altitude (0)
@@ -15,8 +14,7 @@ export default class Lander {
     _duration: number;      // How many frames to animate for just the landing (clouds will linger longer)
     _elapsed: number;       // How many frames have been shown
 
-    constructor(p5: P5, x: number, y: number, destination: number, duration: number) {
-        this._p5 = p5;
+    constructor(x: number, y: number, destination: number, duration: number) {
         this._x = x;                                    // All values (x, y, w, h) are in terms of PIXELS
         this._y = y;
         this._width = 8 * constants.BLOCK_WIDTH;
@@ -37,8 +35,7 @@ export default class Lander {
         this._elapsed++;    // Advance elapsed frames count even if duration is exceeded (to advance dust cloud settlement)
     }
 
-    drawClouds = (x: number) => {
-        const p5 = this._p5;
+    drawClouds = (p5: P5, x: number) => {
         const y = this._destination;
         const drift = this._elapsed / 2 - 100;                          // Controls horizontal push for outer clouds
         const settle = Math.max(0, this._elapsed - this._duration);     // Controls dust cloud descent after touchdown
@@ -54,8 +51,7 @@ export default class Lander {
         }
     }
 
-    render = (xOffset: number) => {
-        const p5 = this._p5;
+    render = (p5: P5, xOffset: number) => {
         const x = this._x - xOffset;      // For convenience
         const y = this._y;
         const w = this._width;
@@ -93,7 +89,7 @@ export default class Lander {
         this.advanceAnimation();
         // Draw dust clouds if descend is vehicle is halfway to the surface
         if (this._elapsed >= this._duration / 2) {
-            this.drawClouds(x);
+            this.drawClouds(p5, x);
         }
     }
 

@@ -11,7 +11,11 @@ export const constants = {
     SIDEBAR_WIDTH: 280,
     WORLD_VIEW_WIDTH: 680,    // Screen width minus sidebar width
     BLOCK_WIDTH: 20,
-    EARTH_DAYS_PER_HOUR: 7.15, // With 4 Smartian days per Smars year, this makes 1 Smartian year = 687 Earth days
+    EARTH_DAY_HUNDREDTHS_PER_HOUR: 715, // With 4 Smartian days per Smars year, this makes 1 Smartian year = 687 Earth days when divided by 100 (true value is 7.15 but multiplying that by 100 avoids floating point arithmetic issues)
+    // Orbital physics values (all in terms of EARTH DAYS)
+    HOHMANN_TRANSFER_INTERVAL: 791,       // Total time interval between rocket launches from Earth to Smars
+    INTERPLANETARY_FLIGHT_DURATION: 274,  // Total time for a rocket to get to Smars from Earth
+    PREFLIGHT_PREPARATION_TIME: 517,      // Time between the end of one Hohmann transfer interval and the ideal next launch date
     // Colours (darkest to lightest gray at top, then ROYGBIV going downwards below that)
     ALMOST_BLACK: "#010101",
     APP_BACKGROUND: "#03090A",

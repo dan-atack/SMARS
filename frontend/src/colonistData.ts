@@ -28,6 +28,9 @@ export default class ColonistData {
     _needs: ColonistNeeds;          // Keep track of the colonist's needs to help them choose what to do with their lives
     _needThresholds: ColonistNeeds; // Separately keep track of the various thresholds for each type of need
     _needsAvailable: ColonistNeeds; // Also, keep track of whether any needs are unavailable (0 = unavailable, 1 = available)
+    _morale: number;                // Morale is determined by how readily the colonist's needs are met
+    _maxMorale: number;             // Adjustable maximum morale limit
+    _tolerance: number;             // The amount by which a colonist's need can surpass its threshold without affecting morale
     _currentGoal: string;           // String name of the Colonist's current goal (e.g. "get food", "get rest", "explore", etc.)
     _actionStack: ColonistAction[]; // Actions, from last to first, that the colonist will perform to achieve their current goal
     _currentAction: ColonistAction | null; // The individual action that is currently being undertaken (if any)
@@ -66,6 +69,9 @@ export default class ColonistData {
             food: 1,
             rest: 1
         };
+        this._morale = saveData?.morale ? saveData.morale : 50;     // Load saved morale, or default to 50 (normal morale)
+        this._maxMorale = 100;                                      // Set morale limit
+        this._tolerance = 2;        // Set morale resiliency level (higher = less likely to lose morale from unfulfilled needs)
         this._currentGoal = saveData ? saveData.goal : "explore"    // Load saved goal, or go exploring (for new colonists).
         this._actionStack = saveData?.actionStack ? saveData.actionStack : [];   // Load saved action stack or default to empty
         this._currentAction = saveData?.currentAction ? saveData.currentAction : null;  // Load current action or default to null
@@ -79,9 +85,10 @@ export default class ColonistData {
         this._animationTick = 0;                                    // By default, no animation is playing
     }
 
-    // Handles hourly updates to the colonist's needs and priorities (goals)
+    // Handles hourly updates to the colonist's needs and priorities (goals) and morale
     handleHourlyUpdates = (infra: Infrastructure, map: Map, industry: Industry) => {
         this.updateNeeds();
+        this.determineMoraleChangeForNeeds();
         this.resetNeedAvailabilities();
         this.updateGoal(infra, map, industry);
     }
@@ -97,12 +104,13 @@ export default class ColonistData {
 
     // Increases colonist needs, but only up to the need threshold if they are asleep
     updateNeeds = () => {
-        this._needs.food += 1;
-        this._needs.water += 1;
-        this._needs.rest += 1;
-        if (this._currentAction?.type === "rest") { // Limit need increases for food and water while colonist is resting
-            this._needs.food = Math.min(this._needs.food, this._needThresholds.food);
-            this._needs.water = Math.min(this._needs.food, this._needThresholds.water);
+        if (this._currentAction?.type !== "rest") {
+            this._needs.food += 1;
+            this._needs.water += 1;
+            this._needs.rest += 1;
+        } else {
+            if (this._needs.food < this._needThresholds.food) this._needs.food++;
+            if (this._needs.water < this._needThresholds.water) this._needs.water++;
         }
     }
 
@@ -278,12 +286,14 @@ export default class ColonistData {
                     if (this._actionTimeElapsed >= this._currentAction.duration) {
                         this._needs.water -= this._currentAction.duration;  // Reduce water need by 1/unit of time spent drinking
                         this.resolveAction();
+                        this.updateMorale(1);       // Add one morale for satisfying a need
                     }
                     break;
                 case "eat":
                     if (this._actionTimeElapsed >= this._currentAction.duration) {
                         this._needs.food -= this._currentAction.duration;   // Reduce food need by 1/unit of time spent eating
                         this.resolveAction();
+                        this.updateMorale(1);       // Add one morale for satisfying a need
                     }
                     break;
                 case "farm":
@@ -304,6 +314,7 @@ export default class ColonistData {
                         this._needs.rest = 0;   // Always awake fully rested - must be nice!!
                         this.exitModule(infra); // Don't forget to officially exit the module when leaving
                         this.resolveAction();
+                        this.updateMorale(1);       // Add one morale for satisfying a need
                         this.checkForNextAction(infra);
                     }
                 // Housekeeping: Keep options in sync with startAction and startMovement methods and animationFunctions.ts
@@ -348,7 +359,7 @@ export default class ColonistData {
                     this.enterModule(infra);    // Begin resting by entering the sleeping quarters
             }
         } else {
-            console.log('Warning: Unable to start action because the action stack is empty.')
+            // console.log('Warning: Unable to start action because the action stack is empty.');
         }
     }
 
@@ -589,6 +600,30 @@ export default class ColonistData {
                 console.log(`Error: ${this._name} unable to exit Module ${this._currentAction.buildingId}. Reason: Module data not found.`);
             }
         }
+    }
+
+    // MORALE METHODS (Not to be confused with 'moral methods')
+
+    // Takes a number (positive or negative) and modifies the colonist's current morale
+    updateMorale = (delta: number) => {
+        this._morale += delta;
+        if (delta > 0) {
+            this._morale = Math.min(this._morale, this._maxMorale); // If morale is increasing, make sure to respect the max value
+        } else {
+            this._morale = Math.max(this._morale, 0);   // If morale is decreasing, make sure it doesn't go below zero
+        }
+    }
+
+    // Checks the colonist's needs each hour to determine whether to reduce morale
+    determineMoraleChangeForNeeds = () => {
+        Object.keys(this._needs).forEach((need) => {
+            //@ts-ignore
+            const deprivation = this._needs[need] - this._needThresholds[need] > this._tolerance;
+            if (deprivation) {
+                // console.log(`${this._name} is suffering from a lack of ${need}`);
+                this.updateMorale(-1);
+            }
+        })
     }
 
 }

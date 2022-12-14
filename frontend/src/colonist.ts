@@ -5,6 +5,8 @@ import { constants } from "./constants";
 import { bodyAnimations, headAnimations, handAnimations, footAnimations } from "./animationFunctions";
 import { Coords } from "./connector";
 
+// Colonist Data templates (NOTE when updating these, make sure to mirror the update in the backend's saveFunctions.ts file)
+
 export type ColonistNeeds = {
     water: number,
     food: number,
@@ -20,6 +22,7 @@ export type ColonistSaveData = {
     y: number,
     role: ColonistRole,
     needs: ColonistNeeds,
+    morale: number,
     goal: string,
     currentAction: ColonistAction | null,
     actionStack: ColonistAction[],

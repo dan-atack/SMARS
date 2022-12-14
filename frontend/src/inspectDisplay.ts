@@ -32,7 +32,7 @@ export default class InspectDisplay {
         this._left3Q = this._leftEdge + this._width * 3 / 4;
         this._textAlignleft = this._leftEdge + 12;
         this._headers = [];
-        for (let i = 0; i < 6; i++) {
+        for (let i = 0; i < 8; i++) {
             this._headers.push(this._top + 24 + i * 32);
         }
         this._currentSelection = null;
@@ -93,18 +93,25 @@ export default class InspectDisplay {
     displayColonistData = (p5: P5) => {
         if (this._currentSelection && this.isColonist(this._currentSelection)) {
             const col = this._currentSelection;   // For convenience
+            const morale = col._data._morale;
+            const max = col._data._maxMorale;
             const goalString = col._data._currentGoal.split("-").join(" ");
             p5.text(col._data._name, this._center, this._headers[0]);
             p5.textSize(18);
             p5.textAlign(p5.LEFT);
-            p5.text("Need Levels:", this._textAlignleft, this._headers[3]);
             p5.text(`Current role: ${col._data._role[0] || "none!"}`, this._textAlignleft, this._headers[1]);
             p5.text(`Current goal: ${goalString}`, this._textAlignleft, this._headers[2]);
+            p5.text("Morale:", this._textAlignleft, this._headers[3]);
+            // Set text colour for morale display
+            morale / max > 0.3 ? morale / max > 0.7 ? p5.fill(constants.GREEN_TERMINAL) : p5.fill(constants.YELLOW_TEXT) : p5.fill(constants.RED_ERROR);
+            p5.text(`   ${col._data._morale} / ${col._data._maxMorale}`, this._left1Q, this._headers[3]);
+            p5.fill(constants.GREEN_TERMINAL);      // Reset text colour
+            p5.text("Need Levels:", this._textAlignleft, this._headers[4]);
             p5.textSize(16);
-            p5.text("Current", this._left1Q, this._headers[4]);
-            p5.text("/  Threshold", this._center, this._headers[4]);
+            p5.text("Current", this._left1Q, this._headers[5]);
+            p5.text("/  Threshold", this._center, this._headers[5]);
             Object.keys(col._data._needs).forEach((need, idx) => {
-                p5.text(need, this._textAlignleft, this._headers[5] + idx * 20);
+                p5.text(need, this._textAlignleft, this._headers[6] + idx * 20);
             });
             Object.values(col._data._needs).forEach((val, idx) => {
                 const thresh = Object.values(col._data._needThresholds)[idx];
@@ -115,11 +122,11 @@ export default class InspectDisplay {
                 } else {
                     p5.fill(constants.RED_ERROR);
                 }
-                p5.text(val, this._left1Q + 24, this._headers[5] + idx * 20);
+                p5.text(val, this._left1Q + 24, this._headers[6] + idx * 20);
             });
             p5.fill(constants.GREEN_TERMINAL);
             Object.values(col._data._needThresholds).forEach((val, idx) => {
-                p5.text(`/      ${val}`, this._center, this._headers[5] + idx * 20);
+                p5.text(`/      ${val}`, this._center, this._headers[6] + idx * 20);
             });
         } else {
             p5.fill(constants.RED_ERROR);

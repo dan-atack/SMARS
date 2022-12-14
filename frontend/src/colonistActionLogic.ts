@@ -222,7 +222,7 @@ export const goToGround = (colonistCoords: Coords, colonistStandingOn: string | 
     // Only execute if the colonist is on a non-ground floor
     const floor = infra._data.getFloorFromCoords(colonistCoords);
     if (floor && floor._groundFloorZones.length === 0) {
-        console.log(`Going to ground from floor at (${colonistCoords.x}, ${colonistCoords.y}).`);
+        // console.log(`Going to ground from floor at (${colonistCoords.x}, ${colonistCoords.y}).`);
         let solved = false;
         floor._connectors.forEach((id) => {
             const elevator = infra._data.getElevatorFromId(id);
@@ -236,7 +236,7 @@ export const goToGround = (colonistCoords: Coords, colonistStandingOn: string | 
             }
         })
     } else {
-        console.log(`Cannot go to ground. No floor at (${colonistCoords.x}, ${colonistCoords.y}).`);
+        // console.log(`Cannot go to ground. No floor at (${colonistCoords.x}, ${colonistCoords.y}).`);
     }
     return stack;
 }

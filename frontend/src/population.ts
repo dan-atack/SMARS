@@ -12,12 +12,13 @@ export default class Population {
     _colonists: Colonist[];
     _colonistsCurrentSerial: number;    // Needed to individually tag colonists when they are created (starts at zero)
     _colonistSerialBase: number;        // Serial base = the large number added to the current serial index (Which starts at zero)
+    _averageMorale: number;             // Calculate the average morale level of the colonists
 
     constructor() {
         this._colonists = [];                   // Default population is zero.
         this._colonistsCurrentSerial = 0;       // Current serial always starts at zero
         this._colonistSerialBase = 9000;        // Colonists are from the 9000 series!
-
+        this._averageMorale = 50;               // Default value is 50, which is what new colonists start with
     }
 
     // SECTION 1: ADDING POPULATION (COLONISTS)
@@ -68,13 +69,33 @@ export default class Population {
         })
     }
 
+    // Calls each colonist's hourly updates routine, then gets the average morale each hour
     handleColonistHourlyUpdates = (infra: Infrastructure, map: Map, industry: Industry) => {
         this._colonists.forEach((colonist) => {
             colonist._data.handleHourlyUpdates(infra, map, industry);
-        })
+        });
+        this.updateMoraleRating();
     }
 
-    // SECTION 3: COLONIST ROLE MANAGEMENT
+    // SECTION 3: COLONIST MORALE FUNCTIONS
+
+    // Called after each hourly update, to get the average morale of all the colonists in the base
+    updateMoraleRating = () => {
+        if (this._colonists.length > 0) {   // Only allow morale updates when the colonists have actually landed!
+            let total = 0;
+            this._colonists.forEach((col) => {
+                total += col._data._morale;
+            });
+            this._averageMorale = Math.round(total / this._colonists.length);
+        }
+    }
+
+    // Based on the current average morale of the colony, determine how many new people to +
+    determineColonistsForNextLaunch = () => {
+        return Math.floor(this._averageMorale / 25);
+    }
+
+    // SECTION 4: COLONIST ROLE MANAGEMENT
 
     assignColonistRole = (colonistID: number, role: [string, number]) => {
         const colonist = this._colonists.find((col) => col._data._id === colonistID);
@@ -86,7 +107,7 @@ export default class Population {
         }
     }
 
-    // SECTION 4: COLONIST INFO API (GETTER FUNCTIONS)
+    // SECTION 5: COLONIST INFO API (GETTER FUNCTIONS)
 
     getColonistDataFromCoords = (coords: Coords) => {
         const colonists = this._colonists.find((col) => {
@@ -99,7 +120,7 @@ export default class Population {
         }
     }
 
-    // SECTION 5: COLONIST SAVE/LOAD DATA MANAGEMENT
+    // SECTION 6: COLONIST SAVE/LOAD DATA MANAGEMENT
 
     prepareColonistSaveData = () => {
         const colonistData: ColonistSaveData[] = [];
@@ -111,6 +132,7 @@ export default class Population {
                 y: colonist._data._y,
                 role: colonist._data._role,
                 needs: colonist._data._needs,
+                morale: colonist._data._morale,
                 goal: colonist._data._currentGoal,
                 currentAction: colonist._data._currentAction,
                 actionStack: colonist._data._actionStack,
@@ -138,6 +160,7 @@ export default class Population {
         } else {
             console.log("Warning: No colonist data in save file.");
         }
+        this.updateMoraleRating();      // Update morale as soon as colonist is loaded
     }
 
     // Gets horizontal offset and fps (game speed) data from the Engine's render method

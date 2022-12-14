@@ -37,10 +37,10 @@ export default class Game extends Screen {
         this.switchScreen = switchScreen;
         // Pass view and screen changer functions to the engine (For the sidebar to use)
         this._engine = new Engine(p5, this.switchScreen, this.changeView, this.updateEarthData);
-        this._population = new PopulationView(p5, this.changeView);
-        this._techTree = new TechTree(p5, this.changeView);
-        this._earth = new Earth(p5, this.changeView) // There IS no planet B!!!
-        this._industry = new IndustryView(p5, this.changeView);
+        this._population = new PopulationView(this.changeView);
+        this._techTree = new TechTree(this.changeView);
+        this._earth = new Earth(this.changeView) // There IS no planet B!!!
+        this._industry = new IndustryView(this.changeView);
         // this._logbook = new Logbook(p5, this.changeView);        // On hold pending investigation into why we need it.
         this._views = [this._engine, this._population, this._techTree, this._earth, this._industry];
         this._gameData = {          // Default values will be overridden
@@ -69,6 +69,8 @@ export default class Game extends Screen {
         p5.textAlign(p5.CENTER, p5.CENTER);
         if (!this._gameLoaded && this._loadGameData) {      // Loading a SAVED game
             this._engine.setupSavedGame(this._loadGameData);
+            this._earth.loadSavedDate(this._loadGameData.earth_dates);
+            this._earth.loadSavedFlightData(this._loadGameData.flight_data);
             this._gameLoaded = true;
         } else if (!this._gameLoaded) {                     // Loading a NEW game
             this._engine.setupNewGame(this._gameData);
@@ -102,7 +104,12 @@ export default class Game extends Screen {
     }
 
     updateEarthData = () => {
-        this._earth.setEarthDate(constants.EARTH_DAYS_PER_HOUR); // Add seven days to Earth calendar for every hour that passes on SMARS
+        const colonists = this._engine._population.determineColonistsForNextLaunch();
+        // Update the Earth calendar for every hour that passes on SMARS (in game time) and check if a landing has taken place
+        const colonistsLanding = this._earth.handleWeeklyUpdates(colonists);
+        if (colonistsLanding) {
+            this._engine.startNewColonistsLanding(colonistsLanding);
+        }
     }
 
     // Pass data from the pre-game setup screen and username from the App itself, to the game with this method:
@@ -147,6 +154,16 @@ export default class Game extends Screen {
             username: this._username,
             time: new Date (),
             game_time: this._engine._gameTime,
+            earth_dates: {
+                date: this._earth._earthDate,
+                remainder: this._earth._dateRemainder,
+                nextLaunch: this._earth._nextLaunchDate,
+                nextLanding: this._earth._nextLandingDate
+            },
+            flight_data: {
+                colonists: this._earth._colonistsEnRoute,
+                en_route: this._earth._flightEnRoute
+            },
             difficulty: this._gameData.difficulty,
             map_type: this._gameData.mapType,
             random_events: this._gameData.randomEvents,
@@ -190,10 +207,10 @@ export default class Game extends Screen {
             this._engine._sidebar.setMenuOpen(false);       // And reset the flag!?
         }
         if (this._engine.currentView) this._engine.render();
-        if (this._earth.currentView) this._earth.render();
-        if (this._industry.currentView) this._industry.render();
-        if (this._techTree.currentView) this._techTree.render();
-        if (this._population.currentView) this._population.render();
+        if (this._earth.currentView) this._earth.render(this._p5);
+        if (this._industry.currentView) this._industry.render(this._p5);
+        if (this._techTree.currentView) this._techTree.render(this._p5);
+        if (this._population.currentView) this._population.render(this._p5);
     }
 
 }
