@@ -2032,13 +2032,13 @@ Exit Criteria:
 
 ### November 24, 2022
 
-Now that our initial Smartian colonists have settled into their basic routine, it's time to let the good people of Earth know how wonderful it is on the New World, and to invite more people to join the colony! This chapter will focus on implementing a system for expanding the base's population (without diving into the more complicated question of Smartian reproduction) by adding new 'immigrants' from Earth every two Earth years - the interval between ideal Hohmann transfer opportunities (the actual amount is 26 months but we'll round that down for simplicity's sake). The number of immigrants will be small (between 1 and 3 per cycle) and will always be determined in advance, based on the current colonists' collective morale - which will be determined for each colonist based on how successfully their needs are being met. At the start of the game there will be a standing order to add two more colonists at the beginning of mission year 1, and at that time, a calculation will be made of the average morale of the original colonists to decide how many more will set out from Earth in the next wave. New colonists will arrive via a parachute-deployed drop-pod, which will look a little bit like the lander shown at the beginning of the game, and which will disappear after the landing animation sequence finishes. All of the colonists who land each (Smartian) year will emerge from the same pod, and their landing site will be randomly selected. Once landed, the new colonists will start hungry, thirsty and tired, so they will immediately be compelled to move towards the base to satisfy their needs after a long journey through space. Once their needs have been taken care of, they can be assigned duties in the base and will be just like the original batch of colonists.
+Now that our initial Smartian colonists have settled into their basic routine, it's time to let the good people of Earth know how wonderful it is on the New World, and to invite more people to join the colony! This chapter will focus on implementing a system for expanding the base's population (without diving into the more complicated question of Smartian reproduction) by adding new 'immigrants' from Earth every 26 Earth months - the interval between ideal Hohmann transfer opportunities. The number of immigrants will be small (between 1 and 3 per cycle) and will always be determined in advance, based on the current colonists' collective morale - which will be determined for each colonist based on how successfully their needs are being met. At the start of the game there will be a standing order to add two more colonists when the next launch date arrives, and at that time, a calculation will be made of the average morale of the original colonists to decide how many more will set out from Earth in the next wave. New colonists will arrive via a parachute-deployed drop-pod, which will look a little bit like the lander shown at the beginning of the game, and which will disappear after the landing animation sequence finishes. All of the colonists who land each (Smartian) year will emerge from the same pod, and their landing site will be randomly selected. Once landed, the new colonists can immediately be assigned roles in the colony, and can be viewed on the (now paginated) population view screen.
 
 Exit Criteria:
 
 - [DONE] Every 26 Earth months, a new batch of colonists will arrive from Earth to join the colony
-- New colonists arrive via a drop-pod, which will have a landing animation like the one at the beginning of the game
-- Drop pods land on a random area of the map, away from the base structures
+- [DONE] New colonists arrive via a drop-pod, which will have a landing animation like the one at the beginning of the game
+- [DONE] Drop pods land on a randomly chosen column towards either the right or left edge of the map
 - [DONE] All maps are updated to only contain one zone, so that new arrivals do not get stuck (legacy saves need not be supported)
 - [DONE] Colonists have a morale score, from 0 to 100, shown in the Colonist Inspect Tool display
 - [DONE] Colonists gain one point of morale every time they satisfy a need
@@ -2121,7 +2121,11 @@ Exit Criteria:
 
 36. Add an event management system to the Engine so that it can hold the game in wait mode while various animations play.
 
-### 37. Add some logic to the DropPod's animation so that the parachute continues to descend after the landing completes, like the dust cloud for the original lander does.
+37. Add some logic to the DropPod's animation so that the parachute continues to descend after the landing completes, like the dust cloud for the original lander does.
+
+## Chapter Thirty-Eight: What's Mine is Mine (Difficulty Estimate: TBD)
+
+### December 12, 2022
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
