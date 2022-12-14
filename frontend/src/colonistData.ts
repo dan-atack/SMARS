@@ -168,6 +168,8 @@ export default class ColonistData {
         if (job) {  // Set the Job type as the new goal if a job is found; otherwise this will fall through to the default case
             this.addAction(job.type, job.coords, job.duration, job.buildingId); // Make the job the first item in the action stack
             this.setGoal(job.type, infra, map, job);     // Then determine how to get to the job site
+        } else {
+            // console.log(`No ${this._role[0]} jobs available right now.`);
         }
     }
 

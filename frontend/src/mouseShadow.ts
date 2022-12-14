@@ -16,13 +16,18 @@ export default class MouseShadow {
     _connectorStopCoords: Coords | null;
     _deltaX: number;    // Used to help quickly determine a connector's length
     _deltaY: number;
+    _jackhammerTipPosition: number  // Current frame in the jackhammer animation
+    _jackhammerMaxPosition: number  // Maximum frame number for jackhammer animation
+    _jackhammerOutward: boolean          // Whether the jackhammer point is coming in or going out
     _inspectMode: boolean;  // Used to indicate whether the mouse cursor should show the 'inspect tool' animation
+    _resourceMode: boolean; // Used to indicate whether the mouse cursor should show the 'jackhammer' animation
 
-    // W and H are both given in terms of columns, not pixels
-    constructor(w: number, h: number, inspectMode?: boolean) {
+    // W and H are both given in terms of columns, not pixels; inspect and resource are for custom cursor animations
+    constructor(w: number, h: number, inspectMode?: boolean, resource?: boolean) {
         this._x = 0;    // No inputs are given to construct a mouse shadow; only needed for rendering
         this._y = 0;
         this._inspectMode = inspectMode || false;   // Unless provided, assume the mouse is not in inspect mode
+        this._resourceMode = resource || false;     // Unless provided, assume the mouse is not in jackhammer mode
         this._w = w * constants.BLOCK_WIDTH;        // All values are in terms of pixels
         this._h = h * constants.BLOCK_WIDTH;
         this._color = constants.BLUEGREEN_CRYSTAL;
@@ -32,6 +37,9 @@ export default class MouseShadow {
         this._connectorStopCoords = null;
         this._deltaX = 0;
         this._deltaY = 0;
+        this._jackhammerTipPosition = 0;
+        this._jackhammerMaxPosition = 16;
+        this._jackhammerOutward = true;         // At the start of its animation, jackhammer is going outward
     }
 
     // Used for 'stretching' a connector from its start point to a second set of coords
@@ -114,6 +122,39 @@ export default class MouseShadow {
         this.setWidthAndHeight(x, y, h, v);
     }
 
+    // Separate render method for the jackhammer shadow
+    renderJackhammer = (p5: P5) => {
+        const x = this._x - this._xOffset + constants.BLOCK_WIDTH / 2;
+        const y = this._y;  // for convenience
+        const tip = this._jackhammerTipPosition;
+        // Advance the drill head position
+        // Outwards
+        if (this._jackhammerOutward && this._jackhammerTipPosition < this._jackhammerMaxPosition) {
+            this._jackhammerTipPosition++;
+            if (this._jackhammerTipPosition >= this._jackhammerMaxPosition) {
+                this._jackhammerOutward = false;        // Reverse if fully extended
+            }
+        // Inwards
+        } else {
+            this._jackhammerTipPosition--;
+            if (this._jackhammerTipPosition <= 0) {
+                this._jackhammerOutward = true;         // Reverse if fully retracted
+            }
+        }
+        // NOTE: Could minimize this for the colonist's 'tool' animation??
+        p5.strokeWeight(2);
+        p5.stroke(constants.ALMOST_BLACK);
+        p5.fill(constants.GRAY_METEOR);
+        p5.rect(x - 20, y - 32, 40, 4);
+        p5.fill(constants.YELLOW_TEXT);
+        p5.quad(x - 5, y - 10, x + 5, y - 10, x + 10, y - 30, x - 10, y - 30);
+        p5.quad(x - 10, y - 30, x + 10, y - 30, x + 5, y - 40, x - 5, y - 40);
+        // Drill head
+        p5.fill(constants.GRAY_DRY_ICE);
+        p5.rect(x - 2, y - 10, 4, tip);
+        p5.quad(x - 4, y + tip - 12, x + 4, y + tip - 12, x + 2, y + tip - 2, x - 2, y + tip - 2)
+    }
+
     render = (p5: P5, x: number, y: number, xOffset: number) => {
         this._xOffset = xOffset;
         p5.fill(this._color);
@@ -137,6 +178,8 @@ export default class MouseShadow {
             p5.stroke(constants.ALMOST_BLACK);
             p5.ellipse(centerX, centerY, this._w + rad);
             p5.ellipse(centerX, centerY, this._w);
+        } else if (this._resourceMode) {
+            this.renderJackhammer(p5);
         } else {
             p5.rect(this._x - this._xOffset, this._y, this._w, this._h);
         }

@@ -356,7 +356,7 @@ export default class InfrastructureData {
         if (floor !== undefined) {
             return floor;
         } else {
-            console.log(`Coordinates (${coords.x}, ${coords.y}) are not on any floor`);
+            // console.log(`Coordinates (${coords.x}, ${coords.y}) are not on any floor`);
             return null;
         }
     }

@@ -318,7 +318,7 @@ export default class Engine extends View {
                         this.handleConnectorStopPlacement();
                         break;
                     case "resource":
-                        console.log("Resource Mode selected.");
+                        console.log(`(${gridX}, ${gridY})`);
                         break;
                     case "modal":
                         this._modal?.handleClicks(mouseX, mouseY);
@@ -416,6 +416,10 @@ export default class Engine extends View {
         this._mouseShadow = new MouseShadow(1, 1, true);
     }
 
+    createJackhammerMouseShadow = () => {
+        this._mouseShadow = new MouseShadow(1, 1, false, true);
+    }
+
     destroyMouseShadow = () => {
         this._mouseShadow = null;
     }
@@ -442,6 +446,7 @@ export default class Engine extends View {
 
     // Given to various sub-components, this dictates how the mouse will behave when clicked in different situations
     setMouseContext = (value: string) => {
+        // TODO: Reorganize into a switch case block??
         this.clearInspectSelection();     // Reset inspect data
         this.mouseContext = value;
         // Only update the selected building if the mouse context is 'placeModule' or 'connectorStart'
@@ -454,6 +459,10 @@ export default class Engine extends View {
         // Ensure there is no mouse shadow if no structure is selected
         if (this.selectedBuilding === null) {
             this.destroyMouseShadow();
+        }
+        // Next, check if mouse context has been set to 'resource' and show a little jackhammer if so
+        if (this.mouseContext === "resource") {
+            this.createJackhammerMouseShadow();
         }
         // Last, check if the mouse context has been set to 'inspect' and tell it to do the magnifying glass image if so
         if (this.mouseContext === "inspect") {
@@ -500,7 +509,9 @@ export default class Engine extends View {
     setSelectedBuilding = (selectedBuilding: ModuleInfo | ConnectorInfo | null) => {
         this.selectedBuilding = selectedBuilding;
         // New mouse shadow is created when a structure is selected
-        this.createMouseShadow();
+        if (this.selectedBuilding) {
+            this.createMouseShadow();
+        }
     }
 
     // X and Y are already gridified
@@ -660,7 +671,6 @@ export default class Engine extends View {
         // Convert values into pixels for drop pod constructor
         const pixelLocation = location * constants.BLOCK_WIDTH;
         const landingDistance = (surfaceAltitude) * constants.BLOCK_WIDTH;
-        console.log(`Direction: ${direction ? "Left" : "Right"}.\nDistance: ${distance}.\nLocation: ${location}\nSurface: ${surfaceAltitude}\nLanding Distance: ${landingDistance}`);
         // Create event object
         const ev = {
             type: "colonist-drop",
@@ -912,8 +922,8 @@ export default class Engine extends View {
             this.renderBuildingShadow();
         } else if (this.mouseContext === "landing") {
             this.renderLandingPath();
-        } else if (this.mouseContext === "inspect") {
-            this.renderInspectTool();
+        } else if (this.mouseContext === "inspect" || this.mouseContext === "resource") {
+            this.renderInspectOrResourceTool();
         }
     }
 
@@ -958,8 +968,8 @@ export default class Engine extends View {
         }    
     }
 
-    // For rendering the inspect tool
-    renderInspectTool = () => {
+    // For rendering the inspect tool OR the resource tool
+    renderInspectOrResourceTool = () => {
         // Only render the Inspect Tool if mouse is over the map area (not the sidebar) and there is no modal
         if (this._p5.mouseX < constants.SCREEN_WIDTH - this._sidebar._width && !this._modal && this._mouseShadow) {
             let [x, y] = this.getMouseGridPosition(this._p5.mouseX, this._p5.mouseY);
@@ -992,7 +1002,7 @@ export default class Engine extends View {
         if (this._hasLanded) {
             this._sidebar.render(this._gameTime.minute, this._gameTime.hour, this._gameTime.cycle);
         }
-        if (this.mouseContext === "inspect") {
+        if (this.mouseContext === "inspect" || this.mouseContext === "resource") {
             this.renderMouseShadow();
         }
         if (this._modal) {

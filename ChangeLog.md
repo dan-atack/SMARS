@@ -2123,9 +2123,37 @@ Exit Criteria:
 
 37. Add some logic to the DropPod's animation so that the parachute continues to descend after the landing completes, like the dust cloud for the original lander does.
 
-## Chapter Thirty-Eight: What's Mine is Mine (Difficulty Estimate: TBD)
+## Chapter Thirty-Eight: What's Mine is Mine (Difficulty Estimate: 4 for moderate complexity of new mouse context rules integration, plus industry view basic layout and colonist animation system upgrade)
 
 ### December 12, 2022
+
+Now that more and more people are coming to SMARS, it is vital that the colony be allowed to become self-sufficient. Currently the colonists can convert water into food, but their water supply is finite and cannot be replenished. Luckily there appear to be some ice patches nearby, which the colonists will soon be able to mine. Initially mining will be a highly simplified process, with the player being able to designate individual tiles as mining locations (for water only, at first). Mining jobs will then be made available by the Industry class, and will function very similarly to module-based production jobs - the colonist will walk to a set of coordinates, perform the mine action, and then repeat as necessary. There will be no carrying back and forth of mined materials/equipment at first, although these concepts may come into play in later patches as the game becomes more complex. For now though, any resources produced via mining will be instantly teleported into the nearest storage class module as soon as the colonist's mining action is completed.
+
+Exit Criteria:
+
+- Colonists assigned to be miners will look for mining jobs from the Industry class
+- The Industry class will create a mining job for every designated mining block
+- The player can select surface level blocks containing the water resource as mining targets when in Resource mode
+- The Industry view screen will display information about current mining locations and jobs
+- Colonists will have a new action animation for mining
+- When mining action is completed the mined resouce will be immediately added to the first available storage type module
+- [STRETCH] Colonist animation functions can optionally render a 'tool' animation to accompany their bodily movements
+
+1. For starters, delete / comment out all of the console logs from the previous two chapters. Use comments for the colonist action logic as they'll be needed when we inevitably have to wade in there and debug things.
+
+2. Add a rule to the mouse shadow for when the mouse context is 'resource' to draw a little jackhammer for the mouse cursor, similarly to how the inspect tool has a little magnifying glass. The tip, or point, of the jackhammer should be where the cursor is. Add the rules for rendering this to the MouseShadow class, and tell its constructor to accept a fourth, optional parameter called resource, to indicate that it should take on the appearance of a jackhammer.
+
+### 3. Create a new field in the Industry class, called miningLocations. It should be a dictionary of resource types mapped to lists of Coordinates (e.g. { water: [{ x: 0, y: 0 }, { x: 2, y: 99 }, ... ]}).
+
+### 4. Rename the Industry class's updateJobsForRole method to be called updateModuleJobsForRole. Then create a new Industry method, updateMiningJobs, to be called alongside the module jobs updater, by the top-level updateJobs function. Have it do a console log at first.
+
+### 5. Now add the click-response functionality for the Engine when it's in the Resource mouse context: Find the block that was clicked on from the Map data, and console log if it A) is on the surface of its column, and B) contains water.
+
+### 6. If the clicked block has both of the above criteria, add it to the Industry class's water mining locations list.
+
+### 7. If a clicked block's coordinates are ALREADY in the Industry class's list, remove them if they are clicked a second time.
+
+### 8. Add a render block to the Industry class so that it can highlight the locations of all tiles that are currently selected for mining. Add it last to the Engine's render block so that it is guaranteed to be the top layer.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
