@@ -95,7 +95,7 @@ export default class ColonistData {
 
     // AdjacentColumns is a subset of the map; just the column the colonist is on, plus one to the immediate right/left
     handleMinutelyUpdates = (adjacentColumns: number[][], infra: Infrastructure, map: Map, industry: Industry) => {
-        this.checkActionStatus(infra, industry);              // First: Update actions before goals
+        this.checkActionStatus(infra, industry, map);              // First: Update actions before goals
         this.checkGoalStatus(infra, map, industry);           // Then update goals after actions
         this.handleMovement(map, infra, adjacentColumns);  // Finally, take care of movement last
     }
@@ -270,7 +270,7 @@ export default class ColonistData {
     }
 
     // Called every minute by the master updater; checks and updates progress towards the completion of the current action
-    checkActionStatus = (infra: Infrastructure, industry: Industry) => {
+    checkActionStatus = (infra: Infrastructure, industry: Industry, map: Map) => {
         if (this._currentAction) {
             // 1 - Increase action elapsed time if the current action has a duration value
             if (this._currentAction.duration > 0) {
@@ -301,7 +301,7 @@ export default class ColonistData {
                 case "farm":
                     if (this._actionTimeElapsed >= this._currentAction.duration) {
                         infra.resolveModuleProduction(this._currentAction.buildingId, this._id); // complete production & punch out
-                        industry.updateModuleJobsForRole(infra, this._currentAction.type);    // renew farmer jobs
+                        industry.updateJobsForRole(map, infra, this._currentAction.type);    // renew farmer jobs
                         this.resolveAction();
                     }
                     break;

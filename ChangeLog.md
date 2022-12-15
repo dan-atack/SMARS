@@ -2145,15 +2145,13 @@ Exit Criteria:
 
 3. Create a new field in the Industry class, called miningLocations. It should be a dictionary of resource types mapped to lists of Coordinates (e.g. { water: [{ x: 0, y: 0 }, { x: 2, y: 99 }, ... ]}).
 
-### 4. Rename the Industry class's updateJobsForRole method to be called updateModuleJobsForRole. Then create a new Industry method, updateMiningJobs, to be called alongside the module jobs updater, by the top-level updateJobs function. Have it do a console log at first.
+4. Create a new Industry method, updateMiningJobs, to be called within the individual updateJobsForRole method when the role is 'miner.' Have it do a console log at first.
 
 5. Now add the click-response functionality for the Engine when it's in the Resource mouse context: Find the block that was clicked on from the Map data, and console log if it A) is on the surface of its column, and B) contains water. Create a new Map class method to verify the surface status (we'll let the Engine figure out the resource situation, for now at least) and give it a nice unit test before integrating into the Engine's click handler.
 
-### 6. If the clicked block has both of the above criteria, add it to the Industry class's water mining locations list.
+### 6. If the clicked block has both of the above criteria, add it to the Industry class's water mining locations list, via a new Industry class method called addMiningLocation. This method should take a resource name and coordinates pair, and add the coordinates if they are not present in the list of mining locations for that resource. If the coordinates ARE already present, then they should be removed (so that clicking a tile twice toggles its mining zone status). Validate with unit test and manual check.
 
-### 7. If a clicked block's coordinates are ALREADY in the Industry class's list, remove them if they are clicked a second time.
-
-### 8. Add a render block to the Industry class so that it can highlight the locations of all tiles that are currently selected for mining. Add it last to the Engine's render block so that it is guaranteed to be the top layer.
+### 7. Add a render block to the Industry class so that it can highlight the locations of all tiles that are currently selected for mining when the mouse context is 'resource.'. Add it last to the Engine's render block so that it is guaranteed to be the top layer.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

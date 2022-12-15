@@ -48,17 +48,20 @@ export default class Industry {
     // Top level updater - called by the Engine class's hourly updater method
     updateJobs = (infra: Infrastructure, map: Map) => {
         this._roles.forEach((role) => {
-            this.updateModuleJobsForRole(infra, role.name);
-            this.updateMiningJobs(map);
+            this.updateJobsForRole(map, infra, role.name);
         })
     }
 
     // Updates the jobs for a specific role from its string name
-    updateModuleJobsForRole = (infra: Infrastructure, roleName: string) => {
+    updateJobsForRole = (map: Map, infra: Infrastructure, roleName: string) => {
         // Find the role based on the given role name string OR role action string (i.e. find the role for 'farm' OR 'farmer')
         const role = this._roles.find((role) => role.name === roleName || role.action === roleName);
         if (role) {
             this._jobs[role.name] = []; // Reset jobs list for this role
+            // Check if the role is related to mining
+            if (role.name === "miner") {
+                this.updateMiningJobs(map);
+            }
             // Find modules that produce the role's resource
             const mods = infra.findModulesWithOutput(role.resourceProduced);
             // For each module check if it A) has enough input resources to produce and B) how many open slots it has

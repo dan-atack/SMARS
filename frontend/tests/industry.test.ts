@@ -1,5 +1,6 @@
 import Industry, { Role } from "../src/industry";
 import Infrastructure from "../src/infrastructure";
+import Map from "../src/map";
 import Module from "../src/module";
 import { ModuleInfo } from "../src/server_functions";
 import { ColonistAction } from "../src/colonistData";
@@ -47,6 +48,8 @@ describe("Industry class", () => {
         { id: '0026', leftEdge: { x: 0, y: 26 }, rightEdge: { x: 20, y: 26 } }
     ]
 
+    const testMap = new Map();
+
     // Create test instances
     const industry = new Industry();
     const infra = new Infrastructure();
@@ -68,7 +71,7 @@ describe("Industry class", () => {
         expect(infra._modules[0]._resources).toStrictEqual([["water", 1000], ["food", 0]]);
         expect(infra._modules[1]._resources).toStrictEqual([["water", 1000], ["food", 0]]);
         // Run test: Expect one job for each farm slot (one per module)
-        industry.updateJobsForRole(infra, role.name);
+        industry.updateJobsForRole(testMap, infra, role.name);
         expect(industry._jobs.farmer).toStrictEqual([
             {
                 type: "farm",
@@ -84,7 +87,7 @@ describe("Industry class", () => {
             }
         ]);
         // Run alternate test: Expect same results when the role's action word instead
-        industry.updateJobsForRole(infra, role.action);
+        industry.updateJobsForRole(testMap, infra, role.action);
         expect(industry._jobs.farmer).toStrictEqual([
             {
                 type: "farm",

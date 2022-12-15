@@ -319,12 +319,7 @@ export default class Engine extends View {
                         break;
                     case "resource":
                         console.log(`(${gridX}, ${gridY})`);
-                        const b = this._map.getBlockForCoords({ x: gridX, y: gridY });
-                        if (b && this._map.isBlockOnSurface(b)) {
-                            console.log(b._blockData.resource);
-                        } else {
-                            console.log("Block is not at the surface");
-                        }
+                        this.handleResourceZoneSelect({ x: gridX, y: gridY });
                         break;
                     case "modal":
                         this._modal?.handleClicks(mouseX, mouseY);
@@ -428,6 +423,19 @@ export default class Engine extends View {
 
     destroyMouseShadow = () => {
         this._mouseShadow = null;
+    }
+
+    // Mouse Context Handler for 'resource'
+    handleResourceZoneSelect = (coords: Coords) => {
+        const b = this._map.getBlockForCoords(coords);
+        if (b && this._map.isBlockOnSurface(b)) {   // Ensure block is on the surface
+            // For the moment, only allow blocks containing water to be passed to the industry class
+            if (b._blockData.resource === "water") {
+                // TODO: Change this to have the industry class add the coordinates (and remove duplicates)
+                this._industry._miningLocations.water.push(coords); // Push the coordinates for the mining location
+            }
+        }
+        console.log(this._industry._miningLocations);
     }
 
     // Evaluates whether the current mouse position is at an acceptable building site or not
