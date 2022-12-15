@@ -319,6 +319,12 @@ export default class Engine extends View {
                         break;
                     case "resource":
                         console.log(`(${gridX}, ${gridY})`);
+                        const b = this._map.getBlockForCoords({ x: gridX, y: gridY });
+                        if (b && this._map.isBlockOnSurface(b)) {
+                            console.log(b._blockData.resource);
+                        } else {
+                            console.log("Block is not at the surface");
+                        }
                         break;
                     case "modal":
                         this._modal?.handleClicks(mouseX, mouseY);
@@ -781,7 +787,7 @@ export default class Engine extends View {
         this.updateEconomyDisplay();
         this.updateEarthData();
         this._infrastructure.handleHourlyUpdates();
-        this._industry.updateJobs(this._infrastructure);
+        this._industry.updateJobs(this._infrastructure, this._map);
     }
 
     // In-game clock control and general event scheduler

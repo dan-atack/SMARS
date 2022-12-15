@@ -99,4 +99,15 @@ describe("Map", () => {
         expect(mapTest.getBlockForCoords({ x: 6, y: 31 })?._blockData.name).toBe("Dry Ice");    // One below block type = Dry Ice
     })
 
+    test("isBlockOnSurface can tell if a block is at the top of its column", () => {
+        const block = mapTest.getBlockForCoords({ x: 6, y: 30});
+        if (block) {    // We know it's there, this is just to soothe typescript
+            expect(mapTest.isBlockOnSurface(block)).toBe(true);
+        }
+        const deepBlock = mapTest.getBlockForCoords({ x: 6, y: 31});
+        if (deepBlock) {    // We know it's there, this is just to soothe typescript
+            expect(mapTest.isBlockOnSurface(deepBlock)).toBe(false);
+        }
+    })
+
 })

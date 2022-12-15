@@ -1,8 +1,9 @@
 // The Industry class is the disembodied list of all the jobs in the colony, and the functions for updating them
-import P5 from "p5";
 import Infrastructure from "./infrastructure";
+import Map from "./map";
 import { Coords } from "./connector";
 import { ColonistAction } from "./colonistData";
+
 
 export type Role = {
     name: string,
@@ -14,6 +15,9 @@ export default class Industry {
     // Industry class types:
     _roles: Role[];   // Each role has a name, and a goal, which is to produce a resource
     _jobs: any; // An unfortunate but necessary use of the any type; the Jobs property is a dictionary of role names to job lists
+    _miningLocations: {
+        water: Coords[]
+    }
     
     constructor() {
         this._roles = [
@@ -35,18 +39,22 @@ export default class Industry {
         this._jobs = {};    // Create jobs as empty object, then assign each role's name to be a key, whose value is a list of jobs
         this._roles.forEach((role) => {
             this._jobs[role.name as keyof Object] = [] as ColonistAction[];
-        })
+        });
+        this._miningLocations = {
+            water: []
+        }
     }
 
     // Top level updater - called by the Engine class's hourly updater method
-    updateJobs = (infra: Infrastructure) => {
+    updateJobs = (infra: Infrastructure, map: Map) => {
         this._roles.forEach((role) => {
-            this.updateJobsForRole(infra, role.name);
+            this.updateModuleJobsForRole(infra, role.name);
+            this.updateMiningJobs(map);
         })
     }
 
     // Updates the jobs for a specific role from its string name
-    updateJobsForRole = (infra: Infrastructure, roleName: string) => {
+    updateModuleJobsForRole = (infra: Infrastructure, roleName: string) => {
         // Find the role based on the given role name string OR role action string (i.e. find the role for 'farm' OR 'farmer')
         const role = this._roles.find((role) => role.name === roleName || role.action === roleName);
         if (role) {
@@ -72,6 +80,10 @@ export default class Industry {
         } else {
             console.log(`Error: role data for role ${roleName} not found.`);
         }   
+    }
+
+    updateMiningJobs = (map: Map) => {
+        console.log("Get me a map! It's time to update them mining jobs.");
     }
 
     // Called by the Colonists when they need a new job

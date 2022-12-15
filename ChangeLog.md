@@ -2143,11 +2143,11 @@ Exit Criteria:
 
 2. Add a rule to the mouse shadow for when the mouse context is 'resource' to draw a little jackhammer for the mouse cursor, similarly to how the inspect tool has a little magnifying glass. The tip, or point, of the jackhammer should be where the cursor is. Add the rules for rendering this to the MouseShadow class, and tell its constructor to accept a fourth, optional parameter called resource, to indicate that it should take on the appearance of a jackhammer.
 
-### 3. Create a new field in the Industry class, called miningLocations. It should be a dictionary of resource types mapped to lists of Coordinates (e.g. { water: [{ x: 0, y: 0 }, { x: 2, y: 99 }, ... ]}).
+3. Create a new field in the Industry class, called miningLocations. It should be a dictionary of resource types mapped to lists of Coordinates (e.g. { water: [{ x: 0, y: 0 }, { x: 2, y: 99 }, ... ]}).
 
 ### 4. Rename the Industry class's updateJobsForRole method to be called updateModuleJobsForRole. Then create a new Industry method, updateMiningJobs, to be called alongside the module jobs updater, by the top-level updateJobs function. Have it do a console log at first.
 
-### 5. Now add the click-response functionality for the Engine when it's in the Resource mouse context: Find the block that was clicked on from the Map data, and console log if it A) is on the surface of its column, and B) contains water.
+5. Now add the click-response functionality for the Engine when it's in the Resource mouse context: Find the block that was clicked on from the Map data, and console log if it A) is on the surface of its column, and B) contains water. Create a new Map class method to verify the surface status (we'll let the Engine figure out the resource situation, for now at least) and give it a nice unit test before integrating into the Engine's click handler.
 
 ### 6. If the clicked block has both of the above criteria, add it to the Industry class's water mining locations list.
 
