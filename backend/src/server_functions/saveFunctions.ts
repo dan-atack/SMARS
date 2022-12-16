@@ -72,6 +72,11 @@ export type GameTime = {
     year: number    // Smartian year (AKA mission year) is the amount of times SMARS has orbited the sun since mission start (Lasts approximately twice as long as a Terrestrial year).
 }
 
+export type MiningLocations = {
+    water: Coords[],
+    // TODO: Keep this in sync with the Industry class in the frontend
+}
+
 // Template for new save game info (copy from SaveGame.ts):
 
 export type SaveInfo = {
@@ -106,7 +111,8 @@ export type SaveInfo = {
         type: string,
         segments: {start: Coords, stop: Coords}[],  // Connectors all consist of pairs of start/stop coordinates
     }[]
-    resource: Resource[]; // TODO: Make into a list of resource rates of change, since actual quantities are kept in modules now
+    resource: Resource[];
+    miningLocations: MiningLocations,   // For the industry class
     colonists: ColonistSaveData[];
     // TODO: Add Technology, Storyline Event Choices, etc.
 }

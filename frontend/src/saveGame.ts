@@ -8,6 +8,7 @@ import { sendSaveGame } from "./server_functions";
 import { Resource } from "./economyData";
 import { ColonistSaveData } from "./colonist";
 import { Coords } from "./connector";
+import { MiningLocations } from "./industry";
 
 // Save Game type info
 export type GameTime = {
@@ -57,6 +58,7 @@ export type SaveInfo = {
     modules: ModuleSaveInfo[],
     connectors: ConnectorSaveInfo[],
     resources: Resource[],
+    miningLocations: MiningLocations,   // For the industry class
     colonists: ColonistSaveData[]
 }
 

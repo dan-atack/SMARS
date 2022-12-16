@@ -2149,9 +2149,13 @@ Exit Criteria:
 
 5. Now add the click-response functionality for the Engine when it's in the Resource mouse context: Find the block that was clicked on from the Map data, and console log if it A) is on the surface of its column, and B) contains water. Create a new Map class method to verify the surface status (we'll let the Engine figure out the resource situation, for now at least) and give it a nice unit test before integrating into the Engine's click handler.
 
-### 6. If the clicked block has both of the above criteria, add it to the Industry class's water mining locations list, via a new Industry class method called addMiningLocation. This method should take a resource name and coordinates pair, and add the coordinates if they are not present in the list of mining locations for that resource. If the coordinates ARE already present, then they should be removed (so that clicking a tile twice toggles its mining zone status). Validate with unit test and manual check.
+6. If the clicked block has both of the above criteria, add it to the Industry class's water mining locations list, via a new Industry class method called addMiningLocation. This method should take a resource name and coordinates pair, and add the coordinates if they are not present in the list of mining locations for that resource. If the coordinates ARE already present, then they should be removed (so that clicking a tile twice toggles its mining zone status). Validate with unit test and manual check.
 
-### 7. Add a render block to the Industry class so that it can highlight the locations of all tiles that are currently selected for mining when the mouse context is 'resource.'. Add it last to the Engine's render block so that it is guaranteed to be the top layer.
+7. Add a render block to the Industry class so that it can highlight the locations of all tiles that are currently selected for mining when the mouse context is 'resource.'. Add it last to the Engine's render block so that it is guaranteed to be the top layer. Instead of highlighting the block, put little cones on top of it to indicate that the block is being designated for mining.
+
+8. Add the Industry class's mining locations field to the SaveInfo structure, and add a loading method for the Industry class to receive mining locations all at once from the Engine when a save is loaded. Validate by making a new save, then loading it, as well as loading an older save to test the game's resiliency.
+
+### 9.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

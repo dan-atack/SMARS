@@ -1,8 +1,10 @@
 // The Industry class is the disembodied list of all the jobs in the colony, and the functions for updating them
+import P5 from "p5";
 import Infrastructure from "./infrastructure";
 import Map from "./map";
 import { Coords } from "./connector";
 import { ColonistAction } from "./colonistData";
+import { constants } from "./constants";
 
 
 export type Role = {
@@ -44,6 +46,16 @@ export default class Industry {
         });
         this._miningLocations = {
             water: []
+        }
+    }
+
+    // SECTION 0: LOADING SAVED GAME DATA
+
+    loadSavedMiningLocations = (locations: MiningLocations) => {
+        if (locations) {
+            this._miningLocations = locations;
+        } else {
+            console.log("Legacy save detected. Skipping mining location save data.");
         }
     }
 
@@ -131,6 +143,20 @@ export default class Industry {
             job = null;
         }
         return job;
+    }
+
+    render = (p5: P5, xOffset: number) => {
+        p5.strokeWeight(2);
+        p5.stroke(constants.ALMOST_BLACK);
+        this._miningLocations.water.forEach((loc) => {
+            // Create a traffic cone over each mining designated block
+            const x = loc.x * constants.BLOCK_WIDTH - xOffset;
+            const y = loc.y * constants.BLOCK_WIDTH;
+            p5.fill(constants.ORANGE_JUMPSUIT);
+            p5.quad(x + 4, y, x + 16, y, x + 12, y - 16, x + 8, y - 16);
+            p5.fill(constants.EGGSHELL);
+            p5.quad(x + 6, y - 5, x + 14, y - 5, x + 12, y - 11, x + 8, y - 11);
+        })
     }
 
 }

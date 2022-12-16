@@ -169,6 +169,7 @@ export default class Engine extends View {
         this._horizontalOffset = this._map._maxOffset / 2;
         this._infrastructure.setup(this._map._mapData.length);
         this._population.loadColonistData(saveInfo.colonists);
+        this._industry.loadSavedMiningLocations(saveInfo.miningLocations);
         this.loadModulesFromSave(saveInfo.modules);
         this.loadConnectorsFromSave(saveInfo.connectors);
         this._hasLanded = true;     // Landing sequence has to take place before saving is possible
@@ -1009,6 +1010,7 @@ export default class Engine extends View {
         }
         this._economy.render();
         this._population.render(this._p5, this._horizontalOffset, this.ticksPerMinute, this.gameOn);
+        this._industry.render(p5, this._horizontalOffset);
         this.handleMouseScroll();   // Every frame, check for mouse scrolling
         // Don't render sidebar until the player has chosen a landing site
         if (this._hasLanded) {
