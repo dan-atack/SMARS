@@ -11,13 +11,15 @@ export type Role = {
     resourceProduced: string
 }
 
+export type MiningLocations = {
+    water: Coords[]
+}
+
 export default class Industry {
     // Industry class types:
     _roles: Role[];   // Each role has a name, and a goal, which is to produce a resource
     _jobs: any; // An unfortunate but necessary use of the any type; the Jobs property is a dictionary of role names to job lists
-    _miningLocations: {
-        water: Coords[]
-    }
+    _miningLocations: MiningLocations
     
     constructor() {
         this._roles = [
@@ -44,6 +46,8 @@ export default class Industry {
             water: []
         }
     }
+
+    // SECTION 1: JOB UPDATER FUNCTIONS
 
     // Top level updater - called by the Engine class's hourly updater method
     updateJobs = (infra: Infrastructure, map: Map) => {
@@ -88,6 +92,34 @@ export default class Industry {
     updateMiningJobs = (map: Map) => {
         console.log("Get me a map! It's time to update them mining jobs.");
     }
+
+    // SECTION 2: MINING FUNCTIONS
+
+    // Adds/removes a block's location to the mining locations list for a given resource type
+    addMiningLocation = (coords: Coords, resource: string) => {
+        // Find the resource type
+        let locs = this._miningLocations[resource as keyof MiningLocations]
+        if (locs !== undefined) {
+            // Check if coords are already in the locations list for this resource
+            const sameColumn = locs.filter((loc) => loc.x === coords.x);
+            if (sameColumn.find((loc) => loc.y === coords.y)) {
+                // Remove them if they are
+                locs = locs.filter((loc) => loc.x !== coords.x || loc.y !== coords.y);
+                this._miningLocations[resource as keyof MiningLocations] = locs;
+                return false;
+            } else {
+                // Add them if they are not there
+                locs.push(coords);
+                return true;
+                // this._miningLocations[resource as keyof MiningLocations].push(coords);
+            }
+        } else {
+            console.log(`Error: Unable to find resource type ${resource}.`);
+            return false;
+        }        
+    }
+
+    // SECTION 3: GIVING OUT JOBS TO COLONISTS
 
     // Called by the Colonists when they need a new job
     // TODO: Add coordinates argument to allow more efficient job assignments!

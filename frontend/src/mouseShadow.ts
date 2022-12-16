@@ -38,7 +38,7 @@ export default class MouseShadow {
         this._deltaX = 0;
         this._deltaY = 0;
         this._jackhammerTipPosition = 0;
-        this._jackhammerMaxPosition = 16;
+        this._jackhammerMaxPosition = 8;
         this._jackhammerOutward = true;         // At the start of its animation, jackhammer is going outward
     }
 

@@ -303,9 +303,9 @@ export default class Engine extends View {
             // Click is over the map
             if (mouseX > 0 && mouseX < constants.SCREEN_WIDTH && mouseY > 0 && mouseY < constants.SCREEN_HEIGHT) {
                 const [gridX, gridY] = this.getMouseGridPosition(mouseX, mouseY);
+                console.log(`(${gridX}, ${gridY})`);
                 switch (this.mouseContext) {
                     case "inspect":
-                        console.log(`(${gridX}, ${gridY})`);
                         this.handleInspect({ x: gridX, y: gridY });
                         break;
                     case "placeModule":
@@ -318,7 +318,6 @@ export default class Engine extends View {
                         this.handleConnectorStopPlacement();
                         break;
                     case "resource":
-                        console.log(`(${gridX}, ${gridY})`);
                         this.handleResourceZoneSelect({ x: gridX, y: gridY });
                         break;
                     case "modal":
@@ -429,13 +428,12 @@ export default class Engine extends View {
     handleResourceZoneSelect = (coords: Coords) => {
         const b = this._map.getBlockForCoords(coords);
         if (b && this._map.isBlockOnSurface(b)) {   // Ensure block is on the surface
-            // For the moment, only allow blocks containing water to be passed to the industry class
+            // TODO: Build this out to allow easy handling of multiple new resource types
             if (b._blockData.resource === "water") {
-                // TODO: Change this to have the industry class add the coordinates (and remove duplicates)
-                this._industry._miningLocations.water.push(coords); // Push the coordinates for the mining location
+                this._industry.addMiningLocation(coords, "water"); // Push the coordinates for the mining location
             }
         }
-        console.log(this._industry._miningLocations);
+        console.log(this._industry._miningLocations.water);
     }
 
     // Evaluates whether the current mouse position is at an acceptable building site or not
