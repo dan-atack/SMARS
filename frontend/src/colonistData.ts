@@ -301,7 +301,7 @@ export default class ColonistData {
                 case "farm":
                     if (this._actionTimeElapsed >= this._currentAction.duration) {
                         infra.resolveModuleProduction(this._currentAction.buildingId, this._id); // complete production & punch out
-                        industry.updateJobsForRole(map, infra, this._currentAction.type);    // renew farmer jobs
+                        industry.updateJobsForRole(infra, this._currentAction.type);    // renew farmer jobs
                         this.resolveAction();
                     }
                     break;

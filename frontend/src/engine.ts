@@ -794,7 +794,7 @@ export default class Engine extends View {
         this.updateEconomyDisplay();
         this.updateEarthData();
         this._infrastructure.handleHourlyUpdates();
-        this._industry.updateJobs(this._infrastructure, this._map);
+        this._industry.updateJobs(this._infrastructure);
     }
 
     // In-game clock control and general event scheduler

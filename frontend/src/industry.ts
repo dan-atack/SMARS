@@ -21,7 +21,8 @@ export default class Industry {
     // Industry class types:
     _roles: Role[];   // Each role has a name, and a goal, which is to produce a resource
     _jobs: any; // An unfortunate but necessary use of the any type; the Jobs property is a dictionary of role names to job lists
-    _miningLocations: MiningLocations
+    _miningLocations: MiningLocations;          // Keep track of which blocks can be mined
+    _miningCoordinatesInUse: MiningLocations;   // Keep track of which blocks are currently being mined
     
     constructor() {
         this._roles = [
@@ -46,6 +47,9 @@ export default class Industry {
         });
         this._miningLocations = {
             water: []
+        };
+        this._miningCoordinatesInUse = {
+            water: []
         }
     }
 
@@ -62,21 +66,21 @@ export default class Industry {
     // SECTION 1: JOB UPDATER FUNCTIONS
 
     // Top level updater - called by the Engine class's hourly updater method
-    updateJobs = (infra: Infrastructure, map: Map) => {
+    updateJobs = (infra: Infrastructure) => {
         this._roles.forEach((role) => {
-            this.updateJobsForRole(map, infra, role.name);
+            this.updateJobsForRole(infra, role.name);
         })
     }
 
     // Updates the jobs for a specific role from its string name
-    updateJobsForRole = (map: Map, infra: Infrastructure, roleName: string) => {
+    updateJobsForRole = (infra: Infrastructure, roleName: string) => {
         // Find the role based on the given role name string OR role action string (i.e. find the role for 'farm' OR 'farmer')
         const role = this._roles.find((role) => role.name === roleName || role.action === roleName);
         if (role) {
             this._jobs[role.name] = []; // Reset jobs list for this role
             // Check if the role is related to mining
             if (role.name === "miner") {
-                this.updateMiningJobs(map);
+                this.updateMiningJobs();
             }
             // Find modules that produce the role's resource
             const mods = infra.findModulesWithOutput(role.resourceProduced);
@@ -101,8 +105,20 @@ export default class Industry {
         }   
     }
 
-    updateMiningJobs = (map: Map) => {
-        console.log("Get me a map! It's time to update them mining jobs.");
+    updateMiningJobs = () => {
+        this._miningLocations.water.forEach((location) => {
+            if (!(this._miningCoordinatesInUse.water.find((loc) => loc.x === location.x && loc.y === location.y))) {
+                const job: ColonistAction = {
+                    type: "mine",
+                    coords: { x: location.x, y: location.y - 2},
+                    duration: 30,   // TODO: Make this depend on some other quantity?
+                    buildingId: 0   // Not applicable
+                };
+                this._jobs.miner.push(job);
+            }
+        })
+        console.log(`Mining jobs: ${this._jobs.miner.length}`);
+        console.log(this._jobs.miner);
     }
 
     // SECTION 2: MINING FUNCTIONS
@@ -123,13 +139,14 @@ export default class Industry {
                 // Add them if they are not there
                 locs.push(coords);
                 return true;
-                // this._miningLocations[resource as keyof MiningLocations].push(coords);
             }
         } else {
             console.log(`Error: Unable to find resource type ${resource}.`);
             return false;
         }        
     }
+
+    // TODO: Add methods for occupying and vacating mining locations, to keep track of which spaces are available for new jobs
 
     // SECTION 3: GIVING OUT JOBS TO COLONISTS
 

@@ -71,7 +71,7 @@ describe("Industry class", () => {
         expect(infra._modules[0]._resources).toStrictEqual([["water", 1000], ["food", 0]]);
         expect(infra._modules[1]._resources).toStrictEqual([["water", 1000], ["food", 0]]);
         // Run test: Expect one job for each farm slot (one per module)
-        industry.updateJobsForRole(testMap, infra, role.name);
+        industry.updateJobsForRole(infra, role.name);
         expect(industry._jobs.farmer).toStrictEqual([
             {
                 type: "farm",
@@ -87,7 +87,7 @@ describe("Industry class", () => {
             }
         ]);
         // Run alternate test: Expect same results when the role's action word instead
-        industry.updateJobsForRole(testMap, infra, role.action);
+        industry.updateJobsForRole(infra, role.action);
         expect(industry._jobs.farmer).toStrictEqual([
             {
                 type: "farm",
@@ -140,6 +140,20 @@ describe("Industry class", () => {
         expect(industry._miningLocations.water.length).toBe(1);
         expect(industry.addMiningLocation(coords2, "water")).toBe(true);    // Re-add second coords pair just to be REALLY sure
         expect(industry._miningLocations.water.length).toBe(2);
+    })
+
+    test("Can add mining jobs based on available mining locations", () => {
+        // Use the coordinate sets defined in the previous test
+        industry.updateJobs(infra);
+        expect(industry._jobs.miner.length).toBe(2);
+        // Fill one of the slots to allow only 1 job to be created on the next update
+        industry._miningCoordinatesInUse.water.push({ x: 10, y: 30 });
+        industry.updateJobs(infra);
+        expect(industry._jobs.miner.length).toBe(1);
+        // Vacate the occupied slot and update again - should go back to 2 jobs available
+        industry._miningCoordinatesInUse.water = [];
+        industry.updateJobs(infra);
+        expect(industry._jobs.miner.length).toBe(2);
     })
 
 })

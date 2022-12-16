@@ -2155,7 +2155,15 @@ Exit Criteria:
 
 8. Add the Industry class's mining locations field to the SaveInfo structure, and add a loading method for the Industry class to receive mining locations all at once from the Engine when a save is loaded. Validate by making a new save, then loading it, as well as loading an older save to test the game's resiliency.
 
-### 9.
+9. To keep track of which mining zones are available for new job creation by keeping a parallel list of miningCoordinatesInUse in the Industry class.
+
+### 10. Now, fill in the updateMiningJobs method (and add a unit test) to create a new mining job for each unoccupied mining location. See if this starts giving the colonists mining jobs. ADD UNIT TEST BEFORE PROCEEDING.
+
+### 11. Add a new method to the Infrastructure class that finds all modules with available storage space for a resource. The Colonists will call this method to deposit the resource that are produced by mining in a moment. For now, make sure that it finds every module that can contain a given resource (name and quantity) and have it prioritize deposits into modules with the 'storage' type.
+
+### 11. Add "mine" case to the ColonistData's determineActionsForGoal (it will ultimately have to be slightly different than the farm case since it will call a ColonistActionLogic function that just looks at sites on the ground instead of for modules), checkActionStatus, startAction, and finally startMovement.
+
+### 12. Next, add a new mining animation for the Colonist. Initially do not include the jackhammer.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
