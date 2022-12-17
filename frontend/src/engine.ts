@@ -1009,8 +1009,8 @@ export default class Engine extends View {
             this.renderMouseShadow(); // If placing a connector, render mouse shadow above the infra layer
         }
         this._economy.render();
-        this._population.render(this._p5, this._horizontalOffset, this.ticksPerMinute, this.gameOn);
         this._industry.render(p5, this._horizontalOffset);
+        this._population.render(this._p5, this._horizontalOffset, this.ticksPerMinute, this.gameOn);
         this.handleMouseScroll();   // Every frame, check for mouse scrolling
         // Don't render sidebar until the player has chosen a landing site
         if (this._hasLanded) {

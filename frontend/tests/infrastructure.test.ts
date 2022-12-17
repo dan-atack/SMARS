@@ -347,4 +347,24 @@ describe("Infrastructure base class", () => {
         ])
     })
 
+    // Returns one module with a resource capacity, prioritizing modules of the 'Storage' type
+    test("Can find storage module(s) for a given resource", () => {
+        // SETUP: Clear out both storage modules
+        infra.deductResourceFromModule(1001, ["water", 100000]);
+        infra.deductResourceFromModule(1002, ["water", 100000]);
+        // When both storage modules have space, it returns the first one
+        expect(infra.findStorageModule(["water", 100])?._id).toBe(1001);        // First storage module
+        // When only the second storage module has space it returns that one
+        infra.addResourcesToModule(1001, ["water", 100000]);                    // Setup: Fill first storage module
+        expect(infra.findStorageModule(["water", 100])?._id).toBe(1002);        // Second storage module
+        // When no 'Storage' modules are available it returns the next available module that can hold the resource
+        infra.addResourcesToModule(1002, ["water", 100000]);                    // Setup: Fill second storage module
+        infra.deductResourceFromModule(1003, ["water", 10000]);                 // Setup: Make space in cantina
+        expect(infra.findStorageModule(["water", 100])?._id).toBe(1003);        // Cantina
+        // If no suitable modules are available it returns a null
+        infra.addResourcesToModule(1003, ["water", 100000]);                    // Setup: Fill cantina
+        infra.addResourcesToModule(1005, ["water", 100000]);                    // Setup: Fill hydroponics module
+        expect(infra.findStorageModule(["water", 100])).toBe(null);
+    })
+
 })

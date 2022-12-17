@@ -242,6 +242,11 @@ describe("ModuleData", () => {
         expect(moduleData.getResourceQuantity("water")).toBe(500);      // Returns the quantity of a resource if it is available
     })
 
+    test("Can return resource space available when given a resource name", () => {
+        expect(moduleData.getResourceCapacityAvailable("water")).toBe(9500);    // Return = max capacity - current amount
+        expect(moduleData.getResourceCapacityAvailable("plutonium")).toBe(0);   // Return 0 when resource name not found
+    })
+
     test("A module's type determines its resource sharing and resource getting policies", () => {
         // Storage: Sharing is true and acquisition is 0
         expect(moduleData._resourceSharing).toBe(true);
@@ -375,4 +380,5 @@ describe("ModuleData", () => {
             ["power", 0]
         ]);
     })
+
 })

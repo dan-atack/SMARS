@@ -2132,8 +2132,9 @@ Now that more and more people are coming to SMARS, it is vital that the colony b
 Exit Criteria:
 
 - Colonists assigned to be miners will look for mining jobs from the Industry class
-- The Industry class will create a mining job for every designated mining block
-- The player can select surface level blocks containing the water resource as mining targets when in Resource mode
+- [DONE] The Industry class will create a mining job for every designated mining block that is not currently occupied
+- [DONE] The player can select surface level blocks containing the water resource as mining targets when in Resource mode
+- [DONE] Blocks designated as mining locations have a little traffic cone placed on top of them, to indicate their status
 - The Industry view screen will display information about current mining locations and jobs
 - Colonists will have a new action animation for mining
 - When mining action is completed the mined resouce will be immediately added to the first available storage type module
@@ -2157,9 +2158,15 @@ Exit Criteria:
 
 9. To keep track of which mining zones are available for new job creation by keeping a parallel list of miningCoordinatesInUse in the Industry class.
 
-### 10. Now, fill in the updateMiningJobs method (and add a unit test) to create a new mining job for each unoccupied mining location. See if this starts giving the colonists mining jobs. ADD UNIT TEST BEFORE PROCEEDING.
+10. Now, fill in the updateMiningJobs method (and add a unit test) to create a new mining job for each unoccupied mining location. See if this starts giving the colonists mining jobs.
 
-### 11. Add a new method to the Infrastructure class that finds all modules with available storage space for a resource. The Colonists will call this method to deposit the resource that are produced by mining in a moment. For now, make sure that it finds every module that can contain a given resource (name and quantity) and have it prioritize deposits into modules with the 'storage' type.
+11. Add a new method to the Module class called getResourceAvailableCapacity, which takes the name of a resource as its only argument and returns the amount of space left for that resource (i.e. its max capacity - current quantity). If the module is full, or if the module does not have the capacity for the given resource return 0. Unit test before integrating with the method described below.
+
+12. Add a new method to the Infrastructure class that finds all modules with available storage space for a resource, and then returns the first one with the 'Storage' type, if possible. The Colonists will call this method to deposit the resource that are produced by mining in a moment. Have it prioritize deposits into modules with the 'storage' type, but also have it fall back to any module that can hold the requested resource if no Storage modules are available. If no modules are available that can contain the requested resource (irregardless of type) return a null. Do a unit test before proceeding.
+
+### 13. Create a new Industry method to punch in/out of a mining location. With a few modifications you can probably use the Module class's punchIn method. Add Industry class unit test to ensure proper functioning before proceeding.
+
+### 13. Create a simple colonist action logic function for finding the way to a mining site. Since mining sites can only be on the map (not on a floor) they should be simpler to find than a production module. Make sure Colonists can access mining sites from a floor or from the ground (unit test in ColonistData).
 
 ### 11. Add "mine" case to the ColonistData's determineActionsForGoal (it will ultimately have to be slightly different than the farm case since it will call a ColonistActionLogic function that just looks at sites on the ground instead of for modules), checkActionStatus, startAction, and finally startMovement.
 

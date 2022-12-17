@@ -222,7 +222,7 @@ describe("ColonistData", () => {
         resetColonistData();
         colonistData.addAction("drink", { x: 10, y: 32 }, 10, 1001);
         colonistData.addAction("move", { x: 10, y: 32 }, 0, 0);
-        colonistData.startGoalProgress(mockInfra);
+        colonistData.startGoalProgress(mockInfra, indy);
         expect(colonistData._currentAction).toStrictEqual({
             type: "move",
             coords: { x: 10, y: 32 },
@@ -283,7 +283,7 @@ describe("ColonistData", () => {
         colonistData._x = 10;   // Ensure the colonist is in position to consume resources
         colonistData._y = 31;
         // Start the action before checking the action status
-        colonistData.startAction(mockInfra);
+        colonistData.startAction(mockInfra, indy);
         expect(colonistData._actionTimeElapsed).toBe(0);
         colonistData.checkActionStatus(mockInfra, indy, mockMap);
         expect(colonistData._actionTimeElapsed).toBe(1);
@@ -294,7 +294,7 @@ describe("ColonistData", () => {
         resetColonistData();
         expect(colonistData._actionTimeElapsed).toBe(0);    // Validate reset
         colonistData.addAction("move", { x: 0, y: 0 });
-        colonistData.startAction(mockInfra);
+        colonistData.startAction(mockInfra, indy);
         colonistData.checkActionStatus(mockInfra, indy, mockMap);
         expect(colonistData._actionTimeElapsed).toBe(0);    // Validate that time elapsed is still 0
     })
@@ -302,7 +302,7 @@ describe("ColonistData", () => {
     test("CheckActionStatus resolves 'climb' action when colonist x and y position match action coords", () => {
         resetColonistData();
         colonistData.addAction("climb", { x: 10, y: 32 }, 0, 1001);
-        colonistData.startAction(mockInfra);
+        colonistData.startAction(mockInfra, indy);
         // Verify that action is initiated
         expect(colonistData._currentAction).toStrictEqual({
             type: "climb",
@@ -329,7 +329,7 @@ describe("ColonistData", () => {
         resetColonistData();
         colonistData._x = 10;   // For action resolve tests, colonist must be standing at the module location to eat or drink
         colonistData.addAction("drink", { x: 10, y: 32 }, 10, 1001);
-        colonistData.startAction(mockInfra);
+        colonistData.startAction(mockInfra, indy);
         // Verify that action is initiated
         expect(colonistData._currentAction).toStrictEqual({
             type: "drink",
@@ -356,7 +356,7 @@ describe("ColonistData", () => {
         resetColonistData();
         colonistData._x = 10;
         colonistData.addAction("eat", { x: 10, y: 32 }, 10, 1001);
-        colonistData.startAction(mockInfra);
+        colonistData.startAction(mockInfra, indy);
         // Verify that action is initiated
         expect(colonistData._currentAction).toStrictEqual({
             type: "eat",
@@ -384,7 +384,7 @@ describe("ColonistData", () => {
         mockInfra._modules[0].deductResource(["food", 10000]);    // Ensure module is empty
         mockInfra._modules[0].addResource(["food", 5]);           // Provision with slightly fewer resources than are needed
         colonistData.addAction("eat", { x: 10, y: 32 }, 10, 1001);
-        colonistData.startAction(mockInfra);
+        colonistData.startAction(mockInfra, indy);
         expect(mockInfra._modules[0].getResourceQuantity("food")).toBe(0);    // Colonist takes everything there is to take
         expect(colonistData._currentAction?.duration).toBe(5);      // Reduce duration since it takes less time to eat less food
         // Fast forward to the end of the action
@@ -397,7 +397,7 @@ describe("ColonistData", () => {
     test("CheckActionStatus resolves 'move' action when colonist x position matches action coordinate x (y is ignored)", () => {
         resetColonistData();
         colonistData.addAction("move", { x: 10, y: 32 });    // Only 2 arguments, type and coords, are needed for move action
-        colonistData.startAction(mockInfra);
+        colonistData.startAction(mockInfra, indy);
         // Verify that action is initiated
         expect(colonistData._currentAction).toStrictEqual({
             type: "move",
@@ -426,7 +426,7 @@ describe("ColonistData", () => {
         colonistData._movementDest = { x: 0, y: 0 };
         colonistData.addAction("climb", { x: 10, y: 32 }, 0, 1001);
         expect(colonistData._movementDest).toStrictEqual( { x: 0, y: 0 });   // Setting action does not set movement destination
-        colonistData.startAction(mockInfra);
+        colonistData.startAction(mockInfra, indy);
         expect(colonistData._movementDest).toStrictEqual({ x: 10, y: 32 });  // Starting action DOES set movement destination
     })
 
@@ -435,7 +435,7 @@ describe("ColonistData", () => {
         colonistData._movementDest = { x: 0, y: 0 };
         colonistData.addAction("move", { x: 10, y: 32 }, 0, 1001);
         expect(colonistData._movementDest).toStrictEqual( { x: 0, y: 0 });   // Setting action does not set movement destination
-        colonistData.startAction(mockInfra);
+        colonistData.startAction(mockInfra, indy);
         expect(colonistData._movementDest).toStrictEqual({ x: 10, y: 32 });  // Starting action DOES set movement destination
     })
 
@@ -451,7 +451,7 @@ describe("ColonistData", () => {
         colonistData.addAction("drink", { x: 10, y: 32 }, 10, 1001);
         colonistData.addAction("move", { x: 10, y: 32 }, 0, 1001);
         // Initiate action via checkForNextAction
-        colonistData.checkForNextAction(mockInfra);
+        colonistData.checkForNextAction(mockInfra, indy);
         // Validate that current action has been popped from the end of the action stack
         expect(colonistData._currentAction).toStrictEqual({
             type: "move",
@@ -467,7 +467,7 @@ describe("ColonistData", () => {
         }]);
         // Checking again will start the next action immediately (overwriting the current one)
         console.log(colonistData._actionStack);
-        colonistData.checkForNextAction(mockInfra);
+        colonistData.checkForNextAction(mockInfra, indy);
         expect(colonistData._currentAction).toStrictEqual({
             type: "drink",
             coords: { x: 10, y: 32 },
@@ -476,7 +476,7 @@ describe("ColonistData", () => {
         });
         expect(colonistData._actionStack).toStrictEqual([]);
         // Checking with an empty stack will not overwrite the current action (or do anything at all, for that matter)
-        colonistData.checkForNextAction(mockInfra);
+        colonistData.checkForNextAction(mockInfra, indy);
         expect(colonistData._currentAction).toStrictEqual({
             type: "drink",
             coords: { x: 10, y: 32 },
