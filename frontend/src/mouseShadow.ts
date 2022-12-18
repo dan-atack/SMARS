@@ -152,7 +152,7 @@ export default class MouseShadow {
         // Drill head
         p5.fill(constants.GRAY_DRY_ICE);
         p5.rect(x - 2, y - 10, 4, tip);
-        p5.quad(x - 4, y + tip - 12, x + 4, y + tip - 12, x + 2, y + tip - 2, x - 2, y + tip - 2)
+        p5.quad(x - 4, y + tip - 12, x + 4, y + tip - 12, x + 2, y + tip - 2, x - 2, y + tip - 2);
     }
 
     render = (p5: P5, x: number, y: number, xOffset: number) => {

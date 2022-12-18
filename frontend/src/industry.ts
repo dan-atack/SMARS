@@ -110,15 +110,15 @@ export default class Industry {
             if (!(this._miningCoordinatesInUse.water.find((loc) => loc.x === location.x && loc.y === location.y))) {
                 const job: ColonistAction = {
                     type: "mine",
-                    coords: { x: location.x, y: location.y - 2},
+                    coords: { x: location.x, y: location.y },
                     duration: 30,   // TODO: Make this depend on some other quantity?
                     buildingId: 0   // Not applicable
                 };
                 this._jobs.miner.push(job);
             }
         })
-        console.log(`Mining jobs: ${this._jobs.miner.length}`);
-        console.log(this._jobs.miner);
+        // console.log(`Mining jobs: ${this._jobs.miner.length}`);
+        // console.log(this._jobs.miner);
     }
 
     // SECTION 2: MINING FUNCTIONS

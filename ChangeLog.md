@@ -2131,14 +2131,14 @@ Now that more and more people are coming to SMARS, it is vital that the colony b
 
 Exit Criteria:
 
-- Colonists assigned to be miners will look for mining jobs from the Industry class
+- [DONE] Colonists assigned to be miners will look for mining jobs from the Industry class
 - [DONE] The Industry class will create a mining job for every designated mining block that is not currently occupied
 - [DONE] The player can select surface level blocks containing the water resource as mining targets when in Resource mode
 - [DONE] Blocks designated as mining locations have a little traffic cone placed on top of them, to indicate their status
 - The Industry view screen will display information about current mining locations and jobs
-- Colonists will have a new action animation for mining
-- When mining action is completed the mined resouce will be immediately added to the first available storage type module
-- [STRETCH] Colonist animation functions can optionally render a 'tool' animation to accompany their bodily movements
+- [DONE] Colonists will have a new action animation for mining
+- [DONE] When mining action is completed the mined resouce will be immediately added to the first available storage type module
+- [DONE] [STRETCH] Colonist animation functions can optionally render a 'tool' animation to accompany their bodily movements
 
 1. For starters, delete / comment out all of the console logs from the previous two chapters. Use comments for the colonist action logic as they'll be needed when we inevitably have to wade in there and debug things.
 
@@ -2166,11 +2166,17 @@ Exit Criteria:
 
 13. Create a new Industry method to punch in/out of a mining location for a given resource (parameters: resource name, coordinates, in/out (boolean)). Add unit test to ensure proper functioning before proceeding.
 
-### 13. Create a simple colonist action logic function for finding the way to a mining site. Since mining sites can only be on the map (not on a floor) they should be simpler to find than a production module. Make sure Colonists can access mining sites from a floor or from the ground (unit test in ColonistData).
+14. Create a simple colonist action logic function for finding the way to a mining site. Since mining sites can only be on the map (not on a floor) they should be simpler to find than a production module. Make sure Colonists can access mining sites from a floor or from the ground.
 
-### 11. Add "mine" case to the ColonistData's determineActionsForGoal (it will ultimately have to be slightly different than the farm case since it will call a ColonistActionLogic function that just looks at sites on the ground instead of for modules), checkActionStatus, startAction, and finally startMovement.
+15. Add "mine" case to the ColonistData's determineActionsForGoal (it will ultimately have to be slightly different than the farm case since it will call a ColonistActionLogic function that just looks at sites on the ground instead of for modules), checkActionStatus, startAction, and finally startMovement.
 
-### 12. Next, add a new mining animation for the Colonist. Initially do not include the jackhammer.
+16. Next, add a simple mining animation for the Colonist. Initially do not include the jackhammer.
+
+### 14. Add mining locations in-use data to save games. Do a test save / restore to validate that the feature is working. On saving / loading the saved game, add a console log that states which mining locations are occupied, to ensure the value is preserved.
+
+18. Update the Colonist class to include a new method for rendering the miner's jackhammer. Initially this can just be a hardwired method that takes the jackhammer animation from the mouse shadow class, and puts all of that functionality into a colonist method called renderJackhammer. Then the main render method displays that animation if the current action is 'mine.'
+
+### 19. Add some basic info about the number of mining locations/ active locations to the Industry page, as well as the number of production modules (hydroponics pods) existing/in use, and a breakdown of the colony's labour force.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

@@ -1,6 +1,6 @@
 // The ColonistData class handles all of the data processing for the colonist class, without any of the rendering tasks
 import { ColonistSaveData, ColonistNeeds, ColonistRole } from "./colonist";
-import { createConsumeActionStack, createProductionActionStack, createRestActionStack, findElevatorToGround } from "./colonistActionLogic";
+import { createConsumeActionStack, createMiningActionStack, createProductionActionStack, createRestActionStack, findElevatorToGround } from "./colonistActionLogic";
 import { Coords } from "./connector";
 import { Resource } from "./economyData";
 import Industry from "./industry";
@@ -270,7 +270,11 @@ export default class ColonistData {
                 }
                 break;
             case "mine":
-                // TODO: Add simple pathfinding logic to ColonistActionLogic to find the way to the dig site
+                if (job) {
+                    this._actionStack = createMiningActionStack(job, currentPosition, this._standingOnId, infra);
+                } else {
+                    console.log(`Error: No job data found for goal: ${this._currentGoal}`);
+                }
                 break;
         }
         this.startGoalProgress(infra, industry);
@@ -318,7 +322,8 @@ export default class ColonistData {
                         const output: Resource = ["water", 10];
                         const depot = infra.findStorageModule(output);
                         if (depot) {
-                            depot.addResource(output);
+                            depot.addResource(output);                                                       // Add new resources
+                            industry.updateMiningLocationStatus("water", this._currentAction.coords, false);    // Punch out
                         } else {
                             // Ideally this would be the kind of thing to warn the user about with an in-game notification
                             console.log(`Warning: No storage location found for ${this._name}'s mining output!`);
@@ -377,6 +382,11 @@ export default class ColonistData {
                     this.enterModule(infra);    // Begin production by calling generic punch-in method
                     break;
                 case "mine":
+                    if (industry) {
+                        industry.updateMiningLocationStatus("water", action.coords, true);
+                    } else {
+                        console.log("Error: Industry class missing for mining action start.");
+                    }
                     // Declare to the industry class that a mining action has started
                     break;
                 case "move":
@@ -463,6 +473,7 @@ export default class ColonistData {
                 case "drink":       // All of these activities have an animation name and duration, and do not move the colonist
                 case "eat":
                 case "farm":
+                case "mine":
                 case "rest":
                     this._movementType = this._currentAction.type;
                     this._movementCost = this._currentAction.duration;
