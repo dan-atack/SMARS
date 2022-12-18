@@ -2164,7 +2164,7 @@ Exit Criteria:
 
 12. Add a new method to the Infrastructure class that finds all modules with available storage space for a resource, and then returns the first one with the 'Storage' type, if possible. The Colonists will call this method to deposit the resource that are produced by mining in a moment. Have it prioritize deposits into modules with the 'storage' type, but also have it fall back to any module that can hold the requested resource if no Storage modules are available. If no modules are available that can contain the requested resource (irregardless of type) return a null. Do a unit test before proceeding.
 
-### 13. Create a new Industry method to punch in/out of a mining location. With a few modifications you can probably use the Module class's punchIn method. Add Industry class unit test to ensure proper functioning before proceeding.
+13. Create a new Industry method to punch in/out of a mining location for a given resource (parameters: resource name, coordinates, in/out (boolean)). Add unit test to ensure proper functioning before proceeding.
 
 ### 13. Create a simple colonist action logic function for finding the way to a mining site. Since mining sites can only be on the map (not on a floor) they should be simpler to find than a production module. Make sure Colonists can access mining sites from a floor or from the ground (unit test in ColonistData).
 

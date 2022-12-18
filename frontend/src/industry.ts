@@ -146,6 +146,40 @@ export default class Industry {
         }        
     }
 
+    // The equivalent of punching in or out of a mining location; returns true or false based on success of the request
+    updateMiningLocationStatus = (resource: string, coords: Coords, inUse: boolean) => {
+        // Find if the coordinates exist
+        const loc = this._miningLocations[resource as keyof MiningLocations].find((c) => c.x === coords.x && c.y === coords.y);
+        if (loc) {
+            // Find if coordinates are listed as occupied
+            const occ = this._miningCoordinatesInUse[resource as keyof MiningLocations].find((c) => c.x === coords.x && c.y === coords.y);
+            if (occ) {
+                // Coordinates are occupied
+                if (inUse) {    // DO NOT allow another punch-in
+                    console.log(`Warning: Mining location at (${coords.x}, ${coords.y}) is already occupied.`);
+                    return false;
+                } else {        // DO allow a punch-out
+                    console.log(`Vacating mining location (${coords.x}. ${coords.y}).`);
+                    this._miningCoordinatesInUse[resource as keyof MiningLocations] = this._miningCoordinatesInUse[resource as keyof MiningLocations].filter((loc) => loc.x !== coords.x || loc.y !== coords.y);
+                    return true;
+                }
+            } else {
+                // Coordinates are not occupied
+                if (inUse) {    // DO allow a punch-in
+                    console.log(`Occupying mining location (${coords.x}. ${coords.y}).`);
+                    this._miningCoordinatesInUse[resource as keyof MiningLocations].push(coords);
+                    return true;
+                } else {        // DO NOT allow a punch-out
+                    console.log(`Warning: Mining location at (${coords.x}, ${coords.y}) is not occupied.`);
+                    return false;
+                }
+            }
+        } else {
+            console.log(`Error: Mining location at (${coords.x}, ${coords.y}) not found.`);
+            return false;
+        }
+    }
+
     // TODO: Add methods for occupying and vacating mining locations, to keep track of which spaces are available for new jobs
 
     // SECTION 3: GIVING OUT JOBS TO COLONISTS

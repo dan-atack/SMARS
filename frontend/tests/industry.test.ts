@@ -156,4 +156,27 @@ describe("Industry class", () => {
         expect(industry._jobs.miner.length).toBe(2);
     })
 
+    test("Can update any resource's mining locations inUse status when a colonist approaches or leaves", () => {
+        // Validate that no coordinates are in use at the start of the test
+        expect(industry._miningCoordinatesInUse.water.length).toBe(0);
+        // Punch in / out of non-designated location = not accepted
+        expect(industry.updateMiningLocationStatus("water", { x: 20, y: 30 }, true )).toBe(false);  // Punch in to bad location
+        expect(industry.updateMiningLocationStatus("water", { x: 10, y: 40 }, true )).toBe(false);  // Punch out of bad location
+        // Punch in to unoccupied location = accepted
+        expect(industry.updateMiningLocationStatus("water", { x: 10, y: 30 }, true )).toBe(true);
+        expect(industry._miningCoordinatesInUse.water.length).toBe(1);
+        expect(industry.updateMiningLocationStatus("water", { x: 11, y: 30 }, true )).toBe(true);
+        expect(industry._miningCoordinatesInUse.water.length).toBe(2);
+        // Punch in to occupied location = not accepted
+        expect(industry.updateMiningLocationStatus("water", { x: 10, y: 30 }, true )).toBe(false);
+        expect(industry._miningCoordinatesInUse.water.length).toBe(2);
+        // Punch out of occupied location = accepted
+        expect(industry.updateMiningLocationStatus("water", { x: 10, y: 30 }, false )).toBe(true);
+        expect(industry._miningCoordinatesInUse.water.length).toBe(1);
+        // Punch out of unoccupied location = not accepted
+        expect(industry.updateMiningLocationStatus("water", { x: 10, y: 30 }, false )).toBe(false);
+        expect(industry._miningCoordinatesInUse.water.length).toBe(1);
+        
+    })
+
 })
