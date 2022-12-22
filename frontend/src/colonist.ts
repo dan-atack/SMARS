@@ -123,7 +123,7 @@ export default class Colonist {
     drawTool = (p5: P5, maxTicks: number) => {
         this._toolMaxPosition = maxTicks;  // Set tool extension value
         const x = (this._data._x * constants.BLOCK_WIDTH) - this._data._xOffset + constants.BLOCK_WIDTH / 2;
-        const y = ((this._data._y + 2.5) * constants.BLOCK_WIDTH);  // for convenience
+        const y = ((this._data._y + 2.5) * constants.BLOCK_WIDTH) + this._toolPosition / 4;  // for convenience
         const w = (this._data._width * constants.BLOCK_WIDTH) * 4 / 5;
         const tip = this._toolPosition;
         // Advance the drill head position
@@ -145,12 +145,11 @@ export default class Colonist {
         p5.fill(constants.GRAY_METEOR);
         p5.rect(x - w, y - w * 1.6, w * 2, w / 5);
         p5.fill(constants.YELLOW_TEXT);
-        p5.quad(x - w / 4, y - w / 2, x + 2 / 4, y - w / 2, x + w / 2, y - w * 3 / 2, x - w / 2, y - w * 3 / 2);
+        p5.quad(x - w / 4, y - w / 2, x + w / 4, y - w / 2, x + w / 2, y - w * 3 / 2, x - w / 2, y - w * 3 / 2);
         p5.quad(x - w / 2, y - w * 3 / 2, x + w / 2, y - w * 3 / 2, x + w / 4, y - w * 2, x - w / 4, y - w * 2);
         // Drill head
         p5.fill(constants.GRAY_DRY_ICE);
-        p5.rect(x - w / 6, y - w / 2, w / 5, tip);
-        // p5.quad(x - w / 5, y + tip - w * 3 / 5, x + w / 5, y + tip - w * 3 / 5, x + w / 10, y + tip - w / 10, x - w / 10, y + tip - w / 10);
+        p5.rect(x - w / 10, y - w / 2, w / 5, tip);
     }
 
     // Gets passed offset data and fpm (game speed) AND gameOn (whether game is paused or not) from the population class

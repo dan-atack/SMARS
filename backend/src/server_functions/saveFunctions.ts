@@ -113,6 +113,7 @@ export type SaveInfo = {
     }[]
     resource: Resource[];
     miningLocations: MiningLocations,   // For the industry class
+    miningLocationsInUse: MiningLocations,
     colonists: ColonistSaveData[];
     // TODO: Add Technology, Storyline Event Choices, etc.
 }

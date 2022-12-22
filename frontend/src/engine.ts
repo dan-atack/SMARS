@@ -169,7 +169,7 @@ export default class Engine extends View {
         this._horizontalOffset = this._map._maxOffset / 2;
         this._infrastructure.setup(this._map._mapData.length);
         this._population.loadColonistData(saveInfo.colonists);
-        this._industry.loadSavedMiningLocations(saveInfo.miningLocations);
+        this._industry.loadSavedMiningLocations(saveInfo.miningLocations, saveInfo.miningLocationsInUse);
         this.loadModulesFromSave(saveInfo.modules);
         this.loadConnectorsFromSave(saveInfo.connectors);
         this._hasLanded = true;     // Landing sequence has to take place before saving is possible

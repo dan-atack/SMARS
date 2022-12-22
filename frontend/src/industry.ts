@@ -55,9 +55,11 @@ export default class Industry {
 
     // SECTION 0: LOADING SAVED GAME DATA
 
-    loadSavedMiningLocations = (locations: MiningLocations) => {
-        if (locations) {
+    // Loads designated mining locations and the coordinates of locations that are currently in use by a colonist
+    loadSavedMiningLocations = (locations: MiningLocations, inUse: MiningLocations) => {
+        if (locations && inUse) {
             this._miningLocations = locations;
+            this._miningCoordinatesInUse = inUse;
         } else {
             console.log("Legacy save detected. Skipping mining location save data.");
         }
@@ -166,7 +168,7 @@ export default class Industry {
             } else {
                 // Coordinates are not occupied
                 if (inUse) {    // DO allow a punch-in
-                    console.log(`Occupying mining location (${coords.x}. ${coords.y}).`);
+                    console.log(`Occupying mining location (${coords.x}, ${coords.y}).`);
                     this._miningCoordinatesInUse[resource as keyof MiningLocations].push(coords);
                     return true;
                 } else {        // DO NOT allow a punch-out

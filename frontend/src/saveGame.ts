@@ -59,6 +59,7 @@ export type SaveInfo = {
     connectors: ConnectorSaveInfo[],
     resources: Resource[],
     miningLocations: MiningLocations,   // For the industry class
+    miningLocationsInUse: MiningLocations,
     colonists: ColonistSaveData[]
 }
 

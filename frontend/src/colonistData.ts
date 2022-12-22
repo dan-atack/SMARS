@@ -132,7 +132,7 @@ export default class ColonistData {
         // 1 - Determine needs-based (first priority) goals
         // If the colonist has no current goal, or is set to exploring, check if any needs have reached their thresholds
         if (this._currentGoal === "explore" || this._currentGoal === "") {
-            this.checkForNeeds(infra, map);
+            this.checkForNeeds(infra, map, industry);
         };
         // 2 - Determine job-related (second priority) goal ONLY IF no needs-based goal has been set
         if (this._currentGoal === "explore" || this._currentGoal === "") {
@@ -140,12 +140,12 @@ export default class ColonistData {
         }
         // 3 - If no goal has been set, tell them to go exploring; otherwise use the goal determined above
         if (this._currentGoal === "") {
-            this.setGoal("explore", infra, map);
+            this.setGoal("explore", infra, map, industry);
         };
     }
 
     // Sub-routine 1 for updateGoal method: Checks if any needs have reached their threshold
-    checkForNeeds = (infra: Infrastructure, map: Map) => {
+    checkForNeeds = (infra: Infrastructure, map: Map, industry: Industry) => {
         let needSet = false;        // Only keep looping so long as no need has been set
         Object.keys(this._needs).forEach((need) => {
             // Check each need to see if it has A) crossed its threshold and B) is still believed to be available
@@ -155,7 +155,7 @@ export default class ColonistData {
                 if (this._currentAction?.type !== "climb") {
                     this.resolveAction();
                     needSet = true;     // Tell the forEach loop to stop looking once a need is set
-                    this.setGoal(`get-${need}`, infra, map);
+                    this.setGoal(`get-${need}`, infra, map, industry);
                 } else {
                     console.log(`Colonist ${this._id} is climbing - delaying new action start.`);
                 }
@@ -168,7 +168,7 @@ export default class ColonistData {
         const job = industry.getJob(this._role[0]);
         if (job) {  // Set the Job type as the new goal if a job is found; otherwise this will fall through to the default case
             this.addAction(job.type, job.coords, job.duration, job.buildingId); // Make the job the first item in the action stack
-            this.setGoal(job.type, infra, map, job);     // Then determine how to get to the job site
+            this.setGoal(job.type, infra, map, industry, job);     // Then determine how to get to the job site
         } else {
             // console.log(`No ${this._role[0]} jobs available right now.`);
         }
@@ -176,10 +176,10 @@ export default class ColonistData {
 
     // Takes a string naming the current goal, as well as additional optional arguments for infra and map
     // ALSO takes an optional final argument for a production job, to pass to the action stack determinator
-    setGoal = (goal: string, infra?: Infrastructure, map?: Map, job?: ColonistAction) => {
+    setGoal = (goal: string, infra?: Infrastructure, map?: Map, industry?: Industry, job?: ColonistAction) => {
         this._currentGoal = goal;
-        if (infra && map) {
-            this.determineActionsForGoal(infra, map, job);  // If there is a job, pass it to action stack determinator
+        if (infra && map && industry) {
+            this.determineActionsForGoal(infra, map, industry, job);  // If there is a job, pass it to action stack determinator
         } else if (this._currentGoal !== "") {
             console.log(`Error: Infra/Map data missing for non-empty colonist goal: ${this._currentGoal}`);
         }
@@ -195,12 +195,10 @@ export default class ColonistData {
     }
 
     // Clears the current action (if any) and starts progress towards a newly selected goal
-    startGoalProgress = (infra: Infrastructure, industry?: Industry) => {
-        console.log(`Colonist ${this._name} starting progress towards goal: ${this._currentGoal}.`);
+    startGoalProgress = (infra: Infrastructure, industry: Industry) => {
+        // console.log(`Colonist ${this._name} starting progress towards goal: ${this._currentGoal}.`);
         if (industry) {
             this.startAction(infra, industry);
-        } else {
-            this.startAction(infra);
         }
     }
 
@@ -216,7 +214,7 @@ export default class ColonistData {
     // (Actions are individual tasks, such as 'move to x', or 'consume a resource' which collectively form a single GOAL)
 
     // Top Level Action Creation Method: determines the individual actions to be performed to achieve the current goal
-    determineActionsForGoal = (infra: Infrastructure, map: Map, job?: ColonistAction, industry?: Industry, ) => {
+    determineActionsForGoal = (infra: Infrastructure, map: Map, industry: Industry, job?: ColonistAction ) => {
         this.clearActions();    // Ensure the action stack is empty before adding to it
         const currentPosition = { x: this._x, y: this._y + 1 }; // Add 1 to colonist Y position to get 'foot level' value
         switch(this._currentGoal) {
@@ -322,13 +320,13 @@ export default class ColonistData {
                         const output: Resource = ["water", 10];
                         const depot = infra.findStorageModule(output);
                         if (depot) {
-                            depot.addResource(output);                                                       // Add new resources
-                            industry.updateMiningLocationStatus("water", this._currentAction.coords, false);    // Punch out
+                            depot.addResource(output);      // Add new resources
                         } else {
                             // Ideally this would be the kind of thing to warn the user about with an in-game notification
                             console.log(`Warning: No storage location found for ${this._name}'s mining output!`);
                         }
-                        industry.updateJobsForRole(infra, this._currentAction.type);    // renew miner jobs
+                        industry.updateMiningLocationStatus("water", this._currentAction.coords, false);    // Punch out
+                        industry.updateJobsForRole(infra, this._currentAction.type);                // Renew miner jobs
                         this.resolveAction();
                     }
                     break;
@@ -364,7 +362,7 @@ export default class ColonistData {
     }
 
     // Pops the last item off of the action stack and initiates it
-    startAction = (infra: Infrastructure, industry?: Industry) => {
+    startAction = (infra: Infrastructure, industry: Industry) => {
         const action = this._actionStack.pop();
         if (action !== undefined) {
             this._currentAction = action;
@@ -383,7 +381,8 @@ export default class ColonistData {
                     break;
                 case "mine":
                     if (industry) {
-                        industry.updateMiningLocationStatus("water", action.coords, true);
+                        const started = industry.updateMiningLocationStatus("water", action.coords, true);
+                        if (!(started)) this.resolveAction();   // If the spot is already taken, end the action immediately
                     } else {
                         console.log("Error: Industry class missing for mining action start.");
                     }

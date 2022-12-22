@@ -2172,11 +2172,13 @@ Exit Criteria:
 
 16. Next, add a simple mining animation for the Colonist. Initially do not include the jackhammer.
 
-### 14. Add mining locations in-use data to save games. Do a test save / restore to validate that the feature is working. On saving / loading the saved game, add a console log that states which mining locations are occupied, to ensure the value is preserved.
+17. Add mining locations in-use data to save games. Do a test save / restore to validate that the feature is working. On saving / loading the saved game, add a console log that states which mining locations are occupied, to ensure the value is preserved.
 
 18. Update the Colonist class to include a new method for rendering the miner's jackhammer. Initially this can just be a hardwired method that takes the jackhammer animation from the mouse shadow class, and puts all of that functionality into a colonist method called renderJackhammer. Then the main render method displays that animation if the current action is 'mine.'
 
 ### 19. Add some basic info about the number of mining locations/ active locations to the Industry page, as well as the number of production modules (hydroponics pods) existing/in use, and a breakdown of the colony's labour force.
+
+20. Ensure that multiple colonists cannot pile into the same mining zone.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

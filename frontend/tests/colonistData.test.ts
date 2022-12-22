@@ -166,7 +166,7 @@ describe("ColonistData", () => {
     // GOAL-RELATED TESTS
 
     test("Sets goal to explore", () => {
-        colonistData.setGoal("explore");
+        colonistData.setGoal("explore", mockInfra, mockMap, indy);
         expect(colonistData._currentGoal).toBe("explore");
     })
 
@@ -570,7 +570,7 @@ describe("ColonistData", () => {
         resetColonistData();
         colonistData._needs.water = 10;
         mockInfra._modules[0].addResource(["water", 1000]);
-        colonistData.setGoal("get-water", mockInfra, mockMap);
+        colonistData.setGoal("get-water", mockInfra, mockMap, indy);
         // First action added to stack (drink) should be the only item left in the action stack
         expect(colonistData._actionStack).toStrictEqual([{
             type: "drink",
@@ -599,7 +599,7 @@ describe("ColonistData", () => {
         // Add a connector that goes from the ground floor to the new module
         mockInfra.addConnector({ x: 11, y: 32 }, { x: 11, y: 28 }, connectorInfo, mockMap, 2001);
         // Run test
-        colonistData.setGoal("get-water", mockInfra, mockMap);
+        colonistData.setGoal("get-water", mockInfra, mockMap, indy);
         // Current action should be to move to the ladder
         expect(colonistData._actionStack.length).toBe(3);
         expect(colonistData._currentAction).toStrictEqual({
@@ -640,7 +640,7 @@ describe("ColonistData", () => {
         mockInfra._data._elevators = [];
         mockInfra.addConnector({ x: 10, y: 32 }, { x: 10, y: 28 }, connectorInfo, mockMap, 2002);
         // Run test
-        colonistData.setGoal("get-water", mockInfra, mockMap);
+        colonistData.setGoal("get-water", mockInfra, mockMap, indy);
         // Current action should be to move to the ladder
         expect(colonistData._actionStack.length).toBe(2);   // Only 2 items should remain in the action stack
         expect(colonistData._currentAction).toStrictEqual({
@@ -677,7 +677,7 @@ describe("ColonistData", () => {
         colonistData._y = 31;
         colonistData.detectTerrainBeneath(mockMap, mockInfra);
         // Run test
-        colonistData.setGoal("get-water", mockInfra, mockMap);
+        colonistData.setGoal("get-water", mockInfra, mockMap, indy);
         // Since no move action is required the colonist should just begin the drink action immediately
         expect(colonistData._currentAction).toStrictEqual({
             type: "drink",
@@ -696,7 +696,7 @@ describe("ColonistData", () => {
         colonistData._y = 28;
         colonistData.detectTerrainBeneath(mockMap, mockInfra);
         // Set goal
-        colonistData.setGoal("explore", mockInfra, mockMap);
+        colonistData.setGoal("explore", mockInfra, mockMap, indy);
         // Since the explore goal determines a random point, just check the current action, stack length, and climb action
         expect(colonistData._currentAction).toStrictEqual({
             type: "move",
@@ -729,7 +729,7 @@ describe("ColonistData", () => {
         // Add a connector that goes from the 2nd floor to the 3rd
         mockInfra.addConnector({ x: 13, y: 32 }, { x: 13, y: 24 }, connectorInfo, mockMap, 2003);
         // Run test: colonist should move to the ladder and then climb it to the 3rd floor
-        colonistData.setGoal("get-water", mockInfra, mockMap);
+        colonistData.setGoal("get-water", mockInfra, mockMap, indy);
         // Current action should be to move to the ladder
         expect(colonistData._actionStack.length).toBe(3);
         expect(colonistData._currentAction).toStrictEqual({
@@ -769,7 +769,7 @@ describe("ColonistData", () => {
         // ... But deprovision water modules so that they cannot slake their thirst
         mockInfra._modules[2].deductResource([ "water", 10000 ]);
         // Tell colonist to fetch water when there isn't any
-        colonistData.setGoal("get-water", mockInfra, mockMap);
+        colonistData.setGoal("get-water", mockInfra, mockMap, indy);
         expect(colonistData._actionStack.length).toBe(0);
         expect(colonistData._needsAvailable.water).toBe(0);
         // Also, check that the availability is reset to 1 after the hourly update
@@ -787,7 +787,7 @@ describe("ColonistData", () => {
         // Add new production module
         mockInfra.addModule(5, 30, prodModInfo, mockMap._topography, mockMap._zones, 1004);
         const job: ColonistAction = { type: "farm", coords: { x: 6, y: 30 }, duration: 30, buildingId: 1004 };
-        colonistData.setGoal("farm", mockInfra, mockMap, job);
+        colonistData.setGoal("farm", mockInfra, mockMap, indy, job);
         expect(colonistData._actionStack.length).toBe(1);
         expect(colonistData._currentAction).toStrictEqual({
             type: "move",
@@ -810,14 +810,14 @@ describe("ColonistData", () => {
         // Create job data
         const job: ColonistAction = { type: "farm", coords: { x: 6, y: 27 }, duration: 30, buildingId: 1005 };
         // Test without a ladder first: The stack should come back empty, resulting in the job being skipped
-        colonistData.setGoal("farm", mockInfra, mockMap, job);
+        colonistData.setGoal("farm", mockInfra, mockMap, indy, job);
         expect(colonistData._actionStack.length).toBe(0);
         expect(colonistData._currentAction).toBe(null);
         resetColonistData();
         // Add a ladder
         mockInfra.addConnector({ x: 5, y: 32 }, { x: 5, y: 24 }, connectorInfo, mockMap, 2004);
         // Set Goal again for test WITH a ladder
-        colonistData.setGoal("farm", mockInfra, mockMap, job);
+        colonistData.setGoal("farm", mockInfra, mockMap, indy, job);
         // Expect results: Current action is to walk to the ladder, and 3 other actions are: climb, move, produce (farm)
         expect(colonistData._actionStack.length).toBe(3);
         expect(colonistData._currentAction).toStrictEqual({

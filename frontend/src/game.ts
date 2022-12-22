@@ -172,6 +172,7 @@ export default class Game extends Screen {
             connectors: connectorData,
             resources: this._engine._economy._data._resources,
             miningLocations: this._engine._industry._miningLocations,
+            miningLocationsInUse: this._engine._industry._miningCoordinatesInUse,
             colonists: this._engine._population.prepareColonistSaveData(),
         }
         return saveData;
