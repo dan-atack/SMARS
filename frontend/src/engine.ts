@@ -1022,6 +1022,6 @@ export default class Engine extends View {
         if (this._modal) {
             this._modal.render();
         }
-        p5.text(this._industry._miningCoordinatesInUse.water.length, 120, 300);
+        // p5.text(this._industry._miningCoordinatesInUse.water.length, 120, 300);
     }
 }

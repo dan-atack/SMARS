@@ -92,7 +92,7 @@ export default class Game extends Screen {
                 this._engine.setup();
                 break;
             case "industry":
-                this._industry.setup();
+                this._industry.setup(this._engine._infrastructure, this._engine._industry, this._engine._population);
                 break;
             case "population":
                 this._population.setup(this._engine._population);

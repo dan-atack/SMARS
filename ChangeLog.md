@@ -2135,7 +2135,7 @@ Exit Criteria:
 - [DONE] The Industry class will create a mining job for every designated mining block that is not currently occupied
 - [DONE] The player can select surface level blocks containing the water resource as mining targets when in Resource mode
 - [DONE] Blocks designated as mining locations have a little traffic cone placed on top of them, to indicate their status
-- The Industry view screen will display information about current mining locations and jobs
+- [DONE] The Industry view screen will display information about current mining locations and jobs
 - [DONE] Colonists will have a new action animation for mining
 - [DONE] When mining action is completed the mined resouce will be immediately added to the first available storage type module
 - [DONE] [STRETCH] Colonist animation functions can optionally render a 'tool' animation to accompany their bodily movements
@@ -2176,7 +2176,7 @@ Exit Criteria:
 
 18. Update the Colonist class to include a new method for rendering the miner's jackhammer. Initially this can just be a hardwired method that takes the jackhammer animation from the mouse shadow class, and puts all of that functionality into a colonist method called renderJackhammer. Then the main render method displays that animation if the current action is 'mine.'
 
-### 19. Add some basic info about the number of mining locations/ active locations to the Industry page, as well as the number of production modules (hydroponics pods) existing/in use, and a breakdown of the colony's labour force.
+19. Add some basic info about the number of mining locations/ active locations to the Industry page, as well as the number of production modules (hydroponics pods) existing/in use, and a breakdown of the colony's labour force.
 
 20. Ensure that multiple colonists cannot pile into the same mining zone.
 
