@@ -1,5 +1,6 @@
 import Industry, { Role } from "../src/industry";
 import Infrastructure from "../src/infrastructure";
+import Map from "../src/map";
 import Module from "../src/module";
 import { ModuleInfo } from "../src/server_functions";
 import { ColonistAction } from "../src/colonistData";
@@ -46,6 +47,8 @@ describe("Industry class", () => {
     const zonesData = [
         { id: '0026', leftEdge: { x: 0, y: 26 }, rightEdge: { x: 20, y: 26 } }
     ]
+
+    const testMap = new Map();
 
     // Create test instances
     const industry = new Industry();
@@ -121,6 +124,59 @@ describe("Industry class", () => {
         // ... Until it's empty
         expect(industry.getJob("farmer")).toBe(null);
         expect(industry.getJob("miner")).toBe(null);    // If no jobs exist for the given role, return a null
+    })
+
+    test("Can add/remove mining locations when given a pair of coordinates and resource name", () => {
+        const coords1 = { x: 10, y: 30 };
+        const coords2 = { x: 11, y: 30 };
+        expect(industry._miningLocations.water.length).toBe(0);     // Validate initial test conditions
+        expect(industry.addMiningLocation(coords1, "water")).toBe(true);    // Return true if coords are added
+        expect(industry._miningLocations.water.length).toBe(1);
+        expect(industry.addMiningLocation(coords2, "water")).toBe(true);
+        expect(industry._miningLocations.water.length).toBe(2);
+        expect(industry.addMiningLocation(coords1, "watah")).toBe(false);   // Return false if resource name not recognized
+        expect(industry._miningLocations.water.length).toBe(2);
+        expect(industry.addMiningLocation(coords2, "water")).toBe(false);   // Return false if removing existing coords
+        expect(industry._miningLocations.water.length).toBe(1);
+        expect(industry.addMiningLocation(coords2, "water")).toBe(true);    // Re-add second coords pair just to be REALLY sure
+        expect(industry._miningLocations.water.length).toBe(2);
+    })
+
+    test("Can add mining jobs based on available mining locations", () => {
+        // Use the coordinate sets defined in the previous test
+        industry.updateJobs(infra);
+        expect(industry._jobs.miner.length).toBe(2);
+        // Fill one of the slots to allow only 1 job to be created on the next update
+        industry._miningCoordinatesInUse.water.push({ x: 10, y: 30 });
+        industry.updateJobs(infra);
+        expect(industry._jobs.miner.length).toBe(1);
+        // Vacate the occupied slot and update again - should go back to 2 jobs available
+        industry._miningCoordinatesInUse.water = [];
+        industry.updateJobs(infra);
+        expect(industry._jobs.miner.length).toBe(2);
+    })
+
+    test("Can update any resource's mining locations inUse status when a colonist approaches or leaves", () => {
+        // Validate that no coordinates are in use at the start of the test
+        expect(industry._miningCoordinatesInUse.water.length).toBe(0);
+        // Punch in / out of non-designated location = not accepted
+        expect(industry.updateMiningLocationStatus("water", { x: 20, y: 30 }, true )).toBe(false);  // Punch in to bad location
+        expect(industry.updateMiningLocationStatus("water", { x: 10, y: 40 }, true )).toBe(false);  // Punch out of bad location
+        // Punch in to unoccupied location = accepted
+        expect(industry.updateMiningLocationStatus("water", { x: 10, y: 30 }, true )).toBe(true);
+        expect(industry._miningCoordinatesInUse.water.length).toBe(1);
+        expect(industry.updateMiningLocationStatus("water", { x: 11, y: 30 }, true )).toBe(true);
+        expect(industry._miningCoordinatesInUse.water.length).toBe(2);
+        // Punch in to occupied location = not accepted
+        expect(industry.updateMiningLocationStatus("water", { x: 10, y: 30 }, true )).toBe(false);
+        expect(industry._miningCoordinatesInUse.water.length).toBe(2);
+        // Punch out of occupied location = accepted
+        expect(industry.updateMiningLocationStatus("water", { x: 10, y: 30 }, false )).toBe(true);
+        expect(industry._miningCoordinatesInUse.water.length).toBe(1);
+        // Punch out of unoccupied location = not accepted
+        expect(industry.updateMiningLocationStatus("water", { x: 10, y: 30 }, false )).toBe(false);
+        expect(industry._miningCoordinatesInUse.water.length).toBe(1);
+        
     })
 
 })

@@ -92,7 +92,7 @@ export default class Game extends Screen {
                 this._engine.setup();
                 break;
             case "industry":
-                this._industry.setup();
+                this._industry.setup(this._engine._infrastructure, this._engine._industry, this._engine._population);
                 break;
             case "population":
                 this._population.setup(this._engine._population);
@@ -171,6 +171,8 @@ export default class Game extends Screen {
             modules: moduleData,
             connectors: connectorData,
             resources: this._engine._economy._data._resources,
+            miningLocations: this._engine._industry._miningLocations,
+            miningLocationsInUse: this._engine._industry._miningCoordinatesInUse,
             colonists: this._engine._population.prepareColonistSaveData(),
         }
         return saveData;

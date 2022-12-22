@@ -38,9 +38,16 @@ export type ColonistSaveData = {
 export default class Colonist {
     // Colonist types:
     _data: ColonistData;    // Data processing core, distinct from rendering-functions
+    // For tool animations (tools can have basic reciprocating motion animations)
+    _toolMaxPosition: number    // Maximum frame number (and extension distance) for tool animation
+    _toolPosition: number       // Current frame (and extension distance) in the tool animation
+    _toolOutward: boolean       // Which direction the tool is moving (inward or outward)
 
     constructor(id: number, name: string, x: number, y: number, saveData?: ColonistSaveData) {
         this._data = saveData ? new ColonistData(id, name, x, y, saveData) : new ColonistData(id, name, x, y);
+        this._toolMaxPosition = 0;  // Let individual animations set these values
+        this._toolPosition = 0;
+        this._toolOutward = false;
     }
 
     // FPM = game speed in frames per game minute (greater = slower) and sign = +1 for facing right, and -1 for facing left
@@ -112,6 +119,39 @@ export default class Colonist {
         p5.ellipse(xR, yR, w);
     }
 
+    // Prototype rendering method for Colonist tools - max ticks = internal counter for the tool's animation
+    drawTool = (p5: P5, maxTicks: number) => {
+        this._toolMaxPosition = maxTicks;  // Set tool extension value
+        const x = (this._data._x * constants.BLOCK_WIDTH) - this._data._xOffset + constants.BLOCK_WIDTH / 2;
+        const y = ((this._data._y + 2.5) * constants.BLOCK_WIDTH) + this._toolPosition / 4;  // for convenience
+        const w = (this._data._width * constants.BLOCK_WIDTH) * 4 / 5;
+        const tip = this._toolPosition;
+        // Advance the drill head position
+        // Outwards
+        if (this._toolOutward && this._toolPosition < this._toolMaxPosition) {
+            this._toolPosition++;
+            if (this._toolPosition >= this._toolMaxPosition) {
+                this._toolOutward = false;        // Reverse if fully extended
+            }
+        // Inwards
+        } else {
+            this._toolPosition--;
+            if (this._toolPosition <= 0) {
+                this._toolOutward = true;         // Reverse if fully retracted
+            }
+        }
+        p5.strokeWeight(2);
+        p5.stroke(constants.ALMOST_BLACK);
+        p5.fill(constants.GRAY_METEOR);
+        p5.rect(x - w, y - w * 1.6, w * 2, w / 5);
+        p5.fill(constants.YELLOW_TEXT);
+        p5.quad(x - w / 4, y - w / 2, x + w / 4, y - w / 2, x + w / 2, y - w * 3 / 2, x - w / 2, y - w * 3 / 2);
+        p5.quad(x - w / 2, y - w * 3 / 2, x + w / 2, y - w * 3 / 2, x + w / 4, y - w * 2, x - w / 4, y - w * 2);
+        // Drill head
+        p5.fill(constants.GRAY_DRY_ICE);
+        p5.rect(x - w / 10, y - w / 2, w / 5, tip);
+    }
+
     // Gets passed offset data and fpm (game speed) AND gameOn (whether game is paused or not) from the population class
     render = (p5: P5, xOffset: number, fpm: number, gameOn: boolean) => {    // TODO: Add the Y offsets... Free SMARS!
         this._data._xOffset = xOffset;
@@ -119,8 +159,9 @@ export default class Colonist {
         const animationSign = this._data._facing === "right" ? 1 : -1;
         this.drawBody(p5, fpm, animationSign);    // Body goes first, to keep legs and arms and head in the foreground
         this.drawHead(p5, fpm, animationSign);
-        this.drawHands(p5, fpm, animationSign);
         this.drawFeet(p5, fpm, animationSign);
+        if (this._data._currentAction?.type === "mine") this.drawTool(p5, 4);   // Draw a little jackhammer if colonist is mining
+        this.drawHands(p5, fpm, animationSign);     // Draw hands last so they go over the tool, if there is one
         if (this._data._isMoving && gameOn) this._data._animationTick++;  // Advance animation if there is movement AND the game is unpaused
     }
 

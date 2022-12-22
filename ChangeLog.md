@@ -2123,9 +2123,62 @@ Exit Criteria:
 
 37. Add some logic to the DropPod's animation so that the parachute continues to descend after the landing completes, like the dust cloud for the original lander does.
 
-## Chapter Thirty-Eight: What's Mine is Mine (Difficulty Estimate: TBD)
+## Chapter Thirty-Eight: What's Mine is Mine (Difficulty Estimate: 4 for moderate complexity of new mouse context rules integration, plus industry view basic layout and colonist animation system upgrade)
 
 ### December 12, 2022
+
+Now that more and more people are coming to SMARS, it is vital that the colony be allowed to become self-sufficient. Currently the colonists can convert water into food, but their water supply is finite and cannot be replenished. Luckily there appear to be some ice patches nearby, which the colonists will soon be able to mine. Initially mining will be a highly simplified process, with the player being able to designate individual tiles as mining locations (for water only, at first). Mining jobs will then be made available by the Industry class, and will function very similarly to module-based production jobs - the colonist will walk to a set of coordinates, perform the mine action, and then repeat as necessary. There will be no carrying back and forth of mined materials/equipment at first, although these concepts may come into play in later patches as the game becomes more complex. For now though, any resources produced via mining will be instantly teleported into the nearest storage class module as soon as the colonist's mining action is completed.
+
+Exit Criteria:
+
+- [DONE] Colonists assigned to be miners will look for mining jobs from the Industry class
+- [DONE] The Industry class will create a mining job for every designated mining block that is not currently occupied
+- [DONE] The player can select surface level blocks containing the water resource as mining targets when in Resource mode
+- [DONE] Blocks designated as mining locations have a little traffic cone placed on top of them, to indicate their status
+- [DONE] The Industry view screen will display information about current mining locations and jobs
+- [DONE] Colonists will have a new action animation for mining
+- [DONE] When mining action is completed the mined resouce will be immediately added to the first available storage type module
+- [DONE] [STRETCH] Colonist animation functions can optionally render a 'tool' animation to accompany their bodily movements
+
+1. For starters, delete / comment out all of the console logs from the previous two chapters. Use comments for the colonist action logic as they'll be needed when we inevitably have to wade in there and debug things.
+
+2. Add a rule to the mouse shadow for when the mouse context is 'resource' to draw a little jackhammer for the mouse cursor, similarly to how the inspect tool has a little magnifying glass. The tip, or point, of the jackhammer should be where the cursor is. Add the rules for rendering this to the MouseShadow class, and tell its constructor to accept a fourth, optional parameter called resource, to indicate that it should take on the appearance of a jackhammer.
+
+3. Create a new field in the Industry class, called miningLocations. It should be a dictionary of resource types mapped to lists of Coordinates (e.g. { water: [{ x: 0, y: 0 }, { x: 2, y: 99 }, ... ]}).
+
+4. Create a new Industry method, updateMiningJobs, to be called within the individual updateJobsForRole method when the role is 'miner.' Have it do a console log at first.
+
+5. Now add the click-response functionality for the Engine when it's in the Resource mouse context: Find the block that was clicked on from the Map data, and console log if it A) is on the surface of its column, and B) contains water. Create a new Map class method to verify the surface status (we'll let the Engine figure out the resource situation, for now at least) and give it a nice unit test before integrating into the Engine's click handler.
+
+6. If the clicked block has both of the above criteria, add it to the Industry class's water mining locations list, via a new Industry class method called addMiningLocation. This method should take a resource name and coordinates pair, and add the coordinates if they are not present in the list of mining locations for that resource. If the coordinates ARE already present, then they should be removed (so that clicking a tile twice toggles its mining zone status). Validate with unit test and manual check.
+
+7. Add a render block to the Industry class so that it can highlight the locations of all tiles that are currently selected for mining when the mouse context is 'resource.'. Add it last to the Engine's render block so that it is guaranteed to be the top layer. Instead of highlighting the block, put little cones on top of it to indicate that the block is being designated for mining.
+
+8. Add the Industry class's mining locations field to the SaveInfo structure, and add a loading method for the Industry class to receive mining locations all at once from the Engine when a save is loaded. Validate by making a new save, then loading it, as well as loading an older save to test the game's resiliency.
+
+9. To keep track of which mining zones are available for new job creation by keeping a parallel list of miningCoordinatesInUse in the Industry class.
+
+10. Now, fill in the updateMiningJobs method (and add a unit test) to create a new mining job for each unoccupied mining location. See if this starts giving the colonists mining jobs.
+
+11. Add a new method to the Module class called getResourceAvailableCapacity, which takes the name of a resource as its only argument and returns the amount of space left for that resource (i.e. its max capacity - current quantity). If the module is full, or if the module does not have the capacity for the given resource return 0. Unit test before integrating with the method described below.
+
+12. Add a new method to the Infrastructure class that finds all modules with available storage space for a resource, and then returns the first one with the 'Storage' type, if possible. The Colonists will call this method to deposit the resource that are produced by mining in a moment. Have it prioritize deposits into modules with the 'storage' type, but also have it fall back to any module that can hold the requested resource if no Storage modules are available. If no modules are available that can contain the requested resource (irregardless of type) return a null. Do a unit test before proceeding.
+
+13. Create a new Industry method to punch in/out of a mining location for a given resource (parameters: resource name, coordinates, in/out (boolean)). Add unit test to ensure proper functioning before proceeding.
+
+14. Create a simple colonist action logic function for finding the way to a mining site. Since mining sites can only be on the map (not on a floor) they should be simpler to find than a production module. Make sure Colonists can access mining sites from a floor or from the ground.
+
+15. Add "mine" case to the ColonistData's determineActionsForGoal (it will ultimately have to be slightly different than the farm case since it will call a ColonistActionLogic function that just looks at sites on the ground instead of for modules), checkActionStatus, startAction, and finally startMovement.
+
+16. Next, add a simple mining animation for the Colonist. Initially do not include the jackhammer.
+
+17. Add mining locations in-use data to save games. Do a test save / restore to validate that the feature is working. On saving / loading the saved game, add a console log that states which mining locations are occupied, to ensure the value is preserved.
+
+18. Update the Colonist class to include a new method for rendering the miner's jackhammer. Initially this can just be a hardwired method that takes the jackhammer animation from the mouse shadow class, and puts all of that functionality into a colonist method called renderJackhammer. Then the main render method displays that animation if the current action is 'mine.'
+
+19. Add some basic info about the number of mining locations/ active locations to the Industry page, as well as the number of production modules (hydroponics pods) existing/in use, and a breakdown of the colony's labour force.
+
+20. Ensure that multiple colonists cannot pile into the same mining zone.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

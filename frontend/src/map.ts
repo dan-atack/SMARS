@@ -216,6 +216,19 @@ export default class Map {
         };
     }
 
+    // Returns a boolean for whether or not the selected block is at the surface of its column
+    isBlockOnSurface = (b: Block) => {
+        const col = this._columns[b._x];
+        if (col) {
+            const top = col[col.length - 1];
+            if (top._y === b._y) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
     // The Engine passes the H-offset (V-offset coming soon) value here so that the blocks' positions are updated with every render; if the sidebar is open then compact = true, causing a smaller area of the map to be shown:
     render = (p5: P5, horizontalOffset: number) => {
         this._horizontalOffset = horizontalOffset;

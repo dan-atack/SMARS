@@ -51,7 +51,8 @@ export const bodyAnimations = (movementType: string, fpm: number, tick: number, 
             ySpeeds = [0, 2, 0, 2, 0, 2, 0, 2, 0, 2];           // Y speeds must sum to 10
             break;
         case "drink":
-        case "eat":                                             // Body is at rest during both eat and drink animations
+        case "eat":                                             // Body is at rest during these animations
+        case "mine":
             keyframes = [0.5, 1];
             frameRate = 0.5;
             xSpeeds = [0, 0];
@@ -155,6 +156,12 @@ export const headAnimations = (movementType: string, fpm: number, tick: number, 
             frameRate = 0.1;
             xSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
             ySpeeds = [-1, -1, 0, 0, 0, 0, 0, 0, 2, 0];  // Move up by 0.2 until the end
+            break;
+        case "mine":
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xSpeeds = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            ySpeeds = [1, -1, 1, -1, 1, -1, 1, -1, 1, -1];
             break;
         case "rest":
             keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
@@ -272,6 +279,14 @@ export const handAnimations = (movementType: string, fpm: number, tick: number, 
             ylSpeeds = [-6, 2, 0, 0, 1, -1, 0, -1, 1, 0, -4, -4, 8, -4, -4, 8, 0, 0, 5, -1];
             xrSpeeds = [1, 1, -1, -1, 6, 4, -10, -12, -4, 16, 6, 4, -10, -12, -4, 16, 0, 0, 0, 0];
             yrSpeeds = [-2, -2, -4, 4, 0, 0, 0, 0, 0, 0, -4, -4, 8, -4, -4, 8, 0, 0, 5, -1];
+            break;
+        case "mine":
+            keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            frameRate = 0.1;
+            xlSpeeds = [-1.5, 0, 0, 0, 0, 0, 0, 0, 0, 1.5];         // Left hand outwards = negative
+            ylSpeeds = [0, -1, 1, -1, 1, -1, 1, -1, 1, 0];
+            xrSpeeds = [1.5, 0, 0, 0, 0, 0, 0, 0, 0, -1.5];         // Right hand outwards = positive
+            yrSpeeds = [0, -1, 1, -1, 1, -1, 1, -1, 1, 0];
             break;
         case "rest":
             keyframes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
@@ -393,6 +408,7 @@ export const footAnimations = (movementType: string, fpm: number, tick: number, 
             break;
         case "drink":
         case "eat":
+        case "mine":
             keyframes = [0.5, 1];
             frameRate = 0.5;
             xlSpeeds = [0, 0];           // Feet are completely still during drinking and eating

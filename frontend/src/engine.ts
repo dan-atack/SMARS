@@ -169,6 +169,7 @@ export default class Engine extends View {
         this._horizontalOffset = this._map._maxOffset / 2;
         this._infrastructure.setup(this._map._mapData.length);
         this._population.loadColonistData(saveInfo.colonists);
+        this._industry.loadSavedMiningLocations(saveInfo.miningLocations, saveInfo.miningLocationsInUse);
         this.loadModulesFromSave(saveInfo.modules);
         this.loadConnectorsFromSave(saveInfo.connectors);
         this._hasLanded = true;     // Landing sequence has to take place before saving is possible
@@ -303,9 +304,9 @@ export default class Engine extends View {
             // Click is over the map
             if (mouseX > 0 && mouseX < constants.SCREEN_WIDTH && mouseY > 0 && mouseY < constants.SCREEN_HEIGHT) {
                 const [gridX, gridY] = this.getMouseGridPosition(mouseX, mouseY);
+                console.log(`(${gridX}, ${gridY})`);
                 switch (this.mouseContext) {
                     case "inspect":
-                        console.log(`(${gridX}, ${gridY})`);
                         this.handleInspect({ x: gridX, y: gridY });
                         break;
                     case "placeModule":
@@ -318,7 +319,7 @@ export default class Engine extends View {
                         this.handleConnectorStopPlacement();
                         break;
                     case "resource":
-                        console.log("Resource Mode selected.");
+                        this.handleResourceZoneSelect({ x: gridX, y: gridY });
                         break;
                     case "modal":
                         this._modal?.handleClicks(mouseX, mouseY);
@@ -416,8 +417,24 @@ export default class Engine extends View {
         this._mouseShadow = new MouseShadow(1, 1, true);
     }
 
+    createJackhammerMouseShadow = () => {
+        this._mouseShadow = new MouseShadow(1, 1, false, true);
+    }
+
     destroyMouseShadow = () => {
         this._mouseShadow = null;
+    }
+
+    // Mouse Context Handler for 'resource'
+    handleResourceZoneSelect = (coords: Coords) => {
+        const b = this._map.getBlockForCoords(coords);
+        if (b && this._map.isBlockOnSurface(b)) {   // Ensure block is on the surface
+            // TODO: Build this out to allow easy handling of multiple new resource types
+            if (b._blockData.resource === "water") {
+                this._industry.addMiningLocation(coords, "water"); // Push the coordinates for the mining location
+            }
+        }
+        console.log(this._industry._miningLocations.water);
     }
 
     // Evaluates whether the current mouse position is at an acceptable building site or not
@@ -442,6 +459,7 @@ export default class Engine extends View {
 
     // Given to various sub-components, this dictates how the mouse will behave when clicked in different situations
     setMouseContext = (value: string) => {
+        // TODO: Reorganize into a switch case block??
         this.clearInspectSelection();     // Reset inspect data
         this.mouseContext = value;
         // Only update the selected building if the mouse context is 'placeModule' or 'connectorStart'
@@ -454,6 +472,10 @@ export default class Engine extends View {
         // Ensure there is no mouse shadow if no structure is selected
         if (this.selectedBuilding === null) {
             this.destroyMouseShadow();
+        }
+        // Next, check if mouse context has been set to 'resource' and show a little jackhammer if so
+        if (this.mouseContext === "resource") {
+            this.createJackhammerMouseShadow();
         }
         // Last, check if the mouse context has been set to 'inspect' and tell it to do the magnifying glass image if so
         if (this.mouseContext === "inspect") {
@@ -500,7 +522,9 @@ export default class Engine extends View {
     setSelectedBuilding = (selectedBuilding: ModuleInfo | ConnectorInfo | null) => {
         this.selectedBuilding = selectedBuilding;
         // New mouse shadow is created when a structure is selected
-        this.createMouseShadow();
+        if (this.selectedBuilding) {
+            this.createMouseShadow();
+        }
     }
 
     // X and Y are already gridified
@@ -660,7 +684,6 @@ export default class Engine extends View {
         // Convert values into pixels for drop pod constructor
         const pixelLocation = location * constants.BLOCK_WIDTH;
         const landingDistance = (surfaceAltitude) * constants.BLOCK_WIDTH;
-        console.log(`Direction: ${direction ? "Left" : "Right"}.\nDistance: ${distance}.\nLocation: ${location}\nSurface: ${surfaceAltitude}\nLanding Distance: ${landingDistance}`);
         // Create event object
         const ev = {
             type: "colonist-drop",
@@ -912,8 +935,8 @@ export default class Engine extends View {
             this.renderBuildingShadow();
         } else if (this.mouseContext === "landing") {
             this.renderLandingPath();
-        } else if (this.mouseContext === "inspect") {
-            this.renderInspectTool();
+        } else if (this.mouseContext === "inspect" || this.mouseContext === "resource") {
+            this.renderInspectOrResourceTool();
         }
     }
 
@@ -958,8 +981,8 @@ export default class Engine extends View {
         }    
     }
 
-    // For rendering the inspect tool
-    renderInspectTool = () => {
+    // For rendering the inspect tool OR the resource tool
+    renderInspectOrResourceTool = () => {
         // Only render the Inspect Tool if mouse is over the map area (not the sidebar) and there is no modal
         if (this._p5.mouseX < constants.SCREEN_WIDTH - this._sidebar._width && !this._modal && this._mouseShadow) {
             let [x, y] = this.getMouseGridPosition(this._p5.mouseX, this._p5.mouseY);
@@ -986,17 +1009,19 @@ export default class Engine extends View {
             this.renderMouseShadow(); // If placing a connector, render mouse shadow above the infra layer
         }
         this._economy.render();
+        this._industry.render(p5, this._horizontalOffset);
         this._population.render(this._p5, this._horizontalOffset, this.ticksPerMinute, this.gameOn);
         this.handleMouseScroll();   // Every frame, check for mouse scrolling
         // Don't render sidebar until the player has chosen a landing site
         if (this._hasLanded) {
             this._sidebar.render(this._gameTime.minute, this._gameTime.hour, this._gameTime.cycle);
         }
-        if (this.mouseContext === "inspect") {
+        if (this.mouseContext === "inspect" || this.mouseContext === "resource") {
             this.renderMouseShadow();
         }
         if (this._modal) {
             this._modal.render();
         }
+        // p5.text(this._industry._miningCoordinatesInUse.water.length, 120, 300);
     }
 }

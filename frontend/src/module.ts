@@ -84,6 +84,17 @@ export default class Module {
         return qty;
     }
 
+    // Takes a resource name and returns the amount of space available, if any, for adding more of that resource
+    getResourceCapacityAvailable = (resource: string) => {
+        const capacity = this._moduleInfo.storageCapacity.find((r) => r[0] === resource);
+        const res = this._resources.find((r) => r[0] === resource);
+        if (capacity && res) {
+            return capacity[1] - res[1];
+        } else {
+            return 0;   // If the capacity does not exist or the resource is not found, return a 0
+        }
+    }
+
     // Called by the Industry class to determine if a module can produce (convert inputs to outputs) right now
     hasProductionInputs () {
         let provisioned = true;

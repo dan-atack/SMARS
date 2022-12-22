@@ -192,6 +192,20 @@ export const createProductionActionStack = (colonistCoords: Coords, standingOnId
     return stack;
 }
 
+// Action stack creator for mining: Since mining is always on a ground zone, just get to the ground and go to the mining zone!
+export const createMiningActionStack = (job: ColonistAction, colonistCoords: Coords, colonistStandingOn: number | string, infra: Infrastructure) => {
+    let stack: ColonistAction[] = [job];        // Add the job as the bottom item in the stack
+    // If the colonist is not right above the mining zone, tell them to walk to it
+    if (colonistCoords.x !== job.coords.x) {
+        stack.push(addAction("move", job.coords));
+    }
+    if (typeof colonistStandingOn !== "string") {
+        // Colonist is not standing on the ground, tell them to go to the ground before beginning movement to the mining location
+        stack = stack.concat(goToGround(colonistCoords, colonistStandingOn, infra))
+    }
+    return stack;
+}
+
 // Action stack creation expeditor for when the colonist has to walk across the map, then climb a ladder, then possibly move again
 export const climbLadderFromGroundActions = (modCoords: Coords, floor: Floor, elevator: Elevator) => {
     const stack: ColonistAction[] = [];

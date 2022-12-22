@@ -220,8 +220,6 @@ export default class Infrastructure {
         }
     }
 
-    // TODO: Add a method here to call the module's deduct resources function too
-
     // Tells a given module to complete its production sequence, and punch out the colonist
     resolveModuleProduction = (moduleId: number, colonistId: number) => {
         const mod = this.getModuleFromID(moduleId);
@@ -249,8 +247,6 @@ export default class Infrastructure {
         const loss_rate = 1;
         return loss_rate * this._modules.length;   
     }
-
-    // SECTION 5 - INFRASTRUCTURE INFO API (GETTER FUNCTIONS)
 
     // Returns array of modules that contain a resource when given a resource tuple (name and quantity sought, in this case)
     // UPDATE: Can optionally be given second argument, lifeSupp, which is a boolean for when a colonist is looking for food/water
@@ -285,6 +281,24 @@ export default class Infrastructure {
         });
         return mods;
     }
+
+    // Returns the first module found that A) has storage space for a given resource and B) [optionally] is a storage module
+    findStorageModule = (resource: Resource) => {
+        // Find all storage modules that can hold the resource
+        const storage = this._modules.filter((mod) => mod._moduleInfo.type === "Storage" && mod._resourceCapacity().includes(resource[0]));
+        const storageMod = storage.find((mod) => mod.getResourceCapacityAvailable(resource[0]) >= resource[1]);
+        // Return the storage module if there is one
+        if (storageMod) {
+            return storageMod;
+        // Else return any module that can hold the given resource
+        } else if (this._modules.find((m) => m.getResourceCapacityAvailable(resource[0]) >= resource[1])) {
+            return this._modules.find((m) => m.getResourceCapacityAvailable(resource[0]) >= resource[1]);
+        }
+        // If no modules are available return a null
+        return null;
+    }
+
+    // SECTION 5 - INFRASTRUCTURE INFO API (GETTER FUNCTIONS)
 
     // Returns the ID of the module nearest to a specific location (v.1 considers X-axis only for proximity calculation)
     findModuleNearestToLocation = (modules: Module[], location: Coords) => {

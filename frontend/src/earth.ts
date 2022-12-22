@@ -53,7 +53,6 @@ export default class Earth extends View {
     // Takes one parameter: the number of colonists to go on the next launch
     handleWeeklyUpdates = (colonists: number) => {
         if (!(this._flightEnRoute)) {      // Only allow if the rocket is not already en route!
-            console.log(`Updating immigration target to ${colonists} for next launch.`);
             this.setColonists(colonists);
         }
         this.updateEarthDate();
