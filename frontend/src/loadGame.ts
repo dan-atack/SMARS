@@ -57,16 +57,16 @@ export default class LoadGame extends Screen {
         this._username = "";                // Value for username is not known when the constructor is deployed
         this._color = constants.APP_BACKGROUND;
         // Standardize button and load option (specialized button) dimensions and positioning:
-        this._loadOptionWidth = 480;
-        this._loadOptionHeight = 72;
-        this._loadOptionX = 360;
-        this._loadOptionY = 120;
         this._buttonWidth = 384;
         this._buttonHeight = 112;
-        this._buttonX = 288;
+        this._buttonX = constants.SCREEN_WIDTH / 2 - this._buttonWidth / 2;
         this._buttonY = 456;
         this._buttonText = constants.GREEN_TERMINAL;
         this._buttonBG = constants.GREEN_DARK;
+        this._loadOptionWidth = 480;
+        this._loadOptionHeight = 72;
+        this._loadOptionX = constants.SCREEN_WIDTH / 2 - this._buttonWidth / 2;
+        this._loadOptionY = 120;
         this._justOpened = false;           // Setup function sets this to true, which will block the very first click response
         this._savedGames = [];              // Initially there are no saved games to display
         this._selectedGame = null;          // Initially there is no game selected
@@ -84,8 +84,8 @@ export default class LoadGame extends Screen {
         this._loadWasSuccessful = false;    // Reset to allow new saves to occur each time the screen is opened
         const loadGame = new Button("Load Game", this._buttonX, this._buttonY, this.handleLoad, this._buttonWidth, this._buttonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK);
         const returnToMenu = new Button("Return to Main Menu", this._buttonX, this._buttonY + this._buttonHeight + 16, this.handleReturnToMenu, this._buttonWidth, this._buttonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK);
-        const next = new Button("NEXT", this._buttonX / 2 + 48, this._buttonY / 2 + 96, this.handleNext, this._buttonWidth / 4, this._buttonHeight / 2, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
-        const prev = new Button("PREV", this._buttonX / 2 - 80, this._buttonY / 2 + 96, this.handlePrev, this._buttonWidth / 4, this._buttonHeight / 2, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
+        const next = new Button("NEXT", this._buttonX / 2 + 24, this._buttonY / 2 + 96, this.handleNext, this._buttonWidth / 4, this._buttonHeight / 2, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
+        const prev = new Button("PREV", this._buttonX / 2 - 112, this._buttonY / 2 + 96, this.handlePrev, this._buttonWidth / 4, this._buttonHeight / 2, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
         this._buttons = [loadGame, returnToMenu, next, prev];
         // Get list of saved game files for the current user
         this.getSavedGames(this._username, this.setsavedGames);
@@ -115,7 +115,7 @@ export default class LoadGame extends Screen {
 
     // Passed to the load option button to set the basic info for the selected file when clicked
     setSaveSelection = (saveSummary: SaveSummary) => {
-        const name = saveSummary.game_name.length < 18 ? saveSummary.game_name : saveSummary.game_name.slice(0, 17) + "...";
+        const name = saveSummary.game_name.length < 18 ? saveSummary.game_name : saveSummary.game_name.slice(0, 15) + "...";
         this.setMessage(`Game selected: ${name}`, constants.GREEN_TERMINAL);
         this._selectedGame = saveSummary;
     }
@@ -135,7 +135,12 @@ export default class LoadGame extends Screen {
 
     handleClicks = (mouseX: number, mouseY: number) => {
         // Reset the info/error message, unless a game has been selected:
-        if (!this._selectedGame) this.setMessage("", constants.GREEN_TERMINAL);
+        if (!this._selectedGame) {
+            this.setMessage("", constants.GREEN_TERMINAL);
+        } else {
+            const name = this._selectedGame.game_name.length < 18 ? this._selectedGame.game_name : this._selectedGame.game_name.slice(0, 15) + "...";
+            this.setMessage(`Game selected: ${name}`, constants.GREEN_TERMINAL)
+        }
         this._buttons.forEach((button) => {
             button.handleClick(mouseX, mouseY);
         });
@@ -151,7 +156,6 @@ export default class LoadGame extends Screen {
             this.loadGameData(this._selectedGame.id, this.setSaveInfo);
         } else {
             this.setMessage("Please select a game to load", constants.RED_ERROR);
-            // TODO: Add a message to the UI here
         }
     }
 
@@ -208,7 +212,7 @@ export default class LoadGame extends Screen {
         p5.fill(constants.EGGSHELL);
         p5.textStyle(p5.BOLD);
         p5.textAlign(p5.CENTER, p5.TOP);
-        p5.text(`Welcome back, ${this._username}`, 480, 40);
+        p5.text(`Welcome back, ${this._username}`, constants.SCREEN_WIDTH / 2, 40);
         p5.textSize(36);
         p5.text("Select", 180, 120);
         p5.text("Saved Game:", 180, 160);

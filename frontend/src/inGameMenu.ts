@@ -9,6 +9,7 @@ export default class InGameMenu extends Screen {
     _buttons: Array<Button>;
     _color: string;
     _username: string;
+    _center: number;
     _buttonWidth: number;
     _buttonHeight: number;
     _buttonX: number;
@@ -24,9 +25,10 @@ export default class InGameMenu extends Screen {
         this._color = constants.APP_BACKGROUND;
         this._username = "";    // This will be set after the initial construction of this class, once login is completed.
         // Standardize button dimensions and positioning:
+        this._center = constants.SCREEN_WIDTH / 2;
         this._buttonWidth = 384;
         this._buttonHeight = 112;
-        this._buttonX = 288;
+        this._buttonX = this._center - this._buttonWidth / 2;
         this._buttonY = 232;
         this._buttonPadding = 12;
         this._buttonText = constants.GREEN_TERMINAL;
@@ -68,8 +70,8 @@ export default class InGameMenu extends Screen {
         p5.fill(constants.EGGSHELL);
         p5.textStyle(p5.BOLD);
         p5.textAlign(p5.CENTER, p5.TOP);
-        p5.text("Just what do you think", 480, 80);
-        p5.text(`you're doing, ${this._username}?`, 480, 136);
+        p5.text("Just what do you think", this._center, 80);
+        p5.text(`you're doing, ${this._username}?`, this._center, 136);
         this._buttons.forEach((button) => {
             button.render(p5);
         })

@@ -24,7 +24,7 @@ export default class Menu extends Screen {
         // Standardize button dimensions and positioning:
         this._buttonWidth = 384;
         this._buttonHeight = 112;
-        this._buttonX = 288;
+        this._buttonX = constants.SCREEN_WIDTH / 2 - this._buttonWidth / 2;
         this._buttonText = constants.GREEN_TERMINAL;
         this._buttonBG = constants.GREEN_DARK;
         this.switchScreen = switchScreen;
@@ -109,7 +109,7 @@ export default class Menu extends Screen {
         p5.fill(constants.EGGSHELL);
         p5.textStyle(p5.BOLD);
         p5.textAlign(p5.CENTER, p5.TOP);
-        p5.text(`Welcome to SMARS, ${this._username}`, 480, 80);
+        p5.text(`Welcome to SMARS, ${this._username}`, constants.SCREEN_WIDTH / 2, 80);
         this._buttons.forEach((button) => {
             button.render(p5);
         })

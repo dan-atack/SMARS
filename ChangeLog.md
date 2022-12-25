@@ -1519,9 +1519,7 @@ Not doing:
 
 29. Finally, fix it so that the cash rate of change is updated back to zero after every hour, like the other resources.
 
-## Chapter Twenty-Nine: Colonist Movement in the Base (Difficulty Estimate: 7 For new colonist movement and decision logic, plus probably a new animation, plus unit tests and planning, AND some refactoring)
-
-### Addendum to difficulty estimate/chapter description: Difficulty was way higher than estimate due to chapter goals being insufficiently defined and too broad for a single chapter!
+## Chapter Twenty-Nine: Colonist Movement in the Base (Difficulty Estimate: 7 For new colonist movement and decision logic, plus probably a new animation, plus unit tests and planning, AND some refactoring). ADDENDUM: Difficulty was way higher than estimate due to chapter goals being insufficiently defined and too broad for a single chapter!
 
 ### July 22, 2022
 
@@ -2127,7 +2125,7 @@ Exit Criteria:
 
 ### December 12, 2022
 
-Now that more and more people are coming to SMARS, it is vital that the colony be allowed to become self-sufficient. Currently the colonists can convert water into food, but their water supply is finite and cannot be replenished. Luckily there appear to be some ice patches nearby, which the colonists will soon be able to mine. Initially mining will be a highly simplified process, with the player being able to designate individual tiles as mining locations (for water only, at first). Mining jobs will then be made available by the Industry class, and will function very similarly to module-based production jobs - the colonist will walk to a set of coordinates, perform the mine action, and then repeat as necessary. There will be no carrying back and forth of mined materials/equipment at first, although these concepts may come into play in later patches as the game becomes more complex. For now though, any resources produced via mining will be instantly teleported into the nearest storage class module as soon as the colonist's mining action is completed.
+Now that more and more people are coming to SMARS, it is vital that the colony becomes self-sufficient. Currently the colonists can convert water into food, but their water supply is finite and cannot be replenished. Luckily there appear to be some ice patches nearby, which the colonists will soon be able to mine. Initially mining will be a highly simplified process, with the player being able to designate individual tiles as mining locations (for water only, at first). Mining jobs will then be made available by the Industry class, and will function very similarly to module-based production jobs - the colonist will walk to a set of coordinates, perform the mine action, and then repeat as necessary. There will be no carrying back and forth of mined materials/equipment at first, although these concepts may come into play in later patches as the game becomes more complex. For now though, any resources produced via mining will be instantly teleported into the nearest storage class module as soon as the colonist's mining action is completed.
 
 Exit Criteria:
 
@@ -2179,6 +2177,26 @@ Exit Criteria:
 19. Add some basic info about the number of mining locations/ active locations to the Industry page, as well as the number of production modules (hydroponics pods) existing/in use, and a breakdown of the colony's labour force.
 
 20. Ensure that multiple colonists cannot pile into the same mining zone.
+
+## Chapter Thirty-Nine: Power to the People (Difficulty Estimate: TBD)
+
+### December 25, 2022
+
+For the final non-UX pre-launch feature, the colony will be given the ability to use and produce electricity. Initially electricity will only be needed for production at the hydroponics module, essentially acting as a second input resource. Electricity will be produced by a new class of "power" modules, whose first instance will be the trusty solar panel: a new, non-stackable module that will passively generate power with every hourly update. A number of the game's modules will be given some power storage capacity, and the Small Node modules underneath the base will be replaced by a new Small Battery module to store the base's initial power supply. Also, to avoid having to introduce pagination to the build menu (it will be added eventually, but after the game's initial release) the Communications Dish module's type will be changed from 'communications' to 'test' so that it does not appear in the in-game build menu. The space that this saves in the module types menu can then be used to add the first 'power' module (solar panel), and the small battery can be added as the final initial storage structure.
+
+### 1. Update the Communications module to change its type to 'test' so that it does not appear as a build option in the game. Verify that the Engine's new game sequence is still able to find it to add to the starting modules placement.
+
+### 2. Make a new storage-class module called Small Battery, which will be 2 tiles wide and 1 tile tall. Replace the 8 small nodes under the base's initial structures with 4 of these, lined up end to end to make a 8 x 1 tile formation. Again, test the Engine's start-game sequence to verify that everything works properly.
+
+3. Expand the screen width and world view by increasing the value of the SCREEN_WIDTH and WORLD_VIEW_WIDTH constants, to allow space to display the colony's power levels as a fifth main resource.
+
+4. Adjust the positioning of the Login / New User buttons in the game's login page, as well as the Start New Game / Back To Menu buttons on the NewGame page, and the Load Game / Return to Main Menu buttons in the LoadGame screen, as well as the buttons in the In-Game Menu.
+
+## Chapter Forty: Pre-Release Finishing Touches (Game Features) (Difficulty Estimate: TBD)
+
+### Date: TBD
+
+Once the basic rules for power use/creation have been set up, a few additional finishing touches will be implemented to round out the game's initial features for its first release. These include adding a simple day/night cycle to add to the game's aesthetics and also to add complexity to the solar power generation process (no power will be produced at night time), as well as adding an hourly maintenance cost for some modules (e.g. all pressurized modules will lose a small amount of air every hour, and some modules like the Crew Quarters will need to consume power as well). Modules that have not gotten their maintenance resources will not be usable by the colonists for production/eating/drinking/sleeping, so it is imperative that resources are kept flowing. Lastly, a slight adjustment to the game's resource transfer system will be made to ensure that production modules' outputs are routinely cycled into storage modules, to prevent them building up in the production modules themselves.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

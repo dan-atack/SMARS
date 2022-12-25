@@ -160,7 +160,7 @@ export default class NewGameSetup extends Screen {
         );
         const startGame = new Button(
             "start game",
-            192,
+            constants.SCREEN_WIDTH / 2 - 320,
             600,
             this.handleStartGame,
             256,
@@ -170,7 +170,7 @@ export default class NewGameSetup extends Screen {
         );
         const backToMenu = new Button(
             "back to menu",
-            512,
+            constants.SCREEN_WIDTH / 2 + 64,
             600,
             this.handleReturnToMenu,
             256,
@@ -356,7 +356,7 @@ export default class NewGameSetup extends Screen {
         p5.fill(constants.EGGSHELL);
         p5.textStyle(p5.BOLD);
         p5.textAlign(p5.CENTER, p5.TOP);
-        p5.text("Setup New Game", 480, 24);
+        p5.text("Setup New Game", constants.SCREEN_WIDTH / 2, 24);
         p5.textSize(32);
         p5.text("Select Difficulty Level:", 224, this._difficultyPositionY + this._difficultyHeight / 3);
         p5.text("Select Landing Site:", 24, this._mapTypePositionY + this._mapTypeHeight / 2, 192, 256);

@@ -6,10 +6,10 @@ export const constants = {
     // Backend connection
     URL_PREFIX: "http://localhost:7000/api",
     // Units of measurement, in pixels
-    SCREEN_WIDTH: 960,
+    SCREEN_WIDTH: 1080,       // If adjusting this parameter, make sure to also adjust the WORLD_VIEW_WIDTH just below
     SCREEN_HEIGHT: 720,
     SIDEBAR_WIDTH: 280,
-    WORLD_VIEW_WIDTH: 680,    // Screen width minus sidebar width
+    WORLD_VIEW_WIDTH: 800,    // Screen width minus sidebar width
     BLOCK_WIDTH: 20,
     EARTH_DAY_HUNDREDTHS_PER_HOUR: 715, // With 4 Smartian days per Smars year, this makes 1 Smartian year = 687 Earth days when divided by 100 (true value is 7.15 but multiplying that by 100 avoids floating point arithmetic issues)
     // Orbital physics values (all in terms of EARTH DAYS)
