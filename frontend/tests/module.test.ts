@@ -121,12 +121,35 @@ const commsModuleInfo: ModuleInfo = {
     shapes: []
 }
 
+const solarPanelInfo: ModuleInfo = {
+    name: "Small Solar Array",
+    width: 3,
+    height: 2,
+    type: "Power",
+    pressurized: false,
+    columnStrength: 0,
+    durability: 100,
+    buildCosts: [
+        ["money", 250000],
+    ],
+    maintenanceCosts: [],
+    productionOutputs: [
+        ["power", 50]
+    ],
+    storageCapacity: [
+        ["power", 1000]
+    ],
+    crewCapacity: 0,
+    shapes: []
+}
+
 const moduleData = new Module(9000, 10, 10, storageModuleInfo);
 const emptyModule = new Module(9001, 20, 20, noStoreModuleInfo);
 const lsModule = new Module(9002, 14, 10, lifeSupportModInfo);
 const prodModule = new Module(9003, 14, 6, productionModuleInfo);
 const commsModule = new Module(9004, 10, 6, commsModuleInfo);
 const prodModule2 = new Module(9005, 10, 2, productionModuleInfo);
+const solarPanelModule = new Module(9006, 14, 3, solarPanelInfo);
 
 describe("ModuleData", () => {
 
@@ -379,6 +402,22 @@ describe("ModuleData", () => {
             ["food", 0],
             ["power", 0]
         ]);
+    })
+
+    test("Power modules can generate power when the generatePower method is called", () => {
+        expect(solarPanelModule.generatePower(100)).toBe(50);   // Full output generated at 100 percent sunlight
+        expect(solarPanelModule._resources[0]).toStrictEqual(["power", 50]);    // Verify that power is added
+        expect(solarPanelModule.generatePower(99)).toBe(50);    // Output is rounded up to the next integer
+        expect(solarPanelModule._resources[0]).toStrictEqual(["power", 100]);
+        expect(solarPanelModule.generatePower(98)).toBe(49);
+        expect(solarPanelModule._resources[0]).toStrictEqual(["power", 149]);
+        expect(solarPanelModule.generatePower(50)).toBe(25);
+        expect(solarPanelModule._resources[0]).toStrictEqual(["power", 174]);
+        expect(solarPanelModule.generatePower(1)).toBe(1);
+        expect(solarPanelModule._resources[0]).toStrictEqual(["power", 175]);
+        expect(solarPanelModule.generatePower(0)).toBe(0);      // No sun = no power produced
+        expect(solarPanelModule._resources[0]).toStrictEqual(["power", 175]);
+        expect(solarPanelModule.generatePower()).toBe(null);    // Validate error return when sunlight value not provided
     })
 
 })

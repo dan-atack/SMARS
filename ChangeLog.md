@@ -1,6 +1,8 @@
 # The Saga of SMARS: ChangeLog and Study Notes
 
-## Chapter One: The Creation of the Git Repo (Difficulty Estimate: 1)
+## Chapter One: The Creation of the Git Repo
+
+### Difficulty Estimate: 1
 
 ### October 25, 2021
 
@@ -26,7 +28,9 @@ Can't do anything without a repository!
 
    git push --set-upstream origin master
 
-## Chapter Two: The Typescript NodeJS Server (Difficulty Estimate: 5)
+## Chapter Two: The Typescript NodeJS Server
+
+### Difficulty Estimate: 5
 
 ### (Based on instructions found at https://auth0.com/blog/node-js-and-typescript-tutorial-build-a-crud-api/)
 
@@ -110,7 +114,9 @@ src/index.ts <-- This of course refers to the app's entry file, e.g. the server 
 
 23. Setup a 'Hello World' get response in the server and find it in the browser! Then close out the chapter :D
 
-## Chapter Three: MongoDB (Difficulty Estimate 5, For Real This Time!)
+## Chapter Three: MongoDB
+
+### Difficulty Estimate 5, For Real This Time!
 
 ### October 28, 2021
 
@@ -150,7 +156,9 @@ The creation of a MongoDB service, and initial connections between it and the se
 
 9. Write a simple function to find your test document from MongoDB. Import it to the server and setup a simple endpoint, then visit the relevant link in the browser to call the database import. This function can be removed later on as it is a proof-of-concept... Addendum: Total success! The function was made to work with Typescript, and also demonstrated that it is not necessary to have the mongo application running in Powershell (so long as the process is open the Mongo server will respond... as long suspected but not verified until now!)
 
-## Chapter Four: Unit Tests (Difficulty Estimate: 6, since this is truly uncharted territory now)
+## Chapter Four: Unit Tests
+
+### Difficulty Estimate: 6, since this is truly uncharted territory now
 
 ### October 29, 2021
 
@@ -172,7 +180,9 @@ This is penultimate chapter in the game's pre-development phase, which is to say
 
 7. GENERAL NOTE: Unit tests need to start with an empty export object in order to avoid block-scope errors for re-declaring the same function/class as the file they're testing. This is apparently a side-effect of unit testing with Jest for Typescript, but luckily it seems to be fairly well known, and therefore hopefully not evidence of malpractice on my part.
 
-## Chapter Five: DevOps It Up A Little Bit (Difficulty Estimate: 7)
+## Chapter Five: DevOps It Up A Little Bit
+
+### Estimate: 7
 
 ### November 2, 2021
 
@@ -197,7 +207,9 @@ In the final chapter of the abstract, pre-game development phase of the project,
 
 5. Re-configure the manual.yml file to run your npm test script instead of saying hello world.
 
-## Chapter Six: Add P5 and separate the frontend from the backend (Difficulty Estimate: 8)
+## Chapter Six: Add P5 and separate the frontend from the backend
+
+### Difficulty Estimate: 8
 
 ### December 3, 2021
 
@@ -234,7 +246,9 @@ SMARS
 
 6. Get a signal to the backend and receive a response from the front, as our first 'end-to-end' proof of concept!
 
-## Chapter Seven: Create basic app framework and login page (Difficulty Estimate: 6)
+## Chapter Seven: Create basic app framework and login page
+
+### Difficulty Estimate: 6
 
 ### December 14, 2021
 
@@ -274,7 +288,9 @@ Since we've finally gotten the stack we are looking for, it's time to create the
 
 14. Begin establishing more colour constants and using them throughout the app. It will look better in the long run if we do it this way now.
 
-## Chapter Eight: Backend login functionality (Difficulty Estimate: 5)
+## Chapter Eight: Backend login functionality
+
+### Difficulty Estimate: 5
 
 ### December 19, 2021
 
@@ -313,7 +329,9 @@ Exit Criteria: User can create a new account which will be saved in the SMARS da
 
 9. Make sure you close the connection to the database when server functions are finished. Just don't close it before they're done using it!
 
-## Chapter Nine: The Main Menu - Frontend edition (Difficulty Estimate: 6, since we will be adding unit tests to the frontend)
+## Chapter Nine: The Main Menu - Frontend edition
+
+### Difficulty Estimate: 6, since we will be adding unit tests to the frontend
 
 ### December 23, 2021
 
@@ -357,7 +375,9 @@ Exit criteria: Menu screen has three buttons with dummy handler functions. Jest 
 
 15. Make a test directory for the frontend, in anticipation of future tests. At the end of this chapter, contemplate what might be a good candidate for a unit test, but don't worry about it for now if we don't add one right away!
 
-## Chapter Ten: Backend Functions for the New Game Screen (Difficulty Estimate: 5)
+## Chapter Ten: Backend Functions for the New Game Screen
+
+### Difficulty Estimate: 5
 
 ### December 29, 2021
 
@@ -398,7 +418,9 @@ Exit criteria:
 
 12. Update the project's gitignore to ignore everything in the map_editor directory.
 
-## Chapter Eleven: Frontend Pre-game setup screen (Difficulty Estimate: 5)
+## Chapter Eleven: Frontend Pre-game setup screen
+
+### Difficulty Estimate: 5
 
 ### December 31, 2021
 
@@ -442,7 +464,9 @@ Exit Criteria:
 
 15. Lastly, the Minimap: create a brand-new component class to render a simple map preview by creating a series of rectangles from a list of lists (using each sub-list's length as the sole criteria to determine the length of each rectangle, to save on processing power, or something!). Use this to render the map preview for each map that is loaded.
 
-## Chapter Twelve: The Game Screen! (Difficulty Estimate: 8 due to large complexity and need for finalizing designs before implementation)
+## Chapter Twelve: The Game Screen!
+
+### Difficulty Estimate: 8 due to large complexity and need for finalizing designs before implementation
 
 ### January 1, 2022
 
@@ -513,7 +537,9 @@ Exit criteria:
 
 10. Add buttons for switching to the in-game views to the Sidebar; test if they can be entered and exited.
 
-## Chapter Thirteen: Filling out the Sidebar (Difficulty Estimate: 3 - aren't we getting optimistic again!)
+## Chapter Thirteen: Filling out the Sidebar
+
+### Difficulty Estimate: 3 - aren't we getting optimistic again!
 
 ### January 5, 2022
 
@@ -568,7 +594,9 @@ Exit criteria:
 
 21. From the Details Area, pass the setMouseContext function to the BuildingChip component. Then give that component a handler function (overriding the basic button class's handler) that supplies a text string for the type of building activity (initially just 'place', but with the possibility of alternating between that and other options, e.g. 'twoPartPlace' or some such, in the future).
 
-## Chapter Fourteen: Rendering the map (terrain)! (Difficulty Estimate: 5 - it's been done before but we need to consider scrolling)
+## Chapter Fourteen: Rendering the map (terrain)
+
+### Difficulty Estimate: 5 - it's been done before but we need to consider scrolling
 
 ### January 13, 2022
 
@@ -602,7 +630,9 @@ Exit criteria:
 
 10. In order to situate the player in the middle of the map (as opposed to on its left-hand edge), have the Map's setup calculate the total width of the map and then add an initial offset so that when the map renders it is already offset (and thus the player can immediately scroll either to the left or right, to make things more immersive).
 
-## Chapter Fifteen: The Passage of Time (Difficulty Estimate: 3)
+## Chapter Fifteen: The Passage of Time
+
+### Difficulty Estimate: 3
 
 ### January 15, 2022
 
@@ -623,7 +653,9 @@ Exit criteria:
 
 4. Add rules for the time-keeper to reset minutes each hour, and hours each day (actually twice per day; add an AM/PM value too). Print the whole time string to the screen and watch it for a whole "day" (hereafter referred to as a Sol).
 
-## Chapter Sixteen: Modal Dialogues (Difficulty Estimate: 5 due to planning of how and when modals will appear and be dealt with)
+## Chapter Sixteen: Modal Dialogues
+
+### Difficulty Estimate: 5 due to planning of how and when modals will appear and be dealt with
 
 ### January 20, 2022
 
@@ -654,7 +686,9 @@ Exit criteria:
 
 7. Quickly experiment with adding a directory structure to the Frontend to categorize resources
 
-## Chapter Seventeen: Managing Buildings in the Backend (Difficulty Estimate: 5 [Hindsight: 8])
+## Chapter Seventeen: Managing Buildings in the Backend
+
+### Difficulty Estimate: 5 [Hindsight: 8]
 
 ### February 1, 2022
 
@@ -700,7 +734,9 @@ Exit Criteria:
 
 14. Make new endpoint for searching for structures in the backend, and add it to the server's index file.
 
-## Chapter Eighteen: Buildings in the Frontend (Difficulty Estimate: 6 due to regular difficulty plus a coat of rust on this here programmer!)
+## Chapter Eighteen: Buildings in the Frontend
+
+### Difficulty Estimate: 6 due to regular difficulty plus a coat of rust on this here programmer!
 
 ### February 25, 2022
 
@@ -771,7 +807,9 @@ Exit criteria:
 
 27. Clean up the on-screen 'console log' text before ending the chapter.
 
-## Chapter Nineteen: Buildings in the Frontend II - Module Placement Logic (Difficulty Estimate: 6 for new dynamics development)
+## Chapter Nineteen: Buildings in the Frontend II - Module Placement Logic
+
+### Difficulty Estimate: 6 for new dynamics development
 
 ### March 22, 2022
 
@@ -833,7 +871,9 @@ Exit Criteria:
 
 23. Very basic column strength logic: If a module has column strength zero, nothing can be placed on top of it; if it has anything greater than that, then the sky's the limit (literally). We'll add more complexity to this formula at a later date; for now this should be good enough to prevent stacking things like domes or any other structure that should be the top of whatever stack it's involved with.
 
-## Chapter Twenty: Saving Games (Difficulty Estimate: 3)
+## Chapter Twenty: Saving Games
+
+### Difficulty Estimate: 3
 
 ### April 9, 2022
 
@@ -872,7 +912,9 @@ Exit criteria:
 
 14. Disable the save button if a success status is returned, so the user can't accidentally spam the button and flood the database with clones of the same save file.
 
-## Chapter Twenty-One: Loading Games (Difficulty Estimate: 4)
+## Chapter Twenty-One: Loading Games
+
+### Difficulty Estimate: 4
 
 ### April 10, 2022
 
@@ -941,7 +983,9 @@ Exit Criteria:
 
 28. Clean up the remaining console logs for the loading process, and merge that branch!
 
-## Chapter Twenty-Two: It's the Economy, Stupid (Difficulty Estimate: 5 for what is expected to be a large amount of hopefully fairly simple challenges)
+## Chapter Twenty-Two: It's the Economy, Stupid
+
+### Difficulty Estimate: 5 for what is expected to be a large amount of hopefully fairly simple challenges
 
 ### April 13, 2022
 
@@ -1009,7 +1053,9 @@ Exit criteria:
 
 25. Use the resource depletion flag to set the change rate and current quantity's text colours.
 
-## Chapter Twenty-Three: The Colonists (Difficulty Estimate: 8 for new rules to govern colonist movements and animation)
+## Chapter Twenty-Three: The Colonists
+
+### Difficulty Estimate: 8 for new rules to govern colonist movements and animation
 
 ### April 18, 2022
 
@@ -1087,7 +1133,9 @@ Exit Criteria:
 
 29. Add the population count to the LoadOption pseudo-button, so players can see their colonies' population from the Load Game screen.
 
-## Chapter Twenty-Four: BACKDOOR UNIT TESTS (Difficulty Estimate: 7 For Refactoring and Familiarization with Jest)
+## Chapter Twenty-Four: BACKDOOR UNIT TESTS
+
+### Difficulty Estimate: 7 For Refactoring and Familiarization with Jest
 
 ### May 6, 2022
 
@@ -1112,7 +1160,9 @@ Exit Criteria:
 
 7. Use this diagram to come up with a series of meaningful unit test cases for the Colonist's decision/movement logic.
 
-## Chapter Twenty-Five: The Beginning of the Game (Difficulty Estimate: 6 For New Animations and New Engine Functions)
+## Chapter Twenty-Five: The Beginning of the Game
+
+### Difficulty Estimate: 6 For New Animations and New Engine Functions
 
 ### May 23, 2022
 
@@ -1224,7 +1274,9 @@ Features Added:
 
 41. Comment-out all remaining console logs that occur outside of an error context (e.g. when the player attempts to place a structure in an invalid location). Then it's time to make a commitment.
 
-## Chapter 26: Buildings in the Frontend, Part III - Connector Placement (Difficulty Estimate: 7 - Tweaking the existing Connector a fair bit, plus adding new unit tests for connectors and infra classes, plus adding the mouse shadow class)
+## Chapter Twenty-Six: Buildings in the Frontend, Part III - Connector Placement
+
+### Difficulty Estimate: 7 - Tweaking the existing Connector a fair bit, plus adding new unit tests for connectors and infra classes, plus adding the mouse shadow class
 
 ### June 25, 2022
 
@@ -1347,7 +1399,9 @@ Features Added:
 
 47. Add a simple calculation to reduce the x value and width of a conduit-type connector's in-between shape by about 20% each, so the connector is like a skinny pipe. And add a small circle to each of the endpoints.
 
-## Chapter 27: Buildings in the Frontend, Part IV - Floor Logic (Difficulty Estimate: 5 for Intro to TDD!)
+## Chapter Twenty-Seven: Buildings in the Frontend, Part IV - Floor Logic
+
+### Difficulty Estimate: 5 for Intro to TDD!
 
 ### July 8, 2022
 
@@ -1429,7 +1483,9 @@ Features Added:
 
 26. Make connectors actually cost the amount they state when placed by taking their length property and multiplying that by the price that gets passed to the Economy class.
 
-## Chapter Twenty-Eight: Resources In the Modules (Difficulty Estimate: 5 For refactoring the Module and Economy classes and ensuring compatibility with game save/load system)
+## Chapter Twenty-Eight: Resources In the Modules
+
+### Difficulty Estimate: 5 For refactoring the Module and Economy classes and ensuring compatibility with game save/load system
 
 ### July 16, 2022
 
@@ -1519,7 +1575,9 @@ Not doing:
 
 29. Finally, fix it so that the cash rate of change is updated back to zero after every hour, like the other resources.
 
-## Chapter Twenty-Nine: Colonist Movement in the Base (Difficulty Estimate: 7 For new colonist movement and decision logic, plus probably a new animation, plus unit tests and planning, AND some refactoring). ADDENDUM: Difficulty was way higher than estimate due to chapter goals being insufficiently defined and too broad for a single chapter!
+## Chapter Twenty-Nine: Colonist Movement in the Base
+
+### Difficulty Estimate: 7 For new colonist movement and decision logic, plus probably a new animation, plus unit tests and planning, AND some refactoring. ADDENDUM: Difficulty was way higher than estimate due to chapter goals being insufficiently defined and too broad for a single chapter!
 
 ### July 22, 2022
 
@@ -1687,7 +1745,9 @@ Features Added:
 
 70. Give the Colonist class a unique ID field. Colonist IDs can be a 4 digit number starting at 9000 and be given by a simple population class counter.
 
-## Chapter Thirty: Colonist Movement in the Base, Part II - Code Cleanup (Difficulty Estimate: 3)
+## Chapter Thirty: Colonist Movement in the Base, Part II - Code Cleanup
+
+### Difficulty Estimate: 3
 
 ### October 2, 2022
 
@@ -1723,7 +1783,9 @@ Exit Criteria:
 
 10. Finally, we do need to have some kind of system in place for when a resource truly isn't available, to prevent the colonist from freezing up in the event of a scarcity. I recommend adding an additional trait, needsAvailable, to keep track of missed attempts at finding any of their needs. That way, if a colonist runs the get-water/get-food sequence and recieves and empty list, they can set the needsUnmet for that need to 0 (default value of 1 means that the resource is accessible, as far as the colonist knows). Then, the updateGoal method's first needs-based section can check for that value when preparing to set the goal to get-(need), and skip that need if the value is zero. In order to ensure the Colonist occasionally checks again, we can reset the availablilty value to 1 with each hourly update. I suppose we'll want to unit test this too.
 
-## Chapter Thirty-One: The Inspect Tool (Difficulty Estimate: 3 For New Mouse Shadow, Click Handler and Sidebar Display)
+## Chapter Thirty-One: The Inspect Tool
+
+### Difficulty Estimate: 3 For New Mouse Shadow, Click Handler and Sidebar Display
 
 ### October 10, 2022
 
@@ -1789,7 +1851,9 @@ Exit Criteria:
 
 25. Fill out the Inspect display formatting for Connector data. Data to display: name (type), ID, and then bifurcating on the connector type (conduit or transport) show either the resources carried (for conduits) or the amount of colonists that can be on it at the same time (phrase the outputs differently).
 
-## Chapter Thirty-Two: Production Modules (Difficulty Estimate: 2 for new module info fields and one new structure)
+## Chapter Thirty-Two: Production Modules
+
+### Difficulty Estimate: 2 for new module info fields and one new structure
 
 ### October 21, 2022
 
@@ -1812,7 +1876,9 @@ Exit Criteria:
 
 6. Fill out the Production Inputs/Outputs display template for Production Modules, and ensure that the player can toggle back to the basic module display from the production details display (make the button a toggle switch that goes back and forth between the two display modes).
 
-## Chapter Thirty-Three: Jobs For the Boys: Colonist Roles (Difficulty Estimate: 5 for Population screen updates and Colonist role-assignment system development)
+## Chapter Thirty-Three: Jobs For the Boys (Colonist Roles)
+
+### Difficulty Estimate: 5 for Population screen updates and Colonist role-assignment system development
 
 ### October 23, 2022
 
@@ -1855,7 +1921,9 @@ Exit Criteria:
 
 12. Update the Colonist Inspect Display to show the colonist's name instead of their ID, and their current role instead of their current action.
 
-## Chapter Thirty-Four: Module Resource Transfers (Difficulty Estimate: 3 for development of resource sharing system and associated testing requirements)
+## Chapter Thirty-Four: Module Resource Transfers
+
+### Difficulty Estimate: 3 for development of resource sharing system and associated testing requirements
 
 ### November 1, 2022
 
@@ -1899,7 +1967,9 @@ Not Doing:
 
 11. Update the logic for the Infra class's resolveModuleResourceRequests method to permit taking resources from production modules, in the event that the resource is part of their OUTPUTS list.
 
-## Chapter Thirty-Five: The Industry Class (Difficulty Estimate: 5 for lots of little things coming together, including updating/isolating parts of the Colonist's pathfinding logic, plus a new animation sequence)
+## Chapter Thirty-Five: The Industry Class
+
+### Difficulty Estimate: 5 for lots of little things coming together, including updating/isolating parts of the Colonist's pathfinding logic, plus a new animation sequence
 
 ### November 6, 2022
 
@@ -1979,7 +2049,9 @@ Exit Criteria:
 
 31. Lastly, pass the Industry class down to the colonist's checkActionStatus method from its handleMinutelyUpdates method, so that the farm action resolution block can call the updateJobsForRole method for that role before resolving the action (but after resolving the module's production, in order to come after the Module's punchOut method call). This should allow the Industry class to re-create the jobs list for that role before the Colonist leaves the module, allowing them to simply take another shift there right away rather than having to wait for the hourly update to regenerate the job. Validate with manual sanity check (i.e. just watch to see if the colonists will do several back-to-back rounds of production before stopping).
 
-## Chapter Thirty-Six: Bed Time for the Colonists (Difficulty Estimate: 3 for some tight refactoring and upgrades to the colonist movement logic system)
+## Chapter Thirty-Six: Say Goodnight (Bedtime for the Colonists)
+
+### Difficulty Estimate: 3 for some tight refactoring and upgrades to the colonist movement logic system
 
 ### November 15, 2022
 
@@ -2026,7 +2098,9 @@ Exit Criteria:
 
 16. Add one last ColonistActionLogic function, to be called by the consume, rest and produce action stack determinators in the event of an action stack being considered a failure (i.e. the path to the desired module/s was not found). Have this function check if the colonist is on a non-ground floor, and if so, tell them to simply find the nearest elevator and climb it to the ground (get off at elevator.bottom - 1 to avoid going underground, haha). This way, even if colonists get stuck on an upper floor (with no ground floor modules to tempt them this could still happen) they will eventually come down, at which point they'll phave an easier time finding what they need on the next attempt. Best of all, since they'll actually have an action stack when this routine finishes, they can immediately look again for the missing resource since they only get told that the resource is unavailable when the action stack comes back empty. Validate this with a unit test (naturally).
 
-## Chapter Thirty-Seven: Smartian Immigration (Difficulty Estimate: 5, for introducing new concepts such as colonist morale, pagination of the Population view, and the incoming colonist drop pod animation)
+## Chapter Thirty-Seven: Smartian Immigration
+
+### Difficulty Estimate: 5, for introducing new concepts such as colonist morale, pagination of the Population view, and the incoming colonist drop pod animation
 
 ### November 24, 2022
 
@@ -2121,7 +2195,9 @@ Exit Criteria:
 
 37. Add some logic to the DropPod's animation so that the parachute continues to descend after the landing completes, like the dust cloud for the original lander does.
 
-## Chapter Thirty-Eight: What's Mine is Mine (Difficulty Estimate: 4 for moderate complexity of new mouse context rules integration, plus industry view basic layout and colonist animation system upgrade)
+## Chapter Thirty-Eight: What's Mine is Mine
+
+### Difficulty Estimate: 4 for moderate complexity of new mouse context rules integration, plus industry view basic layout and colonist animation system upgrade
 
 ### December 12, 2022
 
@@ -2178,21 +2254,45 @@ Exit Criteria:
 
 20. Ensure that multiple colonists cannot pile into the same mining zone.
 
-## Chapter Thirty-Nine: Power to the People (Difficulty Estimate: TBD)
+## Chapter Thirty-Nine: Power to the People
+
+### Difficulty Estimate: 3 For new Module and Infrastructure methods for handling power generation
 
 ### December 25, 2022
 
 For the final non-UX pre-launch feature, the colony will be given the ability to use and produce electricity. Initially electricity will only be needed for production at the hydroponics module, essentially acting as a second input resource. Electricity will be produced by a new class of "power" modules, whose first instance will be the trusty solar panel: a new, non-stackable module that will passively generate power with every hourly update. A number of the game's modules will be given some power storage capacity, and the Small Node modules underneath the base will be replaced by a new Small Battery module to store the base's initial power supply. Also, to avoid having to introduce pagination to the build menu (it will be added eventually, but after the game's initial release) the Communications Dish module's type will be changed from 'communications' to 'test' so that it does not appear in the in-game build menu. The space that this saves in the module types menu can then be used to add the first 'power' module (solar panel), and the small battery can be added as the final initial storage structure.
 
-### 1. Update the Communications module to change its type to 'test' so that it does not appear as a build option in the game. Verify that the Engine's new game sequence is still able to find it to add to the starting modules placement.
+Exit Criteria:
 
-### 2. Make a new storage-class module called Small Battery, which will be 2 tiles wide and 1 tile tall. Replace the 8 small nodes under the base's initial structures with 4 of these, lined up end to end to make a 8 x 1 tile formation. Again, test the Engine's start-game sequence to verify that everything works properly.
+- [DONE] Game starts with 4 Small Battery modules instead of the now-defunct Small Nodes at the base of the colony structure
+- Hydroponics module requires power to produce food and air
+- Economy class displays the base's power supply at the top of the screen
+- Solar panels (as the first power modules) produce power every hour without any input resources/colonist labour action
+- Power generated by solar panels is transferred to available storage modules every hour to prevent waste
+
+1. Update the Communications module to change its type to 'test' so that it does not appear as a build option in the game. Verify that the Engine's new game sequence is still able to find it to add to the starting modules placement.
+
+2. Make a new storage-class module called Small Battery, which will be 2 tiles wide and 1 tile tall. Replace the 8 small nodes under the base's initial structures with 4 of these, lined up end to end to make a 8 x 1 tile formation. Again, test the Engine's start-game sequence to verify that everything works properly.
 
 3. Expand the screen width and world view by increasing the value of the SCREEN_WIDTH and WORLD_VIEW_WIDTH constants, to allow space to display the colony's power levels as a fifth main resource.
 
 4. Adjust the positioning of the Login / New User buttons in the game's login page, as well as the Start New Game / Back To Menu buttons on the NewGame page, and the Load Game / Return to Main Menu buttons in the LoadGame screen, as well as the buttons in the In-Game Menu.
 
-## Chapter Forty: Pre-Release Finishing Touches (Game Features) (Difficulty Estimate: TBD)
+5. Update the Engine's new game sequence to provision the starting batteries with power.
+
+6. Add the Solar Panel module as a new module type, "Power", to the game's database.
+
+### 7. Add a new Module method, generatePower, that simply takes a module's outputs list and adds them to the module's stored resources (this method will only be called for modules with the "Power" class, so it can be a simplified version of the produce method). Unit test this method before proceeding.
+
+### 8. Add a new Infrastructure method, resolveModulePowerGeneration, to call the generatePower method for all modules whose type is "power." Unit test this method before proceeding.
+
+### 9. Add power to the Hydroponics Module's list of inputs, along with water. Validate that this works in-game, and update Module AND ColonistData (and Infrastructure??) class unit tests to expect the power requirement for production actions.
+
+### 10. Finally,
+
+## Chapter Forty: Pre-Release Finishing Touches (Game Features)
+
+### (Difficulty Estimate: TBD)
 
 ### Date: TBD
 
