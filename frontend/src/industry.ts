@@ -161,14 +161,12 @@ export default class Industry {
                     console.log(`Warning: Mining location at (${coords.x}, ${coords.y}) is already occupied.`);
                     return false;
                 } else {        // DO allow a punch-out
-                    console.log(`Vacating mining location (${coords.x}. ${coords.y}).`);
                     this._miningCoordinatesInUse[resource as keyof MiningLocations] = this._miningCoordinatesInUse[resource as keyof MiningLocations].filter((loc) => loc.x !== coords.x || loc.y !== coords.y);
                     return true;
                 }
             } else {
                 // Coordinates are not occupied
                 if (inUse) {    // DO allow a punch-in
-                    console.log(`Occupying mining location (${coords.x}, ${coords.y}).`);
                     this._miningCoordinatesInUse[resource as keyof MiningLocations].push(coords);
                     return true;
                 } else {        // DO NOT allow a punch-out

@@ -643,19 +643,19 @@ export default class Engine extends View {
         this.getModuleInfo(this.loadModuleFromSave, "modules", "Storage", "Basic Storage", storeCoords);
         this.getModuleInfo(this.loadModuleFromSave, "modules", "Storage", "Oxygen Tank", tankCoords);
         this.getModuleInfo(this.loadModuleFromSave, "modules", "Storage", "Water Tank", h20Coords);
-        this.getModuleInfo(this.loadModuleFromSave, "modules", "Communications", "Comms Antenna", antennaCoords);
+        this.getModuleInfo(this.loadModuleFromSave, "modules", "test", "Comms Antenna", antennaCoords);
         this.getConnectorInfo(this.loadConnectorFromSave, "connectors", "transport", "Ladder", ladderCoords);
-        let rubbleCoords: number[][] = [];
-        for (let i = 0; i < 8; i++) {
-            rubbleCoords.push([x + i, rY]);
+        let batteryCoords: number[][] = [];
+        for (let i = 0; i < 8; i += 2) {
+            batteryCoords.push([x + i, rY]);
         }
-        this.getModuleInfo(this.loadModuleFromSave, "modules", "test", "Small Node", rubbleCoords);
+        this.getModuleInfo(this.loadModuleFromSave, "modules", "Storage", "Small Battery", batteryCoords);
     }
 
     // Stocks up the first base structures with resources at the beginning of the game
     provisionInitialStructures = () => {
         // Ensure all structures have been generated
-        const startingStructureCount = 14;
+        const startingStructureCount = 10;
         if (this._infrastructure._modules.length >= startingStructureCount) {
             this._infrastructure._modules.forEach((mod) => {
                 // Default for now is to just indiscriminately fill 'em all up
@@ -791,10 +791,10 @@ export default class Engine extends View {
 
     // Calls scheduled update events
     handleHourlyUpdates = () => {
-        this.updateEconomyDisplay();
         this.updateEarthData();
-        this._infrastructure.handleHourlyUpdates();
+        this._infrastructure.handleHourlyUpdates(100);      // ALWAYS USING FULL SUNLIGHT LEVELS FOR NOW
         this._industry.updateJobs(this._infrastructure);
+        this.updateEconomyDisplay();
     }
 
     // In-game clock control and general event scheduler

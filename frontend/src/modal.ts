@@ -42,7 +42,7 @@ export default class Modal {
         this._resolutions = this._eventData.resolutions;
         this._width = constants.SCREEN_WIDTH / 2;
         this._height = constants.SCREEN_HEIGHT / 2;
-        this._xPosition = constants.SCREEN_WIDTH / 4;
+        this._xPosition = constants.WORLD_VIEW_WIDTH / 4;
         this._yPosition = constants.SCREEN_HEIGHT / 4;
         this._resolutions[0].text.length <= 13 ? this._buttonWidth = 128 : this._buttonWidth = 256; // Button width is conditional
         this._buttonX = this._xPosition + (this._width / (1 + this._resolutions.length)) - (this._buttonWidth / (1 + this._resolutions.length));

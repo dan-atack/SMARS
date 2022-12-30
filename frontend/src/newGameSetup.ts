@@ -46,12 +46,12 @@ export default class NewGameSetup extends Screen {
         this._mapType = "polar"     // Default settings are already in place - meaning we'll need to run the fetch map function immediately
         this._randomEvents = true;  // Do you feel lucky?
         // Innate properties used for standardizing positions:
-        this._difficultyPositionX = 426; // Position of the easy button; to allow reference for the other two.
+        this._difficultyPositionX = 480; // Position of the easy button; to allow reference for the other two.
         this._difficultyPositionY = 96;
-        this._difficultyWidth = 96;
+        this._difficultyWidth = 100;
         this._difficultyHeight = 92;
         this._mapTypePositionY = 256;
-        this._mapTypePositionX = 192;
+        this._mapTypePositionX = 256;
         this._mapTypeWidth = 192;
         this._mapTypeHeight = 64;
         this._randomPositionY = 512;
@@ -59,7 +59,7 @@ export default class NewGameSetup extends Screen {
         this._randomWidth = 192;
         this._randomHeight = 64;
         this._mapTerrain = [];       // Fills in with return from a fetch in the setup method
-        this.minimap = new Minimap(p5, 688, 420, this._mapTerrain);
+        this.minimap = new Minimap(p5, 800, 420, this._mapTerrain);
         this.gameData = {   // To export to the Game once data has been selected
             difficulty: "",
             mapType: "",
@@ -160,7 +160,7 @@ export default class NewGameSetup extends Screen {
         );
         const startGame = new Button(
             "start game",
-            192,
+            constants.SCREEN_WIDTH / 2 - 320,
             600,
             this.handleStartGame,
             256,
@@ -170,7 +170,7 @@ export default class NewGameSetup extends Screen {
         );
         const backToMenu = new Button(
             "back to menu",
-            512,
+            constants.SCREEN_WIDTH / 2 + 64,
             600,
             this.handleReturnToMenu,
             256,
@@ -299,7 +299,7 @@ export default class NewGameSetup extends Screen {
     renderDescription = () => {
         const p5 = this._p5;
         const startingPoint = 276;
-        const alignment = 420;
+        const alignment = this._difficultyPositionX + 32;
         const interval = 28;
         const messages = [];
         p5.fill(constants.EGGSHELL);
@@ -350,22 +350,22 @@ export default class NewGameSetup extends Screen {
         // Text description backdrops:
         p5.stroke(constants.GREEN_DARK);
         p5.fill(constants.APP_BACKGROUND);
-        p5.rect(this._mapTypePositionX + this._mapTypeWidth + 16, this._mapTypePositionY - 40, 256, 256, 8, 8, 8, 8);
+        p5.rect(this._mapTypePositionX + this._mapTypeWidth + 48, this._mapTypePositionY - 40, 256, 256, 8, 8, 8, 8);
         // Text elements render here:
         p5.textSize(48);
         p5.fill(constants.EGGSHELL);
         p5.textStyle(p5.BOLD);
         p5.textAlign(p5.CENTER, p5.TOP);
-        p5.text("Setup New Game", 480, 24);
+        p5.text("Setup New Game", constants.SCREEN_WIDTH / 2, 24);
         p5.textSize(32);
-        p5.text("Select Difficulty Level:", 224, this._difficultyPositionY + this._difficultyHeight / 3);
-        p5.text("Select Landing Site:", 24, this._mapTypePositionY + this._mapTypeHeight / 2, 192, 256);
+        p5.text("Select Difficulty Level:", 256, this._difficultyPositionY + this._difficultyHeight / 3);
+        p5.text("Select Landing Site:", 48, this._mapTypePositionY + this._mapTypeHeight / 2, 192, 256);
         p5.text("Allow Random Events?", 224, this._randomPositionY + this._randomHeight / 3);
         p5.textSize(24);
-        p5.text("Game Details:", this._mapTypePositionX + 336, this._mapTypePositionY - 24);
+        p5.text("Game Details:", this._mapTypePositionX + 368, this._mapTypePositionY - 24);
         // Green (Descriptive) text:
         p5.fill(constants.GREEN_TERMINAL);
-        p5.text("Map Preview", 800, 240);
+        p5.text("Map Preview", 924, 240);
         // Render unselected buttons FIRST, so that the selected ones' glowing borders are always fully visible:
         this._buttons.forEach((button) => {
             if (!button._selected) {

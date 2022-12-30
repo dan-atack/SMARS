@@ -203,6 +203,7 @@ export default class Module {
         this._crewPresent = this._crewPresent.filter((id) => id !== colonistId);
     }
 
+    // For Production class modules only
     produce = () => {
         // Reduce quantities of each input resource
         let shortages = false;
@@ -215,6 +216,34 @@ export default class Module {
             this._moduleInfo.productionOutputs?.forEach((resource) => {
                 this.addResource(resource);
             })
+        }
+    }
+
+    // For Power class modules only (sunlight percent is value from 0 to 100; used for solar panels only)
+    generatePower = (sunlightPercent?: number) => {
+        // For solar panels (stipulate that sunlight must be defined, but allow falsy value 0)
+        if (sunlightPercent !== undefined && this._moduleInfo.productionOutputs) {
+            // Assume that power modules can only produce power, and get their first (and only) output resource
+            const generated = Math.ceil(this._moduleInfo.productionOutputs[0][1] * sunlightPercent / 100);
+            this.addResource(["power", generated]);
+            return generated;   // Return the amount of power that was produced
+        } else if (this._moduleInfo.productionInputs && this._moduleInfo.productionOutputs) {
+            // For nuclear reactors / anything that consumes fuel
+            let shortages = false;
+            this._moduleInfo.productionInputs.forEach((resource) => {
+                const used = this.deductResource(resource);
+                if (used !== resource[1]) shortages = true;
+            });
+            if (!(shortages)) {
+                this.addResource(["power", this._moduleInfo.productionOutputs[0][1]]);
+                return this._moduleInfo.productionOutputs[0][1] // Return the amount of power that was produced
+            } else {
+                console.log(`Module ${this._id} cannot produce power due to supply shortage.`);
+                return 0;
+            }
+        } else {
+            console.log(`Error: Module ${this._id} cannot generate power!`);
+            return null;    // If no power is produced due to an error, return a null
         }
     }
 
