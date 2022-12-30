@@ -801,7 +801,7 @@ export default class Engine extends View {
     // Calls scheduled update events
     handleHourlyUpdates = () => {
         this.updateEarthData();
-        this._infrastructure.handleHourlyUpdates(100);      // ALWAYS USING FULL SUNLIGHT LEVELS FOR NOW
+        this._infrastructure.handleHourlyUpdates(this._sunlight);   // Sunlight level is passed to power generation methods
         this._industry.updateJobs(this._infrastructure);
         this.updateEconomyDisplay();
         this.updateDayNightCycle();
@@ -1045,6 +1045,7 @@ export default class Engine extends View {
         if (this._modal) {
             this._modal.render();
         }
-        // p5.text(`Sunlight: ${this._sunlight}`, 120, 300);
+        p5.fill(constants.GREEN_TERMINAL);
+        p5.text(`Sunlight: ${this._sunlight}`, 120, 300);
     }
 }

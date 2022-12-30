@@ -2317,13 +2317,13 @@ Exit Criteria:
 
 5. Make the render for the new sky component show some stars in the night sky.
 
-### 6. Have the new sky component use a gradient colour for the sky during the daytime. If this succeeds, add a gradient to the night sky as well.
+6. Have the new sky component use a gradient colour for the sky during the daytime. If this succeeds, add a gradient to the night sky as well.
 
 ### 7. Create a simple unit test file for the Sky component.
 
 ### 6. Now for the meat and potatoes: Based on the time of day vis-a-vis the day/night cycle, calculate another Engine property, sunlightLevel, as a value from 0 to 100, where 100 is the value for when the sun is high, and 0 is the value for night time. Since there might be some asymmetry from night and day (night is always 0% whereas the value will be between 1 - 100% during the day) the method for calculating this will have to have different equation depending on whether it is currently night or day.
 
-### 7. Pass the sunlight level to the hourly updater to make the solar panel's output dependent on the time of day.
+7. Pass the sunlight level to the hourly updater to make the solar panel's output dependent on the time of day.
 
 ## Chapter Forty-One: Basic Module Maintenance
 
