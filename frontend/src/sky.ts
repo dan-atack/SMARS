@@ -5,13 +5,13 @@ import { constants } from "./constants";
 export default class Sky {
     // Sky data types:
     _skyColourPrimary: string; // The hex code for the sky's primary colour, which will be altered depending on the time of day
-    _skycolourSecondary: string;    // The hex code for the sky's secondary colour, which determines level of darkness
+    _skyColourSecondary: string;    // The hex code for the sky's secondary colour, which determines level of darkness
     _starDensity: number                // Value, ideally from 1 to 64, of stars in the night sky
     _starPositions: [number, number, number][]        // The x, y, and size value for each star
 
     constructor() {
-        this._skyColourPrimary = constants.ALMOST_BLACK;        // Sky is pitch black at midnight
-        this._skycolourSecondary = constants.GRAY_DARKEST;      // Secondary colour is also quite dark
+        this._skyColourPrimary = constants.ALMOST_BLACK;            // Sky is pitch black at midnight
+        this._skyColourSecondary = constants.GREEN_DARKEST;         // Secondary colour is also quite dark
         this._starDensity = 32;                         // Number of stars to add to the night sky
         this._starPositions = [];
         // Randomly generate new star positions
@@ -24,14 +24,52 @@ export default class Sky {
         }
     }
 
+    // Translates colour hexes into numbers for the purpose of brightening/dimming the primary/secondary sky colour
+    updateHexCode = (brightening: boolean) => {
+        const code = this._skyColourSecondary;
+        console.log(code);
+        const digits: string[] = code.split("").filter((char) => char !== "#");
+        let converted = "#";
+        digits.forEach((digit) => {
+            let val = parseInt(digit, 16);
+            if (brightening) {
+                val = Math.min(val + 1, 15);
+            } else {
+                val = Math.max(val - 1, 0);
+            }
+            const hex = val.toString(16);
+            converted += hex;
+        })
+        console.log(converted);
+        return converted;
+    }
+
+    setSkyColour = (colour: string, primary: boolean) => {
+        if (primary) {
+            this._skyColourPrimary = colour;
+        } else {
+            this._skyColourSecondary = colour;
+        }
+    }
+
     // Takes the AM/PM cycle and current hour and sets the sky's colour based on that
-    setSkyColour = (day: boolean, cycle: string, hour: number) => {
+    updateSkyColour = (day: boolean, cycle: string) => {
         if (day) {
             this._skyColourPrimary = constants.YELLOW_SKY;
-            this._skycolourSecondary = constants.GRAY_MEDIUM;
+            if (cycle === "AM") {
+                // Brighten the sky if it is daytime before noon
+                this._skyColourSecondary = this.updateHexCode(true);
+            } else {
+                this._skyColourSecondary = this.updateHexCode(false);
+            }   
         } else {
             this._skyColourPrimary = constants.ALMOST_BLACK;
-            this._skycolourSecondary = constants.GREEN_DARKEST;
+            if (cycle === "AM") {
+                this._skyColourSecondary = this.updateHexCode(true);
+            } else {
+                this._skyColourSecondary = this.updateHexCode(false);
+            }
+            this.updateHexCode(false);
         }
     }
 
@@ -40,12 +78,12 @@ export default class Sky {
         const y = 0;
         const h = constants.SCREEN_HEIGHT;
         const c1 = p5.color(this._skyColourPrimary);
-        const c2 = p5.color(this._skycolourSecondary);
+        const c2 = p5.color(this._skyColourSecondary);
         for (let i = y; i <= y + h; i++) {
             let inter = p5.map(i, y, y + h, 0, 1);
             let c = p5.lerpColor(c2, c1, inter);
             p5.stroke(c);
-            p5.line(0, i, constants.WORLD_VIEW_WIDTH, i);
+            p5.line(0, i, constants.SCREEN_WIDTH, i);
           }
     }
 
@@ -62,6 +100,7 @@ export default class Sky {
         if (!(day)) {
             this.renderStars(p5);
         }
-        // p5.text(`Daytime: ${day}`, 100, 300);
+        p5.text(`Primary: ${this._skyColourPrimary}`, 100, 300);
+        p5.text(`Secondary: ${this._skyColourSecondary}`, 100, 330);
     }
 }

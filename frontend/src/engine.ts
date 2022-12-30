@@ -161,6 +161,7 @@ export default class Engine extends View {
         this._economy._data.addMoney(this._gameData.startingResources[0][1]);
         this._horizontalOffset = this._map._maxOffset / 2;   // Put player in the middle of the map to start out
         this._infrastructure.setup(this._map._mapData.length);
+        this.updateDayNightCycle();
         this.createNewGameModal();
     }
 
@@ -817,7 +818,10 @@ export default class Engine extends View {
             this._daytime = false;
             this._sunlight = 0;
         }
-        this._sky.setSkyColour(day, this._gameTime.cycle, this._gameTime.hour);
+        let hour = this._gameTime.hour;
+        if (hour !== 12) {
+            this._sky.updateSkyColour(day, this._gameTime.cycle);
+        }
     }
 
     // In-game clock control and general event scheduler
@@ -840,6 +844,7 @@ export default class Engine extends View {
                             } else {
                                 this.generateEvent();           // Modal popup appears every time it's a new day.
                                 this._gameTime.cycle = "AM";
+                                this._sky.setSkyColour(constants.GREEN_DARKEST, false); // Reset sky secondary colour at midnight
                                 // Advance date (anything on a daily schedule should go here)
                                 if (this._gameTime.sol < this._solsPerYear) {
                                     this._gameTime.sol ++;
@@ -1046,6 +1051,6 @@ export default class Engine extends View {
             this._modal.render();
         }
         p5.fill(constants.GREEN_TERMINAL);
-        p5.text(`Sunlight: ${this._sunlight}`, 120, 300);
+        // p5.text(`Sunlight: ${this._sunlight}`, 120, 300);
     }
 }
