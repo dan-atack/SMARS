@@ -2282,13 +2282,17 @@ Exit Criteria:
 
 6. Add the Solar Panel module as a new module type, "Power", to the game's database.
 
-### 7. Add a new Module method, generatePower, that simply takes a module's outputs list and adds them to the module's stored resources (this method will only be called for modules with the "Power" class, so it can be a simplified version of the produce method). Unit test this method before proceeding.
+7. Add a new Module method, generatePower, that simply takes a module's outputs list and adds them to the module's stored resources (this method will only be called for modules with the "Power" class, so it can be a simplified version of the produce method). Unit test this method before proceeding.
 
-### 8. Add a new Infrastructure method, resolveModulePowerGeneration, to call the generatePower method for all modules whose type is "power." Unit test this method before proceeding.
+8. Add a new Infrastructure method, resolveModulePowerGeneration, to call the generatePower method for all modules whose type is "power." Unit test this method before proceeding.
 
-### 9. Add power to the Hydroponics Module's list of inputs, along with water. Validate that this works in-game, and update Module AND ColonistData (and Infrastructure??) class unit tests to expect the power requirement for production actions.
+9. Add power to the Hydroponics Module's list of inputs, along with water. Validate that this works in-game before proceeding.
 
-### 10. Finally,
+10. Add the Infrastructure class's power generation method to its hourly updates, and validate in-game that the solar panel modules produce power ever hour - hey that rhymes!
+
+11. Add an Infrastructure method, to be called every hour, that locates production modules that are storing their output resources, and attempts to find Storage class modules to hold these resources so that they don't build up and eventually overflow in the Power / Production class modules that have generated them. You better believe that's gonna need a unit test!
+
+### 12. Add the current power supply and rate of change to the Economy class, to display at the top of the screen.
 
 ## Chapter Forty: Pre-Release Finishing Touches (Game Features)
 

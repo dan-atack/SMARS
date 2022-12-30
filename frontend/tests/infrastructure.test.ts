@@ -50,6 +50,25 @@ const storageModuleInfo: ModuleInfo = {
     shapes: []
 }
 
+const batteryModuleInfo: ModuleInfo = {
+    name: "Battery",
+    width: 2,
+    height: 1,
+    type: "Storage",
+    pressurized: false,
+    columnStrength: 10,
+    durability: 100,
+    buildCosts:[
+        ["money", 100000]
+    ],
+    maintenanceCosts: [],
+    storageCapacity: [
+        ["power", 1000],
+    ],
+    crewCapacity: 0,
+    shapes: []
+}
+
 const cantinaModuleInfo: ModuleInfo = {
     name: "Cantina",
     width: 4,
@@ -94,6 +113,28 @@ const powerPlantInfo: ModuleInfo = {
     storageCapacity: [
         ["power", 100000],
         ["plutonium", 50000]
+    ],
+    crewCapacity: 0,
+    shapes: []
+}
+
+const solarPanelInfo: ModuleInfo = {
+    name: "Small Solar Array",
+    width: 3,
+    height: 2,
+    type: "Power",
+    pressurized: false,
+    columnStrength: 0,
+    durability: 100,
+    buildCosts: [
+        ["money", 250000],
+    ],
+    maintenanceCosts: [],
+    productionOutputs: [
+        ["power", 50]
+    ],
+    storageCapacity: [
+        ["power", 1000]
     ],
     crewCapacity: 0,
     shapes: []
@@ -158,7 +199,7 @@ const airVentData: ConnectorInfo = {
 }
 
 // Fake terrain data (TODO: Create a Map class instance here to pass legitimate topography and zone data to the Infra tests)
-const mockography = [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10];
+const mockography = [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10];
 const zonesData = [
     { id: '0026', leftEdge: { x: 0, y: 26 }, rightEdge: { x: 15, y: 26 } }
 ]
@@ -299,7 +340,7 @@ describe("Infrastructure base class", () => {
             ["water", 500],
             ["power", 0]
         ]);
-        infra.handleHourlyUpdates();                            // Expect cantina to be fully restocked...
+        infra.handleHourlyUpdates(100);                            // Expect cantina to be fully restocked...
         expect(infra._modules[3]._resources).toStrictEqual([
             ["food", 5000],
             ["water", 5000],                                    //
@@ -315,7 +356,7 @@ describe("Infrastructure base class", () => {
 
     test("Production modules share production output resources", () => {
         infra.addResourcesToModule(1004, ["power", 100000]);        // Provision power production module
-        infra.handleHourlyUpdates();
+        infra.handleHourlyUpdates(100);
         expect(infra._modules[3]._resources).toStrictEqual([
             ["food", 5000],
             ["water", 5000],
@@ -334,7 +375,7 @@ describe("Infrastructure base class", () => {
 
     test("Can trigger a production round for a module", () => {
         // Setup: Module exists with a colonist punched in, and the necessary resources for production
-        infra.handleHourlyUpdates();
+        infra.handleHourlyUpdates(100);
         infra._modules[5].punchIn(9999);        // Punch in colonist # 9999
         expect(infra._modules[5].hasProductionInputs()).toBe(true);     // Validate setup
         expect(infra._modules[5]._crewPresent).toStrictEqual([9999]);
@@ -365,6 +406,46 @@ describe("Infrastructure base class", () => {
         infra.addResourcesToModule(1003, ["water", 100000]);                    // Setup: Fill cantina
         infra.addResourcesToModule(1005, ["water", 100000]);                    // Setup: Fill hydroponics module
         expect(infra.findStorageModule(["water", 100])).toBe(null);
+        // UPDATED: Also returns a null if second, optional storageOnly argument is given and no Storage class modules are found
+        expect(infra.findStorageModule(["water", 100], true)).toBe(null);        // Cantina is not Storage class
+    })
+
+    test("resolveModulePowerGeneration finds all Power class modules and has them generate power", () => {
+        infra.addModule(0, 19, solarPanelInfo, mockography, zonesData, 1006);   // Add solar panel module
+        infra.resolveModulePowerGeneration(100);                                // Use full sunlight levels
+        expect(infra._modules[6]._resources[0]).toStrictEqual(["power", 50]);   // Solar panel has generated power
+        // TODO: Provision nuclear reactor and verify its power generation output
+    })
+
+    test("resolveResourceStoragePushes sends production/power outputs to available Storage class modules", () => {
+        // Setup test conditions - NEW POLICY: WIPE ALL EXISTING STRUCTURES AT START OF EACH TEST
+        infra._modules = [];
+        infra._data = new InfrastructureData();  // Necessary... for now
+        infra._data.setup(mockography.length);
+        // Add 2 solar panels, a battery, a hydroponics bay and a storage room
+        infra.addModule(4, 25, solarPanelInfo, mockography, zonesData, 1000);
+        infra.addModule(7, 25, solarPanelInfo, mockography, zonesData, 1001);
+        infra.addModule(10, 25, batteryModuleInfo, mockography, zonesData, 1002);
+        infra.addModule(13, 25, hydroponicsModuleData, mockography, zonesData, 1003);
+        infra.addModule(17, 25, storageModuleInfo, mockography, zonesData, 1004);
+        // Provision production modules with their outputs
+        infra.addResourcesToModule(1000, ["power", 100]);
+        infra.addResourcesToModule(1001, ["power", 100]);
+        infra.addResourcesToModule(1003, ["food", 100]);
+        // Validate test conditions - production modules have resources and storage modules are empty
+        expect(infra._modules[0]._resources[0]).toStrictEqual(["power", 100]);
+        expect(infra._modules[1]._resources[0]).toStrictEqual(["power", 100]);
+        expect(infra._modules[2]._resources[0]).toStrictEqual(["power", 0]);
+        expect(infra._modules[3]._resources[2]).toStrictEqual(["food", 100]),
+        expect(infra._modules[4]._resources[1]).toStrictEqual(["food", 0]);
+        // Run test
+        infra.resolveResourceStoragePushes();
+        // Validate results - production modules are empty and storage modules are (partially) filled
+        expect(infra._modules[0]._resources[0]).toStrictEqual(["power", 0]);    // Pushed to battery
+        expect(infra._modules[1]._resources[0]).toStrictEqual(["power", 0]);    // Pushed to battery
+        expect(infra._modules[2]._resources[0]).toStrictEqual(["power", 200]);  // From solar panels
+        expect(infra._modules[3]._resources[2]).toStrictEqual(["food", 0]),     // Pushed to storage room
+        expect(infra._modules[4]._resources[1]).toStrictEqual(["food", 100]);   // From hydro pod
     })
 
 })

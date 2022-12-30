@@ -68,47 +68,11 @@ export default class Infrastructure {
 
     // SECTION 2 - MODULE UPDATER METHODS
 
-    handleHourlyUpdates = () => {
+    handleHourlyUpdates = (sunlightPercent: number) => {
         const reqs = this.compileModuleResourceRequests();
+        this.resolveResourceStoragePushes();
         this.resolveModuleResourceRequests(reqs);
-    }
-
-    compileModuleResourceRequests = () => {
-        const reqs: ResourceRequest[] = [];
-        this._modules.forEach((mod) => {
-            const modReqs = mod.determineResourceRequests();
-            modReqs.forEach((req) => {
-                reqs.push(req);
-            })
-        })
-        return reqs;
-    }
-
-    resolveModuleResourceRequests = (reqs: ResourceRequest[]) => {
-        reqs.forEach((req) => {
-            // 1 Keep track of when the request is satisfied, so that it only gets fulfilled once
-            let fulfilled = false;
-            // 2 Get modules that A) have the resource, B) aren't the requesting module itself and C) allow resource sharing
-            const providers = this._modules.filter((mod) => {
-                // 3 Determine resource sharing policy separately, to allow production modules to share output/s
-                let out = false;
-                if (mod._moduleInfo.productionOutputs) {
-                    mod._moduleInfo.productionOutputs.forEach((res) => {
-                        if (res[0] === req.resource[0]) out = true;
-                    })
-                }
-                return mod._resourceCapacity().includes(req.resource[0]) && mod._id !== req.modId && mod._resourceSharing || out;
-            });
-            providers.forEach((mod) => {
-                // Initiate transfer only if request is not already fulfilled, and module has at least some of the resource needed
-                if (!fulfilled && mod.getResourceQuantity(req.resource[0])) {
-                    const available = mod.deductResource(req.resource);
-                    // Transfer the available amount to the requesting module
-                    this.addResourcesToModule(req.modId, [req.resource[0], available]);
-                    fulfilled = true;   // Prevent multiple providers from all attempting to fill up
-                }
-            })
-        })
+        this.resolveModulePowerGeneration(sunlightPercent);
     }
 
     // SECTION 3 - VALIDATING MODULE / CONNECTOR PLACEMENT
@@ -231,6 +195,27 @@ export default class Infrastructure {
         }
     }
 
+    // Called by the hourly updater to handle modules that generate power autonomously (i.e. with no colonist work action)
+    resolveModulePowerGeneration = (sunlightPercent: number) => {
+        // Find all Power modules
+        const generators = this._modules.filter((mod) => mod._moduleInfo.type === "Power");
+        // Call their generation method
+        generators.forEach((mod) => {
+            mod.generatePower(sunlightPercent);
+        })
+    }
+
+    compileModuleResourceRequests = () => {
+        const reqs: ResourceRequest[] = [];
+        this._modules.forEach((mod) => {
+            const modReqs = mod.determineResourceRequests();
+            modReqs.forEach((req) => {
+                reqs.push(req);
+            })
+        })
+        return reqs;
+    }
+
     // Top-level module resource calculator - returns all resource data to the Economy class to amalgamate it
     getAllBaseResources = () => {
         const resources: Resource[] = [];
@@ -282,20 +267,77 @@ export default class Infrastructure {
         return mods;
     }
 
-    // Returns the first module found that A) has storage space for a given resource and B) [optionally] is a storage module
-    findStorageModule = (resource: Resource) => {
+    // Returns the first module found that has storage space for a given resource; optionally only returns Storage class modules
+    findStorageModule = (resource: Resource, storageOnly?: boolean) => {
         // Find all storage modules that can hold the resource
         const storage = this._modules.filter((mod) => mod._moduleInfo.type === "Storage" && mod._resourceCapacity().includes(resource[0]));
         const storageMod = storage.find((mod) => mod.getResourceCapacityAvailable(resource[0]) >= resource[1]);
         // Return the storage module if there is one
         if (storageMod) {
             return storageMod;
-        // Else return any module that can hold the given resource
-        } else if (this._modules.find((m) => m.getResourceCapacityAvailable(resource[0]) >= resource[1])) {
+        // Else return any module that can hold the given resource, if allowed
+        } else if (!(storageOnly) && this._modules.find((m) => m.getResourceCapacityAvailable(resource[0]) >= resource[1])) {
             return this._modules.find((m) => m.getResourceCapacityAvailable(resource[0]) >= resource[1]);
         }
         // If no modules are available return a null
         return null;
+    }
+
+    // Handles inter-module resource distribution REQUESTS (i.e. cycles needs/inputs OUT from Storage modules)
+    resolveModuleResourceRequests = (reqs: ResourceRequest[]) => {
+        reqs.forEach((req) => {
+            // 1 Keep track of when the request is satisfied, so that it only gets fulfilled once
+            let fulfilled = false;
+            // 2 Get modules that A) have the resource, B) aren't the requesting module itself and C) allow resource sharing
+            const providers = this._modules.filter((mod) => {
+                // 3 Determine resource sharing policy separately, to allow production modules to share output/s
+                let out = false;
+                if (mod._moduleInfo.productionOutputs) {
+                    mod._moduleInfo.productionOutputs.forEach((res) => {
+                        if (res[0] === req.resource[0]) out = true;
+                    })
+                }
+                return mod._resourceCapacity().includes(req.resource[0]) && mod._id !== req.modId && mod._resourceSharing || out;
+            });
+            providers.forEach((mod) => {
+                // Initiate transfer only if request is not already fulfilled, and module has at least some of the resource needed
+                if (!fulfilled && mod.getResourceQuantity(req.resource[0])) {
+                    const available = mod.deductResource(req.resource);
+                    // Transfer the available amount to the requesting module
+                    this.addResourcesToModule(req.modId, [req.resource[0], available]);
+                    fulfilled = true;   // Prevent multiple providers from all attempting to fill up
+                }
+            })
+        })
+    }
+
+    // Handles inter-module resource distribution PUSHES (i.e. cycles production outputs INTO storage modules)
+    resolveResourceStoragePushes = () => {
+        // Find all modules that are in the Production or Power class (i.e. modules with productionOutput resources)
+        const pushers = this._modules.filter((mod) => mod._moduleInfo.productionOutputs !== undefined);
+        // For each one, for each output, find a Storage class module that can hold its output/s
+        pushers.forEach((mod) => {
+            mod._moduleInfo.productionOutputs?.forEach((resource) => {
+                const storage = this.findStorageModule([resource[0], 1], true);   // Find Storage modules only; at least 1 capacity
+                if (storage) {
+                    const outputQty = mod.getResourceQuantity(resource[0]);
+                    const storageCapacity = storage.getResourceCapacityAvailable(resource[0]);
+                    // Store all output resource quantity if possible; otherwise fill up the container as much as possible
+                    let transferred = 0;
+                    if (storageCapacity >= outputQty) {
+                        transferred = mod.deductResource([resource[0], outputQty]);
+                    } else {
+                        transferred = mod.deductResource([resource[0], storageCapacity]);
+                    }
+                    storage.addResource([resource[0], transferred]);
+                    console.log(`Transferred ${transferred} ${resource[0]}\nfrom module ${mod._id}\nto module ${storage._id}`);
+                } else {
+                    // If no Storage module is available, issue a warning
+                    console.log(`Warning: No module found to store ${resource[0]} output from ${mod._moduleInfo.name} ${mod._id}`);
+                }
+            })
+        })
+        
     }
 
     // SECTION 5 - INFRASTRUCTURE INFO API (GETTER FUNCTIONS)

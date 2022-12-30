@@ -793,7 +793,7 @@ export default class Engine extends View {
     handleHourlyUpdates = () => {
         this.updateEconomyDisplay();
         this.updateEarthData();
-        this._infrastructure.handleHourlyUpdates();
+        this._infrastructure.handleHourlyUpdates(100);      // ALWAYS USING FULL SUNLIGHT LEVELS FOR NOW
         this._industry.updateJobs(this._infrastructure);
     }
 
