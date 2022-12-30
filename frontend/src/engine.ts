@@ -791,10 +791,10 @@ export default class Engine extends View {
 
     // Calls scheduled update events
     handleHourlyUpdates = () => {
-        this.updateEconomyDisplay();
         this.updateEarthData();
         this._infrastructure.handleHourlyUpdates(100);      // ALWAYS USING FULL SUNLIGHT LEVELS FOR NOW
         this._industry.updateJobs(this._infrastructure);
+        this.updateEconomyDisplay();
     }
 
     // In-game clock control and general event scheduler

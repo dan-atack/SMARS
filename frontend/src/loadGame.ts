@@ -31,6 +31,7 @@ export default class LoadGame extends Screen {
     _loadOptionHeight: number;
     _loadOptionX: number;
     _loadOptionY: number;
+    _selectOptionX: number;
     _buttonWidth: number;
     _buttonHeight: number;
     _buttonX: number;
@@ -65,8 +66,9 @@ export default class LoadGame extends Screen {
         this._buttonBG = constants.GREEN_DARK;
         this._loadOptionWidth = 480;
         this._loadOptionHeight = 72;
-        this._loadOptionX = constants.SCREEN_WIDTH / 2 - this._buttonWidth / 2;
+        this._loadOptionX = constants.SCREEN_WIDTH / 2 - this._loadOptionWidth / 2;
         this._loadOptionY = 120;
+        this._selectOptionX = 208;
         this._justOpened = false;           // Setup function sets this to true, which will block the very first click response
         this._savedGames = [];              // Initially there are no saved games to display
         this._selectedGame = null;          // Initially there is no game selected
@@ -115,8 +117,8 @@ export default class LoadGame extends Screen {
 
     // Passed to the load option button to set the basic info for the selected file when clicked
     setSaveSelection = (saveSummary: SaveSummary) => {
-        const name = saveSummary.game_name.length < 18 ? saveSummary.game_name : saveSummary.game_name.slice(0, 15) + "...";
-        this.setMessage(`Game selected: ${name}`, constants.GREEN_TERMINAL);
+        const name = saveSummary.game_name.length < 19 ? saveSummary.game_name : saveSummary.game_name.slice(0, 16) + "...";
+        this.setMessage(`Selected: ${name}`, constants.GREEN_TERMINAL);
         this._selectedGame = saveSummary;
     }
 
@@ -138,8 +140,8 @@ export default class LoadGame extends Screen {
         if (!this._selectedGame) {
             this.setMessage("", constants.GREEN_TERMINAL);
         } else {
-            const name = this._selectedGame.game_name.length < 18 ? this._selectedGame.game_name : this._selectedGame.game_name.slice(0, 15) + "...";
-            this.setMessage(`Game selected: ${name}`, constants.GREEN_TERMINAL)
+            const name = this._selectedGame.game_name.length < 19 ? this._selectedGame.game_name : this._selectedGame.game_name.slice(0, 16) + "...";
+            this.setMessage(`Selected: ${name}`, constants.GREEN_TERMINAL)
         }
         this._buttons.forEach((button) => {
             button.handleClick(mouseX, mouseY);
@@ -214,16 +216,16 @@ export default class LoadGame extends Screen {
         p5.textAlign(p5.CENTER, p5.TOP);
         p5.text(`Welcome back, ${this._username}`, constants.SCREEN_WIDTH / 2, 40);
         p5.textSize(36);
-        p5.text("Select", 180, 120);
-        p5.text("Saved Game:", 180, 160);
+        p5.text("Select", this._selectOptionX, 120);
+        p5.text("Saved Game:", this._selectOptionX, 160);
         p5.textSize(24);
         p5.fill(constants.GREEN_TERMINAL);
-        p5.text(`Showing ${this._optionsShowing + 1} - ${Math.min(this._optionsShowing + this._optionsPerPage, this._savedGames.length)}`, 180, 240);
-        p5.text(`of ${this._savedGames.length} saved games`, 180, 272);
+        p5.text(`Showing ${this._optionsShowing + 1} - ${Math.min(this._optionsShowing + this._optionsPerPage, this._savedGames.length)}`, this._selectOptionX, 240);
+        p5.text(`of ${this._savedGames.length} saved games`, this._selectOptionX, 272);
         // Render error/info message:
         p5.textSize(20);    
         p5.fill(this._messageColor);
-        p5.text(this._message, 180, 400);
+        p5.text(this._message, this._selectOptionX, 400);
         this._loadOptions.forEach((option) => {
             option.render(p5);
         })

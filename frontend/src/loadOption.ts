@@ -61,7 +61,8 @@ export default class LoadOption extends Button {
         p5.fill(this._color);   // Text color
         p5.textAlign(p5.LEFT, p5.CENTER);
         // Building Chip label text is slightly above center line, to make space for other info:
-        p5.text(this._saveInfo.game_name, this._x + 12, this._y + this._height / 4);
+        const name = this._saveInfo.game_name.length < 27 ? this._saveInfo.game_name : this._saveInfo.game_name.slice(0, 24) + "...";
+        p5.text(name, this._x + 12, this._y + this._height / 4);
         p5.text(this.getTerranDate(), this._x + 280, this._y + this._height / 4);
         p5.fill(constants.GREEN_TERMINAL);
         p5.textSize(16);
