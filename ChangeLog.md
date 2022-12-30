@@ -2307,6 +2307,20 @@ Exit Criteria:
 - The game's background colour changes depending on the time of day, and stars are visible at night time
 - Solar power is available only when the sun is up, which is from 6 AM to 6 PM every day (no seasons to be added just yet)
 
+1. Add a simple boolean flag to the Engine class, day, to tell if it's day or night in the game.
+
+2. Add a simple method, updateDayNightCycle to the Engine's time keeping section to update the day/night value every hour, switching it to day at 6 AM and to night at 6 PM. Call this method on the Engine's setup to ensure the value is calculated right away when a saved game is loaded. Remember also that clocks have 12 instead of 0 as the first number in every cycle...
+
+### 3. Add another new Engine field for skyColour, to keep track of which colour the sky is based on whether it is day or night. Have the updateDayNightCycle method set it to one colour for day time, and another for when it changes to night time.
+
+### 4. Experiment with a dynamic value for the colour hex code for the day/night cycle, so that the colour changes every hour instead of just twice per day.
+
+### 5. If this succeeds in principle, add a simple statement to the Engine's minutely updates cycle to alter the hex code for the Sky colour minute to minute, for a completely smooth aesthetic experience.
+
+### 6. Now for the meat and potatoes: Based on the time of day vis-a-vis the day/night cycle, calculate another Engine property, sunlightLevel, as a value from 0 to 100, where 100 is the value for when the sun is high, and 0 is the value for night time. Since there might be some asymmetry from night and day (night is always 0% whereas the value will be between 1 - 100% during the day) the method for calculating this will have to have different equation depending on whether it is currently night or day.
+
+### 7. Pass the sunlight level to the hourly updater to make the solar panel's output dependent on the time of day.
+
 ## Chapter Forty-One: Basic Module Maintenance
 
 ### Difficulty Estimate: 5 for implementing new maintenance cost system, updating unit tests, and adding module status display

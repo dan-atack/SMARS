@@ -72,6 +72,8 @@ export default class Engine extends View {
     _minutesPerHour: number;
     _hoursPerClockCycle: number;    // One day = two trips around the clock
     _solsPerYear: number;
+    _daytime: boolean;              // Keep track of whether it is day or night
+    _sunlight: number;              // Percent value (0 to 100) of how strongly the sun is shining
     // In-game flag for when the player has chosen their landing site, and grid location of landing site's left edge and altitude
     _hasLanded: boolean;
     _landingSiteCoords: [number, number];
@@ -104,34 +106,37 @@ export default class Engine extends View {
         this._scrollDistance = 50;
         this._scrollingLeft = false;
         this._scrollingRight = false;
-        this._mouseInScrollRange = 0;   // Counts how many frames have passed with the mouse within scroll distance of the edge
-        this._scrollThreshold = 10;     // Controls the number of frames that must pass before the map starts to scroll
-        this._fastScrollThreshold = 60; // Number of frames to pass before fast scroll begins
-        this.mouseContext = "inspect"    // Default mouse context allows user to select ('inspect') whatever they click on
-        this.selectedBuilding = null;   // There is no building info selected by default.
-        this.selectedBuildingCategory = "";  // Keep track of whether the selected building is a module or connector
-        this.inspecting = null;         // Keep track of selected item; default is null
-        this._currentEvent = {
+        this._mouseInScrollRange = 0;    // Counts how many frames have passed with the mouse within scroll distance of the edge
+        this._scrollThreshold = 10;         // Controls the number of frames that must pass before the map starts to scroll
+        this._fastScrollThreshold = 60;     // Number of frames to pass before fast scroll begins
+        this.mouseContext = "inspect"       // Default mouse context allows user to select ('inspect') whatever they click on
+        this.selectedBuilding = null;       // There is no building info selected by default.
+        this.selectedBuildingCategory = ""; // Keep track of whether the selected building is a module or connector
+        this.inspecting = null;             // Keep track of selected item; default is null
+        this._currentEvent = {              // Keep track of whether there is an event going on
             type: "",
             coords: { x: 0, y: 0 },
             value: 0
-        };        // Keep track of whether there is an event going on
+        };
         // Time-keeping:
         // TODO: Make the clock its own component, to de-clutter the Engine.
-        this.gameOn = true;             // By default the game is on when the Engine starts
+        this.gameOn = true;                 // By default the game is on when the Engine starts
         this._tick = 0;
-        this._waitTime = 0;             // By default there is no wait time
+        this._waitTime = 0;                 // By default there is no wait time
         this._gameTime = {
             minute: 0,
             hour: 12,
             cycle: "AM",
             sol: 1,
             year: 0
-        };                              // New take on the old way of storing the game's time
-        this.ticksPerMinute = 20        // Medium "fast" speed is set as the default
-        this._minutesPerHour = 60;      // Minutes go from 0 - 59, so this should really be called max minutes
+        };                                  // New take on the old way of storing the game's time
+        this.ticksPerMinute = 20            // Medium "fast" speed is set as the default
+        this._minutesPerHour = 60;          // Minutes go from 0 - 59, so this should really be called max minutes
         this._hoursPerClockCycle = 12;
         this._solsPerYear = 4;
+        this._daytime = false;              // It is night time when the game starts
+        this._sunlight = 0;                 // No sunshine at night (when the game starts)
+        // Flags and game start values
         this._hasLanded = false;            // At the Engine's creation, the player is presumed not to have landed yet
         this._landingSiteCoords = [-1, -1]; // Default value of -1, -1 indicates landing site has not yet been selected
         this._provisioned = false;          // Stays negative until all basic modules have been loaded with starting resources
@@ -159,6 +164,7 @@ export default class Engine extends View {
     setupSavedGame = (saveInfo: SaveInfo) => {
         this._saveInfo = saveInfo;
         this.setClock(saveInfo.game_time);
+        this.updateDayNightCycle();
         this._map.setup(this._saveInfo.terrain);
         // TODO: Extract the map expansion/sidebar pop-up (and the reverse) into a separate method
         this._map.setExpanded(false);   // Map starts in 'expanded' mode by default, so it must tell it the sidebar is open
@@ -764,7 +770,7 @@ export default class Engine extends View {
         this._economy._data.updateResources(rs);
     }
 
-    //// GAMESPEED AND TIME METHODS ////
+    //// TIME AND GAMESPEED METHODS ////
 
     setGameSpeed = (value: string) => {
         this.gameOn = true;     // Always start by assuming the game is on
@@ -795,6 +801,17 @@ export default class Engine extends View {
         this._infrastructure.handleHourlyUpdates(100);      // ALWAYS USING FULL SUNLIGHT LEVELS FOR NOW
         this._industry.updateJobs(this._infrastructure);
         this.updateEconomyDisplay();
+        this.updateDayNightCycle();
+    }
+
+    // Updates the day/night cycle and in-game weather
+    updateDayNightCycle = () => {
+        const day = (this._gameTime.cycle === "AM" && (this._gameTime.hour >= 6 && this._gameTime.hour < 12)) || (this._gameTime.cycle === "PM" && (this._gameTime.hour < 6 || this._gameTime.hour === 12));
+        if (day) {
+            this._sunlight = 100
+        } else {
+            this._sunlight = 0;
+        }
     }
 
     // In-game clock control and general event scheduler
@@ -809,8 +826,6 @@ export default class Engine extends View {
                     this._gameTime.minute ++;
                 } else {
                     this._gameTime.minute = 0;   // Advance hours (anything on an hourly schedule should go here)
-                    this.handleHourlyUpdates();
-                         // Advance Earth date every game hour
                     if (this._gameTime.hour < this._hoursPerClockCycle) {
                         this._gameTime.hour ++;
                         if (this._gameTime.hour === this._hoursPerClockCycle) {  // Advance day/night cycle when hour hits twelve
@@ -818,7 +833,8 @@ export default class Engine extends View {
                                 this._gameTime.cycle = "PM"
                             } else {
                                 this.generateEvent();           // Modal popup appears every time it's a new day.
-                                this._gameTime.cycle = "AM";        // Advance date (anything on a daily schedule should go here)
+                                this._gameTime.cycle = "AM";
+                                // Advance date (anything on a daily schedule should go here)
                                 if (this._gameTime.sol < this._solsPerYear) {
                                     this._gameTime.sol ++;
                                 } else {
@@ -829,8 +845,9 @@ export default class Engine extends View {
                             }  
                         }
                     } else {
-                        this._gameTime.hour = 1;     // Hour never resets to zero
+                        this._gameTime.hour = 1;    // Hour never resets to zero
                     }
+                    this.handleHourlyUpdates();     // Handle updates after updating the clock
                 } 
             }
         }
@@ -1022,6 +1039,6 @@ export default class Engine extends View {
         if (this._modal) {
             this._modal.render();
         }
-        // p5.text(this._industry._miningCoordinatesInUse.water.length, 120, 300);
+        p5.text(`Sunlight: ${this._sunlight}`, 120, 300);
     }
 }
