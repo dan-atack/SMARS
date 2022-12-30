@@ -39,6 +39,7 @@ export const constants = {
     ORANGE_COPPER: "#8C5827",
     YELLOW_BG: "#544503",
     YELLOW_TEXT: "#FFD412",
+    YELLOW_SKY: "#C9A551",
     BLUE_ICE: "#A0EBE3",
     BLUE_SUNSET: "#050094",
     GREEN_LEAVES: "#049426",

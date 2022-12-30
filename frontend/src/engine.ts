@@ -12,6 +12,7 @@ import Modal, { EventData } from "./modal";
 import Lander from "./lander";
 import DropPod from "./dropPod";
 import MouseShadow from "./mouseShadow";
+import Sky from "./sky";
 // Component display shapes for Inspect Tool
 import Block from "./block";
 import Colonist from "./colonist";
@@ -44,6 +45,7 @@ export default class Engine extends View {
     _modal: Modal | null;
     _animation: Lander | DropPod | null; // This field holds the current entity being used to control animations, if there is one
     _mouseShadow: MouseShadow | null;    // This field will hold a mouse shadow entity if a building is being placed
+    _sky: Sky;                  // The animations component for the sky, including sunlight levels and atmospheric effects
     // Map scrolling control
     _horizontalOffset: number;  // This will be used to offset all elements in the game's world, starting with the map
     _scrollDistance: number;    // Pixels from the edge of the world area in which scrolling occurs
@@ -102,6 +104,7 @@ export default class Engine extends View {
         this._modal = null;
         this._animation = null;
         this._mouseShadow = null;
+        this._sky = new Sky();
         this._horizontalOffset = 0;
         this._scrollDistance = 50;
         this._scrollingLeft = false;
@@ -808,10 +811,13 @@ export default class Engine extends View {
     updateDayNightCycle = () => {
         const day = (this._gameTime.cycle === "AM" && (this._gameTime.hour >= 6 && this._gameTime.hour < 12)) || (this._gameTime.cycle === "PM" && (this._gameTime.hour < 6 || this._gameTime.hour === 12));
         if (day) {
-            this._sunlight = 100
+            this._daytime = true;
+            this._sunlight = 100;
         } else {
+            this._daytime = false;
             this._sunlight = 0;
         }
+        this._sky.setSkyColour(day, this._gameTime.cycle, this._gameTime.hour);
     }
 
     // In-game clock control and general event scheduler
@@ -1015,7 +1021,7 @@ export default class Engine extends View {
             this.advanceWaitTime();
         }
         const p5 = this._p5;
-        p5.background(constants.APP_BACKGROUND);
+        this._sky.render(this._p5, this._daytime);    // Sky colour changes based on day/night cycle (and eventually... weather?!)
         this.renderMouseShadow();                               // Render mouse shadow first
         if (this._animation) {
             this._animation.render(p5, this._horizontalOffset);     // Render animation second
@@ -1039,6 +1045,6 @@ export default class Engine extends View {
         if (this._modal) {
             this._modal.render();
         }
-        p5.text(`Sunlight: ${this._sunlight}`, 120, 300);
+        // p5.text(`Sunlight: ${this._sunlight}`, 120, 300);
     }
 }
