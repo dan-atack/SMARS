@@ -2294,13 +2294,61 @@ Exit Criteria:
 
 12. Add the current power supply and rate of change to the Economy class, to display at the top of the screen.
 
-## Chapter Forty: Pre-Release Finishing Touches (Game Features)
+## Chapter Forty: Day and Night Cycle
 
-### (Difficulty Estimate: TBD)
+### Difficulty Estimate: 3 for integration with power production system and aesthetic upgrades
+
+### Date: December 29, 2022
+
+Once the basic rules for power use/creation have been set up, a few additional finishing touches will be implemented to round out the game's initial features for its first release. The first of these final improvements will be to add a simple day/night cycle to improve the game's aesthetics and also to add complexity to the solar power generation process (no power will be produced at night time). This chapter will focus exclusively on implementing the day/night cycle and its ramifications for power generation, as well as the accompanying night/day animation for the game's sky.
+
+Exit Criteria:
+
+- The game's background colour changes depending on the time of day, and stars are visible at night time
+- Solar power is available only when the sun is up, which is from 6 AM to 6 PM every day (no seasons to be added just yet)
+
+## Chapter Forty-One: Basic Module Maintenance
+
+### Difficulty Estimate: 5 for implementing new maintenance cost system, updating unit tests, and adding module status display
 
 ### Date: TBD
 
-Once the basic rules for power use/creation have been set up, a few additional finishing touches will be implemented to round out the game's initial features for its first release. These include adding a simple day/night cycle to add to the game's aesthetics and also to add complexity to the solar power generation process (no power will be produced at night time), as well as adding an hourly maintenance cost for some modules (e.g. all pressurized modules will lose a small amount of air every hour, and some modules like the Crew Quarters will need to consume power as well). Modules that have not gotten their maintenance resources will not be usable by the colonists for production/eating/drinking/sleeping, so it is imperative that resources are kept flowing. Lastly, a slight adjustment to the game's resource transfer system will be made to ensure that production modules' outputs are routinely cycled into storage modules, to prevent them building up in the production modules themselves.
+Once the day/night cycle is established, an hourly maintenance cost for some modules will be introduced to add difficulty to the game in terms of resource management. Initial costs will come in two forms: resource usage, as in electricity to power the lights and heaters and so forth, and air loss due to leakage. All pressurized modules will lose a small amount of air every hour, and some modules like the Crew Quarters will need to consume power as well. Modules that have not gotten their maintenance resources will not be usable by the colonists for production/eating/drinking/sleeping, so it is imperative that resources are kept flowing. A module will need just a simple boolean to keep track of whether or not it is useable due to maintenance (or lack thereof). This chapter will explore various simple techniques for illustrating if a module has been rendered unusable due to a lack of maintenance resources.
+
+Exit Criteria:
+
+- All existing modules in the database have their maintenance costs and storage capacities updated to 'real' values
+- Hydroponics modules produce more air as a production output
+- Infrastructure class calculates and docks resources for module maintenance every hour:
+  - All pressurized modules leak 0.02 units of air per hour (more sophisticated rules to follow)
+  - All maintenance costs are subtracted, when possible, every hour
+- When a module has missed its latest hourly maintenance check (i.e. come up short) it is unusable for colonists
+- When a module is unusable due to missed maintenance resources, its appearance is altered to display this fact
+- When a module is unusable due to missed maintenance, it is passed over by the Industry class for jobs creation
+- When a module regains its maintenance resources and passes its maintenance check its usability is immediately restored
+- Module maintenance status boolean is added to save game data
+
+## Chapter Forty-Two: Pre-Release Colonist Pathfinding Improvements
+
+### Difficulty Estimate: 3 for basic tweaks to the logic, and extensive unit tests
+
+### Date: TBD
+
+In the last pre-release feature update, a slight adjustment will be made to the colonists' pathfinding logic to make more use of their current position when determining a destination module for consumption/production, or when finding a mining site. And that's all, I swear!
+
+Exit Criteria:
+
+- When presented with two options to get a resource/do work, and other things being equal, a colonist will prefer to go to the module nearest to them, rather than the first one in the Infrastructure class's modules list that matches their needs
+
+## Chapter Forty-Three: In-Game Notifications
+
+### Difficulty Estimate: TBD
+
+### Date: TBD
+
+The final, FINAL thing to do before the game's first release is to implement a simple in-game notification system that does not interrupt the player like the modal dialogues, but which displays helpful prompts to the player without pausing the game. These should be simple messages displayed by the Engine whenever a console log warning would pop up, to indicate that there is a problem in the base that requires the player's attention, such as a lack of a resource needed for production, or colonists going hungry/thirsty/etc.
+
+Exit Criteria: TBD
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
