@@ -2332,7 +2332,7 @@ Exit Criteria:
 
 ### Difficulty Estimate: 5 for implementing new maintenance cost system, updating unit tests, and adding module status display
 
-### Date: TBD
+### Date: December 31, 2022
 
 Once the day/night cycle is established, an hourly maintenance cost for some modules will be introduced to add difficulty to the game in terms of resource management. Initial costs will come in two forms: resource usage, as in electricity to power the lights and heaters and so forth, and air loss due to leakage. All pressurized modules will lose a small amount of air every hour, and some modules like the Crew Quarters will need to consume power as well. Modules that have not gotten their maintenance resources will not be usable by the colonists for production/eating/drinking/sleeping, so it is imperative that resources are kept flowing. A module will need just a simple boolean to keep track of whether or not it is useable due to maintenance (or lack thereof). This chapter will explore various simple techniques for illustrating if a module has been rendered unusable due to a lack of maintenance resources.
 
