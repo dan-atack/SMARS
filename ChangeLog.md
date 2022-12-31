@@ -2294,13 +2294,82 @@ Exit Criteria:
 
 12. Add the current power supply and rate of change to the Economy class, to display at the top of the screen.
 
-## Chapter Forty: Pre-Release Finishing Touches (Game Features)
+## Chapter Forty: Day and Night Cycle
 
-### (Difficulty Estimate: TBD)
+### Difficulty Estimate: 3 for integration with power production system and aesthetic upgrades
+
+### Date: December 29, 2022
+
+Once the basic rules for power use/creation have been set up, a few additional finishing touches will be implemented to round out the game's initial features for its first release. The first of these final improvements will be to add a simple day/night cycle to improve the game's aesthetics and also to add complexity to the solar power generation process (no power will be produced at night time). This chapter will focus exclusively on implementing the day/night cycle and its ramifications for power generation, as well as the accompanying night/day animation for the game's sky.
+
+Exit Criteria:
+
+- [DONE] The game's background colour changes depending on the time of day, and stars are visible at night time
+- [DONE] Solar power is available only when the sun is up, which is from 6 AM to 6 PM every day (no seasons to be added just yet)
+- [DONE] Solar power availability peaks at mid-day, and wanes when within 3 hours of dawn or dusk
+
+1. Add a simple boolean flag to the Engine class, day, to tell if it's day or night in the game.
+
+2. Add a simple method, updateDayNightCycle to the Engine's time keeping section to update the day/night value every hour, switching it to day at 6 AM and to night at 6 PM. Call this method on the Engine's setup to ensure the value is calculated right away when a saved game is loaded. Remember also that clocks have 12 instead of 0 as the first number in every cycle...
+
+3. Add another new Engine field for skyColour, to keep track of which colour the sky is based on whether it is day or night. Have the updateDayNightCycle method set it to one colour for day time, and another for when it changes to night time.
+
+4. Create a new Sky component to avoid cluttering the Engine up with too much new code. Add all of the existing code for updating the Engine's background colour to this component and add it to the Engine's renderer to take care of all future atmospheric effects going forward.
+
+5. Make the render for the new sky component show some stars in the night sky.
+
+6. Have the new sky component use a gradient colour for the sky during the daytime. If this succeeds, add a gradient to the night sky as well.
+
+7. Create a simple unit test file for the Sky component.
+
+8. Pass the sunlight level to the hourly updater to make the solar panel's output dependent on the time of day.
+
+9. Now for the complicated bit: Based on the time of day vis-a-vis the day/night cycle, calculate another Engine property, sunlightLevel, as a value from 0 to 100, where 100 is the value for when the sun is high, and 0 is the value for night time. Since there might be some asymmetry from night and day (night is always 0% whereas the value will be between 1 - 100% during the day) the method for calculating this will have to have different equation depending on whether it is currently night or day. This should be done by a new Engine method, updateSunlightLevel, that gets called only during the daytime block of the updateDayNightCycle method.
+
+10. The other half of the complicated bit: Add a hexadecimal decoder to the Sky class to allow it to alter the hex value of its current colour code to reduce the brightness of the SECONDARY colour as night approaches. Pass the Engine's sunlight value to the setSkyColour method with each minutely update to see it change smoothly!
+
+## Chapter Forty-One: Basic Module Maintenance
+
+### Difficulty Estimate: 5 for implementing new maintenance cost system, updating unit tests, and adding module status display
 
 ### Date: TBD
 
-Once the basic rules for power use/creation have been set up, a few additional finishing touches will be implemented to round out the game's initial features for its first release. These include adding a simple day/night cycle to add to the game's aesthetics and also to add complexity to the solar power generation process (no power will be produced at night time), as well as adding an hourly maintenance cost for some modules (e.g. all pressurized modules will lose a small amount of air every hour, and some modules like the Crew Quarters will need to consume power as well). Modules that have not gotten their maintenance resources will not be usable by the colonists for production/eating/drinking/sleeping, so it is imperative that resources are kept flowing. Lastly, a slight adjustment to the game's resource transfer system will be made to ensure that production modules' outputs are routinely cycled into storage modules, to prevent them building up in the production modules themselves.
+Once the day/night cycle is established, an hourly maintenance cost for some modules will be introduced to add difficulty to the game in terms of resource management. Initial costs will come in two forms: resource usage, as in electricity to power the lights and heaters and so forth, and air loss due to leakage. All pressurized modules will lose a small amount of air every hour, and some modules like the Crew Quarters will need to consume power as well. Modules that have not gotten their maintenance resources will not be usable by the colonists for production/eating/drinking/sleeping, so it is imperative that resources are kept flowing. A module will need just a simple boolean to keep track of whether or not it is useable due to maintenance (or lack thereof). This chapter will explore various simple techniques for illustrating if a module has been rendered unusable due to a lack of maintenance resources.
+
+Exit Criteria:
+
+- All existing modules in the database have their maintenance costs and storage capacities updated to 'real' values
+- Hydroponics modules produce more air as a production output
+- Infrastructure class calculates and docks resources for module maintenance every hour:
+  - All pressurized modules leak 0.02 units of air per hour (more sophisticated rules to follow)
+  - All maintenance costs are subtracted, when possible, every hour
+- When a module has missed its latest hourly maintenance check (i.e. come up short) it is unusable for colonists
+- When a module is unusable due to missed maintenance resources, its appearance is altered to display this fact
+- When a module is unusable due to missed maintenance, it is passed over by the Industry class for jobs creation
+- When a module regains its maintenance resources and passes its maintenance check its usability is immediately restored
+- Module maintenance status boolean is added to save game data
+
+## Chapter Forty-Two: Pre-Release Colonist Pathfinding Improvements
+
+### Difficulty Estimate: 3 for basic tweaks to the logic, and extensive unit tests
+
+### Date: TBD
+
+In the last pre-release feature update, a slight adjustment will be made to the colonists' pathfinding logic to make more use of their current position when determining a destination module for consumption/production, or when finding a mining site. And that's all, I swear!
+
+Exit Criteria:
+
+- When presented with two options to get a resource/do work, and other things being equal, a colonist will prefer to go to the module nearest to them, rather than the first one in the Infrastructure class's modules list that matches their needs
+
+## Chapter Forty-Three: In-Game Notifications
+
+### Difficulty Estimate: TBD
+
+### Date: TBD
+
+The final, FINAL thing to do before the game's first release is to implement a simple in-game notification system that does not interrupt the player like the modal dialogues, but which displays helpful prompts to the player without pausing the game. These should be simple messages displayed by the Engine whenever a console log warning would pop up, to indicate that there is a problem in the base that requires the player's attention, such as a lack of a resource needed for production, or colonists going hungry/thirsty/etc.
+
+Exit Criteria: TBD
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
