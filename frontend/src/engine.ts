@@ -813,14 +813,35 @@ export default class Engine extends View {
         const day = (this._gameTime.cycle === "AM" && (this._gameTime.hour >= 6 && this._gameTime.hour < 12)) || (this._gameTime.cycle === "PM" && (this._gameTime.hour < 6 || this._gameTime.hour === 12));
         if (day) {
             this._daytime = true;
-            this._sunlight = 100;
+            this.updateSunlightLevel();
         } else {
             this._daytime = false;
             this._sunlight = 0;
         }
         let hour = this._gameTime.hour;
-        if (hour !== 12) {
+        if (hour !== 12) {  // At 12 (noon / midnight) sky colour is set to either full daylight / midnight (no alteration needed)
             this._sky.updateSkyColour(day, this._gameTime.cycle);
+        }
+    }
+
+    // Updates light levels (only called during daytime, so the math does not apply at all hours of the Sol)
+    updateSunlightLevel = () => {
+        // Who needs grade 8 algebra when you've got a switch case!
+        switch (this._gameTime.hour) {
+            case 6:                     // 6 AM
+            case 5:                     // 5 PM
+                this._sunlight = 25;    // Sunlight level is 25% for the hour before sunset and the hour after dawn
+                break;
+            case 7:                     // 7 AM
+            case 4:                     // 4 PM
+                this._sunlight = 75;    // Sunlight rises rapidly in the early morning (and fades in the late afternoon)
+                break;
+            case 8:                     // 8 AM
+            case 3:                     // 3 PM
+                this._sunlight = 95;    // Sunlight is near max level by mid-morning / afternoon
+                break;
+            default:
+                this._sunlight = 100;   // Any number not in the above list is in the middle of the day (full sunlight)
         }
     }
 
@@ -1051,6 +1072,6 @@ export default class Engine extends View {
             this._modal.render();
         }
         p5.fill(constants.GREEN_TERMINAL);
-        // p5.text(`Sunlight: ${this._sunlight}`, 120, 300);
+        p5.text(`Sunlight: ${this._sunlight}`, 120, 300);
     }
 }

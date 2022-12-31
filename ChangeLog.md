@@ -2304,8 +2304,9 @@ Once the basic rules for power use/creation have been set up, a few additional f
 
 Exit Criteria:
 
-- The game's background colour changes depending on the time of day, and stars are visible at night time
-- Solar power is available only when the sun is up, which is from 6 AM to 6 PM every day (no seasons to be added just yet)
+- [DONE] The game's background colour changes depending on the time of day, and stars are visible at night time
+- [DONE] Solar power is available only when the sun is up, which is from 6 AM to 6 PM every day (no seasons to be added just yet)
+- [DONE] Solar power availability peaks at mid-day, and wanes when within 3 hours of dawn or dusk
 
 1. Add a simple boolean flag to the Engine class, day, to tell if it's day or night in the game.
 
@@ -2323,7 +2324,7 @@ Exit Criteria:
 
 8. Pass the sunlight level to the hourly updater to make the solar panel's output dependent on the time of day.
 
-### 6. Now for the complicated bit: Based on the time of day vis-a-vis the day/night cycle, calculate another Engine property, sunlightLevel, as a value from 0 to 100, where 100 is the value for when the sun is high, and 0 is the value for night time. Since there might be some asymmetry from night and day (night is always 0% whereas the value will be between 1 - 100% during the day) the method for calculating this will have to have different equation depending on whether it is currently night or day. This should be an Engine level, minute-to-minute method since the sunlight should increase sharply between 6 and 8 AM and fade at the same pace between 4 and 6 PM.
+9. Now for the complicated bit: Based on the time of day vis-a-vis the day/night cycle, calculate another Engine property, sunlightLevel, as a value from 0 to 100, where 100 is the value for when the sun is high, and 0 is the value for night time. Since there might be some asymmetry from night and day (night is always 0% whereas the value will be between 1 - 100% during the day) the method for calculating this will have to have different equation depending on whether it is currently night or day. This should be done by a new Engine method, updateSunlightLevel, that gets called only during the daytime block of the updateDayNightCycle method.
 
 10. The other half of the complicated bit: Add a hexadecimal decoder to the Sky class to allow it to alter the hex value of its current colour code to reduce the brightness of the SECONDARY colour as night approaches. Pass the Engine's sunlight value to the setSkyColour method with each minutely update to see it change smoothly!
 

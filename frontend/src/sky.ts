@@ -27,7 +27,6 @@ export default class Sky {
     // Translates colour hexes into numbers for the purpose of brightening/dimming the primary/secondary sky colour
     updateHexCode = (brightening: boolean) => {
         const code = this._skyColourSecondary;
-        console.log(code);
         const digits: string[] = code.split("").filter((char) => char !== "#");
         let converted = "#";
         digits.forEach((digit) => {
@@ -40,7 +39,6 @@ export default class Sky {
             const hex = val.toString(16);
             converted += hex;
         })
-        console.log(converted);
         return converted;
     }
 
@@ -100,7 +98,7 @@ export default class Sky {
         if (!(day)) {
             this.renderStars(p5);
         }
-        p5.text(`Primary: ${this._skyColourPrimary}`, 100, 300);
-        p5.text(`Secondary: ${this._skyColourSecondary}`, 100, 330);
+        // p5.text(`Primary: ${this._skyColourPrimary}`, 100, 300);
+        // p5.text(`Secondary: ${this._skyColourSecondary}`, 100, 330);
     }
 }
