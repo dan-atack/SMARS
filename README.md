@@ -26,7 +26,7 @@ The Game of Martian Colonization
 
 ### 5. Build A Base and Tame the Red Planet!
 
-<img src="screenshots/Readme-05-Colonist-roster.png" style="width: 60%;">
+<img src="screenshots/Readme-06-Big-base.png" style="width: 60%;">
 
 ## To start the project up:
 
