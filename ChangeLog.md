@@ -2354,9 +2354,17 @@ Exit Criteria:
 
 1. Go through those modules and update their maintenance and/or storage capacities. Ensure that any resource needed for a module's maintenance is represented in its storable resources list (although not necessarily the other way around). Also, for simplicity's sake, make all storage modules require no maintenance (no costs and not pressurized - except for the oxygen tank, which can be pressurized since it already stores oxygen).
 
-### 2. Add a top-level maintenance method to the Infrastructure class that will call both the air leakage and standard maintenance methods.
+3. Add a new Module field, isMaintained, which will be a boolean that indicates whether the module's maintenance needs are met. This means, in the case of modules that are pressurized, that they have oxygen, and in general that all of the module's maintenance needs (if any) have been met. If a module has no needs (such as a battery or a solar panel) its isMaintained status will always be true, since it has no needs that are not being met.
 
-### 3. Dust off the Infrastructure class's calculateModuleOxygenLoss method to repurpose it
+### 2. Add a new Module method, handleOxygenLeakage, to reduce oxygen by a fixed amount (for now) if the module is pressurized. If the module has an insufficient amount of oxygen present, have this function return false (a top level method will determine the overall maintenance status of the module). Unit test this before proceeding.
+
+### 4. Add another new Module method, handleResourceUse, which will go through the list of the module's maintenance needs and try to reduce the supply of each one. If it encounters any shortages, it should return false. Unit test this before proceeding.
+
+### 5. Add a top-level Module maintenance method, handleMaintenance, that will take care of calling both the handleOxygenLeakage method and the handleResourceUse method and set the module's isMaintained status to true of both methods return true, and false if either of them is false. Unit test before proceeding.
+
+### 6. Add a top-level maintenance method to the Infrastructure class, called handleHourlyMaintenance, that will call each module's handleMaintenance method. Add just a very simple unit test here.
+
+### 7. Add the hourly maintenance method to the Infrastructure's general hourly updater method, to be called at the end of the sequence (after all resource transfers have been completed) and verify that it works in-game.
 
 ## Chapter Forty-Two: Pre-Release Colonist Pathfinding Improvements
 

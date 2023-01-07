@@ -18,6 +18,7 @@ export default class Module {
     _resourceSharing: boolean;  // Yes or no policy, for whether to grant the resource requests of other modules
     _resourceAcquiring: number; // 0 to 1, representing how much of the max capacity of each resource the module tries to maintain
     _resources : Resource[];    // Represents the current tallies of each type of resource stored in this module
+    _isMaintained: boolean;     // Represents whether or not the module's maintenance needs are being
     _crewPresent: number[];     // If the module has a crew capacity, keep track of which colonists are currently inside
     _width: number;             // Width and height are in terms of blocks (grid spaces), not pixels
     _height: number;
@@ -50,6 +51,7 @@ export default class Module {
                 this._resourceAcquiring = 0;
         }
         this._resources = [];
+        this._isMaintained = true;  // By default every module's needs are assumed to have been met
         this._crewPresent = [];
         this._moduleInfo.storageCapacity.forEach((res) => {
             const r: Resource = [ res[0], 0 ];
@@ -187,7 +189,35 @@ export default class Module {
         }
     }
 
-    // SECTION 3: WORK-RELATED METHODS (FOR PRODUCTION MODULES ONLY)
+    // SECTION 3: MAINTENANCE METHODS
+
+    // Top-level maintenance method: determines maintenance status by calling the oxygen and general maintenance methods every hour
+    handleMaintenance = () => {
+
+    }
+
+    // Handles general resource-consumption due to module maintenance costs
+    handleResourceUse = () => {
+
+    }
+
+    // Handles oxygen leakage (for pressurized modules only)
+    handleOxygenLeakage = () => {
+        const leakage = this._width * this._height;         // The bigger the volume, the greater the leakage!
+        if (this._moduleInfo.pressurized) {
+            const leaked = this.deductResource(["oxygen", leakage]);
+            if (this.getResourceQuantity("oxygen") <= 0) {
+                return false;   // If there is no oxygen left, the module is depressurized
+            } else {
+                return true;    // If there is at least some oxygen left, the module is pressurized
+            }
+        } else {
+            console.log(`Error: Module ${this._id} is not pressurized and therefore cannot leak oxygen.`);
+            return null;        // If the module is not meant to be pressurized, the method should not have been called (null)
+        }
+    }
+
+    // SECTION 4: WORK-RELATED METHODS (FOR PRODUCTION MODULES ONLY)
 
     // Allows a Colonist to enter the module if it isn't already at max capacity
     punchIn = (colonistId: number) => {

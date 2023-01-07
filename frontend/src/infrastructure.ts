@@ -75,6 +75,10 @@ export default class Infrastructure {
         this.resolveModulePowerGeneration(sunlightPercent);
     }
 
+    handleModuleMaintenanceCosts = () => {
+        // TODO: Call individual modules' maintenance method
+    }
+
     // SECTION 3 - VALIDATING MODULE / CONNECTOR PLACEMENT
 
     // Top level module placement checker: Calls sub-routines from the data class
@@ -225,12 +229,6 @@ export default class Infrastructure {
             })
         })
         return resources;
-    }
-
-    // Basic oxygen loss calculator
-    calculateModulesOxygenLoss = () => {
-        const loss_rate = 1;
-        return loss_rate * this._modules.length;   
     }
 
     // Returns array of modules that contain a resource when given a resource tuple (name and quantity sought, in this case)

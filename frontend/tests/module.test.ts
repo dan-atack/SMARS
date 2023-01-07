@@ -45,7 +45,7 @@ const noStoreModuleInfo: ModuleInfo = {
     shapes: []                  // Shapes data not needed for unit tests
 };
 
-const lifeSupportModInfo: ModuleInfo = {
+const crewQuartersModInfo: ModuleInfo = {
     name: "Crew Quarters",
     width: 4,
     height: 3,
@@ -145,7 +145,7 @@ const solarPanelInfo: ModuleInfo = {
 
 const moduleData = new Module(9000, 10, 10, storageModuleInfo);
 const emptyModule = new Module(9001, 20, 20, noStoreModuleInfo);
-const lsModule = new Module(9002, 14, 10, lifeSupportModInfo);
+const lsModule = new Module(9002, 14, 10, crewQuartersModInfo);
 const prodModule = new Module(9003, 14, 6, productionModuleInfo);
 const commsModule = new Module(9004, 10, 6, commsModuleInfo);
 const prodModule2 = new Module(9005, 10, 2, productionModuleInfo);
@@ -418,6 +418,16 @@ describe("ModuleData", () => {
         expect(solarPanelModule.generatePower(0)).toBe(0);      // No sun = no power produced
         expect(solarPanelModule._resources[0]).toStrictEqual(["power", 175]);
         expect(solarPanelModule.generatePower()).toBe(null);    // Validate error return when sunlight value not provided
+    })
+
+    test("Pressurized modules leak air when oxygen supply is present", () => {
+        // Setup test: Two pressurized modules - one with oxygen and one without; and one non-pressurized module (solar panel)
+        const pressurizedFull = new Module(9000, 0, 30, crewQuartersModInfo);
+        pressurizedFull.addResource(["oxygen", 10000]);                         // Full module has a supply of oxygen to leak
+        const pressurizeEmpty = new Module(9001, 4, 30, crewQuartersModInfo);   // Empty module has no oxygen available
+        expect(pressurizedFull.handleOxygenLeakage()).toBe(true);       // True = enough oxygen was available
+        expect(pressurizeEmpty.handleOxygenLeakage()).toBe(false);      // False = not enough oxygen available
+        expect(solarPanelModule.handleOxygenLeakage()).toBe(null);      // Null = invalid method call (non-pressurized module)
     })
 
 })
