@@ -198,14 +198,20 @@ export default class Module {
 
     // Handles general resource-consumption due to module maintenance costs
     handleResourceUse = () => {
-
+        let maintained = true;      // Any failures below will set this to false
+        this._moduleInfo.maintenanceCosts.forEach((resource) => {
+            const needed = resource[1];
+            const used = this.deductResource(resource);     // Get the amount that was used
+            if (needed > used) maintained = false;          // If need exceeds amount used, there is a shortage
+        })
+        return maintained;
     }
 
     // Handles oxygen leakage (for pressurized modules only)
     handleOxygenLeakage = () => {
         const leakage = this._width * this._height;         // The bigger the volume, the greater the leakage!
         if (this._moduleInfo.pressurized) {
-            const leaked = this.deductResource(["oxygen", leakage]);
+            this.deductResource(["oxygen", leakage]);
             if (this.getResourceQuantity("oxygen") <= 0) {
                 return false;   // If there is no oxygen left, the module is depressurized
             } else {

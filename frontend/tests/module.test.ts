@@ -57,10 +57,11 @@ const crewQuartersModInfo: ModuleInfo = {
         ["money", 100000],  // money
     ],
     maintenanceCosts: [
-        ["power", 1]
+        ["power", 5]
     ],
     storageCapacity: [
-        ["oxygen", 1000]    // oxygen, water, food
+        ["oxygen", 1000],    // oxygen, water, food
+        ["power", 1000]
     ],
     crewCapacity: 2,
     shapes: []
@@ -326,16 +327,28 @@ describe("ModuleData", () => {
              ])
         // Policy = 1 and module is empty - Expect large requests
         resetResource(lsModule);
-        expect(lsModule.determineResourceRequests()).toStrictEqual([{
-            modId: 9002,
-            resource: ["oxygen", 1000]
-        }])
+        expect(lsModule.determineResourceRequests()).toStrictEqual([
+            {
+                modId: 9002,
+                resource: ["oxygen", 1000]
+            },
+            {
+                modId: 9002,
+                resource: ["power", 1000]
+            }
+        ])
         // Policy = 1 and module is half full - Expect small requests
         partiallyFillModule(lsModule, 0.5);
-        expect(lsModule.determineResourceRequests()).toStrictEqual([{
-            modId: 9002,
-            resource: ["oxygen", 500]
-        }])
+        expect(lsModule.determineResourceRequests()).toStrictEqual([
+            {
+                modId: 9002,
+                resource: ["oxygen", 500]
+            },
+            {
+                modId: 9002,
+                resource: ["power", 500]
+            }
+        ])
         // Policy = 1 and module is full - Expect no requests
         fillModule(lsModule);
         expect(lsModule.determineResourceRequests()).toStrictEqual([]);
@@ -420,14 +433,27 @@ describe("ModuleData", () => {
         expect(solarPanelModule.generatePower()).toBe(null);    // Validate error return when sunlight value not provided
     })
 
-    test("Pressurized modules leak air when oxygen supply is present", () => {
+    // Maintenance method tests
+    test("handleOxygenLeakages deducts pressurized modules' oxygen supply, and notes shortages", () => {
         // Setup test: Two pressurized modules - one with oxygen and one without; and one non-pressurized module (solar panel)
         const pressurizedFull = new Module(9000, 0, 30, crewQuartersModInfo);
         pressurizedFull.addResource(["oxygen", 10000]);                         // Full module has a supply of oxygen to leak
         const pressurizeEmpty = new Module(9001, 4, 30, crewQuartersModInfo);   // Empty module has no oxygen available
-        expect(pressurizedFull.handleOxygenLeakage()).toBe(true);       // True = enough oxygen was available
-        expect(pressurizeEmpty.handleOxygenLeakage()).toBe(false);      // False = not enough oxygen available
-        expect(solarPanelModule.handleOxygenLeakage()).toBe(null);      // Null = invalid method call (non-pressurized module)
+        expect(pressurizedFull.handleOxygenLeakage()).toBe(true);           // True = enough oxygen was available
+        expect(pressurizedFull.getResourceQuantity("oxygen")).toBe(988);    // 12 oxygen subtracted from 1000 = 988 remains
+        expect(pressurizeEmpty.handleOxygenLeakage()).toBe(false);          // False = not enough oxygen available
+        expect(solarPanelModule.handleOxygenLeakage()).toBe(null);          // Null = invalid method call (non-pressurized module)
+    })
+
+    test("handleResourceUse deducts modules' non-oxygen maintenance needs, and notes shortages", () => {
+        // Setup: Two modules that require maintenance resources (power) - one with power and one without; and one with no needs
+        const needsAndProvisioned = new Module(9000, 0, 30, crewQuartersModInfo);
+        needsAndProvisioned.addResource(["power", 10000]);
+        const needsNotProvisioned = new Module(9001, 0, 30, crewQuartersModInfo);
+        expect(needsAndProvisioned.handleResourceUse()).toBe(true);             // True = needs have been met
+        expect(needsAndProvisioned.getResourceQuantity("power")).toBe(995);     // 5 power subtracted from 1000 = 995 remains
+        expect(needsNotProvisioned.handleResourceUse()).toBe(false);            // False = needs have not been met
+        expect(solarPanelModule.handleResourceUse()).toBe(true);                // True = module has no maintenance costs
     })
 
 })
