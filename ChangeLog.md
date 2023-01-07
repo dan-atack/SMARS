@@ -2338,8 +2338,8 @@ Once the day/night cycle is established, an hourly maintenance cost for some mod
 
 Exit Criteria:
 
-- All existing modules in the database have their maintenance costs and storage capacities updated to 'real' values
-- Hydroponics modules produce more air as a production output
+- [DONE] All existing modules in the database have their maintenance costs and storage capacities updated to 'real' values
+- [DONE] Hydroponics modules produce more air as a production output
 - Infrastructure class calculates and docks resources for module maintenance every hour:
   - All pressurized modules leak 0.02 units of air per hour (more sophisticated rules to follow)
   - All maintenance costs are subtracted, when possible, every hour
@@ -2348,6 +2348,15 @@ Exit Criteria:
 - When a module is unusable due to missed maintenance, it is passed over by the Industry class for jobs creation
 - When a module regains its maintenance resources and passes its maintenance check its usability is immediately restored
 - Module maintenance status boolean is added to save game data
+- Module maintenance costs are shown on the buildingChip component
+- Module maintenance costs are shown on the Module Inspect display area
+- During the inter-module resource distribution phase, all pressurized modules must request to be filled up to 50% oxygen
+
+1. Go through those modules and update their maintenance and/or storage capacities. Ensure that any resource needed for a module's maintenance is represented in its storable resources list (although not necessarily the other way around). Also, for simplicity's sake, make all storage modules require no maintenance (no costs and not pressurized - except for the oxygen tank, which can be pressurized since it already stores oxygen).
+
+### 2. Add a top-level maintenance method to the Infrastructure class that will call both the air leakage and standard maintenance methods.
+
+### 3. Dust off the Infrastructure class's calculateModuleOxygenLoss method to repurpose it
 
 ## Chapter Forty-Two: Pre-Release Colonist Pathfinding Improvements
 

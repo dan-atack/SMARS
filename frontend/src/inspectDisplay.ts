@@ -202,10 +202,14 @@ export default class InspectDisplay {
                 let outputs = "";
                 mod._moduleInfo.productionInputs.forEach((input, idx) => {
                     if (idx > 0) inputs += " + ";
+                    inputs += input[1]
+                    inputs += " ";
                     inputs += input[0];
                 })
                 mod._moduleInfo.productionOutputs.forEach((output, idx) => {
                     if (idx > 0) outputs += " + ";
+                    outputs += output[1];
+                    outputs += " ";
                     outputs += output[0];
                 })
                 p5.text(`Converts ${inputs}`, this._textAlignleft, this._headers[4]);
