@@ -2366,6 +2366,8 @@ Exit Criteria:
 
 ### 7. Add the hourly maintenance method to the Infrastructure's general hourly updater method, to be called at the end of the sequence (after all resource transfers have been completed) and verify that it works in-game.
 
+### 99. Clean up console logs from this and previous chapters before proceeding to UX polishing chapter/s.
+
 ## Chapter Forty-Two: Pre-Release Colonist Pathfinding Improvements
 
 ### Difficulty Estimate: 3 for basic tweaks to the logic, and extensive unit tests

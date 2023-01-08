@@ -193,12 +193,20 @@ export default class Module {
 
     // Top-level maintenance method: determines maintenance status by calling the oxygen and general maintenance methods every hour
     handleMaintenance = () => {
-
+        const hasResources = this.handleResourceUse();
+        const noAirShortage = this.handleOxygenLeakage();  // Negative variable name: no shortage means maintenance check passes
+        if (hasResources && noAirShortage) {
+            console.log(`Module ${this._id} has all necessary maintenance resources.`);
+            this._isMaintained = true;
+        } else {
+            console.log(`Module ${this._id} failed maintenance check due to missing resources.`);
+            this._isMaintained = false;
+        }
     }
 
     // Handles general resource-consumption due to module maintenance costs
     handleResourceUse = () => {
-        let maintained = true;      // Any failures below will set this to false
+        let maintained = true;      // Any failures below will set this to false - and modules with no needs will always be true
         this._moduleInfo.maintenanceCosts.forEach((resource) => {
             const needed = resource[1];
             const used = this.deductResource(resource);     // Get the amount that was used
@@ -219,7 +227,7 @@ export default class Module {
             }
         } else {
             console.log(`Error: Module ${this._id} is not pressurized and therefore cannot leak oxygen.`);
-            return null;        // If the module is not meant to be pressurized, the method should not have been called (null)
+            return true;        // If the module is not pressurized, the method should not have been called (return true anyway)
         }
     }
 

@@ -442,7 +442,7 @@ describe("ModuleData", () => {
         expect(pressurizedFull.handleOxygenLeakage()).toBe(true);           // True = enough oxygen was available
         expect(pressurizedFull.getResourceQuantity("oxygen")).toBe(988);    // 12 oxygen subtracted from 1000 = 988 remains
         expect(pressurizeEmpty.handleOxygenLeakage()).toBe(false);          // False = not enough oxygen available
-        expect(solarPanelModule.handleOxygenLeakage()).toBe(null);          // Null = invalid method call (non-pressurized module)
+        expect(solarPanelModule.handleOxygenLeakage()).toBe(true);          // True = module has no need for air pressure
     })
 
     test("handleResourceUse deducts modules' non-oxygen maintenance needs, and notes shortages", () => {
@@ -454,6 +454,36 @@ describe("ModuleData", () => {
         expect(needsAndProvisioned.getResourceQuantity("power")).toBe(995);     // 5 power subtracted from 1000 = 995 remains
         expect(needsNotProvisioned.handleResourceUse()).toBe(false);            // False = needs have not been met
         expect(solarPanelModule.handleResourceUse()).toBe(true);                // True = module has no maintenance costs
+    })
+
+    test("handleMaintenance method sets module's isMaintained status by calling leakage and resource use methods", () => {
+        const mod = new Module(9000, 0, 30, crewQuartersModInfo);
+        // Case 1: Module that needs oxygen and power, and has both - is maintained
+        mod.addResource(["oxygen", 100]);
+        mod.addResource(["power", 100]);
+        mod.handleMaintenance();
+        expect(mod._isMaintained).toBe(true);
+        // Case 2: Module that needs oxygen and power, and has oxygen but not power - not maintained
+        mod.deductResource(["power", 100]);
+        mod.handleMaintenance();
+        expect(mod._isMaintained).toBe(false);
+        // Case 3: Module that needs oxygen and power, and has power but not oxygen - not maintained
+        mod.deductResource(["oxygen", 100]);
+        mod.addResource(["power", 100]);
+        mod.handleMaintenance();
+        expect(mod._isMaintained).toBe(false);
+        // Case 4: Module that needs only power, and has it - is maintained
+        commsModule.addResource(["power", 100]);
+        commsModule.handleMaintenance();
+        expect(commsModule._isMaintained).toBe(true);
+        // Case 5: Module that needs only power, and lacks it - is not maintained
+        commsModule.deductResource(["power", 10000]);
+        commsModule.handleMaintenance();
+        expect(commsModule._isMaintained).toBe(false);
+        // Case 6: Module that is not maintained gains resources and becomes maintained
+        commsModule.addResource(["power", 100]);
+        commsModule.handleMaintenance();
+        expect(commsModule._isMaintained).toBe(true);
     })
 
 })
