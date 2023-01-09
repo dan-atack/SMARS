@@ -2348,7 +2348,7 @@ Exit Criteria:
 - [DONE] When a module is unusable due to missed maintenance, it is passed over by the Industry class for jobs creation
 - [DONE] When a module regains its maintenance resources and passes its maintenance check its usability is restored
 - Module maintenance status boolean is added to save game data
-- Module maintenance costs are shown on the buildingChip component
+- [DONE] Module maintenance costs are shown on the buildingChip component
 - Module maintenance costs are shown on the Module Inspect display area
 - During the inter-module resource distribution phase, all pressurized modules must request to be filled up to 50% oxygen
 
@@ -2375,6 +2375,10 @@ Exit Criteria:
 11. Update the logic for the module's punchIn method, to not allow punching in if the module is in a non-maintained state. Update unit tests if this breaks if any, and add a new one for the module class and colonist data class to verify this works.
 
 12. Update the BuildingInfo component to display the maintenance costs (if any) of new building options.
+
+### 13. Add the 'show more info' button to non-production modules, and add maintenance costs to the secondary display.
+
+### 14. If a module is not maintained, either because of lack of oxygen or other resources, display this fact in its primary inspect display page, replacing the integrity value (which is not currently meaningful). If the module is not maintained, use red text instead of green. Also, differentiate between being depressurized (using that word) and lacking other resources, in which case the phrase used should be "un"-(resource name)-"ed" - e.g. unpowered, unwatered (eventually), etc.
 
 ### 12. Update the Module class's resource requests determinator to always request oxygen up to 50% of the module's capacity if the module is pressurized (to allow production buildings that generate oxygen to operate while also pushing out some of the oxygen they produce).
 

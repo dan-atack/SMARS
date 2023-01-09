@@ -15,7 +15,7 @@ export default class BuildingChip extends Button {
     constructor(buildingData: ModuleInfo | ConnectorInfo, x: number, y: number, setMouseContext: (value: string) => void, setBuildingSelection: (value: ModuleInfo | ConnectorInfo | null) => void) {
         super(buildingData.name, x + 8, y, () => console.log("Exception: build chip click handler is not working."), constants.SIDEBAR_WIDTH - 24, 88, constants.EGGSHELL, constants.ALMOST_BLACK, 20);    // Handler here is a dud since the build chip uses the set mouse context function as its handler and this requires a string argument (instead of no argument)
         this.buildingData = buildingData;
-        this._maintenanceAlign = this._x + this._width * 5 / 8;
+        this._maintenanceAlign = this._x + this._width * 5 / 8 - 8;
         this._maintenanceHeight = this._y + this._height / 2 + 16;
         this.setMouseContext = setMouseContext;
         this.setBuildingSelection = setBuildingSelection;
@@ -90,14 +90,14 @@ export default class BuildingChip extends Button {
         const nonOxygenCosts = this.buildingData.maintenanceCosts.length;
         const pressurized = this.isModule(this.buildingData) && this.buildingData.pressurized;
         if (nonOxygenCosts > 0 || pressurized) {
-            p5.text("Maintenance:", this._maintenanceAlign, this._maintenanceHeight - 16);
+            p5.text("Hourly Maintenance:", this._maintenanceAlign - 16, this._maintenanceHeight - 16);
             this.buildingData.maintenanceCosts.forEach((res, idx) => {
                 p5.fill(constants.YELLOW_TEXT);
-                p5.text(`* ${res[1]} ${res[0]}`, this._maintenanceAlign, this._maintenanceHeight + idx * 16);
+                p5.text(`- ${(res[1] / 100).toFixed(2)} ${res[0]}`, this._maintenanceAlign, this._maintenanceHeight + idx * 16);
             });
             if (pressurized && this.isModule(this.buildingData)) {
                 p5.fill(constants.BLUE_ICE);
-                p5.text(`* ${this.buildingData.width * (this.buildingData.height)} Air`, this._maintenanceAlign, this._maintenanceHeight + nonOxygenCosts * 16);
+                p5.text(`- ${((this.buildingData.width * this.buildingData.height) / 100).toFixed(2)} air`, this._maintenanceAlign, this._maintenanceHeight + nonOxygenCosts * 16);
             }
         } else {
             p5.text("No Maintenance", this._maintenanceAlign, this._maintenanceHeight - 16);
