@@ -2349,8 +2349,12 @@ Exit Criteria:
 - [DONE] When a module regains its maintenance resources and passes its maintenance check its usability is restored
 - Module maintenance status boolean is added to save game data
 - [DONE] Module maintenance costs are shown on the buildingChip component
-- Module maintenance costs are shown on the Module Inspect display area
+- [DONE] Module maintenance costs are shown on the Module Inspect display area
+- [DONE] Module current pressurization status is shown on the Module Inspect display area when relevant
+- [DONE] If a module is missing one or more maintenance resources, those resources are shown in red in its Inspect Display chart
 - During the inter-module resource distribution phase, all pressurized modules must request to be filled up to 50% oxygen
+
+### New metric: How many seconds does a (game) hour last on 'fast' speed? 20-21 seconds over a 4-hour period.
 
 1. Go through those modules and update their maintenance and/or storage capacities. Ensure that any resource needed for a module's maintenance is represented in its storable resources list (although not necessarily the other way around). Also, for simplicity's sake, make all storage modules require no maintenance (no costs and not pressurized - except for the oxygen tank, which can be pressurized since it already stores oxygen).
 
@@ -2376,13 +2380,15 @@ Exit Criteria:
 
 12. Update the BuildingInfo component to display the maintenance costs (if any) of new building options.
 
-### 13. Add the 'show more info' button to non-production modules, and add maintenance costs to the secondary display.
+13. Add the 'show more info' button to non-production modules, and add maintenance costs to the secondary display.
 
-### 14. If a module is not maintained, either because of lack of oxygen or other resources, display this fact in its primary inspect display page, replacing the integrity value (which is not currently meaningful). If the module is not maintained, use red text instead of green. Also, differentiate between being depressurized (using that word) and lacking other resources, in which case the phrase used should be "un"-(resource name)-"ed" - e.g. unpowered, unwatered (eventually), etc.
+14. Add a new Module method, listMaintenanceResources, which returns just the list of resource names that are needed for maintenance. Include 'oxygen' if the modue is pressurized. Unit test before proceeding.
+
+15. If a module is not maintained, either because of lack of oxygen or other resources, display this fact in its primary inspect display page, replacing the integrity value (which is not currently meaningful). If the module is not maintained, use red text instead of green. Also, differentiate between being depressurized (lacking a needed oxygen supply) and unpressurized (not requiring oxygen, like solar panels/batteries/etc).
+
+### 16. Add each module's maintenance status to its save data, so that disabled modules are not momentarily revived when a saved game is loaded. Verify in-game by saving and then re-loading a game in which at least one module is not maintained, and verifying that it is loaded with the correct status (i.e. it doesn't have to wait an hour to be pronounced unusable).
 
 ### 12. Update the Module class's resource requests determinator to always request oxygen up to 50% of the module's capacity if the module is pressurized (to allow production buildings that generate oxygen to operate while also pushing out some of the oxygen they produce).
-
-### 98. During the resource transfer phase, ensure that production modules request a small amount of oxygen, to enable production.
 
 ### 99. Clean up console logs from this and previous chapters before proceeding to UX polishing chapter/s.
 

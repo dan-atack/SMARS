@@ -495,4 +495,10 @@ describe("ModuleData", () => {
         expect(commsModule._isMaintained).toBe(true);
     })
 
+    test("getMaintenanceResourceNames returns a list of resource names (including oxygen) needed for maintenance", () => {
+        expect(solarPanelModule.getMaintenanceResourceNames()).toStrictEqual([]);
+        expect(commsModule.getMaintenanceResourceNames()).toStrictEqual(["power"]);
+        expect(lsModule.getMaintenanceResourceNames()).toStrictEqual(["power", "oxygen"]);
+    })
+
 })

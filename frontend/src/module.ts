@@ -111,6 +111,16 @@ export default class Module {
         return provisioned;
     }
 
+    // Called by the Inspect Display to quickly verify which resources are needed for maintenance (includes oxygen if pressurized)
+    getMaintenanceResourceNames = () => {
+        let needs: string[] = [];
+        this._moduleInfo.maintenanceCosts.forEach((res) => {
+            needs.push(res[0]);
+        });
+        if (this._moduleInfo.pressurized) needs.push("oxygen");
+        return needs;
+    }
+
     // SECTION 2: RESOURCE SHIPPING/RECEIVING METHODS
 
     // Called by the Infra class every hour, returns a list of the resource requests for this Module

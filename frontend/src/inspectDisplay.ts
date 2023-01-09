@@ -166,19 +166,45 @@ export default class InspectDisplay {
             p5.text(`${mod._moduleInfo.name} (ID: ${mod._id})`, this._center, this._headers[0]);
             p5.textSize(18);
             p5.textAlign(p5.LEFT);
-            p5.text(`${mod._moduleInfo.pressurized ? "Pressurized" : "Unpressurized"} - Integrity: ${mod._moduleInfo.durability}`, this._textAlignleft, this._headers[1]);
+            if (mod._moduleInfo.pressurized) {
+                // If module should be pressurized, ensure that it is, and report in red ink if it is not
+                const pressurized = mod._moduleInfo.pressurized && mod._isMaintained;
+                if (pressurized) {
+                    p5.text("Pressurized", this._textAlignleft, this._headers[1]);
+                } else {
+                    p5.fill(constants.RED_ERROR);
+                    p5.text("Depressurized!", this._textAlignleft, this._headers[1]);
+                }
+            } else {
+                p5.text("Not pressurized", this._textAlignleft, this._headers[1]);
+            }
+            p5.fill(constants.GREEN_TERMINAL);
             p5.text(`${mod._moduleInfo.crewCapacity ? `Crew: ${mod._crewPresent.length} / ${mod._moduleInfo.crewCapacity}` : "Uncrewed"}`, this._textAlignleft, this._headers[2]);
             p5.text(`Resources:`, this._textAlignleft, this._headers[3]);
             p5.text("Type", this._textAlignleft, this._headers[4]);
             p5.text("/         Quantity", this._left1Q, this._headers[4]);
             p5.text("/  Max", this._left3Q, this._headers[4]);
+            const shortageIndices: number[] = [];
             mod._resources.forEach((res, idx) => {
+                // Font is green UNLESS: resource is needed for maintenance and is unavailable
+                if (mod.getMaintenanceResourceNames().includes(res[0]) && res[1] === 0) {
+                    p5.fill(constants.RED_ERROR);
+                    shortageIndices.push(idx);
+                } else {
+                    p5.fill(constants.GREEN_TERMINAL);
+                }
                 p5.text(res[0], this._textAlignleft, this._headers[5] + idx * 20);
                 p5.text((res[1] / 100).toFixed(2), this._center, this._headers[5] + idx * 20);
             });
             mod._moduleInfo.storageCapacity.forEach((res, idx) => {
+                if (shortageIndices.includes(idx)) {
+                    p5.fill(constants.RED_ERROR);
+                } else {
+                    p5.fill(constants.GREEN_TERMINAL);
+                }
                 p5.text(`/  ${(res[1] / 100).toFixed(0)}`, this._left3Q, this._headers[5] + idx * 20);
             });
+            p5.fill(constants.GREEN_TERMINAL);  
             // Always show the 'more info' button (not just for production modules)
             this._moreInfoButton._label = "MORE\nINFO";
             this._moreInfoButton.render(p5);

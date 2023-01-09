@@ -806,6 +806,8 @@ export default class Engine extends View {
         this._industry.updateJobs(this._infrastructure);
         this.updateEconomyDisplay();
         this.updateDayNightCycle();
+        const time = new Date();
+        console.log(time);
     }
 
     // Updates the day/night cycle and in-game weather
