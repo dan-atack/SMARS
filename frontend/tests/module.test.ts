@@ -368,10 +368,19 @@ describe("ModuleData", () => {
         expect(prodModule2.hasProductionInputs()).toBe(false);
     })
 
-    test("punchIn adds a colonist ID to the list of crew present in the module", () => {
+    test("punchIn adds a colonist ID to the list of crew present in the module if module is maintained", () => {
         const colonistId = 5000;
         prodModule.punchIn(colonistId);
         expect(prodModule._crewPresent).toStrictEqual([5000]);
+        // Extension: Reset test to test punch-in rejection is module is not maintained
+        prodModule.punchOut(colonistId);
+        prodModule._isMaintained = false;
+        expect(prodModule.punchIn(colonistId)).toBe(false);
+        expect(prodModule._crewPresent).toStrictEqual([]);
+        prodModule._isMaintained = true;        // Reset maintenance status and punch in again to avoid disrupting other tests
+        expect(prodModule.punchIn(colonistId)).toBe(true);
+        expect(prodModule._crewPresent).toStrictEqual([5000]);
+
     })
 
     test("punchIn only allows the Colonist to enter if the module is not already full", () => {

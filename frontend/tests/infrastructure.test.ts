@@ -380,6 +380,7 @@ describe("Infrastructure base class", () => {
     test("Can trigger a production round for a module", () => {
         // Setup: Module exists with a colonist punched in, and the necessary resources for production
         infra.handleHourlyUpdates(100);
+        infra._modules[5]._isMaintained = true; // Ensure that a punch-in is possible
         infra._modules[5].punchIn(9999);        // Punch in colonist # 9999
         expect(infra._modules[5].hasProductionInputs()).toBe(true);     // Validate setup
         expect(infra._modules[5]._crewPresent).toStrictEqual([9999]);

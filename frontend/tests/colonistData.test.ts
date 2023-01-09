@@ -1059,7 +1059,7 @@ describe("ColonistData", () => {
         expect(colonistData._currentAction).toBe(null);     // It should cancel the current action
     })
 
-    test("Consume action fails if a module is full to capacity (colonist cannot enter)", () => {
+    test("Consume action fails if a module is full to capacity/is not maintained (colonist cannot enter)", () => {
         resetColonistData();
         colonistData._x = 0;
         colonistData._y = 31;
@@ -1074,5 +1074,18 @@ describe("ColonistData", () => {
         };
         colonistData.consume("water", mockInfra);
         expect(colonistData._currentAction).toBe(null);
+        // Reset and try again with unmaintained module
+        mockInfra._modules[0].punchOut(9998);
+        mockInfra._modules[0].punchOut(9999);  // Empty the module (free up slots)
+        mockInfra._modules[0]._isMaintained = false; // Set maintenance to false, then reset action
+        colonistData._currentAction = {
+            type: "drink",
+            coords: { x: 0, y: 32 },
+            duration: 17,
+            buildingId: 1001
+        };
+        colonistData.consume("water", mockInfra);
+        expect(colonistData._currentAction).toBe(null);
     })
+    
 });

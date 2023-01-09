@@ -2372,7 +2372,7 @@ Exit Criteria:
 
 10. Get crew to punch in and out of modules for eating and sleeping actions (this is already implemented for resting). Validate in-game and add a new colonist data class unit test before proceeding.
 
-### 11. Update the logic for the module's punchIn method, to not allow punching in if the module is in a non-maintained state. Update unit tests if this breaks any, and add a new one for the module class and colonist data class to verify this works.
+11. Update the logic for the module's punchIn method, to not allow punching in if the module is in a non-maintained state. Update unit tests if this breaks if any, and add a new one for the module class and colonist data class to verify this works.
 
 ### 12. Update the Module class's resource requests determinator to always request oxygen up to 50% of the module's capacity if the module is pressurized (to allow production buildings that generate oxygen to operate while also pushing out some of the oxygen they produce).
 
