@@ -7,12 +7,16 @@ import { constants } from "./constants";
 export default class BuildingChip extends Button {
     // Building Chip types:
     buildingData: ModuleInfo | ConnectorInfo;
+    _maintenanceAlign: number;  // X location for maintenance cost info bullet points
+    _maintenanceHeight: number; // Y location start for maintenance cost info bullet points
     setMouseContext: (value: string) => void;
     setBuildingSelection: (value: ModuleInfo | ConnectorInfo | null) => void;
 
     constructor(buildingData: ModuleInfo | ConnectorInfo, x: number, y: number, setMouseContext: (value: string) => void, setBuildingSelection: (value: ModuleInfo | ConnectorInfo | null) => void) {
         super(buildingData.name, x + 8, y, () => console.log("Exception: build chip click handler is not working."), constants.SIDEBAR_WIDTH - 24, 88, constants.EGGSHELL, constants.ALMOST_BLACK, 20);    // Handler here is a dud since the build chip uses the set mouse context function as its handler and this requires a string argument (instead of no argument)
         this.buildingData = buildingData;
+        this._maintenanceAlign = this._x + this._width * 5 / 8;
+        this._maintenanceHeight = this._y + this._height / 2 + 16;
         this.setMouseContext = setMouseContext;
         this.setBuildingSelection = setBuildingSelection;
     }
@@ -79,6 +83,26 @@ export default class BuildingChip extends Button {
         p5.fill(constants.GREEN_TERMINAL);
         const cost = this.getCostString();
         p5.text(cost, this._x + 12, this._y + this._height * 3 / 4);
+        // Maintenance cost info displayed on the right side, halfway down
+        p5.fill(constants.YELLOW_TEXT);
+        p5.textSize(12);
+        // Show maintenance costs if the building has any costs listed, or if it is a pressurized module
+        const nonOxygenCosts = this.buildingData.maintenanceCosts.length;
+        const pressurized = this.isModule(this.buildingData) && this.buildingData.pressurized;
+        if (nonOxygenCosts > 0 || pressurized) {
+            p5.text("Maintenance:", this._maintenanceAlign, this._maintenanceHeight - 16);
+            this.buildingData.maintenanceCosts.forEach((res, idx) => {
+                p5.fill(constants.YELLOW_TEXT);
+                p5.text(`* ${res[1]} ${res[0]}`, this._maintenanceAlign, this._maintenanceHeight + idx * 16);
+            });
+            if (pressurized && this.isModule(this.buildingData)) {
+                p5.fill(constants.BLUE_ICE);
+                p5.text(`* ${this.buildingData.width * (this.buildingData.height)} Air`, this._maintenanceAlign, this._maintenanceHeight + nonOxygenCosts * 16);
+            }
+        } else {
+            p5.text("No Maintenance", this._maintenanceAlign, this._maintenanceHeight - 16);
+            p5.text("Costs", this._maintenanceAlign + 32, this._maintenanceHeight);
+        }
     }
     
 }
