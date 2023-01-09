@@ -1058,4 +1058,21 @@ describe("ColonistData", () => {
         colonistData.enterModule(mockInfra);                // Try to punch in
         expect(colonistData._currentAction).toBe(null);     // It should cancel the current action
     })
+
+    test("Consume action fails if a module is full to capacity (colonist cannot enter)", () => {
+        resetColonistData();
+        colonistData._x = 0;
+        colonistData._y = 31;
+        colonistData.detectTerrainBeneath(mockMap, mockInfra);
+        mockInfra._modules[0].punchIn(9998);
+        mockInfra._modules[0].punchIn(9999);  // Fill the module to capacity
+        colonistData._currentAction = {
+            type: "drink",
+            coords: { x: 0, y: 32 },
+            duration: 17,
+            buildingId: 1001
+        };
+        colonistData.consume("water", mockInfra);
+        expect(colonistData._currentAction).toBe(null);
+    })
 });

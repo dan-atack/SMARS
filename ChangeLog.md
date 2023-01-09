@@ -2370,7 +2370,7 @@ Exit Criteria:
 
 9. Update the Industry class's job creation logic to ignore modules that have a false value for isMaintained. Validate in-game and also add a unit test before proceeding.
 
-### 10. Get crew to punch in and out of modules for eating, sleeping and resting actions. Validate in-game and add a new colonist data class unit test, as well as a module class unit test before proceeding.
+10. Get crew to punch in and out of modules for eating and sleeping actions (this is already implemented for resting). Validate in-game and add a new colonist data class unit test before proceeding.
 
 ### 11. Update the logic for the module's punchIn method, to not allow punching in if the module is in a non-maintained state. Update unit tests if this breaks any, and add a new one for the module class and colonist data class to verify this works.
 
