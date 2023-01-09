@@ -179,4 +179,26 @@ describe("Industry class", () => {
         
     })
 
+    test("Only adds jobs for modules that have the isMaintained property equal to true", () => {
+        // Setup: Ensure all modules are provisioned and otherwise ready to go
+        infra.addResourcesToModule(1001, ["water", 1000]);
+        infra.addResourcesToModule(1002, ["water", 1000]);
+        infra.addResourcesToModule(1003, ["water", 1000]);
+        industry.updateJobsForRole(infra, "farmer");
+        expect(industry._jobs.farmer.length).toBe(3);
+        // Disabling one of the modules creates only 2 jobs on the next update cycle
+        infra._modules[1]._isMaintained = false;
+        industry.updateJobsForRole(infra, "farmer");
+        expect(industry._jobs.farmer.length).toBe(2);
+        // Disable yet another module (only one job is created)
+        infra._modules[2]._isMaintained = false;
+        industry.updateJobsForRole(infra, "farmer");
+        expect(industry._jobs.farmer.length).toBe(1);
+        // Reactivate both modules (3 jobs created again)
+        infra._modules[1]._isMaintained = true;
+        infra._modules[2]._isMaintained = true;
+        industry.updateJobsForRole(infra, "farmer");
+        expect(industry._jobs.farmer.length).toBe(3);
+    })
+
 })

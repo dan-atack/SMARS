@@ -310,6 +310,10 @@ describe("Infrastructure base class", () => {
         // Modules are: 1 Lander (experimental type = no requests) 2 Storage modules (no requests) and one cantina that has 10% of both its food and water quotas
         expect(infra.compileModuleResourceRequests()).toStrictEqual([
             {
+                modId: 1000,
+                resource: ["power", 50]
+            },
+            {
                 modId: 1003,
                 resource: ["food", 4500]
             },

@@ -46,9 +46,13 @@ export default class Module {
                 this._resourceSharing = false;  // Production modules will have a rule so that they share their output resource/s
                 this._resourceAcquiring = 0.5;  // Similarly, they will have another rule to only try to acquire input resource/s
                 break;
-            default:            // All other modules are instructed to stay out of the resource exchange business altogether
-                this._resourceSharing = false;
+            case "Power":
+                this._resourceSharing = true;
                 this._resourceAcquiring = 0;
+                break;
+            default:            // All other modules are instructed to try to fill up to 50%, and not share
+                this._resourceSharing = false;
+                this._resourceAcquiring = 0.5;
         }
         this._resources = [];
         this._isMaintained = true;  // By default every module's needs are assumed to have been met
@@ -336,6 +340,11 @@ export default class Module {
             })
         } else {
             p5.rect(x, y, w, h);    // If no image is provided, render a black box:
+        }
+        // If the module falls into 'unmaintained' status, render a shadow over it
+        if (!this._isMaintained) {
+            p5.fill(0, 0, 200, 100);
+            p5.rect(x, y, w, h);
         }
     }
 

@@ -2344,9 +2344,9 @@ Exit Criteria:
   - All pressurized modules leak 0.01 units of air per unit of volume per hour (more sophisticated rules to follow)
   - All maintenance costs are subtracted, when possible, every hour
 - When a module has missed its latest hourly maintenance check (i.e. come up short) it is unusable for colonists
-- When a module is unusable due to missed maintenance resources, its appearance is altered to display this fact
-- When a module is unusable due to missed maintenance, it is passed over by the Industry class for jobs creation
-- When a module regains its maintenance resources and passes its maintenance check its usability is immediately restored
+- [DONE] When a module is unusable due to missed maintenance resources, its appearance is altered to display this fact
+- [DONE] When a module is unusable due to missed maintenance, it is passed over by the Industry class for jobs creation
+- When a module regains its maintenance resources and passes its maintenance check its usability is restored
 - Module maintenance status boolean is added to save game data
 - Module maintenance costs are shown on the buildingChip component
 - Module maintenance costs are shown on the Module Inspect display area
@@ -2365,6 +2365,16 @@ Exit Criteria:
 6. Add a maintenance method to the Infrastructure class, called handleHourlyMaintenance, that will call each module's handleMaintenance method. Add just a very simple unit test here.
 
 7. Add the hourly maintenance method to the Infrastructure's general hourly updater method, to be called at the end of the sequence (after all resource transfers have been completed) and verify that it works in-game.
+
+8. Add a simple rectangular shadow to render on top of any module that has missed its latest maintenance check. Addendum: Nailed it right off the bat!
+
+9. Update the Industry class's job creation logic to ignore modules that have a false value for isMaintained. Validate in-game and also add a unit test before proceeding.
+
+### 10. Get crew to punch in and out of modules for eating, sleeping and resting actions. Validate in-game and add a new colonist data class unit test, as well as a module class unit test before proceeding.
+
+### 11. Update the logic for the module's punchIn method, to not allow punching in if the module is in a non-maintained state. Update unit tests if this breaks any, and add a new one for the module class and colonist data class to verify this works.
+
+### 12. Update the Module class's resource requests determinator to always request oxygen up to 50% of the module's capacity if the module is pressurized (to allow production buildings that generate oxygen to operate while also pushing out some of the oxygen they produce).
 
 ### 98. During the resource transfer phase, ensure that production modules request a small amount of oxygen, to enable production.
 

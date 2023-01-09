@@ -90,7 +90,8 @@ export default class Industry {
             mods.forEach((mod) => {
                 const slots = mod._moduleInfo.crewCapacity - mod._crewPresent.length;
                 const provisioned = mod.hasProductionInputs();
-                if (slots > 0 && provisioned) {
+                const maintained = mod._isMaintained;
+                if (slots > 0 && provisioned && maintained) {
                     for (let i = 0; i < slots; i++) {
                         const job: ColonistAction = {
                             type: role.action,
@@ -100,6 +101,8 @@ export default class Industry {
                         };
                         this._jobs[role.name].push(job);
                     }
+                } else {
+                    // TODO: Return whichever factor/s (slots/provisioned/maintained) prevented production for Engine notification!
                 }
             })
         } else {
@@ -180,9 +183,7 @@ export default class Industry {
         }
     }
 
-    // TODO: Add methods for occupying and vacating mining locations, to keep track of which spaces are available for new jobs
-
-    // SECTION 3: GIVING OUT JOBS TO COLONISTS
+    // SECTION 3: DISPENSING JOBS TO COLONISTS
 
     // Called by the Colonists when they need a new job
     // TODO: Add coordinates argument to allow more efficient job assignments!

@@ -281,9 +281,9 @@ describe("ModuleData", () => {
         // Production: Sharing is false and acquisition is 0.5
         expect(prodModule._resourceSharing).toBe(false);
         expect(prodModule._resourceAcquiring).toBe(0.5);
-        // Other: Other module types stay out of resource sharing entirely (false and 0)
+        // Other: Other module types do not share, and try to fill up to 50% (false and 0.5)
         expect(commsModule._resourceSharing).toBe(false);
-        expect(commsModule._resourceAcquiring).toBe(0);
+        expect(commsModule._resourceAcquiring).toBe(0.5);
     })
 
     test("Can determine resource requests based on resource sharing policy", () => {

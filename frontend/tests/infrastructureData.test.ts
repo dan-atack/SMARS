@@ -383,7 +383,6 @@ describe("Infrastructure Data", () => {
 
     // Returns pointer to the whole floor object as well
     test("Can find the floor that is stood on at a pair of coordinates", () => {
-        console.log(infraData._floors);
         expect(infraData.getFloorFromCoords({ x: 1, y: 8 })?._id).toBe(1004);
     })
 
