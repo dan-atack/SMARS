@@ -196,7 +196,6 @@ export default class Module {
         const hasResources = this.handleResourceUse();
         const noAirShortage = this.handleOxygenLeakage();  // Negative variable name: no shortage means maintenance check passes
         if (hasResources && noAirShortage) {
-            console.log(`Module ${this._id} has all necessary maintenance resources.`);
             this._isMaintained = true;
         } else {
             console.log(`Module ${this._id} failed maintenance check due to missing resources.`);
@@ -226,8 +225,7 @@ export default class Module {
                 return true;    // If there is at least some oxygen left, the module is pressurized
             }
         } else {
-            console.log(`Error: Module ${this._id} is not pressurized and therefore cannot leak oxygen.`);
-            return true;        // If the module is not pressurized, the method should not have been called (return true anyway)
+            return true;        // If the module is not pressurized, the module has no oxygen to leak
         }
     }
 

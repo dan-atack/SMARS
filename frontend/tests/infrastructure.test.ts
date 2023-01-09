@@ -347,7 +347,7 @@ describe("Infrastructure base class", () => {
             ["power", 0]                                        // ... Except for the power
         ]);
         expect(infra._modules[2]._resources).toStrictEqual([    // ... With supplies taken from the storage room
-            ["oxygen", 1000],
+            ["oxygen", 988],
             ["food", 5500],
             ["water", 5500],
             ["equipment", 20000]
@@ -360,7 +360,7 @@ describe("Infrastructure base class", () => {
         expect(infra._modules[3]._resources).toStrictEqual([
             ["food", 5000],
             ["water", 5000],
-            ["power", 1000]                                        // Power is transferred from production module to cantina
+            ["power", 999]                                        // Power is transferred from production module to cantina
         ]);
     })
 

@@ -2340,8 +2340,8 @@ Exit Criteria:
 
 - [DONE] All existing modules in the database have their maintenance costs and storage capacities updated to 'real' values
 - [DONE] Hydroponics modules produce more air as a production output
-- Infrastructure class calculates and docks resources for module maintenance every hour:
-  - All pressurized modules leak 0.02 units of air per hour (more sophisticated rules to follow)
+- [DONE] Infrastructure class calculates and docks resources for module maintenance every hour:
+  - All pressurized modules leak 0.01 units of air per unit of volume per hour (more sophisticated rules to follow)
   - All maintenance costs are subtracted, when possible, every hour
 - When a module has missed its latest hourly maintenance check (i.e. come up short) it is unusable for colonists
 - When a module is unusable due to missed maintenance resources, its appearance is altered to display this fact
@@ -2360,11 +2360,13 @@ Exit Criteria:
 
 4. Add another new Module method, handleResourceUse, which will go through the list of the module's maintenance needs and try to reduce the supply of each one. If it encounters any shortages, it should return false. Unit test this before proceeding.
 
-### 5. Add a top-level Module maintenance method, handleMaintenance, that will take care of calling both the handleOxygenLeakage method and the handleResourceUse method and set the module's isMaintained status to true of both methods return true, and false if either of them is false. Unit test before proceeding.
+5. Add a top-level Module maintenance method, handleMaintenance, that will take care of calling both the handleOxygenLeakage method and the handleResourceUse method and set the module's isMaintained status to true of both methods return true, and false if either of them is false. Unit test before proceeding.
 
-### 6. Add a top-level maintenance method to the Infrastructure class, called handleHourlyMaintenance, that will call each module's handleMaintenance method. Add just a very simple unit test here.
+6. Add a maintenance method to the Infrastructure class, called handleHourlyMaintenance, that will call each module's handleMaintenance method. Add just a very simple unit test here.
 
-### 7. Add the hourly maintenance method to the Infrastructure's general hourly updater method, to be called at the end of the sequence (after all resource transfers have been completed) and verify that it works in-game.
+7. Add the hourly maintenance method to the Infrastructure's general hourly updater method, to be called at the end of the sequence (after all resource transfers have been completed) and verify that it works in-game.
+
+### 98. During the resource transfer phase, ensure that production modules request a small amount of oxygen, to enable production.
 
 ### 99. Clean up console logs from this and previous chapters before proceeding to UX polishing chapter/s.
 

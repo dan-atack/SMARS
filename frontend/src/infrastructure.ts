@@ -73,10 +73,13 @@ export default class Infrastructure {
         this.resolveResourceStoragePushes();
         this.resolveModuleResourceRequests(reqs);
         this.resolveModulePowerGeneration(sunlightPercent);
+        this.handleModuleMaintenance();
     }
 
-    handleModuleMaintenanceCosts = () => {
-        // TODO: Call individual modules' maintenance method
+    handleModuleMaintenance = () => {
+        this._modules.forEach((mod) => {
+            mod.handleMaintenance();
+        })
     }
 
     // SECTION 3 - VALIDATING MODULE / CONNECTOR PLACEMENT
