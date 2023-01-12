@@ -75,7 +75,6 @@ export default class Infrastructure {
         this.resolveResourceStoragePushes();
         // 2 - Compile, then resolve module resource requests
         const reqs = this.compileModuleResourceRequests();
-        console.log(reqs);
         this.resolveModuleResourceRequests(reqs);
         // 3 - Deduct maintenance costs
         this.handleModuleMaintenance();
@@ -182,7 +181,7 @@ export default class Infrastructure {
         if (m !== undefined) {
             m.addResource(resource);
         } else {
-            console.log(`Unable to add ${resource[1]} ${resource[0]} to module ${moduleId}. Module ID was not found.`);
+            console.log(`Error: Unable to add ${resource[1]} ${resource[0]} to module ${moduleId}. Module ID was not found.`);
         }
     }
 
@@ -192,7 +191,7 @@ export default class Infrastructure {
         if (m !== undefined) {
             m.deductResource(resource);
         } else {
-            console.log(`Unable to deduct ${resource[1]} ${resource[0]} from module ${moduleId}. Module ID was not found.`);
+            console.log(`Error: Unable to deduct ${resource[1]} ${resource[0]} from module ${moduleId}. Module ID was not found.`);
         }
     }
 
@@ -307,7 +306,7 @@ export default class Infrastructure {
                     const available = mod.deductResource(req.resource);
                     // Transfer the available amount to the requesting module
                     this.addResourcesToModule(req.modId, [req.resource[0], available]);
-                    console.log(`Transferred ${req.resource[1]} ${req.resource[0]} from ${mod._id} to ${req.modId}`);
+                    // console.log(`Transferred ${req.resource[1]} ${req.resource[0]} from ${mod._id} to ${req.modId}`);
                     fulfilled = true;   // Prevent other providers from trying to also answer the call
                 }
             })
@@ -347,10 +346,10 @@ export default class Infrastructure {
                         transferred = mod.deductResource([resource[0], storageCapacity]);
                     }
                     storage.addResource([resource[0], transferred]);
-                    console.log(`Transferred ${transferred} ${resource[0]}\nfrom module ${mod._id}\nto module ${storage._id}`);
+                    // console.log(`Transferred ${transferred} ${resource[0]}\nfrom module ${mod._id}\nto module ${storage._id}`);
                 } else {
                     // If no Storage module is available, issue a warning
-                    console.log(`Warning: No module found to store ${resource[0]} output from ${mod._moduleInfo.name} ${mod._id}`);
+                    // console.log(`Warning: No module found to store ${resource[0]} from ${mod._moduleInfo.name} ${mod._id}`);
                 }
             })
         })
@@ -373,7 +372,7 @@ export default class Infrastructure {
         })
         if (nearestID !== 0) {
             return nearestID;
-        } else{
+        } else {
             console.log(`Error: No modules found near to coordinates ${location.x}, ${location.y}`);
             return 0;
         }

@@ -234,7 +234,7 @@ export default class Module {
         if (hasResources && noAirShortage) {
             this._isMaintained = true;
         } else {
-            console.log(`Module ${this._id} failed maintenance check due to missing resources.`);
+            // console.log(`Module ${this._id} failed maintenance check due to missing resources.`);
             this._isMaintained = false;
         }
     }

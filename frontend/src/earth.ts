@@ -121,13 +121,11 @@ export default class Earth extends View {
         }
         // Check if launch date has arrived and set flight to true if so
         if (this._earthDate > this._nextLaunchDate) {
-            console.log("A new rocket has been launched from Earth.");
-            ev.launch = true;
+            ev.launch = true;   // A new rocket is launched from Earth
             this._flightEnRoute = true;
         // Check if landing date has arrived and set flight to false if so
         } else if (this._earthDate > this._nextLandingDate) {
-            console.log("A new rocket has been landed on SMARS!");
-            ev.landing = true;
+            ev.landing = true;  // A rocket has just landed on SMARS!
             this._flightEnRoute = false;
         }
         return ev;

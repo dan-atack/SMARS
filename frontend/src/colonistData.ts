@@ -524,7 +524,7 @@ export default class ColonistData {
             }
         } else {
             // If there is no current action but an attempt is made to initiate a move, reset the colonist's goal to unjam them
-            console.log(`Colonist ${this._id} not moving due to: No value for current action. Auto-resolving current goal (${this._currentGoal}).`);
+            // console.log(`Colonist ${this._id} not moving due to: No value for current action. Auto-resolving current goal (${this._currentGoal}).`);
             this.resolveGoal();
         }
         // 2 - Initiate movement

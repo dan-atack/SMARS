@@ -320,7 +320,7 @@ export default class Engine extends View {
             // Click is over the map
             if (mouseX > 0 && mouseX < constants.SCREEN_WIDTH && mouseY > 0 && mouseY < constants.SCREEN_HEIGHT) {
                 const [gridX, gridY] = this.getMouseGridPosition(mouseX, mouseY);
-                console.log(`(${gridX}, ${gridY})`);
+                // console.log(`(${gridX}, ${gridY})`);
                 switch (this.mouseContext) {
                     case "inspect":
                         this.handleInspect({ x: gridX, y: gridY });
@@ -450,7 +450,6 @@ export default class Engine extends View {
                 this._industry.addMiningLocation(coords, "water"); // Push the coordinates for the mining location
             }
         }
-        console.log(this._industry._miningLocations.water);
     }
 
     // Evaluates whether the current mouse position is at an acceptable building site or not
@@ -690,7 +689,7 @@ export default class Engine extends View {
     //// LANDING SEQUENCE METHODS FOR NEWLY ARRIVING COLONISTS (SMARS IMMIGRATION) ////
 
     startNewColonistsLanding = (colonists: number) => {
-        console.log(`${colonists} new colonists are now landing!`);
+        // console.log(`${colonists} new colonists are now landing!`);
         // Get a location for the landing
         const direction = Math.random() > 0.5 ? 1 : 0;          // 1 = landing is near to left edge of the map, 0 = right edge
         const distance = Math.floor(Math.random() * 10) + 2;    // Set a distance of 2 - 11 from either edge
@@ -1081,6 +1080,6 @@ export default class Engine extends View {
             this._modal.render();
         }
         p5.fill(constants.GREEN_TERMINAL);
-        p5.text(`Sunlight: ${this._sunlight}`, 120, 300);
+        // p5.text(`Sunlight: ${this._sunlight}`, 120, 300);
     }
 }

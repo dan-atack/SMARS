@@ -161,7 +161,6 @@ export default class Industry {
             if (occ) {
                 // Coordinates are occupied
                 if (inUse) {    // DO NOT allow another punch-in
-                    console.log(`Warning: Mining location at (${coords.x}, ${coords.y}) is already occupied.`);
                     return false;
                 } else {        // DO allow a punch-out
                     this._miningCoordinatesInUse[resource as keyof MiningLocations] = this._miningCoordinatesInUse[resource as keyof MiningLocations].filter((loc) => loc.x !== coords.x || loc.y !== coords.y);
