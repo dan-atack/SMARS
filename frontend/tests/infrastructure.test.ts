@@ -310,6 +310,10 @@ describe("Infrastructure base class", () => {
         // Modules are: 1 Lander (experimental type = no requests) 2 Storage modules (no requests) and one cantina that has 10% of both its food and water quotas
         expect(infra.compileModuleResourceRequests()).toStrictEqual([
             {
+                modId: 1000,
+                resource: ["power", 50]
+            },
+            {
                 modId: 1003,
                 resource: ["food", 4500]
             },
@@ -347,7 +351,7 @@ describe("Infrastructure base class", () => {
             ["power", 0]                                        // ... Except for the power
         ]);
         expect(infra._modules[2]._resources).toStrictEqual([    // ... With supplies taken from the storage room
-            ["oxygen", 1000],
+            ["oxygen", 988],
             ["food", 5500],
             ["water", 5500],
             ["equipment", 20000]
@@ -360,7 +364,7 @@ describe("Infrastructure base class", () => {
         expect(infra._modules[3]._resources).toStrictEqual([
             ["food", 5000],
             ["water", 5000],
-            ["power", 1000]                                        // Power is transferred from production module to cantina
+            ["power", 0]                                        // Power is transferred from production module to cantina
         ]);
     })
 
@@ -376,13 +380,14 @@ describe("Infrastructure base class", () => {
     test("Can trigger a production round for a module", () => {
         // Setup: Module exists with a colonist punched in, and the necessary resources for production
         infra.handleHourlyUpdates(100);
+        infra._modules[5]._isMaintained = true; // Ensure that a punch-in is possible
         infra._modules[5].punchIn(9999);        // Punch in colonist # 9999
         expect(infra._modules[5].hasProductionInputs()).toBe(true);     // Validate setup
         expect(infra._modules[5]._crewPresent).toStrictEqual([9999]);
         infra.resolveModuleProduction(1005, 9999);  // Should punch out the colonist, and remove inputs and add outputs
         expect(infra._modules[5]._crewPresent).toStrictEqual([]);
         expect(infra._modules[5]._resources).toStrictEqual([
-            ["oxygen", 10],     // From 0 to 10 (+10)
+            ["oxygen", 501],    // From 0 to 501 (+510 - 9)
             ["water", 1245],    // From 1250 to 1245 (-5)
             ["food", 10]        // From 0 to 10 (+10)
         ])

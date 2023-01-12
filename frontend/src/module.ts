@@ -18,6 +18,7 @@ export default class Module {
     _resourceSharing: boolean;  // Yes or no policy, for whether to grant the resource requests of other modules
     _resourceAcquiring: number; // 0 to 1, representing how much of the max capacity of each resource the module tries to maintain
     _resources : Resource[];    // Represents the current tallies of each type of resource stored in this module
+    _isMaintained: boolean;     // Represents whether or not the module's maintenance needs are being
     _crewPresent: number[];     // If the module has a crew capacity, keep track of which colonists are currently inside
     _width: number;             // Width and height are in terms of blocks (grid spaces), not pixels
     _height: number;
@@ -41,15 +42,20 @@ export default class Module {
                 this._resourceSharing = true;
                 this._resourceAcquiring = 0;
                 break;
-            case "Production":  // Production is willing to share its output and tries to keep a good supply of input resources
-                this._resourceSharing = false;  // Production modules will have a rule so that they share their output resource/s
+            case "Production":  // Production does not share (but will push its output) and tries to keep supply of input resources
+                this._resourceSharing = false;  // Production modules push their outputs but don't answer supply requests directly
                 this._resourceAcquiring = 0.5;  // Similarly, they will have another rule to only try to acquire input resource/s
                 break;
-            default:            // All other modules are instructed to stay out of the resource exchange business altogether
-                this._resourceSharing = false;
+            case "Power":
+                this._resourceSharing = true;   // Power modules share their output and generally have no need to be topped up
                 this._resourceAcquiring = 0;
+                break;
+            default:            // All other modules are instructed to try to fill up to 50%, and not share
+                this._resourceSharing = false;
+                this._resourceAcquiring = 0.5;
         }
         this._resources = [];
+        this._isMaintained = true;  // By default every module's needs are assumed to have been met
         this._crewPresent = [];
         this._moduleInfo.storageCapacity.forEach((res) => {
             const r: Resource = [ res[0], 0 ];
@@ -67,14 +73,25 @@ export default class Module {
     // SECTION 1: RESOURCE INFO GETTERS
 
     // Pseudo-property to quickly get just the names of the resources in this module's capacity
-    _resourceCapacity () {
+    _resourceCapacity = () => {
         let r: string[] = [];
         this._moduleInfo.storageCapacity.forEach((res) => r.push(res[0]));
         return r;
     }
 
+    // Returns the max capacity for a given resource (By name)
+    getIndividualResourceCapacity = (resource: string) => {
+        const found = this._moduleInfo.storageCapacity.filter((res) => res[0] === resource);
+        if (found && found.length === 1) {
+            return found[0][1];
+        } else {
+            console.log(`Error: Module ${this._id} encountered an error determining the capacity limit for resource: ${resource}`);
+            return 0;
+        }
+    }
+
     // Takes a resource name and returns the quantity, if any, of that resource if it is present in the module
-    getResourceQuantity (resource: string) {
+    getResourceQuantity = (resource: string) => {
         let qty = 0;
         this._resources.forEach((res) => {
             if (res[0] === resource) {
@@ -105,6 +122,16 @@ export default class Module {
         return provisioned;
     }
 
+    // Called by the Inspect Display to quickly verify which resources are needed for maintenance (includes oxygen if pressurized)
+    getMaintenanceResourceNames = () => {
+        let needs: string[] = [];
+        this._moduleInfo.maintenanceCosts.forEach((res) => {
+            needs.push(res[0]);
+        });
+        if (this._moduleInfo.pressurized) needs.push("oxygen");
+        return needs;
+    }
+
     // SECTION 2: RESOURCE SHIPPING/RECEIVING METHODS
 
     // Called by the Infra class every hour, returns a list of the resource requests for this Module
@@ -128,6 +155,17 @@ export default class Module {
                     })
                 }
             })
+        }
+        // Allow for a separate calculation in case the module is a producer and outputs oxygen (we still want to have some oxygen requested/available to allow the colonists to breathe while producing more oxygen!)
+        if (this._moduleInfo.pressurized && this._moduleInfo.type === "Production") {
+            const airSupply = this.getResourceQuantity("oxygen");
+            const par = Math.ceil(this._resourceAcquiring * this.getIndividualResourceCapacity("oxygen"));
+            if (par > airSupply) {
+                reqs.push({
+                    modId: this._id,
+                    resource: ["oxygen", par - airSupply]
+                });
+            }
         }
         return reqs;
     }
@@ -187,11 +225,51 @@ export default class Module {
         }
     }
 
-    // SECTION 3: WORK-RELATED METHODS (FOR PRODUCTION MODULES ONLY)
+    // SECTION 3: MAINTENANCE METHODS
 
-    // Allows a Colonist to enter the module if it isn't already at max capacity
+    // Top-level maintenance method: determines maintenance status by calling the oxygen and general maintenance methods every hour
+    handleMaintenance = () => {
+        const hasResources = this.handleResourceUse();
+        const noAirShortage = this.handleOxygenLeakage();  // Negative variable name: no shortage means maintenance check passes
+        if (hasResources && noAirShortage) {
+            this._isMaintained = true;
+        } else {
+            // console.log(`Module ${this._id} failed maintenance check due to missing resources.`);
+            this._isMaintained = false;
+        }
+    }
+
+    // Handles general resource-consumption due to module maintenance costs
+    handleResourceUse = () => {
+        let maintained = true;      // Any failures below will set this to false - and modules with no needs will always be true
+        this._moduleInfo.maintenanceCosts.forEach((resource) => {
+            const needed = resource[1];
+            const used = this.deductResource(resource);     // Get the amount that was used
+            if (needed > used) maintained = false;          // If need exceeds amount used, there is a shortage
+        })
+        return maintained;
+    }
+
+    // Handles oxygen leakage (for pressurized modules only)
+    handleOxygenLeakage = () => {
+        const leakage = this._width * this._height;         // The bigger the volume, the greater the leakage!
+        if (this._moduleInfo.pressurized) {
+            this.deductResource(["oxygen", leakage]);
+            if (this.getResourceQuantity("oxygen") <= 0) {
+                return false;   // If there is no oxygen left, the module is depressurized
+            } else {
+                return true;    // If there is at least some oxygen left, the module is pressurized
+            }
+        } else {
+            return true;        // If the module is not pressurized, the module has no oxygen to leak
+        }
+    }
+
+    // SECTION 4: WORK-RELATED METHODS (FOR PRODUCTION MODULES ONLY)
+
+    // Allows a Colonist to enter the module if it isn't already at max capacity, and it is maintained
     punchIn = (colonistId: number) => {
-        if (this._crewPresent.length < this._moduleInfo.crewCapacity) {
+        if (this._isMaintained && this._crewPresent.length < this._moduleInfo.crewCapacity) {
             this._crewPresent.push(colonistId);
             return true;    // Let the Colonist know if their punch-in attempt has succeeded
         } else {
@@ -294,6 +372,11 @@ export default class Module {
             })
         } else {
             p5.rect(x, y, w, h);    // If no image is provided, render a black box:
+        }
+        // If the module falls into 'unmaintained' status, render a shadow over it
+        if (!this._isMaintained) {
+            p5.fill(0, 0, 200, 100);
+            p5.rect(x, y, w, h);
         }
     }
 

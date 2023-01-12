@@ -82,7 +82,7 @@ export default class Engine extends View {
     _provisioned: boolean;          // Flag to know when to stop trying to fill up the initial structures with resources
     switchScreen: (switchTo: string) => void;   // App-level SCREEN switcher (passed down via drill from the app)
     updateEarthData: () => void;    // Updater for the date on Earth (for starters)
-    getModuleInfo: (setter: (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[], resources?: Resource[][]) => void, category: string, type: string, name: string, locations: number[][], ids?: number[], resources?: Resource[][], crews?: number[][]) => void;        // Getter function for loading individual structure data from the backend
+    getModuleInfo: (setter: (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[], resources?: Resource[][]) => void, category: string, type: string, name: string, locations: number[][], ids?: number[], resources?: Resource[][], crews?: number[][], maintenanceStatuses?: boolean[]) => void;        // Getter function for loading individual structure data from the backend
     getConnectorInfo: (setter: (selectedConnector: ConnectorInfo, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => void, category: string, type: string, name: string, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => void;
 
     constructor(p5: P5, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, updateEarthData: () => void) {
@@ -212,20 +212,22 @@ export default class Engine extends View {
                 const coords: number[][] = [];      // List of every module's coordinates
                 const serials: number[] = [];
                 const resources: Resource[][] = [];
-                const crews: number[][] = [];         // List of IDs of colonists present in each module 
+                const crews: number[][] = [];         // List of IDs of colonists present in each module
+                const maintenanceStatuses: boolean[] = [];  // List of each module's maintenance status
                 mods.forEach((mod) => {
                     coords.push([mod.x, mod.y]);
                     serials.push(mod.id);   // Get ID in separate list, to be used alongside the coordinates
                     resources.push(mod.resources);  // Ditto resource data
                     crews.push(mod.crewPresent);
+                    maintenanceStatuses.push(mod.isMaintained);
                 })
-                this.getModuleInfo(this.loadModuleFromSave, "modules", modType, mT, coords, serials, resources, crews);
+                this.getModuleInfo(this.loadModuleFromSave, "modules", modType, mT, coords, serials, resources, crews, maintenanceStatuses);
             })
         }  
     }
 
     // Called by the above method, this will actually use the data from the backend to re-create loaded modules
-    loadModuleFromSave = (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[], resources?: Resource[][], crews?: number[][]) => {
+    loadModuleFromSave = (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[], resources?: Resource[][], crews?: number[][], maintenanceStatuses?: boolean[]) => {
         if (selectedBuilding != null) {
             locations.forEach((space, idx) => {
                 if (ids && resources && crews) {    // For newest saves
@@ -236,6 +238,10 @@ export default class Engine extends View {
                     const mod = this._infrastructure.getModuleFromID(ids[idx]);
                     if (mod) {
                         mod._crewPresent = crews[idx] || [];  // Re-add crew roster
+                        // If maintenance status data is available, load it
+                        if (maintenanceStatuses) {
+                            mod._isMaintained = maintenanceStatuses[idx];
+                        }
                     }
                 } else if (ids && resources) {     // For saves without module crew data
                     this._infrastructure.addModule(space[0], space[1], selectedBuilding, this._map._topography, this._map._zones, ids[idx]); // Create module with ID
@@ -314,7 +320,7 @@ export default class Engine extends View {
             // Click is over the map
             if (mouseX > 0 && mouseX < constants.SCREEN_WIDTH && mouseY > 0 && mouseY < constants.SCREEN_HEIGHT) {
                 const [gridX, gridY] = this.getMouseGridPosition(mouseX, mouseY);
-                console.log(`(${gridX}, ${gridY})`);
+                // console.log(`(${gridX}, ${gridY})`);
                 switch (this.mouseContext) {
                     case "inspect":
                         this.handleInspect({ x: gridX, y: gridY });
@@ -444,7 +450,6 @@ export default class Engine extends View {
                 this._industry.addMiningLocation(coords, "water"); // Push the coordinates for the mining location
             }
         }
-        console.log(this._industry._miningLocations.water);
     }
 
     // Evaluates whether the current mouse position is at an acceptable building site or not
@@ -684,7 +689,7 @@ export default class Engine extends View {
     //// LANDING SEQUENCE METHODS FOR NEWLY ARRIVING COLONISTS (SMARS IMMIGRATION) ////
 
     startNewColonistsLanding = (colonists: number) => {
-        console.log(`${colonists} new colonists are now landing!`);
+        // console.log(`${colonists} new colonists are now landing!`);
         // Get a location for the landing
         const direction = Math.random() > 0.5 ? 1 : 0;          // 1 = landing is near to left edge of the map, 0 = right edge
         const distance = Math.floor(Math.random() * 10) + 2;    // Set a distance of 2 - 11 from either edge
@@ -806,6 +811,9 @@ export default class Engine extends View {
         this._industry.updateJobs(this._infrastructure);
         this.updateEconomyDisplay();
         this.updateDayNightCycle();
+        // Re-activate the 2 lines below to periodically gauge how much, if any, the game's time keeping is slipping as it grows
+        // const time = new Date();
+        // console.log(time);
     }
 
     // Updates the day/night cycle and in-game weather
@@ -1072,6 +1080,6 @@ export default class Engine extends View {
             this._modal.render();
         }
         p5.fill(constants.GREEN_TERMINAL);
-        p5.text(`Sunlight: ${this._sunlight}`, 120, 300);
+        // p5.text(`Sunlight: ${this._sunlight}`, 120, 300);
     }
 }

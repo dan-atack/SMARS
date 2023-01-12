@@ -2332,22 +2332,65 @@ Exit Criteria:
 
 ### Difficulty Estimate: 5 for implementing new maintenance cost system, updating unit tests, and adding module status display
 
-### Date: TBD
+### Date: December 31, 2022
 
 Once the day/night cycle is established, an hourly maintenance cost for some modules will be introduced to add difficulty to the game in terms of resource management. Initial costs will come in two forms: resource usage, as in electricity to power the lights and heaters and so forth, and air loss due to leakage. All pressurized modules will lose a small amount of air every hour, and some modules like the Crew Quarters will need to consume power as well. Modules that have not gotten their maintenance resources will not be usable by the colonists for production/eating/drinking/sleeping, so it is imperative that resources are kept flowing. A module will need just a simple boolean to keep track of whether or not it is useable due to maintenance (or lack thereof). This chapter will explore various simple techniques for illustrating if a module has been rendered unusable due to a lack of maintenance resources.
 
 Exit Criteria:
 
-- All existing modules in the database have their maintenance costs and storage capacities updated to 'real' values
-- Hydroponics modules produce more air as a production output
-- Infrastructure class calculates and docks resources for module maintenance every hour:
-  - All pressurized modules leak 0.02 units of air per hour (more sophisticated rules to follow)
+- [DONE] All existing modules in the database have their maintenance costs and storage capacities updated to 'real' values
+- [DONE] Hydroponics modules produce more air as a production output
+- [DONE] Infrastructure class calculates and docks resources for module maintenance every hour:
+  - All pressurized modules leak 0.01 units of air per unit of volume per hour (more sophisticated rules to follow)
   - All maintenance costs are subtracted, when possible, every hour
-- When a module has missed its latest hourly maintenance check (i.e. come up short) it is unusable for colonists
-- When a module is unusable due to missed maintenance resources, its appearance is altered to display this fact
-- When a module is unusable due to missed maintenance, it is passed over by the Industry class for jobs creation
-- When a module regains its maintenance resources and passes its maintenance check its usability is immediately restored
-- Module maintenance status boolean is added to save game data
+- [DONE] When a module has missed its latest hourly maintenance check (i.e. come up short) it is unusable for colonists
+- [DONE] When a module is unusable due to missed maintenance resources, its appearance is altered to display this fact
+- [DONE] When a module is unusable due to missed maintenance, it is passed over by the Industry class for jobs creation
+- [DONE] When a module regains its maintenance resources and passes its maintenance check its usability is restored
+- [DONE] Module maintenance status boolean is added to save game data
+- [DONE] Module maintenance costs are shown on the buildingChip component
+- [DONE] Module maintenance costs are shown on the Module Inspect display area
+- [DONE] Module current pressurization status is shown on the Module Inspect display area when relevant
+- [DONE] If a module is missing one or more maintenance resources, those resources are shown in red in its Inspect Display chart
+- [DONE] During the inter-module resource distribution phase, oxygen is distributed equitably and optimally
+
+### New metric: How many seconds does a (game) hour last on 'fast' speed? 20-21 seconds over a 4-hour period.
+
+1. Go through those modules and update their maintenance and/or storage capacities. Ensure that any resource needed for a module's maintenance is represented in its storable resources list (although not necessarily the other way around). Also, for simplicity's sake, make all storage modules require no maintenance (no costs and not pressurized - except for the oxygen tank, which can be pressurized since it already stores oxygen).
+
+2. Add a new Module field, isMaintained, which will be a boolean that indicates whether the module's maintenance needs are met. This means, in the case of modules that are pressurized, that they have oxygen, and in general that all of the module's maintenance needs (if any) have been met. If a module has no needs (such as a battery or a solar panel) its isMaintained status will always be true, since it has no needs that are not being met.
+
+3. Add a new Module method, handleOxygenLeakage, to reduce oxygen by a fixed amount (for now) if the module is pressurized. If the module has an insufficient amount of oxygen present, have this function return false (a top level method will determine the overall maintenance status of the module). Unit test this before proceeding.
+
+4. Add another new Module method, handleResourceUse, which will go through the list of the module's maintenance needs and try to reduce the supply of each one. If it encounters any shortages, it should return false. Unit test this before proceeding.
+
+5. Add a top-level Module maintenance method, handleMaintenance, that will take care of calling both the handleOxygenLeakage method and the handleResourceUse method and set the module's isMaintained status to true of both methods return true, and false if either of them is false. Unit test before proceeding.
+
+6. Add a maintenance method to the Infrastructure class, called handleHourlyMaintenance, that will call each module's handleMaintenance method. Add just a very simple unit test here.
+
+7. Add the hourly maintenance method to the Infrastructure's general hourly updater method, to be called at the end of the sequence (after all resource transfers have been completed) and verify that it works in-game.
+
+8. Add a simple rectangular shadow to render on top of any module that has missed its latest maintenance check. Addendum: Nailed it right off the bat!
+
+9. Update the Industry class's job creation logic to ignore modules that have a false value for isMaintained. Validate in-game and also add a unit test before proceeding.
+
+10. Get crew to punch in and out of modules for eating and sleeping actions (this is already implemented for resting). Validate in-game and add a new colonist data class unit test before proceeding.
+
+11. Update the logic for the module's punchIn method, to not allow punching in if the module is in a non-maintained state. Update unit tests if this breaks if any, and add a new one for the module class and colonist data class to verify this works.
+
+12. Update the BuildingInfo component to display the maintenance costs (if any) of new building options.
+
+13. Add the 'show more info' button to non-production modules, and add maintenance costs to the secondary display.
+
+14. Add a new Module method, listMaintenanceResources, which returns just the list of resource names that are needed for maintenance. Include 'oxygen' if the modue is pressurized. Unit test before proceeding.
+
+15. If a module is not maintained, either because of lack of oxygen or other resources, display this fact in its primary inspect display page, replacing the integrity value (which is not currently meaningful). If the module is not maintained, use red text instead of green. Also, differentiate between being depressurized (lacking a needed oxygen supply) and unpressurized (not requiring oxygen, like solar panels/batteries/etc).
+
+16. Add each module's maintenance status to its save data, so that disabled modules are not momentarily revived when a saved game is loaded. Verify in-game by saving and then re-loading a game in which at least one module is not maintained, and verifying that it is loaded with the correct status (i.e. it doesn't have to wait an hour to be pronounced unusable).
+
+17. Implement a 'rationalized' system for resource distribution, by isolating each component of the resource transfer phase into its own method and ensuring that each one just does its job and nothing else. Production and power modules push on the push phase, and request resources in the request phase; other than during the push phase production modules should not give away their resources (to avoid bouncing supplies back and forth and causing needless outages).
+
+### 99. Clean up console logs from this and previous chapters before proceeding to the final game optimization and UX polishing chapter/s.
 
 ## Chapter Forty-Two: Pre-Release Colonist Pathfinding Improvements
 
@@ -2446,6 +2489,8 @@ As the game matures, it will be more and more desirable to separate features tha
 - Connector/ConnectorData
 
 - Map/MapData
+
+### 3. Revise the way Modules load saved data, to avoid adding to the already hideously complex getModuleInfo function. Replace it with a more elegant Module method that simply takes a ModuleSaveInfo object as its sole argument and applies the save data directly.
 
 # Annex A: Advanced Concepts
 

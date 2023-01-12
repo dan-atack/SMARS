@@ -45,7 +45,7 @@ const noStoreModuleInfo: ModuleInfo = {
     shapes: []                  // Shapes data not needed for unit tests
 };
 
-const lifeSupportModInfo: ModuleInfo = {
+const crewQuartersModInfo: ModuleInfo = {
     name: "Crew Quarters",
     width: 4,
     height: 3,
@@ -57,10 +57,11 @@ const lifeSupportModInfo: ModuleInfo = {
         ["money", 100000],  // money
     ],
     maintenanceCosts: [
-        ["power", 1]
+        ["power", 5]
     ],
     storageCapacity: [
-        ["oxygen", 1000]    // oxygen, water, food
+        ["oxygen", 1000],    // oxygen, water, food
+        ["power", 1000]
     ],
     crewCapacity: 2,
     shapes: []
@@ -145,7 +146,7 @@ const solarPanelInfo: ModuleInfo = {
 
 const moduleData = new Module(9000, 10, 10, storageModuleInfo);
 const emptyModule = new Module(9001, 20, 20, noStoreModuleInfo);
-const lsModule = new Module(9002, 14, 10, lifeSupportModInfo);
+const lsModule = new Module(9002, 14, 10, crewQuartersModInfo);
 const prodModule = new Module(9003, 14, 6, productionModuleInfo);
 const commsModule = new Module(9004, 10, 6, commsModuleInfo);
 const prodModule2 = new Module(9005, 10, 2, productionModuleInfo);
@@ -280,9 +281,9 @@ describe("ModuleData", () => {
         // Production: Sharing is false and acquisition is 0.5
         expect(prodModule._resourceSharing).toBe(false);
         expect(prodModule._resourceAcquiring).toBe(0.5);
-        // Other: Other module types stay out of resource sharing entirely (false and 0)
+        // Other: Other module types do not share, and try to fill up to 50% (false and 0.5)
         expect(commsModule._resourceSharing).toBe(false);
-        expect(commsModule._resourceAcquiring).toBe(0);
+        expect(commsModule._resourceAcquiring).toBe(0.5);
     })
 
     test("Can determine resource requests based on resource sharing policy", () => {
@@ -326,16 +327,28 @@ describe("ModuleData", () => {
              ])
         // Policy = 1 and module is empty - Expect large requests
         resetResource(lsModule);
-        expect(lsModule.determineResourceRequests()).toStrictEqual([{
-            modId: 9002,
-            resource: ["oxygen", 1000]
-        }])
+        expect(lsModule.determineResourceRequests()).toStrictEqual([
+            {
+                modId: 9002,
+                resource: ["oxygen", 1000]
+            },
+            {
+                modId: 9002,
+                resource: ["power", 1000]
+            }
+        ])
         // Policy = 1 and module is half full - Expect small requests
         partiallyFillModule(lsModule, 0.5);
-        expect(lsModule.determineResourceRequests()).toStrictEqual([{
-            modId: 9002,
-            resource: ["oxygen", 500]
-        }])
+        expect(lsModule.determineResourceRequests()).toStrictEqual([
+            {
+                modId: 9002,
+                resource: ["oxygen", 500]
+            },
+            {
+                modId: 9002,
+                resource: ["power", 500]
+            }
+        ])
         // Policy = 1 and module is full - Expect no requests
         fillModule(lsModule);
         expect(lsModule.determineResourceRequests()).toStrictEqual([]);
@@ -355,10 +368,19 @@ describe("ModuleData", () => {
         expect(prodModule2.hasProductionInputs()).toBe(false);
     })
 
-    test("punchIn adds a colonist ID to the list of crew present in the module", () => {
+    test("punchIn adds a colonist ID to the list of crew present in the module if module is maintained", () => {
         const colonistId = 5000;
         prodModule.punchIn(colonistId);
         expect(prodModule._crewPresent).toStrictEqual([5000]);
+        // Extension: Reset test to test punch-in rejection is module is not maintained
+        prodModule.punchOut(colonistId);
+        prodModule._isMaintained = false;
+        expect(prodModule.punchIn(colonistId)).toBe(false);
+        expect(prodModule._crewPresent).toStrictEqual([]);
+        prodModule._isMaintained = true;        // Reset maintenance status and punch in again to avoid disrupting other tests
+        expect(prodModule.punchIn(colonistId)).toBe(true);
+        expect(prodModule._crewPresent).toStrictEqual([5000]);
+
     })
 
     test("punchIn only allows the Colonist to enter if the module is not already full", () => {
@@ -418,6 +440,65 @@ describe("ModuleData", () => {
         expect(solarPanelModule.generatePower(0)).toBe(0);      // No sun = no power produced
         expect(solarPanelModule._resources[0]).toStrictEqual(["power", 175]);
         expect(solarPanelModule.generatePower()).toBe(null);    // Validate error return when sunlight value not provided
+    })
+
+    // Maintenance method tests
+    test("handleOxygenLeakages deducts pressurized modules' oxygen supply, and notes shortages", () => {
+        // Setup test: Two pressurized modules - one with oxygen and one without; and one non-pressurized module (solar panel)
+        const pressurizedFull = new Module(9000, 0, 30, crewQuartersModInfo);
+        pressurizedFull.addResource(["oxygen", 10000]);                         // Full module has a supply of oxygen to leak
+        const pressurizeEmpty = new Module(9001, 4, 30, crewQuartersModInfo);   // Empty module has no oxygen available
+        expect(pressurizedFull.handleOxygenLeakage()).toBe(true);           // True = enough oxygen was available
+        expect(pressurizedFull.getResourceQuantity("oxygen")).toBe(988);    // 12 oxygen subtracted from 1000 = 988 remains
+        expect(pressurizeEmpty.handleOxygenLeakage()).toBe(false);          // False = not enough oxygen available
+        expect(solarPanelModule.handleOxygenLeakage()).toBe(true);          // True = module has no need for air pressure
+    })
+
+    test("handleResourceUse deducts modules' non-oxygen maintenance needs, and notes shortages", () => {
+        // Setup: Two modules that require maintenance resources (power) - one with power and one without; and one with no needs
+        const needsAndProvisioned = new Module(9000, 0, 30, crewQuartersModInfo);
+        needsAndProvisioned.addResource(["power", 10000]);
+        const needsNotProvisioned = new Module(9001, 0, 30, crewQuartersModInfo);
+        expect(needsAndProvisioned.handleResourceUse()).toBe(true);             // True = needs have been met
+        expect(needsAndProvisioned.getResourceQuantity("power")).toBe(995);     // 5 power subtracted from 1000 = 995 remains
+        expect(needsNotProvisioned.handleResourceUse()).toBe(false);            // False = needs have not been met
+        expect(solarPanelModule.handleResourceUse()).toBe(true);                // True = module has no maintenance costs
+    })
+
+    test("handleMaintenance method sets module's isMaintained status by calling leakage and resource use methods", () => {
+        const mod = new Module(9000, 0, 30, crewQuartersModInfo);
+        // Case 1: Module that needs oxygen and power, and has both - is maintained
+        mod.addResource(["oxygen", 100]);
+        mod.addResource(["power", 100]);
+        mod.handleMaintenance();
+        expect(mod._isMaintained).toBe(true);
+        // Case 2: Module that needs oxygen and power, and has oxygen but not power - not maintained
+        mod.deductResource(["power", 100]);
+        mod.handleMaintenance();
+        expect(mod._isMaintained).toBe(false);
+        // Case 3: Module that needs oxygen and power, and has power but not oxygen - not maintained
+        mod.deductResource(["oxygen", 100]);
+        mod.addResource(["power", 100]);
+        mod.handleMaintenance();
+        expect(mod._isMaintained).toBe(false);
+        // Case 4: Module that needs only power, and has it - is maintained
+        commsModule.addResource(["power", 100]);
+        commsModule.handleMaintenance();
+        expect(commsModule._isMaintained).toBe(true);
+        // Case 5: Module that needs only power, and lacks it - is not maintained
+        commsModule.deductResource(["power", 10000]);
+        commsModule.handleMaintenance();
+        expect(commsModule._isMaintained).toBe(false);
+        // Case 6: Module that is not maintained gains resources and becomes maintained
+        commsModule.addResource(["power", 100]);
+        commsModule.handleMaintenance();
+        expect(commsModule._isMaintained).toBe(true);
+    })
+
+    test("getMaintenanceResourceNames returns a list of resource names (including oxygen) needed for maintenance", () => {
+        expect(solarPanelModule.getMaintenanceResourceNames()).toStrictEqual([]);
+        expect(commsModule.getMaintenanceResourceNames()).toStrictEqual(["power"]);
+        expect(lsModule.getMaintenanceResourceNames()).toStrictEqual(["power", "oxygen"]);
     })
 
 })

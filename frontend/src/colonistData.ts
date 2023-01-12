@@ -296,6 +296,7 @@ export default class ColonistData {
                 case "drink":
                     if (this._actionTimeElapsed >= this._currentAction.duration) {
                         this._needs.water -= this._currentAction.duration;  // Reduce water need by 1/unit of time spent drinking
+                        this.exitModule(infra); // Don't forget to officially exit the module when leaving
                         this.resolveAction();
                         this.updateMorale(1);       // Add one morale for satisfying a need
                     }
@@ -303,6 +304,7 @@ export default class ColonistData {
                 case "eat":
                     if (this._actionTimeElapsed >= this._currentAction.duration) {
                         this._needs.food -= this._currentAction.duration;   // Reduce food need by 1/unit of time spent eating
+                        this.exitModule(infra); // Don't forget to officially exit the module when leaving
                         this.resolveAction();
                         this.updateMorale(1);       // Add one morale for satisfying a need
                     }
@@ -522,7 +524,7 @@ export default class ColonistData {
             }
         } else {
             // If there is no current action but an attempt is made to initiate a move, reset the colonist's goal to unjam them
-            console.log(`Colonist ${this._id} not moving due to: No value for current action. Auto-resolving current goal (${this._currentGoal}).`);
+            // console.log(`Colonist ${this._id} not moving due to: No value for current action. Auto-resolving current goal (${this._currentGoal}).`);
             this.resolveGoal();
         }
         // 2 - Initiate movement
@@ -589,10 +591,18 @@ export default class ColonistData {
                 const mod = infra.getModuleFromID(this._currentAction.buildingId);
                 // Call its resource-reduction method
                 if (mod) {
-                    // Resource is immediately removed from the module; colonist 'gets' it when they complete the action
-                    const consumed = mod.deductResource([resourceName, this._currentAction.duration]);  // Duration = qty taken
-                    if (consumed < this._currentAction.duration) {
-                        this._currentAction.duration = consumed;    // Since the module's deductResources method returns a number representing the amount of resource dispensed, we can see if it contained less than the required amount and reduce the action duration (and eventual amount of need relieved) if so
+                    // Colonist attempts to enter the module before consumption can begin
+                    const entered = mod.punchIn(this._id);
+                    if (entered) {
+                        // Resource is immediately removed from the module; colonist 'gets' it when they complete the action
+                        const consumed = mod.deductResource([resourceName, this._currentAction.duration]);  // Duration = qty taken
+                        if (consumed < this._currentAction.duration) {
+                            // Since the module's deductResources method returns a number representing the amount of resource dispensed, we can see if it contained less than the required amount and reduce the action duration (and eventual amount of need relieved) if so
+                            this._currentAction.duration = consumed;
+                        }
+                    } else {
+                        console.log(`${this._name} was unable to enter module ${mod._id}!`);
+                        this.resolveAction();
                     }
                 } else {
                     console.log(`Error: Module ${this._currentAction.buildingId} not found.`);

@@ -136,7 +136,8 @@ export default class Game extends Screen {
                 x: mod._x,
                 y: mod._y,
                 resources: mod._resources,
-                crewPresent: mod._crewPresent
+                crewPresent: mod._crewPresent,
+                isMaintained: mod._isMaintained
             }
             moduleData.push(stats);
         });

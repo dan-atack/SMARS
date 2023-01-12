@@ -20,7 +20,7 @@ export default class InspectDisplay {
     _headers: number[];         // Vertical positions for rows of data
     _currentSelection: Block | Colonist | Connector | Module | null;
     _selectionName: string;     // Quick way for the renderer to know what type of object is selected
-    _prodInfoButton: Button     // Alternates between regular/production view for production modules
+    _moreInfoButton: Button     // Alternates between primary/secondary view for module info displays
 
     constructor(x: number, y: number) {
         this._leftEdge = x;
@@ -32,12 +32,12 @@ export default class InspectDisplay {
         this._left3Q = this._leftEdge + this._width * 3 / 4;
         this._textAlignleft = this._leftEdge + 12;
         this._headers = [];
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i <= 8; i++) {
             this._headers.push(this._top + 24 + i * 32);
         }
         this._currentSelection = null;
         this._selectionName = "";
-        this._prodInfoButton = new Button("SHOW\nPRODUCTION", this._center, this._headers[2] - 16, this.handleProductionInfo, 128, 64, constants.YELLOW_TEXT, constants.YELLOW_BG, 18);
+        this._moreInfoButton = new Button("MORE\nINFO", this._center, this._headers[2] - 16, this.handleProductionInfo, 128, 64, constants.YELLOW_TEXT, constants.YELLOW_BG, 18);
     }
 
     // SECTION 1 - GENERAL UPDATE AND TYPE IDENTIFICATION METHODS
@@ -85,7 +85,7 @@ export default class InspectDisplay {
     // Only allow clicks when the button is 
     handleClicks = (mouseX: number, mouseY: number) => {
         // TODO: Add buttons into a list if more are added for non-module templates
-        this._prodInfoButton.handleClick(mouseX, mouseY);
+        this._moreInfoButton.handleClick(mouseX, mouseY);
     }
 
     // SECTION 3 - CLASS-SPECIFIC DISPLAY TEMPLATES
@@ -164,56 +164,130 @@ export default class InspectDisplay {
             const mod = this._currentSelection;   // For convenience
             p5.textSize(20);
             p5.text(`${mod._moduleInfo.name} (ID: ${mod._id})`, this._center, this._headers[0]);
-            p5.textSize(18);
+            p5.textSize(16);
             p5.textAlign(p5.LEFT);
-            p5.text(`${mod._moduleInfo.pressurized ? "Pressurized" : "Unpressurized"} - Integrity: ${mod._moduleInfo.durability}`, this._textAlignleft, this._headers[1]);
-            p5.text(`${mod._moduleInfo.crewCapacity ? `Crew: ${mod._crewPresent.length} / ${mod._moduleInfo.crewCapacity}` : "No crew capacity"}`, this._textAlignleft, this._headers[2]);
+            if (mod._moduleInfo.pressurized) {
+                // If module should be pressurized, ensure that it is, and report in red ink if it is not
+                const pressurized = mod._moduleInfo.pressurized && mod.getResourceQuantity("oxygen") > 0;
+                if (pressurized) {
+                    p5.text("Pressurized", this._textAlignleft, this._headers[1]);
+                } else {
+                    p5.fill(constants.RED_ERROR);
+                    p5.text("Depressurized!", this._textAlignleft, this._headers[1]);
+                }
+            } else {
+                p5.text("Not pressurized", this._textAlignleft, this._headers[1]);
+            }
+            if (mod._isMaintained) {
+                p5.fill(constants.GREEN_TERMINAL);
+                p5.text("      Operational", this._center, this._headers[1]);
+            } else {
+                p5.fill(constants.RED_ERROR);
+                p5.text("Not Operational", this._center, this._headers[1]);
+            }
+            p5.fill(constants.GREEN_TERMINAL);
+            p5.text(`${mod._moduleInfo.crewCapacity ? `Crew: ${mod._crewPresent.length} / ${mod._moduleInfo.crewCapacity}` : "Uncrewed"}`, this._textAlignleft, this._headers[2]);
             p5.text(`Resources:`, this._textAlignleft, this._headers[3]);
             p5.text("Type", this._textAlignleft, this._headers[4]);
             p5.text("/         Quantity", this._left1Q, this._headers[4]);
             p5.text("/  Max", this._left3Q, this._headers[4]);
+            const shortageIndices: number[] = [];
             mod._resources.forEach((res, idx) => {
+                // Font is green UNLESS: resource is needed for maintenance and is unavailable
+                if (mod.getMaintenanceResourceNames().includes(res[0]) && res[1] === 0) {
+                    p5.fill(constants.RED_ERROR);
+                    shortageIndices.push(idx);
+                } else {
+                    p5.fill(constants.GREEN_TERMINAL);
+                }
                 p5.text(res[0], this._textAlignleft, this._headers[5] + idx * 20);
                 p5.text((res[1] / 100).toFixed(2), this._center, this._headers[5] + idx * 20);
             });
             mod._moduleInfo.storageCapacity.forEach((res, idx) => {
+                if (shortageIndices.includes(idx)) {
+                    p5.fill(constants.RED_ERROR);
+                } else {
+                    p5.fill(constants.GREEN_TERMINAL);
+                }
                 p5.text(`/  ${(res[1] / 100).toFixed(0)}`, this._left3Q, this._headers[5] + idx * 20);
             });
-            if (mod._moduleInfo.type === "Production") {    // Render button for production info display
-                this._prodInfoButton._label = "SHOW\nPRODUCTION"
-                this._prodInfoButton.render(p5);
-            }
+            p5.fill(constants.GREEN_TERMINAL);  
+            // Always show the 'more info' button (not just for production modules)
+            this._moreInfoButton._label = "MORE\nINFO";
+            this._moreInfoButton.render(p5);
         } else {
             p5.fill(constants.RED_ERROR);
             p5.text("Warning: Module Data Missing", this._center, this._headers[0]);
         }
     }
 
-    displayProductionModuleData = (p5: P5) => {
+    // Shows 'page 2' module data - production info breakdown and/or maintenance costs
+    displaySecondaryModuleData = (p5: P5) => {
         if (this._currentSelection && this.isModule(this._currentSelection)) {
             const mod = this._currentSelection;
             p5.textSize(20);
             p5.text(`${mod._moduleInfo.name} (ID: ${mod._id})`, this._center, this._headers[0]);
-            p5.text("Production Information", this._center, this._headers[1]);
+            p5.text("Maintenance Costs:", this._center, this._headers[6]);
+            switch (mod._moduleInfo.type) {
+                case "Production":
+                    p5.text("Production Information", this._center, this._headers[1]);
+                    p5.textSize(16);
+                    p5.textAlign(p5.LEFT);
+                    if (mod._moduleInfo.productionInputs && mod._moduleInfo.productionOutputs) {
+                        let inputs = "";
+                        let outputs = "";
+                        mod._moduleInfo.productionInputs.forEach((input, idx) => {
+                            if (idx > 0) inputs += " + ";
+                            inputs += (input[1] / 100).toFixed(2);
+                            inputs += " ";
+                            inputs += input[0];
+                        })
+                        mod._moduleInfo.productionOutputs.forEach((output, idx) => {
+                            if (idx > 0) outputs += " + ";
+                            outputs += (output[1] / 100).toFixed(2);
+                            outputs += " ";
+                            outputs += output[0];
+                        })
+                        p5.text(`Converts ${inputs}`, this._textAlignleft, this._headers[4]);
+                        p5.text(`Into ${outputs}`, this._textAlignleft, this._headers[5]);
+                    }
+                    break;
+                case "Power":
+                    if (mod._moduleInfo.productionOutputs !== undefined) {
+                        const powerGenerationString = `${(mod._moduleInfo.productionOutputs[0][1] / 100).toFixed(2)} ${mod._moduleInfo.productionOutputs[0][0]}`;
+                        p5.text("Power Generation:", this._center, this._headers[1]);
+                        p5.textSize(16);
+                        p5.textAlign(p5.LEFT);
+                        // TODO: Make this more generic to allow for non-solar outputs to be displayed
+                        p5.text(`Generates ${powerGenerationString}`, this._textAlignleft, this._headers[4]);
+                        p5.text("in full sunlight", this._textAlignleft, this._headers[5]);
+                    } else {
+                        p5.text("Generates 0 power", this._textAlignleft, this._headers[4]);
+                    }
+                    break;
+            }
+            // Show maintenance costs for all modules, starting at header index 7
+            const nonOxygenCosts = mod._moduleInfo.maintenanceCosts.length;
             p5.textSize(16);
-            p5.textAlign(p5.LEFT);
-            if (mod._moduleInfo.productionInputs && mod._moduleInfo.productionOutputs) {
-                let inputs = "";
-                let outputs = "";
-                mod._moduleInfo.productionInputs.forEach((input, idx) => {
-                    if (idx > 0) inputs += " + ";
-                    inputs += input[0];
+            p5.fill(constants.YELLOW_TEXT)
+            if (nonOxygenCosts > 0) {
+                p5.textAlign(p5.LEFT);
+                mod._moduleInfo.maintenanceCosts.forEach((res, idx) => {
+                    p5.text(`Consumes ${(res[1] / 100).toFixed(2)} ${res[0]} per hour`, this._textAlignleft, this._headers[7 + idx] - idx * 4 - 4);
                 })
-                mod._moduleInfo.productionOutputs.forEach((output, idx) => {
-                    if (idx > 0) outputs += " + ";
-                    outputs += output[0];
-                })
-                p5.text(`Converts ${inputs}`, this._textAlignleft, this._headers[4]);
-                p5.text(`Into ${outputs}`, this._textAlignleft, this._headers[5]);
+            } else if (!mod._moduleInfo.pressurized) {
+                p5.textAlign(p5.CENTER);
+                p5.textSize(18);
+                p5.text("None", this._center, this._headers[7]);
+            }
+            if (mod._moduleInfo.pressurized) {
+                const leakage = (mod._moduleInfo.width * mod._moduleInfo.height / 100).toFixed(2);
+                p5.textAlign(p5.LEFT);
+                p5.text(`Leaks ${leakage} air (oxygen) per hour`, this._textAlignleft, this._headers[7 + nonOxygenCosts] - nonOxygenCosts * 4 - 8);
             }
             // Reset button text before showing it; button will return to regular module info display
-            this._prodInfoButton._label = "SHOW\nBASIC INFO"
-            this._prodInfoButton.render(p5);
+            this._moreInfoButton._label = "SHOW\nBASIC INFO"
+            this._moreInfoButton.render(p5);
         } else {
             p5.fill(constants.RED_ERROR);
             p5.text("Warning: Module Data Missing", this._center, this._headers[0]);
@@ -256,7 +330,7 @@ export default class InspectDisplay {
                     this.displayModuleData(p5);
                     break;
                 case "production-module":
-                    this.displayProductionModuleData(p5);
+                    this.displaySecondaryModuleData(p5);
                     break;
                 default:
                     p5.fill(constants.RED_ERROR);
