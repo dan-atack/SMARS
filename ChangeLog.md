@@ -2347,12 +2347,12 @@ Exit Criteria:
 - [DONE] When a module is unusable due to missed maintenance resources, its appearance is altered to display this fact
 - [DONE] When a module is unusable due to missed maintenance, it is passed over by the Industry class for jobs creation
 - [DONE] When a module regains its maintenance resources and passes its maintenance check its usability is restored
-- Module maintenance status boolean is added to save game data
+- [DONE] Module maintenance status boolean is added to save game data
 - [DONE] Module maintenance costs are shown on the buildingChip component
 - [DONE] Module maintenance costs are shown on the Module Inspect display area
 - [DONE] Module current pressurization status is shown on the Module Inspect display area when relevant
 - [DONE] If a module is missing one or more maintenance resources, those resources are shown in red in its Inspect Display chart
-- During the inter-module resource distribution phase, all pressurized modules must request to be filled up to 50% oxygen
+- [DONE] During the inter-module resource distribution phase, oxygen is distributed equitably and optimally
 
 ### New metric: How many seconds does a (game) hour last on 'fast' speed? 20-21 seconds over a 4-hour period.
 
@@ -2386,11 +2386,11 @@ Exit Criteria:
 
 15. If a module is not maintained, either because of lack of oxygen or other resources, display this fact in its primary inspect display page, replacing the integrity value (which is not currently meaningful). If the module is not maintained, use red text instead of green. Also, differentiate between being depressurized (lacking a needed oxygen supply) and unpressurized (not requiring oxygen, like solar panels/batteries/etc).
 
-### 16. Add each module's maintenance status to its save data, so that disabled modules are not momentarily revived when a saved game is loaded. Verify in-game by saving and then re-loading a game in which at least one module is not maintained, and verifying that it is loaded with the correct status (i.e. it doesn't have to wait an hour to be pronounced unusable).
+16. Add each module's maintenance status to its save data, so that disabled modules are not momentarily revived when a saved game is loaded. Verify in-game by saving and then re-loading a game in which at least one module is not maintained, and verifying that it is loaded with the correct status (i.e. it doesn't have to wait an hour to be pronounced unusable).
 
-### 12. Update the Module class's resource requests determinator to always request oxygen up to 50% of the module's capacity if the module is pressurized (to allow production buildings that generate oxygen to operate while also pushing out some of the oxygen they produce).
+17. Implement a 'rationalized' system for resource distribution, by isolating each component of the resource transfer phase into its own method and ensuring that each one just does its job and nothing else. Production and power modules push on the push phase, and request resources in the request phase; other than during the push phase production modules should not give away their resources (to avoid bouncing supplies back and forth and causing needless outages).
 
-### 99. Clean up console logs from this and previous chapters before proceeding to UX polishing chapter/s.
+### 99. Clean up console logs from this and previous chapters before proceeding to the final game optimization and UX polishing chapter/s.
 
 ## Chapter Forty-Two: Pre-Release Colonist Pathfinding Improvements
 
@@ -2489,6 +2489,8 @@ As the game matures, it will be more and more desirable to separate features tha
 - Connector/ConnectorData
 
 - Map/MapData
+
+### 3. Revise the way Modules load saved data, to avoid adding to the already hideously complex getModuleInfo function. Replace it with a more elegant Module method that simply takes a ModuleSaveInfo object as its sole argument and applies the save data directly.
 
 # Annex A: Advanced Concepts
 

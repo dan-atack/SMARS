@@ -42,12 +42,12 @@ export default class Module {
                 this._resourceSharing = true;
                 this._resourceAcquiring = 0;
                 break;
-            case "Production":  // Production is willing to share its output and tries to keep a good supply of input resources
-                this._resourceSharing = false;  // Production modules will have a rule so that they share their output resource/s
+            case "Production":  // Production does not share (but will push its output) and tries to keep supply of input resources
+                this._resourceSharing = false;  // Production modules push their outputs but don't answer supply requests directly
                 this._resourceAcquiring = 0.5;  // Similarly, they will have another rule to only try to acquire input resource/s
                 break;
             case "Power":
-                this._resourceSharing = true;
+                this._resourceSharing = true;   // Power modules share their output and generally have no need to be topped up
                 this._resourceAcquiring = 0;
                 break;
             default:            // All other modules are instructed to try to fill up to 50%, and not share
@@ -73,14 +73,25 @@ export default class Module {
     // SECTION 1: RESOURCE INFO GETTERS
 
     // Pseudo-property to quickly get just the names of the resources in this module's capacity
-    _resourceCapacity () {
+    _resourceCapacity = () => {
         let r: string[] = [];
         this._moduleInfo.storageCapacity.forEach((res) => r.push(res[0]));
         return r;
     }
 
+    // Returns the max capacity for a given resource (By name)
+    getIndividualResourceCapacity = (resource: string) => {
+        const found = this._moduleInfo.storageCapacity.filter((res) => res[0] === resource);
+        if (found && found.length === 1) {
+            return found[0][1];
+        } else {
+            console.log(`Error: Module ${this._id} encountered an error determining the capacity limit for resource: ${resource}`);
+            return 0;
+        }
+    }
+
     // Takes a resource name and returns the quantity, if any, of that resource if it is present in the module
-    getResourceQuantity (resource: string) {
+    getResourceQuantity = (resource: string) => {
         let qty = 0;
         this._resources.forEach((res) => {
             if (res[0] === resource) {
@@ -144,6 +155,17 @@ export default class Module {
                     })
                 }
             })
+        }
+        // Allow for a separate calculation in case the module is a producer and outputs oxygen (we still want to have some oxygen requested/available to allow the colonists to breathe while producing more oxygen!)
+        if (this._moduleInfo.pressurized && this._moduleInfo.type === "Production") {
+            const airSupply = this.getResourceQuantity("oxygen");
+            const par = Math.ceil(this._resourceAcquiring * this.getIndividualResourceCapacity("oxygen"));
+            if (par > airSupply) {
+                reqs.push({
+                    modId: this._id,
+                    resource: ["oxygen", par - airSupply]
+                });
+            }
         }
         return reqs;
     }

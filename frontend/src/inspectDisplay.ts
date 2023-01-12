@@ -164,11 +164,11 @@ export default class InspectDisplay {
             const mod = this._currentSelection;   // For convenience
             p5.textSize(20);
             p5.text(`${mod._moduleInfo.name} (ID: ${mod._id})`, this._center, this._headers[0]);
-            p5.textSize(18);
+            p5.textSize(16);
             p5.textAlign(p5.LEFT);
             if (mod._moduleInfo.pressurized) {
                 // If module should be pressurized, ensure that it is, and report in red ink if it is not
-                const pressurized = mod._moduleInfo.pressurized && mod._isMaintained;
+                const pressurized = mod._moduleInfo.pressurized && mod.getResourceQuantity("oxygen") > 0;
                 if (pressurized) {
                     p5.text("Pressurized", this._textAlignleft, this._headers[1]);
                 } else {
@@ -177,6 +177,13 @@ export default class InspectDisplay {
                 }
             } else {
                 p5.text("Not pressurized", this._textAlignleft, this._headers[1]);
+            }
+            if (mod._isMaintained) {
+                p5.fill(constants.GREEN_TERMINAL);
+                p5.text("      Operational", this._center, this._headers[1]);
+            } else {
+                p5.fill(constants.RED_ERROR);
+                p5.text("Not Operational", this._center, this._headers[1]);
             }
             p5.fill(constants.GREEN_TERMINAL);
             p5.text(`${mod._moduleInfo.crewCapacity ? `Crew: ${mod._crewPresent.length} / ${mod._moduleInfo.crewCapacity}` : "Uncrewed"}`, this._textAlignleft, this._headers[2]);

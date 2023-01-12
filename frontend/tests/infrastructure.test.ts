@@ -364,7 +364,7 @@ describe("Infrastructure base class", () => {
         expect(infra._modules[3]._resources).toStrictEqual([
             ["food", 5000],
             ["water", 5000],
-            ["power", 999]                                        // Power is transferred from production module to cantina
+            ["power", 0]                                        // Power is transferred from production module to cantina
         ]);
     })
 
@@ -387,7 +387,7 @@ describe("Infrastructure base class", () => {
         infra.resolveModuleProduction(1005, 9999);  // Should punch out the colonist, and remove inputs and add outputs
         expect(infra._modules[5]._crewPresent).toStrictEqual([]);
         expect(infra._modules[5]._resources).toStrictEqual([
-            ["oxygen", 10],     // From 0 to 10 (+10)
+            ["oxygen", 501],    // From 0 to 501 (+510 - 9)
             ["water", 1245],    // From 1250 to 1245 (-5)
             ["food", 10]        // From 0 to 10 (+10)
         ])

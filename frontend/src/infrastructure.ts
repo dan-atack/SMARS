@@ -69,10 +69,15 @@ export default class Infrastructure {
     // SECTION 2 - MODULE UPDATER METHODS
 
     handleHourlyUpdates = (sunlightPercent: number) => {
-        const reqs = this.compileModuleResourceRequests();
-        this.resolveResourceStoragePushes();
-        this.resolveModuleResourceRequests(reqs);
+        // 0 - Produce power modules' outputs
         this.resolveModulePowerGeneration(sunlightPercent);
+        // 1- Push outputs from production/power modules
+        this.resolveResourceStoragePushes();
+        // 2 - Compile, then resolve module resource requests
+        const reqs = this.compileModuleResourceRequests();
+        console.log(reqs);
+        this.resolveModuleResourceRequests(reqs);
+        // 3 - Deduct maintenance costs
         this.handleModuleMaintenance();
     }
 
@@ -291,22 +296,19 @@ export default class Infrastructure {
             let fulfilled = false;
             // 2 Get modules that A) have the resource, B) aren't the requesting module itself and C) allow resource sharing
             const providers = this._modules.filter((mod) => {
-                // 3 Determine resource sharing policy separately, to allow production modules to share output/s
-                let out = false;
-                if (mod._moduleInfo.productionOutputs) {
-                    mod._moduleInfo.productionOutputs.forEach((res) => {
-                        if (res[0] === req.resource[0]) out = true;
-                    })
-                }
-                return mod._resourceCapacity().includes(req.resource[0]) && mod._id !== req.modId && mod._resourceSharing || out;
+                const hasResource = mod._resourceCapacity().includes(req.resource[0]);
+                const notSelf = mod._id !== req.modId;
+                const sharing = mod._resourceSharing;
+                return (hasResource) && notSelf && sharing;
             });
+            // 3 - Initiate transfer if request is not already fulfilled, and provider has at least some of the resource needed
             providers.forEach((mod) => {
-                // Initiate transfer only if request is not already fulfilled, and module has at least some of the resource needed
                 if (!fulfilled && mod.getResourceQuantity(req.resource[0])) {
                     const available = mod.deductResource(req.resource);
                     // Transfer the available amount to the requesting module
                     this.addResourcesToModule(req.modId, [req.resource[0], available]);
-                    fulfilled = true;   // Prevent multiple providers from all attempting to fill up
+                    console.log(`Transferred ${req.resource[1]} ${req.resource[0]} from ${mod._id} to ${req.modId}`);
+                    fulfilled = true;   // Prevent other providers from trying to also answer the call
                 }
             })
         })
@@ -321,7 +323,21 @@ export default class Infrastructure {
             mod._moduleInfo.productionOutputs?.forEach((resource) => {
                 const storage = this.findStorageModule([resource[0], 1], true);   // Find Storage modules only; at least 1 capacity
                 if (storage) {
-                    const outputQty = mod.getResourceQuantity(resource[0]);
+                    let outputQty = 0;
+                    // Only push oxygen if sending module has more than its par (to avoid depressurizing oxygen producers)
+                    if (resource[0] === "oxygen") {
+                        const supply = mod.getResourceQuantity(resource[0]);
+                        const par = Math.ceil(mod.getIndividualResourceCapacity(resource[0]) * mod._resourceAcquiring);
+                        const surplus = supply - par;
+                        if (surplus > 0) {
+                            outputQty = surplus;
+                        } else {
+                            outputQty = 0;
+                        }
+                    } else {
+                        // For other resources simply try to export everything
+                        outputQty = mod.getResourceQuantity(resource[0]);
+                    }
                     const storageCapacity = storage.getResourceCapacityAvailable(resource[0]);
                     // Store all output resource quantity if possible; otherwise fill up the container as much as possible
                     let transferred = 0;

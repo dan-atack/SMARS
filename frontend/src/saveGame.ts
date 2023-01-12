@@ -26,7 +26,8 @@ export type ModuleSaveInfo = {
     x: number,
     y: number,
     resources: Resource[],
-    crewPresent: number[]   // IDs of crew present
+    crewPresent: number[],  // IDs of crew present
+    isMaintained: boolean   // Current maintenance status
 }
 
 export type ConnectorSaveInfo = {
