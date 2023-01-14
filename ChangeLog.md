@@ -2390,21 +2390,30 @@ Exit Criteria:
 
 17. Implement a 'rationalized' system for resource distribution, by isolating each component of the resource transfer phase into its own method and ensuring that each one just does its job and nothing else. Production and power modules push on the push phase, and request resources in the request phase; other than during the push phase production modules should not give away their resources (to avoid bouncing supplies back and forth and causing needless outages).
 
-### 99. Clean up console logs from this and previous chapters before proceeding to the final game optimization and UX polishing chapter/s.
+18. Clean up console logs from this and previous chapters before proceeding to the final game optimization and UX polishing chapter/s.
 
 ## Chapter Forty-Two: Pre-Release Colonist Pathfinding Improvements
 
 ### Difficulty Estimate: 3 for basic tweaks to the logic, and extensive unit tests
 
-### Date: TBD
+### Date: January 11, 2023
 
 In the last pre-release feature update, a slight adjustment will be made to the colonists' pathfinding logic to make more use of their current position when determining a destination module for consumption/production, or when finding a mining site. And that's all, I swear!
 
 Exit Criteria:
 
-- When presented with two options to get a resource/do work, and other things being equal, a colonist will prefer to go to the module nearest to them, rather than the first one in the Infrastructure class's modules list that matches their needs
+- [DONE] When presented with two or more modules at which to get a resource, a colonist will choose the nearest module
+- [DONE] When presented with two or more modules at which to rest, a colonist will chose the nearest module
+- [DONE] When presented with two or more modules at which to do work, a colonist will choose the nearest module
+- [DONE] When presented with two ore more mining locations, other things being equal, a colonist will choose the nearest location
 
-## Chapter Forty-Three: In-Game Notifications
+1. Let's start with production modules: update the Industry class's getJob method to take the Colonist's coordinates into account. Update the unit test/s for this method and then try it out in game!
+
+2. Add a proximity consideration for the Colonist's rest action so that they will always choose to go to the nearer of two different crew quarters to sleep. Again, fix / update the unit tests for this action in addition to validating in-game that the solution works.
+
+3. Add a proximity consideration for the Colonist's consume action, using the same technique as the one deployed for resting and working. Add a final unit test, then validate in game.
+
+## Chapter Forty-Three: In-Game Notifications (UX At Last!)
 
 ### Difficulty Estimate: TBD
 

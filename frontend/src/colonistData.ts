@@ -163,9 +163,9 @@ export default class ColonistData {
         })
     }
 
-    // Sub-routine 2 for updateGoal method: Checks for jobs for the Colonist's role
+    // Sub-routine 2 for updateGoal method: Checks for jobs for the Colonist's role (give coords to help proximity check)
     checkForJobs = (infra: Infrastructure, map: Map, industry: Industry) => {
-        const job = industry.getJob(this._role[0]);
+        const job = industry.getJob(this._role[0], { x: this._x, y: this._y });
         if (job) {  // Set the Job type as the new goal if a job is found; otherwise this will fall through to the default case
             this.addAction(job.type, job.coords, job.duration, job.buildingId); // Make the job the first item in the action stack
             this.setGoal(job.type, infra, map, industry, job);     // Then determine how to get to the job site
@@ -348,8 +348,10 @@ export default class ColonistData {
                     }
                 // Housekeeping: Keep options in sync with startAction and startMovement methods and animationFunctions.ts
             }
+        } else {
+            // If there is no current action, try to start the next one
+            this.checkForNextAction(infra, industry);
         }
-        
     }
 
     // Adds a new action to the end of the action stack
@@ -631,7 +633,7 @@ export default class ColonistData {
                 console.log(`Error: ${this._name} unable to enter Module ${this._currentAction.buildingId}. Reason: Module data not found.`);
             }
         } else {
-            console.log(`Warning: Colonist ${this._id} is in wrong position to enter ${this._currentAction?.type} module.`);
+            console.log(`Warning: Colonist ${this._id} is in wrong position to enter ${this._currentAction?.type} module ${this._currentAction?.buildingId}.`);
             this.resolveAction();
         }
     }
