@@ -4,6 +4,7 @@ import Map from "../src/map";
 import Module from "../src/module";
 import { ModuleInfo } from "../src/server_functions";
 import { ColonistAction } from "../src/colonistData";
+import { Coords } from "../src/connector";
 
 describe("Industry class", () => {
 
@@ -106,24 +107,28 @@ describe("Industry class", () => {
         expect(Object.keys(industry._jobs).length).toBe(2); // Farmer and miner
     })
 
+    // Updated to factor in the colonist's proximity to a job site (Works for both mining and production module jobs)
     test("Can get a job for a colonist", () => {
-        // Pop the last job off of the list when jobs are available for the given role
-        expect(industry.getJob("farmer")).toStrictEqual({
+        const colonistCoords: Coords = { x: 0, y: 30 };
+        // Job assigned is the one with the nearest coords, not necessarily the last one in the list:
+        expect(industry._jobs.farmer.length).toBe(2);
+        expect(industry.getJob("farmer", colonistCoords)).toStrictEqual({
                 type: "farm",
-                coords: { x: 5, y: 27 },
-                duration: 30,
-                buildingId: 1002
-        });
-        // Run through farmer jobs list...
-        expect(industry.getJob("farmer")).toStrictEqual({
-            type: "farm",
                 coords: { x: 1, y: 27 },
                 duration: 30,
                 buildingId: 1001
         });
+        expect(industry._jobs.farmer.length).toBe(1);
+        // Next job is from the farther coordinates
+        expect(industry.getJob("farmer", colonistCoords)).toStrictEqual({
+            type: "farm",
+                coords: { x: 5, y: 27 },
+                duration: 30,
+                buildingId: 1002
+        });
         // ... Until it's empty
-        expect(industry.getJob("farmer")).toBe(null);
-        expect(industry.getJob("miner")).toBe(null);    // If no jobs exist for the given role, return a null
+        expect(industry.getJob("farmer", colonistCoords)).toBe(null);
+        expect(industry.getJob("miner", colonistCoords)).toBe(null);    // If no jobs exist for the given role, return a null
     })
 
     test("Can add/remove mining locations when given a pair of coordinates and resource name", () => {

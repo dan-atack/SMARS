@@ -185,11 +185,24 @@ export default class Industry {
     // SECTION 3: DISPENSING JOBS TO COLONISTS
 
     // Called by the Colonists when they need a new job
-    // TODO: Add coordinates argument to allow more efficient job assignments!
-    getJob = (role: string) => {
-        let job: ColonistAction | null;
+    getJob = (role: string, colonistCoords: Coords) => {
+        let job: ColonistAction | null = null;
         if (typeof this._jobs[role] !== "undefined" && this._jobs[role].length > 0) {
-            job = this._jobs[role].pop();
+            let distance = 1000;            // Start with an absurdly high distance
+            this._jobs[role].forEach((j: ColonistAction) => {
+                // Loop through jobs list and check each one's distance vs the current shortest dist and update if it's closer
+                if (Math.abs(j.coords.x - colonistCoords.x) < distance) {
+                    distance = Math.abs(j.coords.x - colonistCoords.x);
+                    job = j;
+                }
+            });
+            // If a job is found, remove it from the list and return it; otherwise take the top job in the list
+            if (job) {
+                this._jobs[role] = this._jobs[role].filter((j: ColonistAction) => !(j.coords.x === job?.coords.x && j.coords.y === job.coords.y));
+                console.log(this._jobs[role].length);
+            } else {
+                job = this._jobs[role].pop();
+            }
         } else {
             job = null;
         }
