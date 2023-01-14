@@ -1066,14 +1066,72 @@ describe("ColonistData", () => {
         // Validate test conditions
         expect(colonistData._actionStack.length).toBe(0);
         expect(colonistData._currentAction).toBe(null);
-        // Initiate test: Colonist determines route to nearest crew quarters, ignoring the more distant ones (even though they appear first in the list of available modules)
+        // Initiate test: Colonist determines route to nearest crew quarters
         colonistData.handleHourlyUpdates(infra, mockMap, indy);
         expect(colonistData._currentGoal).toBe("get-rest");
-        // Expect results: Current action is to walk to the nearest module (whose ID is 1003, not 1001)
+        // Expect results: Current action is to walk to the nearest module (whose ID is 1001 this time)
         expect(colonistData._actionStack.length).toBe(1);
         expect(colonistData._currentAction).toStrictEqual({
             type: "move",
             coords: { x: 11, y: 32 },
+            duration: 0,
+            buildingId: 0
+        });
+        expect(colonistData._actionStack[0].buildingId).toBe(1001);
+    })
+
+    // 13 - Module proximity is factored in for Cantina modules too
+    test("Colonist get-food / get-water goals prioritize the nearest available cantina when several are available", () => {
+        // Reset colonist location
+        resetColonistData();
+        colonistData._x = 0;
+        colonistData._y = 31;
+        colonistData.detectTerrainBeneath(mockMap, mockInfra);
+        const infra = new Infrastructure();
+        infra._data.setup(mockMap._mapData.length);
+        // Add several modules to choose from, starting with the farthest from the colonist's position
+        infra.addModule(10, 30, cantinaModuleInfo, mockMap._topography, mockMap._zones, 1001);
+        infra.addModule(6, 30, cantinaModuleInfo, mockMap._topography, mockMap._zones, 1002);
+        infra.addModule(2, 30, cantinaModuleInfo, mockMap._topography, mockMap._zones, 1003);
+        // Provision modules
+        infra.addResourcesToModule(1001, ["food", 1000]);
+        infra.addResourcesToModule(1002, ["food", 1000]);
+        infra.addResourcesToModule(1003, ["food", 1000]);
+        // Make Colonist hungry
+        colonistData._needs.food = 16;
+        // Validate test conditions
+        expect(colonistData._actionStack.length).toBe(0);
+        expect(colonistData._currentAction).toBe(null);
+        // Initiate test: Colonist determines route to nearest cantina, ignoring the more distant ones (even though they appear first in the list of available modules)
+        colonistData.handleHourlyUpdates(infra, mockMap, indy);
+        expect(colonistData._currentGoal).toBe("get-food");
+        // Expect results: Current action is to walk to the nearest module (whose ID is 1003, not 1001)
+        expect(colonistData._actionStack.length).toBe(1);
+        expect(colonistData._currentAction).toStrictEqual({
+            type: "move",
+            coords: { x: 2, y: 32 },
+            duration: 0,
+            buildingId: 0
+        });
+        expect(colonistData._actionStack[0].buildingId).toBe(1003);
+        // Reset colonist location to try again from the opposite side of the base
+        resetColonistData();
+        colonistData._x = 15;
+        colonistData._y = 31;
+        colonistData.detectTerrainBeneath(mockMap, mockInfra);
+        // Make Colonist tired
+        colonistData._needs.food = 16;
+        // Validate test conditions
+        expect(colonistData._actionStack.length).toBe(0);
+        expect(colonistData._currentAction).toBe(null);
+        // Initiate test: Colonist determines route to nearest cantina
+        colonistData.handleHourlyUpdates(infra, mockMap, indy);
+        expect(colonistData._currentGoal).toBe("get-food");
+        // Expect results: Current action is to walk to the nearest module (whose ID is 1001 this time)
+        expect(colonistData._actionStack.length).toBe(1);
+        expect(colonistData._currentAction).toStrictEqual({
+            type: "move",
+            coords: { x: 10, y: 32 },
             duration: 0,
             buildingId: 0
         });

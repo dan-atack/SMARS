@@ -2402,13 +2402,16 @@ In the last pre-release feature update, a slight adjustment will be made to the 
 
 Exit Criteria:
 
-- When presented with two modules at which to get a resource, a colonist will choose the nearest module
-- [DONE] When presented with two modules at which to do work, other things being equal, a colonist will choose the nearest module
-- [DONE] When presented with two mining locations, other things being equal, a colonist will choose the nearest location
+- [DONE] When presented with two or more modules at which to get a resource, a colonist will choose the nearest module
+- [DONE] When presented with two or more modules at which to rest, a colonist will chose the nearest module
+- [DONE] When presented with two or more modules at which to do work, a colonist will choose the nearest module
+- [DONE] When presented with two ore more mining locations, other things being equal, a colonist will choose the nearest location
 
 1. Let's start with production modules: update the Industry class's getJob method to take the Colonist's coordinates into account. Update the unit test/s for this method and then try it out in game!
 
-### 2. Add a proximity consideration for the Colonist's rest action so that they will always choose to go to the nearer of two different crew quarters to sleep. Again, fix / update the unit tests for this action in addition to validating in-game that the solution works.
+2. Add a proximity consideration for the Colonist's rest action so that they will always choose to go to the nearer of two different crew quarters to sleep. Again, fix / update the unit tests for this action in addition to validating in-game that the solution works.
+
+3. Add a proximity consideration for the Colonist's consume action, using the same technique as the one deployed for resting and working. Add a final unit test, then validate in game.
 
 ## Chapter Forty-Three: In-Game Notifications (UX At Last!)
 
