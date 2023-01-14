@@ -52,14 +52,19 @@ export const createConsumeActionStack = (colonistCoords: Coords, colonistStandin
 export const createRestActionStack = (colonistCoords: Coords, standingOnId: string | number, infra: Infrastructure) => {
     let stack: ColonistAction[] = [];
     let stackComplete = false;
+    let dist = 10000;   // Allow for proximity comparisons even if the stack is completed (to find the optimal location)
     // 1 - Find all modules with the name 'Crew Quarters' (TODO: As more types of sleeping module are added, find a better way)
     const mods = infra._modules.filter((mod) => mod._moduleInfo.name === "Crew Quarters");
     if (mods.length > 0) {
         mods.forEach((mod) => {
-            // 2 - Check if each module is occupied, and add the 'rest' action here if it isn't
-            if (!(stackComplete) && mod._crewPresent.length < mod._moduleInfo.crewCapacity) {
+            // 2 - Check if each module is closer than the current closest candidate (if any has been chosen)
+            const closer = Math.abs(mod._x - colonistCoords.x) < dist;
+            // 2 - If the module is closer OR if the stack is not yet complete, check if it's occupied
+            if ((!(stackComplete) || closer) && mod._crewPresent.length < mod._moduleInfo.crewCapacity) {
+                stack = [];     // Reset stack whenever a new module is being considered
                 // Have colonists enter at different ends of the module if it is partially occupied when they get there
                 const coords = { x: mod._x + (mod._crewPresent.length * 2) + 1, y: mod._y + mod._height - 1}
+                // Add rest action to the bottom of the stack
                 stack.push(addAction("rest", coords, 480, mod._id));    // Duration = 480 minutes = 8 hours' sleep
                 // 3 - Then, find out if it is on the same surface as the colonist
                 stack = stack.concat(getPathToModule(infra, mod._id, coords, standingOnId, colonistCoords));
@@ -71,7 +76,10 @@ export const createRestActionStack = (colonistCoords: Coords, standingOnId: stri
                         stack = [];
                         goToGround(colonistCoords, standingOnId, infra);   // EXPERIMENTAL: Try going to the ground floor if no stack can be made
                     } else {
+                        // If the stack is complete, keep track of the fact and update the 'dist' to set this as the closest module
                         stackComplete = true;
+                        dist = Math.abs(mod._x - colonistCoords.x);
+                        // console.log(`Rest stack completed.\nDistance: ${dist}\nModule ID: ${mod._id}`);
                     }
                 } else {
                     console.log(`Error: Floor data not found for module ${mod._id}`);
@@ -83,6 +91,7 @@ export const createRestActionStack = (colonistCoords: Coords, standingOnId: stri
     if (stack.length === 0) {
         stack = goToGround(colonistCoords, standingOnId, infra);
     }
+    console.log(stack.length);
     return stack;
 }
 

@@ -199,7 +199,6 @@ export default class Industry {
             // If a job is found, remove it from the list and return it; otherwise take the top job in the list
             if (job) {
                 this._jobs[role] = this._jobs[role].filter((j: ColonistAction) => !(j.coords.x === job?.coords.x && j.coords.y === job.coords.y));
-                console.log(this._jobs[role].length);
             } else {
                 job = this._jobs[role].pop();
             }

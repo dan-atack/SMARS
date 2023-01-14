@@ -2408,6 +2408,8 @@ Exit Criteria:
 
 1. Let's start with production modules: update the Industry class's getJob method to take the Colonist's coordinates into account. Update the unit test/s for this method and then try it out in game!
 
+### 2. Add a proximity consideration for the Colonist's rest action so that they will always choose to go to the nearer of two different crew quarters to sleep. Again, fix / update the unit tests for this action in addition to validating in-game that the solution works.
+
 ## Chapter Forty-Three: In-Game Notifications (UX At Last!)
 
 ### Difficulty Estimate: TBD

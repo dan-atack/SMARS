@@ -348,8 +348,10 @@ export default class ColonistData {
                     }
                 // Housekeeping: Keep options in sync with startAction and startMovement methods and animationFunctions.ts
             }
+        } else {
+            // If there is no current action, try to start the next one
+            this.checkForNextAction(infra, industry);
         }
-        
     }
 
     // Adds a new action to the end of the action stack
@@ -631,7 +633,7 @@ export default class ColonistData {
                 console.log(`Error: ${this._name} unable to enter Module ${this._currentAction.buildingId}. Reason: Module data not found.`);
             }
         } else {
-            console.log(`Warning: Colonist ${this._id} is in wrong position to enter ${this._currentAction?.type} module.`);
+            console.log(`Warning: Colonist ${this._id} is in wrong position to enter ${this._currentAction?.type} module ${this._currentAction?.buildingId}.`);
             this.resolveAction();
         }
     }
