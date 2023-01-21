@@ -2413,7 +2413,21 @@ Exit Criteria:
 
 3. Add a proximity consideration for the Colonist's consume action, using the same technique as the one deployed for resting and working. Add a final unit test, then validate in game.
 
-## Chapter Forty-Three: In-Game Notifications (UX At Last!)
+## Chapter Forty-Three: UX Cleanup Part I - Out-of-Service Screen Cleanup
+
+### Difficulty Estimate: 1 for relatively simple reformatting / closing off of loose ends
+
+### Date: January 19, 2023
+
+### 1. Preferences Screen: REMOVE IT! Version 1.0 of the Main Menu will have just three options: New Game, Load Game and Back to Login.
+
+### 2. The In-game menu should have a 'Quit to Main Menu' button that will simply return to the Main Menu, scrapping the current game's data. Autosave feature can be added at a later date.
+
+### 3. The Sidebar's Science view button should be grayed out and the handler function should not do anything (or maybe it can console log an amusing 'coming soon' message).
+
+### 4. The Sidebar's Overlays button should also be grayed out and unavailable.
+
+## Chapter Forty-Five: In-Game Notifications (UX At Last!)
 
 ### Difficulty Estimate: TBD
 
