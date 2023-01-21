@@ -53,6 +53,11 @@ const sketch = (p5:P5) => {
                 login.setup();  // Call this from the menu's logout button, if you have the energy
                 break;
             case "menu":
+                // Reset the game and load data if arriving at the main menu from the in-game menu
+                if (game._gameLoaded) {
+                    game.reset();
+                    loadGame.resetSaveInfo();
+                }
                 menu.setup();
                 break;
             case "newGameSetup":

@@ -61,8 +61,8 @@ export default class Menu extends Screen {
             this.handlePreferences,
             this._buttonWidth,
             this._buttonHeight,
-            this._buttonText,
-            this._buttonBG
+            constants.ALMOST_BLACK,
+            constants.GRAY_MEDIUM
         );
         const logout = new Button (
             "Return to Login",
@@ -92,8 +92,9 @@ export default class Menu extends Screen {
     }
 
     handlePreferences = () => {
-        this.handleCloseMenu();
-        this.switchScreen("preferences");
+        console.log("The Button you have pressed is not in service. Please make a note of it.");
+        // this.handleCloseMenu();
+        // this.switchScreen("preferences");
     }
 
     handleLogout = () => {

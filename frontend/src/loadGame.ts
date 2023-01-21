@@ -207,6 +207,12 @@ export default class LoadGame extends Screen {
         })
     }
 
+    // Resets save data when the player quits to the main menu
+    resetSaveInfo = () => {
+        this._saveInfo = null;
+        this._selectedGame = null;
+    }
+
     render = () => {
         const p5 = this._p5;
         p5.background(this._color);

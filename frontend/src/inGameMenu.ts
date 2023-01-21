@@ -39,8 +39,9 @@ export default class InGameMenu extends Screen {
     setup = () => {
         this.currentScreen = true;
         const saveGame = new Button("Save Game", this._buttonX, this._buttonY, this.handleSave, this._buttonWidth, this._buttonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK);
+        const quitToMainMenu = new Button("Quit to Main Menu", this._buttonX, this._buttonY + (this._buttonHeight + this._buttonPadding) * 2, this.handleQuitToMainMenu, this._buttonWidth, this._buttonHeight, constants.RED_ERROR, constants.RED_BG);
         const returnToGame = new Button("Return to Game", this._buttonX, this._buttonY + this._buttonHeight + this._buttonPadding, this.handleReturnToGame, this._buttonWidth, this._buttonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK);
-        this._buttons = [saveGame, returnToGame];
+        this._buttons = [saveGame, quitToMainMenu, returnToGame];
     }
 
     setUsername = (username: string) => {
@@ -56,6 +57,11 @@ export default class InGameMenu extends Screen {
     handleSave = () => {
         this.currentScreen = false;
         this.switchScreen("save");
+    }
+
+    handleQuitToMainMenu = () => {
+        this.handleClose();
+        this.switchScreen("menu");
     }
 
     handleReturnToGame = () => {
