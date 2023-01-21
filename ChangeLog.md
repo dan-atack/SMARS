@@ -2419,9 +2419,9 @@ Exit Criteria:
 
 ### Date: January 19, 2023
 
-### 1. Preferences Screen: REMOVE IT! Version 1.0 of the Main Menu will have just three options: New Game, Load Game and Back to Login.
+1. Preferences Screen: REMOVE IT! Version 1.0 of the Main Menu will have just three options: New Game, Load Game and Back to Login.
 
-### 2. The In-game menu should have a 'Quit to Main Menu' button that will simply return to the Main Menu, scrapping the current game's data. Autosave feature can be added at a later date.
+2. The In-game menu should have a 'Quit to Main Menu' button that will simply return to the Main Menu, scrapping the current game's data. Ensure that it wipes that data completely, so that other saved files can be loaded, or a new game begun cleanly. Autosave feature can be added at a later date.
 
 ### 3. The Sidebar's Science view button should be grayed out and the handler function should not do anything (or maybe it can console log an amusing 'coming soon' message).
 

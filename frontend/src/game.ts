@@ -203,6 +203,31 @@ export default class Game extends Screen {
         }
     }
 
+    // Resets all game parameters; copied from the constructor function
+    reset = () => {
+        // Pass view and screen changer functions to the engine (For the sidebar to use)
+        this._engine = new Engine(this._p5, this.switchScreen, this.changeView, this.updateEarthData);
+        this._population = new PopulationView(this.changeView);
+        this._techTree = new TechTree(this.changeView);
+        this._earth = new Earth(this.changeView) // There IS no planet B!!!
+        this._industry = new IndustryView(this.changeView);
+        // this._logbook = new Logbook(p5, this.changeView);        // On hold pending investigation into why we need it.
+        this._views = [this._engine, this._population, this._techTree, this._earth, this._industry];
+        this._gameData = {          // Default values will be overridden
+            difficulty: "",
+            mapType: "",
+            randomEvents: true,
+            mapTerrain: [],
+            startingResources: [
+                ["money", 100],
+            ]
+        };
+        this._loadGameData = null;  // By default there is no loaded game data
+        this._gameLoaded = false;   // Initially no game data is loaded
+        this._username = "";
+        this._mouseDown = false;
+    }
+
     // Same as the app; check which view is the 'current' one and call its render method:
     render = () => {
         if (this._engine._sidebar._menuOpen) {  // Check if main menu is open, and close down this screen if so
