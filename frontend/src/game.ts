@@ -5,7 +5,7 @@ import View from "./view";
 // In-game views:
 import Engine from "./engine";
 import PopulationView from "./populationView";
-import TechTree from "./tech";
+import TechTree from "./science";
 import Earth from "./earth";
 import IndustryView from "./industryView";
 import Logbook from "./logbook";

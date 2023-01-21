@@ -75,13 +75,13 @@ export default class Sidebar {
         // Create view-changing buttons:
         const earth = new Button("Earth", this._position + 4, this._viewButtonY, this.handleEarth, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 24);
         const industry = new Button("Industry", this._position + this._viewButtonWidth + 12, this._viewButtonY, this.handleIndustry, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 24);
-        const tech = new Button("Technology", this._position + 4, this._viewButtonY + this._viewButtonHeight + 8, this.handleTech, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 20);
+        const tech = new Button("Science", this._position + 4, this._viewButtonY + this._viewButtonHeight + 8, this.handleTech, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 24);
         const population = new Button("Population", this._position + this._viewButtonWidth + 12, this._viewButtonY + this._viewButtonHeight + 8, this.handlePopulation, this._viewButtonWidth, this._viewButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 22);
         // Construction, resources and map options buttons:
         const build = new Button("BUILD", this._position + 4, this._mapButtonsY, this.handleBuild, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 24);
         const resource = new Button("RESOURCE", this._position + this._viewButtonWidth + 12, this._mapButtonsY, this.handleResource, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
         const inspect = new Button("INSPECT", this._position + 4, this._mapButtonsY + this._viewButtonHeight + 8, this.handleInspect, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 24);
-        const overlays = new Button("OVERLAYS", this._position + this._viewButtonWidth + 12, this._mapButtonsY + this._viewButtonHeight + 8, this.handleOverlays, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
+        const overlays = new Button("OVERLAYS", this._position + this._viewButtonWidth + 12, this._mapButtonsY + this._viewButtonHeight + 8, this.handleOverlays, this._viewButtonWidth, this._viewButtonHeight, constants.ALMOST_BLACK, constants.GRAY_MEDIUM, 22);
         // Game speed adjustment buttons:
         const pause = new Button("||", this._gameSpeedButtonX, this._gameSpeedButtonY, this.handlePause, this._gameSpeedButtonWidth, this._gameSpeedButtonWidth, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
         const slow = new Button(">", this._gameSpeedButtonX + this._gameSpeedButtonMargin, this._gameSpeedButtonY, this.handleSlow, this._gameSpeedButtonWidth, this._gameSpeedButtonWidth, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
@@ -143,9 +143,9 @@ export default class Sidebar {
     }
 
     handleOverlays = () => {
-        this.resetSelectedButton();
-        this._buttons[7].setSelected(true);
-        console.log("Let's see some overlays!");
+        // this.resetSelectedButton();
+        // this._buttons[7].setSelected(true);
+        console.log("The mouse context you have requested, 'Overlays' does not exit. Please make a note of it.");
     }
 
     handleMenuButton = () => {
