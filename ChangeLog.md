@@ -2450,8 +2450,7 @@ Exit Criteria:
 
 - [DONE] Sidebar button for current game speed is always highlighted correctly
 - [DONE] Inspect / Resource buttons are highlighted correctly at all times
-- In the Population View Screen, each colonist's current role is highlighted
-- In the Population View Screen, the Role column is replaced with the purely aesthetic 'personality' column
+- [DONE] In the Population View Screen, each colonist's current role is highlighted
 - When the Inspect Tool is used to select a Colonist, the Colonist is displayed with a green ellipse around their body
 - When the Inspect Tool is used to select a Module, the module is displayed with a green rectangle around it
 - When the Inspect Tool is used to select a terrain Block, the block is displayed with a green rectangle around it
@@ -2459,6 +2458,7 @@ Exit Criteria:
 - In the Load Game screen, the selected save remains highlighted when the player changes the current 'page'
 - Also, when the player leaves the Load Game screen it should unset the current selection
 - The Load Game screen should also ignore the first "mouseup" event when the player arrives at it (no false starts)
+- The Load Game screen should also reset its current page (for pagination) whenever it is opened
 
 1. Gamespeed buttons: Add a new Engine method, setGameOn, to handle every change to the gameOn variable (in other words, don't set it directly inside other methods).
 
@@ -2471,6 +2471,16 @@ Exit Criteria:
 5. Have the Engine call the setSidebarSelectedButton as part of the setup routine. Verify in-game that this ensures that the correct button is always highlighted for the Engine's mouse context.
 
 6. Add a new method to the Population view screen to highlight the role button for each colonist's current role when their Population Row is created. Validate in-game before proceeding.
+
+7. Add a new property to the Colonist Class, highlighted, which will be a boolean value. Also add a simple setter function to control this setting.
+
+8. Add a new Population Class method, highlightColonist, which takes a colonist's ID as its only argument, then resets every colonist's highlighted value to false, and finally sets the given Colonist's highlighted value to true.
+
+9. Update the Colonist's renderer to check if they are highlighted, and display a rounded green rectangle around the Colonist's body if they are. Later on we can consider more advance highlighting that follows the Colonist during movement, changes shape based on what they're doing, etc.
+
+### 98. Ensure that no 'sticky clicks' are registered when the player returns to the Load Game page (this seems to only happen when the player returns to the Load Game screen after quitting a game in progress and returning through the main menu).
+
+### 99. Fix the logic for the LoadGame setup to ensure that its pagination setting is always reset when the screen is opened (so that, if the player is browsing through older saves, then leaves the page, then comes back, they start on the first page with the most recent saves again).
 
 ## Chapter Forty-Five: In-Game Notifications (UX At Last!)
 

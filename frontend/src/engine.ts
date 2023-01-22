@@ -546,6 +546,8 @@ export default class Engine extends View {
     clearInspectSelection = () => {
         this.inspecting = null;
         this._sidebar._detailsArea.setInspectData(this.inspecting);
+        // Clear selection highlighting for all Engine classes
+        this._population.highlightColonist(0);
     }
 
     //// STRUCTURE PLACEMENT METHODS ////
