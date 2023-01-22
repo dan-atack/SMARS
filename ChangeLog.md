@@ -2470,6 +2470,8 @@ Exit Criteria:
 
 5. Have the Engine call the setSidebarSelectedButton as part of the setup routine. Verify in-game that this ensures that the correct button is always highlighted for the Engine's mouse context.
 
+6. Add a new method to the Population view screen to highlight the role button for each colonist's current role when their Population Row is created. Validate in-game before proceeding.
+
 ## Chapter Forty-Five: In-Game Notifications (UX At Last!)
 
 ### Difficulty Estimate: TBD
