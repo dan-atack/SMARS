@@ -152,6 +152,7 @@ export default class Engine extends View {
         this._sidebar.setup();
         this.selectedBuilding = null;
         this.updateSidebarGamespeedButtons();   // Ensure sidebar gamespeed buttons always show the right value
+        this.setSidebarSelectedButton();   // Ensure sidebar mouse context buttons are correct
         this._sidebar._detailsArea._minimap.updateTerrain(this._map._mapData);
         // Sidebar minimap display - does it only need it during 'setup' or does it also need occasional updates?
     }
@@ -491,11 +492,25 @@ export default class Engine extends View {
         }
         // Next, check if mouse context has been set to 'resource' and show a little jackhammer if so
         if (this.mouseContext === "resource") {
+            this.setSidebarSelectedButton();
             this.createJackhammerMouseShadow();
         }
         // Last, check if the mouse context has been set to 'inspect' and tell it to do the magnifying glass image if so
         if (this.mouseContext === "inspect") {
             this.createInspectToolMouseShadow();
+            this.setSidebarSelectedButton();
+        }
+    }
+
+    // Ensures that the sidebar buttons for 'inspect' or 'resource' are always highlighted appropriately
+    setSidebarSelectedButton = () => {
+        switch (this.mouseContext) {
+            case "resource":
+                this._sidebar.setSelectedButton(5);
+                break;
+            case "inspect":
+                this._sidebar.setSelectedButton(6);
+                break;
         }
     }
 
@@ -826,7 +841,6 @@ export default class Engine extends View {
                 break;
         };
         if (this.gameOn !== true) {
-            console.log("Game paused");
             gamespeedIndex = 0;       // If the game is paused, use index zero to highlight the pause button
         }
         this._sidebar.setGamespeedButtons(gamespeedIndex);

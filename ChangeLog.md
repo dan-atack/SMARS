@@ -2449,7 +2449,7 @@ In the second pre-release UX chapter, we have another relatively simple (hopeful
 Exit Criteria:
 
 - [DONE] Sidebar button for current game speed is always highlighted correctly
-- Inspect / Resource buttons are highlighted correctly at all times
+- [DONE] Inspect / Resource buttons are highlighted correctly at all times
 - In the Population View Screen, each colonist's current role is highlighted
 - In the Population View Screen, the Role column is replaced with the purely aesthetic 'personality' column
 - When the Inspect Tool is used to select a Colonist, the Colonist is displayed with a green ellipse around their body
@@ -2463,6 +2463,12 @@ Exit Criteria:
 1. Gamespeed buttons: Add a new Engine method, setGameOn, to handle every change to the gameOn variable (in other words, don't set it directly inside other methods).
 
 2. In addition to setting the game to 'on,' make the setGameOn method update the sidebar's gamespeed buttons to indicate the correct time speed setting, using the switch case logic that currently sits, unused, in the setup method.
+
+3. Add a new Engine method called setSidebarSelectedButton, in the mouse click handlers section to set the Sidebar selected button to one of two different index positions (5 and 6). This method will use a switch case where if the current mouse context is 'resource' it returns the number 5, and if the context is 'inspect' it returns a 6. This number is then passed to the Sidebar...
+
+4. The Sidebar will get a new method called setSelectedButton, which calls the resetSelectedButton method, and also takes an argument that sets the current button selection to highlight either the industry button or the resource button...
+
+5. Have the Engine call the setSidebarSelectedButton as part of the setup routine. Verify in-game that this ensures that the correct button is always highlighted for the Engine's mouse context.
 
 ## Chapter Forty-Five: In-Game Notifications (UX At Last!)
 
