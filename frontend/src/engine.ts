@@ -151,6 +151,7 @@ export default class Engine extends View {
         this.currentView = true;
         this._sidebar.setup();
         this.selectedBuilding = null;
+        this.updateSidebarGamespeedButtons();   // Ensure sidebar gamespeed buttons always show the right value
         this._sidebar._detailsArea._minimap.updateTerrain(this._map._mapData);
         // Sidebar minimap display - does it only need it during 'setup' or does it also need occasional updates?
     }
@@ -782,21 +783,53 @@ export default class Engine extends View {
     //// TIME AND GAMESPEED METHODS ////
 
     setGameSpeed = (value: string) => {
-        this.gameOn = true;     // Always start by assuming the game is on
+        // Set this value directly here  instead of using the setter method to preserve buttons' built-in highlight logic
+        this.gameOn = true;
         switch (value) {
             case "pause":
-                this.gameOn = false;
+                this.setGameOn(false);
                 break;
             case "slow":
-                this.ticksPerMinute = 40;
+                this.ticksPerMinute = 40;   // SLOW: One game minute passes for every 40 P5 frame refreshes
                 break;
             case "fast":
-                this.ticksPerMinute = 20;
+                this.ticksPerMinute = 20;   // FAST: One game minute passes for every 20 P5 frame refreshes
                 break;
             case "blazing":
-                this.ticksPerMinute = 1;    // Ultra fast mode in dev mode?!
+                this.ticksPerMinute = 1;    // BLAZING: One minute passes for every P5 frame refresh
                 break;
         }
+    }
+
+    // Handles pausing/unpausing the game
+    setGameOn = (gameOn: boolean) => {
+        this.gameOn = gameOn;
+        this.updateSidebarGamespeedButtons();
+    }
+
+    // Ensures the Sidebar's gamespeed buttons display the correct game speed
+    updateSidebarGamespeedButtons = () => {
+        // Determine gamespeed setting to pass to the Sidebar so the right button is always highlighted
+        let gamespeedIndex = 0;
+        switch (this.ticksPerMinute) {
+            case 40:
+                gamespeedIndex = 1;     // SLOW
+                break;
+            case 20:
+                gamespeedIndex = 2;     // FAST
+                break;
+            case 1:
+                gamespeedIndex = 3;     // BLAZING (Keep values here in sync with game speed setting options down below)
+                break;
+            default:
+                gamespeedIndex = 2;
+                break;
+        };
+        if (this.gameOn !== true) {
+            console.log("Game paused");
+            gamespeedIndex = 0;       // If the game is paused, use index zero to highlight the pause button
+        }
+        this._sidebar.setGamespeedButtons(gamespeedIndex);
     }
 
     // Sets the Smartian time
@@ -949,7 +982,7 @@ export default class Engine extends View {
     }
 
     createModal = (random: boolean, data: EventData) => {
-        this.gameOn = false;
+        this.setGameOn(false);
         this._modal = new Modal(this._p5, this.closeModal, random, data);
         this.setMouseContext("modal");
     }
@@ -981,7 +1014,7 @@ export default class Engine extends View {
         }
         // Clear modal data and resume the game
         this._modal = null;
-        this.gameOn = true;
+        this.setGameOn(true);
     }
 
     //// RENDER METHODS ////

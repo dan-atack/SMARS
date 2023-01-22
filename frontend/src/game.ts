@@ -67,6 +67,7 @@ export default class Game extends Screen {
         p5.textSize(48);
         p5.stroke(constants.ALMOST_BLACK);
         p5.textAlign(p5.CENTER, p5.CENTER);
+        this._engine.setup();   // Show the engine (world) view first (includes in-game sidebar)
         if (!this._gameLoaded && this._loadGameData) {      // Loading a SAVED game
             this._engine.setupSavedGame(this._loadGameData);
             this._earth.loadSavedDate(this._loadGameData.earth_dates);
@@ -76,7 +77,8 @@ export default class Game extends Screen {
             this._engine.setupNewGame(this._gameData);
             this._gameLoaded = true;
         }
-        this._engine.setup();   // Show the engine (world) view first (includes in-game sidebar)
+        // Load sidebar minimap after loading map data
+        this._engine._sidebar._detailsArea._minimap.updateTerrain(this._engine._map._mapData);
     }
 
     changeView = (newView: string) => {
