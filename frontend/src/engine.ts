@@ -541,6 +541,7 @@ export default class Engine extends View {
             this._infrastructure.highlightStructure(this.inspecting?._id || 0, true);
         } else if (this._map.getBlockForCoords(coords)) {                           // Finally, check for terrain Blocks
             this.inspecting = this._map.getBlockForCoords(coords);
+            this._map.setHighlightedBlock(this.inspecting);
         } else {
             this.inspecting = null;
         }
@@ -553,6 +554,7 @@ export default class Engine extends View {
         // Clear selection highlighting for all Engine sub-classes
         this._population.highlightColonist(0);
         this._infrastructure.highlightStructure(0, false);
+        this._map.setHighlightedBlock(null);
     }
 
     //// STRUCTURE PLACEMENT METHODS ////
@@ -1103,6 +1105,20 @@ export default class Engine extends View {
         }
     }
 
+    // Engine will render the highlight box around blocks if needed, as the Map's render is "below" most other in-game objects
+    renderBlockHighlighting = (p5: P5) => {
+        if (this._map._highlightedBlock) {
+            const x = this._map._highlightedBlock._x * constants.BLOCK_WIDTH - this._horizontalOffset - 2;
+            const y = this._map._highlightedBlock._y * constants.BLOCK_WIDTH - 2;
+            p5.noFill();
+            p5.strokeWeight(4);
+            p5.stroke(constants.GREEN_TERMINAL);
+            p5.rect(x, y, constants.BLOCK_WIDTH + 4, constants.BLOCK_WIDTH + 4, 4, 4, 4, 4)
+        } else {
+            console.log("Error: Cannot highlight block - block data not found.");
+        }
+    }
+
     render = () => {
         this.advanceClock();        // Always try to advance the clock; it will halt itself if the game is paused
         if (this.mouseContext === "wait") {
@@ -1134,6 +1150,11 @@ export default class Engine extends View {
             this._modal.render();
         }
         p5.fill(constants.GREEN_TERMINAL);
+        if (this._map._highlightedBlock) {
+            this.renderBlockHighlighting(p5);
+        }
+        p5.strokeWeight(2);
+        p5.stroke(0);
         // p5.text(`Sunlight: ${this._sunlight}`, 120, 300);
     }
 }

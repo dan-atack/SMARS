@@ -20,6 +20,7 @@ export default class Map {
     _topography: number[];      // A list of the y-value at the surface elevation for every column.
     _zones: MapZone[];          // List of the edge points of the various zones on the map (if there are more than 1)
     _expanded: boolean          // Sometimes the map occupies the whole screen
+    _highlightedBlock: Block | null;
 
     constructor() {
         this._mapData = [];     // Map data is recieved by setup function
@@ -29,6 +30,7 @@ export default class Map {
         this._topography = [];  // Gets filled in when the map data is loaded
         this._zones = [];       // Filled in after the topography analysis
         this._expanded = true;  // By default the map is expanded
+        this._highlightedBlock = null   // By default no blocks are highlighted
     }
 
     // SECTION 1 - INITIAL SETUP & DISPLAY WIDTH SETTING MANAGEMENT
@@ -227,6 +229,10 @@ export default class Map {
                 return false;
             }
         }
+    }
+
+    setHighlightedBlock = (block: Block | null) => {
+        this._highlightedBlock = block;
     }
 
     // The Engine passes the H-offset (V-offset coming soon) value here so that the blocks' positions are updated with every render; if the sidebar is open then compact = true, causing a smaller area of the map to be shown:

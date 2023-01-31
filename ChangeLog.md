@@ -2452,9 +2452,9 @@ Exit Criteria:
 - [DONE] Inspect / Resource buttons are highlighted correctly at all times
 - [DONE] In the Population View Screen, each colonist's current role is highlighted
 - [DONE] 87When the Inspect Tool is used to select a Colonist, the Colonist is displayed with a green ellipse around their body
-- When the Inspect Tool is used to select a Module, the module is displayed with a green rectangle around it
-- When the Inspect Tool is used to select a terrain Block, the block is displayed with a green rectangle around it
-- When the Inspect Tool is used to select a Connector, the whole segment is displayed with a green rectangle around it
+- [DONE] When the Inspect Tool is used to select a Module, the module is displayed with a green rectangle around it
+- [DONE] When the Inspect Tool is used to select a terrain Block, the block is displayed with a green rectangle around it
+- [DONE] When the Inspect Tool is used to select a Connector, the whole segment is displayed with a green rectangle around it
 - In the Load Game screen, the selected save remains highlighted when the player changes the current 'page'
 - Also, when the player leaves the Load Game screen it should unset the current selection
 - The Load Game screen should also ignore the first "mouseup" event when the player arrives at it (no false starts)
@@ -2482,7 +2482,7 @@ Exit Criteria:
 
 11. Finally, add this highlightStructure method to the Engine's clearInspectSelection method (called with a zero to indicate that a deselect is being requested) and also to the Engine's handleInspect case for Modules and Connectors.
 
-### 12. Now add highlighting for terrain blocks. Since the Map is the lowest level on the render stack, add the render rules for map tiles to the Engine's render block (but keep track of which block is highlighted in the Map class). Blocks should have no idea if they are highlighted or not.
+12. Now add highlighting for terrain blocks. Since the Map is the lowest level on the render stack, add the render rules for map tiles to the Engine's render block (but keep track of which block is highlighted in the Map class). Blocks should have no idea if they are highlighted or not.
 
 ### 98. Ensure that no 'sticky clicks' are registered when the player returns to the Load Game page (this seems to only happen when the player returns to the Load Game screen after quitting a game in progress and returning through the main menu).
 
