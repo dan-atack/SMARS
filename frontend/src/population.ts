@@ -117,6 +117,7 @@ export default class Population {
         });
         if (colonist) {
             // If a Colonist is found at the given coords, return their data and then highlight them
+            // TODO: Decouple highlighting from the colonist data from coordinates method
             this.highlightColonist(colonist._data._id);
             return colonist;
         } else {

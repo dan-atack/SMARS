@@ -16,6 +16,8 @@ export default class Infrastructure {
     _modules: Module[]; 
     _connectors: Connector[];
     _horizontalOffset: number;  // Value is in pixels
+    _highlightedModule: Module | null;
+    _highlightedConnector: Connector | null;    // Infra class controls structure highlighting
 
     // Map width is passed to the data class at construction to help with base volume calculations
     constructor() {
@@ -23,6 +25,8 @@ export default class Infrastructure {
         this._modules = [];
         this._connectors = [];
         this._horizontalOffset = 0;
+        this._highlightedModule = null;  // By default no structures are highlighted
+        this._highlightedConnector = null;
     }
 
     setup = (mapWidth: number) => {
@@ -427,6 +431,27 @@ export default class Infrastructure {
         }
     }
 
+    // Highlights the selected structure (if any) and de-highlights all the others (will de-highlight all if no ID is given)
+    // If 'module' parameter is false the structure to be highlighted is a Connector
+    highlightStructure = (id: number, module: boolean) => {
+        // Start by de-highlighting all structures, of both types
+        this._highlightedModule = null;
+        this._highlightedConnector = null;
+        // Structure is a module
+        if (module) {
+            const mod = this.getModuleFromID(id);
+            if (mod) {
+                this._highlightedModule = mod;
+            }
+        // Stucture is a connector
+        } else {
+            const con = this._connectors.find((con) => con._id === id);
+            if (con) {
+                this._highlightedConnector = con;
+            }
+        }
+    }
+
     render = (p5: P5, horizontalOffset: number) => {
         this._horizontalOffset = horizontalOffset;
         // Only render one screen width's worth, taking horizontal offset into account:
@@ -435,7 +460,6 @@ export default class Infrastructure {
         this._modules.forEach((module) => {
             if (module._x + module._width >= leftEdge && module._x < rightEdge) {
                 module.render(p5, this._horizontalOffset);
-
                 module._isRendered = true;
             } else {
                 module._isRendered = false;
@@ -445,8 +469,34 @@ export default class Infrastructure {
             // TODO: Check which side is nearest to the left/right sides, using a Connector Data method
             if (connector._rightEdge >= leftEdge && connector._leftEdge < rightEdge) {
                 connector.render(p5, this._horizontalOffset);
+                connector._isRendered = true;
+            } else {
+                connector._isRendered = false;
             }
         });
+        // Highlight selected structure last, so the highlight is always on the 'top' of the P5 image stack
+        if (this._highlightedModule && this._highlightedModule._isRendered) {
+            const x = this._highlightedModule._x * constants.BLOCK_WIDTH - this._highlightedModule._xOffset;
+            const y = this._highlightedModule._y * constants.BLOCK_WIDTH;
+            const w = this._highlightedModule._width * constants.BLOCK_WIDTH;
+            const h = this._highlightedModule._height * constants.BLOCK_WIDTH;
+            p5.noFill();
+            p5.strokeWeight(4);
+            p5.stroke(constants.GREEN_TERMINAL);
+            p5.rect(x, y, w, h, 4, 4, 4, 4);
+        } else if (this._highlightedConnector && this._highlightedConnector._isRendered) {
+            // Highlight Connector
+            const x = this._highlightedConnector._leftEdge * constants.BLOCK_WIDTH - this._highlightedConnector._xOffset;
+            const y = this._highlightedConnector._top * constants.BLOCK_WIDTH;
+            const w = this._highlightedConnector._orientation === "vertical" ? constants.BLOCK_WIDTH : (this._highlightedConnector._length + 1) * constants.BLOCK_WIDTH;
+            const h = this._highlightedConnector._orientation === "vertical" ? (this._highlightedConnector._length + 1) * constants.BLOCK_WIDTH : constants.BLOCK_WIDTH;
+            p5.noFill();
+            p5.strokeWeight(4);
+            p5.stroke(constants.GREEN_TERMINAL);
+            p5.rect(x, y, w, h, 4, 4, 4, 4);
+        }
+        p5.strokeWeight(2);
+        p5.stroke(0);
     }
 
     reset = () => {

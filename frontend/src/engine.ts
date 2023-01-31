@@ -529,12 +529,16 @@ export default class Engine extends View {
 
     // Takes the mouse coordinates and looks for an in-game entity at that location
     handleInspect = (coords: Coords) => {
+        // Clear previous inspect target (if any) before determining new display data
+        this.clearInspectSelection();
         if (this._population.getColonistDataFromCoords(coords)) {                   // First check for Colonists
             this.inspecting = this._population.getColonistDataFromCoords(coords);
         } else if (this._infrastructure.getConnectorFromCoords(coords)) {           // Next, check for Connectors
             this.inspecting = this._infrastructure.getConnectorFromCoords(coords);
+            this._infrastructure.highlightStructure(this.inspecting?._id || 0, false);  // Use ID if available, otherwise reset
         } else if (this._infrastructure.getModuleFromCoords(coords)) {              // Then, check for Modules
             this.inspecting = this._infrastructure.getModuleFromCoords(coords);
+            this._infrastructure.highlightStructure(this.inspecting?._id || 0, true);
         } else if (this._map.getBlockForCoords(coords)) {                           // Finally, check for terrain Blocks
             this.inspecting = this._map.getBlockForCoords(coords);
         } else {
@@ -546,8 +550,9 @@ export default class Engine extends View {
     clearInspectSelection = () => {
         this.inspecting = null;
         this._sidebar._detailsArea.setInspectData(this.inspecting);
-        // Clear selection highlighting for all Engine classes
+        // Clear selection highlighting for all Engine sub-classes
         this._population.highlightColonist(0);
+        this._infrastructure.highlightStructure(0, false);
     }
 
     //// STRUCTURE PLACEMENT METHODS ////

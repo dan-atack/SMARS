@@ -2451,7 +2451,7 @@ Exit Criteria:
 - [DONE] Sidebar button for current game speed is always highlighted correctly
 - [DONE] Inspect / Resource buttons are highlighted correctly at all times
 - [DONE] In the Population View Screen, each colonist's current role is highlighted
-- When the Inspect Tool is used to select a Colonist, the Colonist is displayed with a green ellipse around their body
+- [DONE] 87When the Inspect Tool is used to select a Colonist, the Colonist is displayed with a green ellipse around their body
 - When the Inspect Tool is used to select a Module, the module is displayed with a green rectangle around it
 - When the Inspect Tool is used to select a terrain Block, the block is displayed with a green rectangle around it
 - When the Inspect Tool is used to select a Connector, the whole segment is displayed with a green rectangle around it
@@ -2477,6 +2477,12 @@ Exit Criteria:
 8. Add a new Population Class method, highlightColonist, which takes a colonist's ID as its only argument, then resets every colonist's highlighted value to false, and finally sets the given Colonist's highlighted value to true.
 
 9. Update the Colonist's renderer to check if they are highlighted, and display a rounded green rectangle around the Colonist's body if they are. Later on we can consider more advance highlighting that follows the Colonist during movement, changes shape based on what they're doing, etc.
+
+10. Now add highlighting to the Infrastructure class. This will be done differently than the way it's handled for Colonists, since structures (especially modules) are rendered much earlier than colonists, and also tend to be closely clustered together, making their highlight outlines much more likely to be eclipsed by objects that are rendered on a 'higher' P5 draw layer. To overcome this issue, add two new fields to the Infrastructure class, highlightedModule and highlightedConnector. Then, when the Engine's handleInspect method detects that a module/connector has been highlighted, call the Infra class's new highlightStructure method, and have the Infrastructure class itself take care of the rendering so it can paint the outline at the end of its render block - AFTER all of the individual modules/connectors are rendered.
+
+11. Finally, add this highlightStructure method to the Engine's clearInspectSelection method (called with a zero to indicate that a deselect is being requested) and also to the Engine's handleInspect case for Modules and Connectors.
+
+### 12. Now add highlighting for terrain blocks. Since the Map is the lowest level on the render stack, add the render rules for map tiles to the Engine's render block (but keep track of which block is highlighted in the Map class). Blocks should have no idea if they are highlighted or not.
 
 ### 98. Ensure that no 'sticky clicks' are registered when the player returns to the Load Game page (this seems to only happen when the player returns to the Load Game screen after quitting a game in progress and returning through the main menu).
 
