@@ -1153,8 +1153,6 @@ export default class Engine extends View {
         if (this._map._highlightedBlock) {
             this.renderBlockHighlighting(p5);
         }
-        p5.strokeWeight(2);
-        p5.stroke(0);
         // p5.text(`Sunlight: ${this._sunlight}`, 120, 300);
     }
 }

@@ -18,14 +18,11 @@ export type SaveSummary = {
 
 export default class LoadGame extends Screen {
     // Types for the Load Game Screen:
+    // Function imports
     switchScreen: (switchTo: string) => void;
     getSavedGames: (username: string, setter: (saves: SaveSummary[]) => void) => void;
     loadGameData: (id: string, setter: (saveInfo: SaveInfo) => void) => void;
-    _buttons: Button[];
-    _loadOptions: LoadOption[];
-    _optionsShowing: number;        // Index position for the FIRST load option to be shown
-    _optionsPerPage: number;        // How many index positions to show per 'page'
-    _username: string;
+    // Fixed values
     _color: string;
     _loadOptionWidth: number;
     _loadOptionHeight: number;
@@ -38,12 +35,18 @@ export default class LoadGame extends Screen {
     _buttonY: number;
     _buttonText: string;
     _buttonBG: string;
+    _messageColor: string;          // The color code for the message will depend upon the manner of the server's return
+    _optionsPerPage: number;        // Pagination - How many index positions to show per 'page'
+    // Variable values
+    _optionsShowing: number;        // Pagination - Index position for the FIRST load option to be shown
+    _username: string;
     _justOpened: boolean;           // Experimental prototype method for preventing 'double click' phenomenon on when screen loads
     _savedGames: SaveSummary[];     // List of saved game summary items from the primary server fetch
     _selectedGame: SaveSummary | null;     // Prepare to store the game summary when a load option is selected
     _saveInfo: SaveInfo | null;     // Prepare to store the game info when it comes in from the server
     _message: string;               // Used to display error / success messages when the player hits the confirm button
-    _messageColor: string;          // The color code for the message will depend upon the manner of the server's return
+    _buttons: Button[];
+    _loadOptions: LoadOption[];
     _loadWasSuccessful: boolean;  // If a successful save has occurred, set this to true to disable the button to prevent spamming
 
     constructor(p5: P5, switchScreen: (switchTo: string) => void) {
@@ -150,6 +153,11 @@ export default class LoadGame extends Screen {
             option.setSelected(false);
             option.handleClick(mouseX, mouseY);
         })
+        // Ensure that if a save has been selected that it is highlighted
+        if (this._selectedGame) {
+            const save = this._loadOptions.find((game) => game._saveInfo.game_name === this._selectedGame?.game_name);
+            if (save) save.setSelected(true);
+        }
     }
 
     handleLoad = () => {
@@ -170,8 +178,8 @@ export default class LoadGame extends Screen {
     handleStartGame = () => {
         if (this._saveInfo != null) {
             this._loadWasSuccessful = true;
-            this.handleClose();
             this.switchScreen("game");
+            this.handleClose();
         }
     }
 
@@ -209,6 +217,7 @@ export default class LoadGame extends Screen {
 
     // Resets save data when the player quits to the main menu
     resetSaveInfo = () => {
+        this._savedGames = [];
         this._saveInfo = null;
         this._selectedGame = null;
     }
@@ -243,6 +252,12 @@ export default class LoadGame extends Screen {
     handleClose = () => {
         this.currentScreen = false;
         this.setMessage("", constants.GREEN_TERMINAL);
+        this.resetSaveInfo();
+        this._optionsShowing = 0;       // Reset pagination
+        this._justOpened = false;       // Reset click resistor
+        this._loadWasSuccessful = false // Reset load success indicator
+        this._buttons = [];             // Cleanup interface buttons
+        this._loadOptions = [];         // Cleanup load option buttons
         this._p5.clear();
     }
 

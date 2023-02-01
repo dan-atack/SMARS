@@ -2413,7 +2413,7 @@ Exit Criteria:
 
 3. Add a proximity consideration for the Colonist's consume action, using the same technique as the one deployed for resting and working. Add a final unit test, then validate in game.
 
-## Chapter Forty-Three: UX Cleanup Part I - Out-of-Service Screen Cleanup
+## Chapter Forty-Three: UX Cleanup Part I - Out-of-Service Screen Cleanup (UX Needs Addressed At Last!!!)
 
 ### Difficulty Estimate: 1 for relatively simple reformatting / closing off of loose ends
 
@@ -2455,10 +2455,8 @@ Exit Criteria:
 - [DONE] When the Inspect Tool is used to select a Module, the module is displayed with a green rectangle around it
 - [DONE] When the Inspect Tool is used to select a terrain Block, the block is displayed with a green rectangle around it
 - [DONE] When the Inspect Tool is used to select a Connector, the whole segment is displayed with a green rectangle around it
-- In the Load Game screen, the selected save remains highlighted when the player changes the current 'page'
-- Also, when the player leaves the Load Game screen it should unset the current selection
-- The Load Game screen should also ignore the first "mouseup" event when the player arrives at it (no false starts)
-- The Load Game screen should also reset its current page (for pagination) whenever it is opened
+- [DONE] In the Load Game screen, the selected save remains highlighted when the player changes the current 'page'
+- [DONE] Whenever the player arrives at the Load Game screen it should always have the same user experience as the first time
 
 1. Gamespeed buttons: Add a new Engine method, setGameOn, to handle every change to the gameOn variable (in other words, don't set it directly inside other methods).
 
@@ -2484,15 +2482,15 @@ Exit Criteria:
 
 12. Now add highlighting for terrain blocks. Since the Map is the lowest level on the render stack, add the render rules for map tiles to the Engine's render block (but keep track of which block is highlighted in the Map class). Blocks should have no idea if they are highlighted or not.
 
-### 98. Ensure that no 'sticky clicks' are registered when the player returns to the Load Game page (this seems to only happen when the player returns to the Load Game screen after quitting a game in progress and returning through the main menu).
+13. Ensure that no 'sticky clicks' are registered when the player returns to the Load Game page (this seems to only happen when the player returns to the Load Game screen after quitting a game in progress and returning through the main menu).
 
-### 99. Fix the logic for the LoadGame setup to ensure that its pagination setting is always reset when the screen is opened (so that, if the player is browsing through older saves, then leaves the page, then comes back, they start on the first page with the most recent saves again).
+14. Fix the logic for the LoadGame setup to ensure that its pagination setting and selected game data is always reset when the screen is opened (so that, if the player is browsing through older saves, then leaves the page, then comes back, they start on the first page with the most recent saves again). In other words, reset all of the data that can be set by the player for the Load Game screen as soon as the player exits it.
 
-## Chapter Forty-Five: In-Game Notifications (UX At Last!)
+## Chapter Forty-Five: In-Game Notifications
 
-### Difficulty Estimate: TBD
+### Difficulty Estimate: 3 (for developing a message collection system for Engine subclass components, and message prioritization and rendering for the Engine class)
 
-### Date: TBD
+### Date: January 31, 2023
 
 The final, FINAL thing to do before the game's first release is to implement a simple in-game notification system that does not interrupt the player like the modal dialogues, but which displays helpful prompts to the player without pausing the game. These should be simple messages displayed by the Engine whenever a console log warning would pop up, to indicate that there is a problem in the base that requires the player's attention, such as a lack of a resource needed for production, or colonists going hungry/thirsty/etc.
 
