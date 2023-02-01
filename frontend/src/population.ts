@@ -37,6 +37,7 @@ export default class Population {
         const first = constants.colonistNames[idx];
         const rando = Math.floor(Math.random() * constants.colonistLastNames.length);   // Get random last name
         const last = constants.colonistLastNames[rando];
+        // TODO: Add random 'personality' trait here too ?
         return `${first} ${last}`;
     }
 
@@ -109,14 +110,32 @@ export default class Population {
 
     // SECTION 5: COLONIST INFO API (GETTER FUNCTIONS)
 
+    // Used to get colonist data for the Inspect Tool
     getColonistDataFromCoords = (coords: Coords) => {
-        const colonists = this._colonists.find((col) => {
+        const colonist = this._colonists.find((col) => {
             return col._data._x === coords.x && (col._data._y === coords.y || col._data._y === coords.y - 1)
         });
-        if (colonists) {
-            return colonists;
+        if (colonist) {
+            // If a Colonist is found at the given coords, return their data and then highlight them
+            // TODO: Decouple highlighting from the colonist data from coordinates method
+            this.highlightColonist(colonist._data._id);
+            return colonist;
         } else {
-            return null;    // If no colonist is found return a null
+            // If no colonist is found return a null and de-highlight all colonists
+            this.highlightColonist(0);
+            return null;
+        }
+    }
+
+    // Highlights the selected colonist (if any) and de-highlights all the others (will de-highlight all if no ID is given)
+    highlightColonist = (id: number) => {
+        // Start by de-highlighting everybody so that there are no double highlights
+        this._colonists.forEach((col) => {
+            col.setHighlighted(false);
+        })
+        const colonist = this._colonists.find((col) => col._data._id === id);
+        if (colonist) {
+            colonist.setHighlighted(true);
         }
     }
 

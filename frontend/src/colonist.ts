@@ -37,17 +37,24 @@ export type ColonistSaveData = {
 
 export default class Colonist {
     // Colonist types:
-    _data: ColonistData;    // Data processing core, distinct from rendering-functions
+    _data: ColonistData;            // Data processing core, distinct from rendering-functions
     // For tool animations (tools can have basic reciprocating motion animations)
-    _toolMaxPosition: number    // Maximum frame number (and extension distance) for tool animation
-    _toolPosition: number       // Current frame (and extension distance) in the tool animation
-    _toolOutward: boolean       // Which direction the tool is moving (inward or outward)
+    _toolMaxPosition: number;       // Maximum frame number (and extension distance) for tool animation
+    _toolPosition: number;          // Current frame (and extension distance) in the tool animation
+    _toolOutward: boolean;          // Which direction the tool is moving (inward or outward)
+    _highlighted: boolean;          // Tells the renderer to draw a bright 'highlight' around the colonist if they are selected
 
     constructor(id: number, name: string, x: number, y: number, saveData?: ColonistSaveData) {
         this._data = saveData ? new ColonistData(id, name, x, y, saveData) : new ColonistData(id, name, x, y);
-        this._toolMaxPosition = 0;  // Let individual animations set these values
+        this._toolMaxPosition = 0;      // Let individual animations set these values
         this._toolPosition = 0;
         this._toolOutward = false;
+        this._highlighted = false;      // By default, colonists are not highlighted
+    }
+
+    // Controls whether or not this colonist is highlighted
+    setHighlighted = (highlighted: boolean) => {
+        this._highlighted = highlighted;
     }
 
     // FPM = game speed in frames per game minute (greater = slower) and sign = +1 for facing right, and -1 for facing left
@@ -163,6 +170,12 @@ export default class Colonist {
         if (this._data._currentAction?.type === "mine") this.drawTool(p5, 4);   // Draw a little jackhammer if colonist is mining
         this.drawHands(p5, fpm, animationSign);     // Draw hands last so they go over the tool, if there is one
         if (this._data._isMoving && gameOn) this._data._animationTick++;  // Advance animation if there is movement AND the game is unpaused
+        if (this._highlighted) {
+            p5.stroke(constants.GREEN_TERMINAL);
+            p5.strokeWeight(4);
+            p5.noFill();
+            p5.rect(this._data._x * constants.BLOCK_WIDTH - this._data._xOffset - 4, this._data._y * constants.BLOCK_WIDTH - 4, this._data._width * constants.BLOCK_WIDTH + 8, this._data._height * constants.BLOCK_WIDTH + 8, 8, 8, 8, 8);
+        }
     }
 
 }

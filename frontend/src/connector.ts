@@ -15,7 +15,7 @@ export default class Connector {
     _segments: {start: Coords, stop: Coords}[]; // Positions are given by a list of segments, each with start/stop coords.
     _length: number;        // Determined, along with orientation, from the start/stop coordinates
     _orientation: string;   // "vertical" or "horizontal"
-    _leftEdge: number;      // To help with Infra class's rendering cutoff
+    _leftEdge: number;      // To help with Infra class's rendering cutoff (in grid spaces, not pixels)
     _rightEdge: number;
     _top: number;           // In GRID spaces
     _bottom: number;
@@ -25,6 +25,7 @@ export default class Connector {
     _xOffset: number;   // The offset value, on the other hand, will be in terms of pixels, to allow for smoother scrolling
     _yOffset: number;
     _color: string;
+    _isRendered: boolean;
 
     constructor(id: number, start: Coords, stop: Coords, connectorInfo: ConnectorInfo) {
         this._id = id;
@@ -57,6 +58,7 @@ export default class Connector {
         this._xOffset = 0;
         this._yOffset = 0;
         this._color = constants.EGGSHELL    // Default value for now; in the future connectors will have custom colours
+        this._isRendered = false;
     }
 
     // For transport type connectors, see if they touch the ground and record the zone data if so

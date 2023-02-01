@@ -122,12 +122,28 @@ export default class PopulationView extends View {
                 if (idx >= this._optionsShowing && idx < this._optionsShowing + this._optionsPerPage) {
                     let c = new PopulationRow(colonist, this._rowIndent, idx - this._optionsShowing, this._colWidths, this.setExplorer, this.setFarmer, this.setMiner);
                 this._rows.push(c);
+                c.setRoleButtonSelection(this.determineRoleButton(colonist._data._role[0]));
                 }
             });
         // Update message text
         const min = this._optionsShowing + 1;
         const max = Math.min(this._optionsShowing + this._optionsPerPage, this._population._colonists.length);
         this.setMessage(`Showing colonists ${min} - ${max} out of ${this._population._colonists.length}`, constants.GREEN_TERMINAL);
+        }
+    }
+
+    // Ensures each colonist's current role button is highlighted when the page loads
+    determineRoleButton = (role: string) => {
+        switch (role) {
+            case "explorer":
+                return 0;
+            case "farmer":
+                return 1;
+            case "miner":
+                return 2;
+            default:
+                console.log(`Error: Role ${role} not recognized. Defaulting to 'Explorer.'`);
+                return 0;
         }
     }
 

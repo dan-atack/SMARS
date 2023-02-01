@@ -91,6 +91,18 @@ export default class Sidebar {
         this._gameSpeedButtons = [pause, slow, fast, blazing];
     }
 
+    // Gamespeed is passed as an index value (0 = pause, 1 = slow, 2 = fast, 3 = blazing)
+    setGamespeedButtons = (gamespeed: number) => {
+        this.resetGameSpeedButtons();
+        this._gameSpeedButtons[gamespeed].setSelected(true);
+    }
+
+    // Button selection is passed as an index value (5 = inspect, 6 = resource)
+    setSelectedButton = (selection: number) => {
+        this.resetSelectedButton();
+        this._buttons[selection].setSelected(true);
+    }
+
     // General-purpose click dispatcher
     handleClicks = (mouseX: number, mouseY: number) => {
         this._detailsArea.handleClicks(mouseX, mouseY); // Run Details Area click handlers first

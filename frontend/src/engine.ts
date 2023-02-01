@@ -151,6 +151,8 @@ export default class Engine extends View {
         this.currentView = true;
         this._sidebar.setup();
         this.selectedBuilding = null;
+        this.updateSidebarGamespeedButtons();   // Ensure sidebar gamespeed buttons always show the right value
+        this.setSidebarSelectedButton();   // Ensure sidebar mouse context buttons are correct
         this._sidebar._detailsArea._minimap.updateTerrain(this._map._mapData);
         // Sidebar minimap display - does it only need it during 'setup' or does it also need occasional updates?
     }
@@ -490,11 +492,25 @@ export default class Engine extends View {
         }
         // Next, check if mouse context has been set to 'resource' and show a little jackhammer if so
         if (this.mouseContext === "resource") {
+            this.setSidebarSelectedButton();
             this.createJackhammerMouseShadow();
         }
         // Last, check if the mouse context has been set to 'inspect' and tell it to do the magnifying glass image if so
         if (this.mouseContext === "inspect") {
             this.createInspectToolMouseShadow();
+            this.setSidebarSelectedButton();
+        }
+    }
+
+    // Ensures that the sidebar buttons for 'inspect' or 'resource' are always highlighted appropriately
+    setSidebarSelectedButton = () => {
+        switch (this.mouseContext) {
+            case "resource":
+                this._sidebar.setSelectedButton(5);
+                break;
+            case "inspect":
+                this._sidebar.setSelectedButton(6);
+                break;
         }
     }
 
@@ -513,14 +529,19 @@ export default class Engine extends View {
 
     // Takes the mouse coordinates and looks for an in-game entity at that location
     handleInspect = (coords: Coords) => {
+        // Clear previous inspect target (if any) before determining new display data
+        this.clearInspectSelection();
         if (this._population.getColonistDataFromCoords(coords)) {                   // First check for Colonists
             this.inspecting = this._population.getColonistDataFromCoords(coords);
         } else if (this._infrastructure.getConnectorFromCoords(coords)) {           // Next, check for Connectors
             this.inspecting = this._infrastructure.getConnectorFromCoords(coords);
+            this._infrastructure.highlightStructure(this.inspecting?._id || 0, false);  // Use ID if available, otherwise reset
         } else if (this._infrastructure.getModuleFromCoords(coords)) {              // Then, check for Modules
             this.inspecting = this._infrastructure.getModuleFromCoords(coords);
+            this._infrastructure.highlightStructure(this.inspecting?._id || 0, true);
         } else if (this._map.getBlockForCoords(coords)) {                           // Finally, check for terrain Blocks
             this.inspecting = this._map.getBlockForCoords(coords);
+            this._map.setHighlightedBlock(this.inspecting);
         } else {
             this.inspecting = null;
         }
@@ -530,6 +551,10 @@ export default class Engine extends View {
     clearInspectSelection = () => {
         this.inspecting = null;
         this._sidebar._detailsArea.setInspectData(this.inspecting);
+        // Clear selection highlighting for all Engine sub-classes
+        this._population.highlightColonist(0);
+        this._infrastructure.highlightStructure(0, false);
+        this._map.setHighlightedBlock(null);
     }
 
     //// STRUCTURE PLACEMENT METHODS ////
@@ -782,21 +807,52 @@ export default class Engine extends View {
     //// TIME AND GAMESPEED METHODS ////
 
     setGameSpeed = (value: string) => {
-        this.gameOn = true;     // Always start by assuming the game is on
+        // Set this value directly here  instead of using the setter method to preserve buttons' built-in highlight logic
+        this.gameOn = true;
         switch (value) {
             case "pause":
-                this.gameOn = false;
+                this.setGameOn(false);
                 break;
             case "slow":
-                this.ticksPerMinute = 40;
+                this.ticksPerMinute = 40;   // SLOW: One game minute passes for every 40 P5 frame refreshes
                 break;
             case "fast":
-                this.ticksPerMinute = 20;
+                this.ticksPerMinute = 20;   // FAST: One game minute passes for every 20 P5 frame refreshes
                 break;
             case "blazing":
-                this.ticksPerMinute = 1;    // Ultra fast mode in dev mode?!
+                this.ticksPerMinute = 1;    // BLAZING: One minute passes for every P5 frame refresh
                 break;
         }
+    }
+
+    // Handles pausing/unpausing the game
+    setGameOn = (gameOn: boolean) => {
+        this.gameOn = gameOn;
+        this.updateSidebarGamespeedButtons();
+    }
+
+    // Ensures the Sidebar's gamespeed buttons display the correct game speed
+    updateSidebarGamespeedButtons = () => {
+        // Determine gamespeed setting to pass to the Sidebar so the right button is always highlighted
+        let gamespeedIndex = 0;
+        switch (this.ticksPerMinute) {
+            case 40:
+                gamespeedIndex = 1;     // SLOW
+                break;
+            case 20:
+                gamespeedIndex = 2;     // FAST
+                break;
+            case 1:
+                gamespeedIndex = 3;     // BLAZING (Keep values here in sync with game speed setting options down below)
+                break;
+            default:
+                gamespeedIndex = 2;
+                break;
+        };
+        if (this.gameOn !== true) {
+            gamespeedIndex = 0;       // If the game is paused, use index zero to highlight the pause button
+        }
+        this._sidebar.setGamespeedButtons(gamespeedIndex);
     }
 
     // Sets the Smartian time
@@ -949,7 +1005,7 @@ export default class Engine extends View {
     }
 
     createModal = (random: boolean, data: EventData) => {
-        this.gameOn = false;
+        this.setGameOn(false);
         this._modal = new Modal(this._p5, this.closeModal, random, data);
         this.setMouseContext("modal");
     }
@@ -981,7 +1037,7 @@ export default class Engine extends View {
         }
         // Clear modal data and resume the game
         this._modal = null;
-        this.gameOn = true;
+        this.setGameOn(true);
     }
 
     //// RENDER METHODS ////
@@ -1049,6 +1105,20 @@ export default class Engine extends View {
         }
     }
 
+    // Engine will render the highlight box around blocks if needed, as the Map's render is "below" most other in-game objects
+    renderBlockHighlighting = (p5: P5) => {
+        if (this._map._highlightedBlock) {
+            const x = this._map._highlightedBlock._x * constants.BLOCK_WIDTH - this._horizontalOffset - 2;
+            const y = this._map._highlightedBlock._y * constants.BLOCK_WIDTH - 2;
+            p5.noFill();
+            p5.strokeWeight(4);
+            p5.stroke(constants.GREEN_TERMINAL);
+            p5.rect(x, y, constants.BLOCK_WIDTH + 4, constants.BLOCK_WIDTH + 4, 4, 4, 4, 4)
+        } else {
+            console.log("Error: Cannot highlight block - block data not found.");
+        }
+    }
+
     render = () => {
         this.advanceClock();        // Always try to advance the clock; it will halt itself if the game is paused
         if (this.mouseContext === "wait") {
@@ -1080,6 +1150,9 @@ export default class Engine extends View {
             this._modal.render();
         }
         p5.fill(constants.GREEN_TERMINAL);
+        if (this._map._highlightedBlock) {
+            this.renderBlockHighlighting(p5);
+        }
         // p5.text(`Sunlight: ${this._sunlight}`, 120, 300);
     }
 }
