@@ -1,7 +1,7 @@
 {
   "name": "smars-frontend",
   "version": "1.0.0",
-  "description": "The Full Frontal",
+  "description": "SMARS: Frontend",
   "main": "index.html",
   "scripts": {
     "test": "jest",

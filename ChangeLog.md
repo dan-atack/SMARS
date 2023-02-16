@@ -1,5 +1,7 @@
 # The Saga of SMARS: ChangeLog and Study Notes
 
+# Volume I: Pre-Release Development (SMARS 0.1.0)
+
 ## Chapter One: The Creation of the Git Repo
 
 ### Difficulty Estimate: 1
@@ -2486,11 +2488,13 @@ Exit Criteria:
 
 14. Fix the logic for the LoadGame setup to ensure that its pagination setting and selected game data is always reset when the screen is opened (so that, if the player is browsing through older saves, then leaves the page, then comes back, they start on the first page with the most recent saves again). In other words, reset all of the data that can be set by the player for the Load Game screen as soon as the player exits it.
 
-## Chapter Forty-Five: In-Game Notifications
+# Volume 2
+
+## Chapter X: In-Game Notifications
 
 ### Difficulty Estimate: 3 (for developing a message collection system for Engine subclass components, and message prioritization and rendering for the Engine class)
 
-### Date: January 31, 2023
+### Date: TBD
 
 The final, FINAL thing to do before the game's first release is to implement a simple in-game notification system that does not interrupt the player like the modal dialogues, but which displays helpful prompts to the player without pausing the game. These should be simple messages displayed by the Engine whenever a console log warning would pop up, to indicate that there is a problem in the base that requires the player's attention, such as a lack of a resource needed for production, or colonists going hungry/thirsty/etc.
 
@@ -2500,7 +2504,7 @@ Exit Criteria: TBD
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
 
-## Chapter Z: Environments (Difficulty Estimate: ???)
+## Chapter Z: Environments/Debug Version (Difficulty Estimate: ???)
 
 As the game matures, it will be more and more desirable to separate features that are used in development - console logs, test structures, in-game information displays, etc - from the production version of the game. We've already got an environment variable that the game's code can detect, so it would be possible to enable certain features only in a development environment, and then in a separate 'staging' environment it would be possible to preview the actual game experience.
 
