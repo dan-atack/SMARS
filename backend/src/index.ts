@@ -9,13 +9,14 @@ dotenv.config()
 
 // Required Database Modules
 
-const getTestData = require('./database_functions/test_find');
 const getFrontend = require('./database_functions/test_frontend');
+const validateDB = require('./database_functions/validate_database');
 
 // App Variables
 
 if (!process.env.PORT) {
     // Exit on error code 1 if the environment variable for PORT is not loaded:
+    console.log("Error: PORT number not found in environment variables.");
     process.exit(1);
 }
 
@@ -39,8 +40,6 @@ app.use(require('./endpoints/loadEndpoints'));
 app.use(require('./endpoints/mapEndpoints'));
 app.use(require('./endpoints/structureEndpoints'));
 app.use(require('./endpoints/saveEndpoints'));
-// Test functions - do we still need 'em?
-app.get('/api/:dbName/:collection', getTestData);
 // Test endpoint for communication with the frontend:
 app.get('/api/test', getFrontend);
 
@@ -48,4 +47,7 @@ app.get('/api/test', getFrontend);
 
 app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
+    // Validate database connection when server is initialized
+    validateDB();
 })
+

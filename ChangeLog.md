@@ -2488,7 +2488,84 @@ Exit Criteria:
 
 14. Fix the logic for the LoadGame setup to ensure that its pagination setting and selected game data is always reset when the screen is opened (so that, if the player is browsing through older saves, then leaves the page, then comes back, they start on the first page with the most recent saves again). In other words, reset all of the data that can be set by the player for the Load Game screen as soon as the player exits it.
 
-# Volume 2
+# Volume II: Deployment to the Web (SMARS 1.0.0)
+
+## Chapter One: Server Containerization Prototyping
+
+### Difficulty Estimate: 5 (for uncharter waters vis-a-vis Docker container building and deployment)
+
+### Date: February 16, 2023
+
+In the first installment of the game's deployment epic, we will create the project's first Dockerfile, and Docker-compose file, and use those to run the game's server from a Docker container, and visit it on a browser on the host machine. The first step towards this will be to manually provision a container running a minimal Linux image to run the game's backend server, then automate the steps required to set this up in a Dockerfile. Next, a Docker-compose file will be created to setup the one container, and configure the network information, port-mapping, environment variables, etc. The chapter will be complete when there is a container running the SMARS backend (server) that is accessible from the localhost URL.
+
+Exit Criteria:
+
+- Server test endpoint can be accessed via a web browser at localhost:8080
+- Server runs in a Docker container
+- Docker-compose is used to bring up the stack
+
+1. Create a new Virtual machine for the SMARS project, with a fresh Vagrantfile using the Ubuntu-jammy OS in its own folder in the VirtualMachines directory. This machine will be the SMARS Development Docker Host. Adjust its Vagrant file to map port 8080 on the host machine (i.e. your laptop) to port 7000 on the Docker Host, and map port 2345 on the host machine to port 1234 on the Docker host. Then boot up a virtual box machine with `vagrant up`.
+
+2. On the Dev Docker Host VM, install the following programs with the apt-get installation method (visiting the individual services' websites for installation instructions in the case of docker, mongodb):
+
+- docker
+- git
+- npm
+- mongodb
+
+3. Start the mongodb service and ensure it is running.
+
+4. Clone the SMARS git repo into a folder on the Docker Host, and install only the backend's packages.
+
+5. In the root of the backend directory, create a .env file with the line PORT=7000.
+
+6. Next, start the backend server and see if it is accessible from port 8080 on your laptop.
+
+7. Now, in a second Powershell terminal, login to the Docker Host a second time, and this time go into the frontend directory, and install its packages. Although it will present you with a warning that several packages have high/critical vulnerabilities, ignore that for now, as attempting to fix them will break the parcel server's ability to build the game.
+
+8. Then run the frontend using the `npm run start` command, and see if it is accessible from port 2345 on your laptop.
+
+9. On the current development branch, add a new function called validateDB, that the server will call just once when it boots up. Validate that this function is called, just once, with a console log declaring that the function has just run.
+
+10. Next, make this function call the Mongo Database, and print a success message to the console if it is able to start a client session (and close it) with the database. If the database is not found, have it print an error message to the console instead. Addendum: should it also close down the server? A worthy question, but for now we will just have a warning message, since exiting the program cleanly with an unresolved promise (from the async await function) is more trouble than it's worth right now.
+
+11. Next, instead of just checking that the database service is running, have the validateDB function check how many maps there are in the database. If there are at least 3 maps in the database return a message saying the database has been populated, otherwise print that the database needs to be populated.
+
+12. Using async/await, have the validateDB function check the modules and connectors collections too, and log a message if either of them is empty.
+
+13. Add a new asynchronous function, seedDB, which will console log a simple message saying 'seeding such-and-such collection.' Have this function get called by the validateDB function for any collection that is empty.
+
+14. Update the backend's .env file to include new lines for: ENVIRONMENT=dev and DB_NAME=smars_test. Then, plug the DB_NAME variable into the validateDB function so you can work on the test database for the remainder of this chapter's development without worrying about corrupting the game's normal database.
+
+15. Update the validate_database module to import the dotenv package to read the new environment variables, and then test that they work by adding a new file to the maps collection in the smars_test database.
+
+16. Now delete the smars_test database and see what happens when the server is booted up. If it detects that the smars_test db doesn't exist, what does it do? Addendum: Not only does it not crash, but if you want to then run some functions that seed the database, it will create the db as well as any collections you refer to that don't yet exist, no problemo. Excellent!
+
+17. Write a new file called databaseSeed.json which will contain all of the game's initial maps, modules and connectors. Attempt to read this file's contents in the validateDB function.
+
+18. Update the backend's tsconfig file to allow it to load JSON files by uncommenting the line "resolveJsonModule": true.
+
+19. Next, import the seed data into the validateDB function, and give it a try on the old console log, just to be sure we read it alright.
+
+20. For each collection being checked (maps, modules and connectors), if the collection is not found/empty, call the seedDB function and tell it add the items from that section of the seed data file to the empty collection in the database. Reboot the server after running this once to verify that the files are in place when the server is booted up a second time. Then wipe the test database and run through this workflow again just to be super sure it's working. Then commit and push to Github, still on the development branch...
+
+### 21. Next, go back to the version of the game server that's running on our putative Docker Host machine, and shut it down. Then use the git service on the virtual machine to checkout this game's development branch, to get the new server/database code that we just pushed to gitHub.
+
+### 22. Then, update the .env file on the Docker Host to include the ENVIRONMENT and DB_NAME values. This time though, use 'smars' as the DB_NAME, since this is the value all of the server modules are expecting right now.
+
+### 23. Finally, boot up the game's server again on the Docker Host and check that it has populated
+
+### 24. Back on the development workstation (your PC) update the remainder of the server functions to use the DB_NAME environment variable so that they're harmonized to point to the same database (and also add the default value so that if there is no environment variable then they all point to that value instead).
+
+### 99. In your original dev environment's .env file, reset the DB_NAME to 'smars' to regain access to your old development data.
+
+## Chapter Two: Automating Docker Image Building
+
+### Difficulty Estimate: TBD
+
+### Date: TBD
+
+Once we have our first Docker files, it will be time to implement a way to automate their generation, so that updates to the game's source code are continuously integrated into Docker images (some might call this some type of "pipe line" I reckon).
 
 ## Chapter X: In-Game Notifications
 
