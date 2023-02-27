@@ -2,9 +2,11 @@
 import { EventData } from "./modal";
 import { Resource } from "./economyData";
 
+const dbAddress = process.env.SERVER_URL as string || "localhost";
+
 export const constants = {
     // Backend connection
-    URL_PREFIX: "http://localhost:7000/api",
+    URL_PREFIX: `http://${dbAddress}:7000/api`,
     // Units of measurement, in pixels
     SCREEN_WIDTH: 1200,       // If adjusting this parameter, make sure to also adjust the WORLD_VIEW_WIDTH just below
     SCREEN_HEIGHT: 720,
