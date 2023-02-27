@@ -2549,15 +2549,39 @@ Exit Criteria:
 
 20. For each collection being checked (maps, modules and connectors), if the collection is not found/empty, call the seedDB function and tell it add the items from that section of the seed data file to the empty collection in the database. Reboot the server after running this once to verify that the files are in place when the server is booted up a second time. Then wipe the test database and run through this workflow again just to be super sure it's working. Then commit and push to Github, still on the development branch...
 
-### 21. Next, go back to the version of the game server that's running on our putative Docker Host machine, and shut it down. Then use the git service on the virtual machine to checkout this game's development branch, to get the new server/database code that we just pushed to gitHub.
+21. Next, go back to the version of the game server that's running on our putative Docker Host machine, and shut it down. Then use the git service on the virtual machine to checkout this game's development branch, to get the new server/database code that we just pushed to gitHub.
 
-### 22. Then, update the .env file on the Docker Host to include the ENVIRONMENT and DB_NAME values. This time though, use 'smars' as the DB_NAME, since this is the value all of the server modules are expecting right now.
+22. Then, update the .env file on the Docker Host to include the ENVIRONMENT and DB_NAME values. This time though, use 'smars' as the DB_NAME, since this is the value all of the server modules are expecting right now.
 
-### 23. Finally, boot up the game's server again on the Docker Host and check that it has populated
+23. Finally, boot up the game's server again on the Docker Host and check that it has populated the database and can now RUN A NEW GAME! If so, it's time to get Dockerizing!!!
 
-### 24. Back on the development workstation (your PC) update the remainder of the server functions to use the DB_NAME environment variable so that they're harmonized to point to the same database (and also add the default value so that if there is no environment variable then they all point to that value instead).
+24. On the Docker Host, stop the frontend and backend servers, and then download the latest docker image for mongodb.
+
+25. Run the mongodb container, in detached mode, with its port 27017 mapped to that same port on the Docker host (you will need to deactivate the mongodb service running on the Docker host first, to free up port 27017) and its /data/db internal volume (from the container, that is) mapped to the location /var/lib/docker/volumes/mongo (a directory you may or may not need to create yourself), and name it 'db' with the following command:
+
+`docker run --mount type=bind,source=/var/lib/docker/volumes/mongo,target=/data/db -d --name=db -p 27017:27017 mongo`
+
+26. Validate that the database is working and accessible by mounting the (non-containerized) SMARS server and have it communicate with the database (which is in a container).
+
+27. Next, validate that the containerized DB's data persists by stopping and deleting the mongo container, and then booting up another one, followed by restarting the server. If the data is persisted, the server should pick up the maps, modules and connectors that it loaded to the previous database container instance, without having to seed them again.
+
+28. Once database validation is completed, start working on containerizing the backend. Don't worry about the weight of the images for now, we can always streamline that later. For now, start with the Ubuntu Kinetic image that's already downloaded on the Docker Host, and boot it up with the Docker Host's /smars/backend directory mapped to a directory on the Ubuntu container, if that's possible. If not we can just get git on the container for this first pass, and then use the COPY command when we make the backend's Dockerfile, which is pretty much one step after the next one. Make certain to boot up the container with the correct PORT MAPPING: We want the container's port 7000 to be mapped to port 8080 on the Docker Host (-p 8080:7000).
+
+29. Once the SMARS backend's code has been copied onto the Ubuntu Kinetic container, install its node modules with npm, add a .env file which tells the server to listen on PORT=7000, and has the DB_NAME=smars and ENVIROMENT=dev configuration, and then spin up the server.
+
+### 30. In the local dev environment (your laptop) add another environment variable to the .env file, called DB_IP_ADDRESS, and set its value to localhost (or for fancy bonus points, make it equal to 127.0.0.1 - localhost's technical address).
+
+### 31. Then, in all of the backend's server functions that call the DB, replace the localhost part of the Mongo host's URL with the environment variable DB_IP_ADDRESS, so that your server will be able to send its DB traffic to other IP addresses when mounted on a different environment. This might be unnecessary depending on how the Dockerization process manages inter-container traffic (i.e. you probably won't need to manually point your backend container to the DB's address once we're using Dockerfiles) but it's a useful intermediary step and will maybe teach us more about how IP addresses work... or something.
+
+### 32. Do the same thing with the frontend's constants file - add a .env variable at the root of the frontend's directory (by hand) with a single value: SERVER_IP=127.0.0.1 (for your workstation AKA laptop), and then read that in the constants file for the URL_PREFIX value, so that the containerized version of the frontend can be run
+
+### 30. Now, in a new Powershell terminal, visit the Docker Host again and boot up the frontend (non-containerized) and see if it is able to interact with the backend instance that is currently running on the Ubuntu Kinetic container.
+
+### 98. Back on the development workstation (your PC) update the remainder of the server functions to use the DB_NAME environment variable so that they're harmonized to point to the same database (and also add the default value so that if there is no environment variable then they all point to that value instead).
 
 ### 99. In your original dev environment's .env file, reset the DB_NAME to 'smars' to regain access to your old development data.
+
+### 100. Once you've ensured your workstation's development environment is fully back to normal, do any last pushes to GitHub and then merge this branch into the master branch, and get ready to start automating all of the steps you've just done.
 
 ## Chapter Two: Automating Docker Image Building
 
@@ -2622,6 +2646,8 @@ As the game matures, it will be more and more desirable to separate features tha
 17. [5: Significant Gameplay issue] When a Colonist has passed their need threshold for rest, their attempts to satisfy any other need are overridden since the needs calculation uses a forEach loop whose last member is 'rest.' This causes Colonists to freeze up in some circumstances, as they are not able to fulfill eat/drink needs even if the rest availability status has been set to 0 (meaning that they should ignore it and try to fulfill one of the other two needs).
 
 ### 18. [5: Significant Gameplay issue] When a Colonist is going to produce in a module on a non-ground floor, they can sometimes start to climb a ladder that is attached to that floor, but that does not go all the way to the ground where they begin to climb it. Colonist appears to climb an invisible ladder until they reach the bottom of the actual ladder, which they continue to climb to the destination. Because the Colonist does not totally freeze up this is considered only a moderate level of severity.
+
+### 19. [1: Minor Edge Case] When the player starts a new game the initial map they're given will be the same as the one that was selected for the previous "New Game" in that browser session. It should be reset so that it is always fetched from the appropriate map collection being displayed (in this case the default map type is "polar").
 
 ## Technical Debt Issues:
 

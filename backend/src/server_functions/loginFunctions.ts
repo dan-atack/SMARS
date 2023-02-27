@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { MongoClient } from "mongodb";
 import assert from "assert";
+import { constants } from "../constants";
 
 // Standardize name of the database:
 const dbName = 'smars'
@@ -21,7 +22,7 @@ const handleLogin = async (req: Request, res: Response) => {
     const { username, password } = req.body;
     // Create database query: an object that will uniquely match an entry in the database (can we use username instead of _id??)
     const dbQuery = { username: username }
-    const client = new MongoClient("mongodb://localhost:27017", {});
+    const client = new MongoClient(constants.DB_URL_STRING, {});
     try {
         await client.connect();
         console.log("Connected to database...");
@@ -64,7 +65,7 @@ const handleSignup = async (req: Request, res: Response) => {
     const dbQuery = {username: username};   // to check if username already exists
     let usernameAvailable = true;  // We'll check if the username is already in the DB and change this to false if so.
 
-    const client = new MongoClient("mongodb://localhost:27017", {});
+    const client = new MongoClient(constants.DB_URL_STRING, {});
     try {
         console.log("Connecting to database...");
         await client.connect();

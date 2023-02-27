@@ -1,6 +1,7 @@
 import { Db, MongoClient } from "mongodb";
 import data from "../../databaseSeed.json";
 import assert from "assert";
+import { constants } from "../constants";
 
 // Define the structure of the database seed file
 type SeedData = {
@@ -11,14 +12,9 @@ type SeedData = {
 
 // This function runs once when the server is booted up, and checks if the DB is running and has been provisioned
 const validateDB = async () => {
-    // Get the DB name from the local environment variables file (or default to 'smars' if none is found)
-    let dbName: string = process.env.DB_NAME as string;
-    if (!dbName) {
-        console.log("Warning: Database name environment variable (DB_NAME) not found. Using default value: smars");
-        dbName = "smars";
-    }
+    const dbName: string = process.env.DB_NAME as string || "smars";    // Use DB called 'smars' by default
     console.log("Server up. Attempting to validate database connection with mongodb.");
-    const client = new MongoClient('mongodb://localhost:27017', {});
+    const client = new MongoClient(constants.DB_URL_STRING, {});
     try {
         await client.connect();
         console.log('Checking database for maps...');

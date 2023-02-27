@@ -1,9 +1,11 @@
 import { MongoClient } from "mongodb";
 import { Request, Response } from "express";
+import { constants } from "../constants";
+
 
 const getTestData = async (req: Request, res: Response) => {
     const { dbName, collection } = req.params;
-    const client = new MongoClient('mongodb://localhost:27017', {});
+    const client = new MongoClient(constants.DB_URL_STRING, {});
     await client.connect();
     console.log('connection established!');
     // first param: database name

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { MongoClient } from "mongodb";
 import assert from "assert";
+import { constants } from "../constants";
 
 // Standardize name of the database:
 const dbName = 'smars'
@@ -120,7 +121,7 @@ export type SaveInfo = {
 
 const handleSave = async (req: Request, res: Response) => {
     const saveInfo: SaveInfo = req.body;
-    const client = new MongoClient("mongodb://localhost:27017", {});
+    const client = new MongoClient(constants.DB_URL_STRING, {});
     try {
         await client.connect();
         console.log("Connected to database.");
