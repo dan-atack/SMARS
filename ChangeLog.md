@@ -2575,7 +2575,9 @@ Exit Criteria:
 
 32. Do the same thing with the frontend's constants file - add a .env variable at the root of the frontend's directory (by hand) with a single value: SERVER_IP=127.0.0.1 (for your workstation AKA laptop), and then read that in the constants file for the URL_PREFIX value, so that the containerized version of the frontend can be run in a pseudo-containerized environment (i.e. with shifting IP addresses for the apps' different services).
 
-### 30. Now, in a new Powershell terminal, visit the Docker Host again and boot up the frontend (non-containerized) and see if it is able to interact with the backend instance that is currently running on the Ubuntu Kinetic container.
+### 30. Now, in a new Powershell terminal, spin up another container with the Ubuntu Kinetic image, and this time put the frontend's code on it, using the same techniques as for the previous image (once we Dockerize this it will be much more efficient). Make sure to map port 1234 to port 1234, since the Docker Host machine listens to its port 2345 but sends that to its internal port 1234. Proceed to install Git, NPM, and then the node modules after checking out the BRANCH of the GitHub repo. Don't forget the .env file which will have the values ENVIRONMENT="Dev", SERVER_URL="172.17.0.3" (the backend container's URL, as seen with the `docker inspect backend` command), SERVER_PORT="8080" (the docker host's port that is mapped to the backend container... that's how this works, right?).
+
+### 31. Run the Frontend container and then attempt to visit it in the browser on the host host machine (your PC). Fix any configuration issues that are encountered and take note of them, and the set of steps that finally leads to a fully functioning stack. The next step will be to write them into a list, which will then become the project's first Dockerfiles.
 
 ### 98. Back on the development workstation (your PC) update the remainder of the server functions to use the DB_NAME environment variable so that they're harmonized to point to the same database (and also add the default value so that if there is no environment variable then they all point to that value instead).
 
