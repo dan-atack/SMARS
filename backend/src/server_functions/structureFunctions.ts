@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { MongoClient } from "mongodb";
+import { constants } from "../constants";
 
 const dbName = "smars";
 
@@ -7,7 +8,7 @@ const dbName = "smars";
 const getStructures = async (req: Request, res: Response) => {
     // Category = modules/connectors; type = what type of module/connector (e.g. habitation, transport, etc.)
     const { category, type } = req.params;
-    const client = new MongoClient("mongodb://localhost:27017", {});
+    const client = new MongoClient(constants.DB_URL_STRING, {});
     try {
         await client.connect();
         console.log("Database connection established.");
@@ -43,7 +44,7 @@ const getOneStructure = async (req: Request, res: Response) => {
     // Category = modules/connectors; type = what type of module/connector (e.g. habitation, transport, etc.)
     const { category, type, name } = req.params;
     const dbQuery = { "name": name, "type": type };
-    const client = new MongoClient("mongodb://localhost:27017", {});
+    const client = new MongoClient(constants.DB_URL_STRING, {});
     try {
         await client.connect();
         console.log("Database connection established.");
@@ -70,7 +71,7 @@ const getOneStructure = async (req: Request, res: Response) => {
 
 const getStructureTypes = async (req: Request, res: Response) => {
     const { category } = req.params;
-    const client = new MongoClient("mongodb://localhost:27017", {});
+    const client = new MongoClient(constants.DB_URL_STRING, {});
     // Toggle switch to allow or exclude structures with the 'test' type
     const includeTests = false;
     try {

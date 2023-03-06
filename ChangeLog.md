@@ -2488,7 +2488,119 @@ Exit Criteria:
 
 14. Fix the logic for the LoadGame setup to ensure that its pagination setting and selected game data is always reset when the screen is opened (so that, if the player is browsing through older saves, then leaves the page, then comes back, they start on the first page with the most recent saves again). In other words, reset all of the data that can be set by the player for the Load Game screen as soon as the player exits it.
 
-# Volume 2
+# Volume II: Deployment to the Web (SMARS 1.0.0)
+
+## Chapter One: Server Containerization Prototyping
+
+### Difficulty Estimate: 5 (for uncharter waters vis-a-vis Docker container building and deployment)
+
+### Date: February 16, 2023
+
+In the first installment of the game's deployment epic, we will work on deploying Docker images of the SMARS stack on a virtual host machine, and sorting out the manual steps and alterations to the game's source code needed to set up these containers.
+
+Phase one of this first chapter will be to start by spinning up a new Virtual Machine with an Ubuntu Jammy vagrantfile, installing the game's files on that virtual host, and running the full SMARS stack - frontend, backend and database service - from the root of the VM (hereafter referred to as the 'Docker Host'). Replicating the development environment on the Docker Host VM - sans containers at this point - will allow us to practice the steps for deploying SMARS on a machine other than the one it was created on, before going any further.
+
+Once the game's full stack has been deployed successfully on the Docker Host machine, the second phase of this chapter will be to run a Docker container for each service in the stack (frontend, backend, mongo db) by spinning up the latest Docker Mongo image, and then running two blank Ubuntu containers in terminal mode (visiting them in separate Powershell sessions) and provisioning them with the game's code, npm packages, and custom environment values files (not included in source control for... reasons!). The chapter will be complete when the user can launch a game from the hosting laptop's internet browser, and play the game entirely on Docker-hosted containers.
+
+Exit Criteria:
+
+- [DONE] Server test endpoint can be accessed via a web browser at localhost:8080
+- [DONE] Server (backend) runs in a Docker container
+- [DONE] Frontend runs in another Docker container
+- [DONE] MongoDB docker image is used as a third container (although it is the first to be mounted)
+- [DONE] All three containers run on the Docker host as their own independent stack
+- [DONE] The Docker-hosted game is playable in the host's browser on port 2345, with all features working properly
+- [DONE] All `docker run` commands and .env file contents are recorded, for reference to help create the project's Dockerfiles
+- [DONE] All commands used on the Frontend and Backend containers are recorded in text files, for reference to help create the project's Dockerfiles
+
+1. Create a new Virtual machine for the SMARS project, with a fresh Vagrantfile using the Ubuntu-jammy OS in its own folder in the VirtualMachines directory. This machine will be the SMARS Development Docker Host. Adjust its Vagrant file to map port 8080 on the host machine (i.e. your laptop) to port 7000 on the Docker Host, and map port 2345 on the host machine to port 1234 on the Docker host. Then boot up a virtual box machine with `vagrant up`.
+
+2. On the Dev Docker Host VM, install the following programs with the apt-get installation method (visiting the individual services' websites for installation instructions in the case of docker, mongodb):
+
+- docker
+- git
+- npm
+- mongodb
+
+3. Start the mongodb service and ensure it is running.
+
+4. Clone the SMARS git repo into a folder on the Docker Host, and install only the backend's packages.
+
+5. In the root of the backend directory, create a .env file with the line PORT=7000.
+
+6. Next, start the backend server and see if it is accessible from port 8080 on your laptop.
+
+7. Now, in a second Powershell terminal, login to the Docker Host a second time, and this time go into the frontend directory, and install its packages. Although it will present you with a warning that several packages have high/critical vulnerabilities, ignore that for now, as attempting to fix them will break the parcel server's ability to build the game.
+
+8. Then run the frontend using the `npm run start` command, and see if it is accessible from port 2345 on your laptop.
+
+9. On the current development branch, add a new function called validateDB, that the server will call just once when it boots up. Validate that this function is called, just once, with a console log declaring that the function has just run.
+
+10. Next, make this function call the Mongo Database, and print a success message to the console if it is able to start a client session (and close it) with the database. If the database is not found, have it print an error message to the console instead. Addendum: should it also close down the server? A worthy question, but for now we will just have a warning message, since exiting the program cleanly with an unresolved promise (from the async await function) is more trouble than it's worth right now.
+
+11. Next, instead of just checking that the database service is running, have the validateDB function check how many maps there are in the database. If there are at least 3 maps in the database return a message saying the database has been populated, otherwise print that the database needs to be populated.
+
+12. Using async/await, have the validateDB function check the modules and connectors collections too, and log a message if either of them is empty.
+
+13. Add a new asynchronous function, seedDB, which will console log a simple message saying 'seeding such-and-such collection.' Have this function get called by the validateDB function for any collection that is empty.
+
+14. Update the backend's .env file to include new lines for: ENVIRONMENT=dev and DB_NAME=smars_test. Then, plug the DB_NAME variable into the validateDB function so you can work on the test database for the remainder of this chapter's development without worrying about corrupting the game's normal database.
+
+15. Update the validate_database module to import the dotenv package to read the new environment variables, and then test that they work by adding a new file to the maps collection in the smars_test database.
+
+16. Now delete the smars_test database and see what happens when the server is booted up. If it detects that the smars_test db doesn't exist, what does it do? Addendum: Not only does it not crash, but if you want to then run some functions that seed the database, it will create the db as well as any collections you refer to that don't yet exist, no problemo. Excellent!
+
+17. Write a new file called databaseSeed.json which will contain all of the game's initial maps, modules and connectors. Attempt to read this file's contents in the validateDB function.
+
+18. Update the backend's tsconfig file to allow it to load JSON files by uncommenting the line "resolveJsonModule": true.
+
+19. Next, import the seed data into the validateDB function, and give it a try on the old console log, just to be sure we read it alright.
+
+20. For each collection being checked (maps, modules and connectors), if the collection is not found/empty, call the seedDB function and tell it add the items from that section of the seed data file to the empty collection in the database. Reboot the server after running this once to verify that the files are in place when the server is booted up a second time. Then wipe the test database and run through this workflow again just to be super sure it's working. Then commit and push to Github, still on the development branch...
+
+21. Next, go back to the version of the game server that's running on our putative Docker Host machine, and shut it down. Then use the git service on the virtual machine to checkout this game's development branch, to get the new server/database code that we just pushed to gitHub.
+
+22. Then, update the .env file on the Docker Host to include the ENVIRONMENT and DB_NAME values. This time though, use 'smars' as the DB_NAME, since this is the value all of the server modules are expecting right now.
+
+23. Finally, boot up the game's server again on the Docker Host and check that it has populated the database and can now RUN A NEW GAME! If so, it's time to get Dockerizing!!!
+
+24. On the Docker Host, stop the frontend and backend servers, and then download the latest docker image for mongodb.
+
+25. Run the mongodb container, in detached mode, with its port 27017 mapped to that same port on the Docker host (you will need to deactivate the mongodb service running on the Docker host first, to free up port 27017) and its /data/db internal volume (from the container, that is) mapped to the location /var/lib/docker/volumes/mongo (a directory you may or may not need to create yourself), and name it 'db' with the following command:
+
+`docker run --mount type=bind,source=/var/lib/docker/volumes/mongo,target=/data/db -d --name=db -p 27017:27017 mongo`
+
+26. Validate that the database is working and accessible by mounting the (non-containerized) SMARS server and have it communicate with the database (which is in a container).
+
+27. Next, validate that the containerized DB's data persists by stopping and deleting the mongo container, and then booting up another one, followed by restarting the server. If the data is persisted, the server should pick up the maps, modules and connectors that it loaded to the previous database container instance, without having to seed them again.
+
+28. Once database validation is completed, start working on containerizing the backend. Don't worry about the weight of the images for now, we can always streamline that later. For now, start with the Ubuntu Kinetic image that's already downloaded on the Docker Host, and boot it up with the Docker Host's /smars/backend directory mapped to a directory on the Ubuntu container, if that's possible. If not we can just get git on the container for this first pass, and then use the COPY command when we make the backend's Dockerfile, which is pretty much one step after the next one. Make certain to boot up the container with the correct PORT MAPPING: We want the container's port 7000 to be mapped to port 8080 on the Docker Host (-p 8080:7000).
+
+29. Once the SMARS backend's code has been copied onto the Ubuntu Kinetic container, install its node modules with npm, add a .env file which tells the server to listen on PORT=7000, and has the DB_NAME=smars and ENVIROMENT=dev configuration, and then spin up the server.
+
+30. In the local dev environment (your laptop) add another environment variable to the .env file, called DB_IP_ADDRESS, and set its value to localhost (or for fancy bonus points, make it equal to 127.0.0.1 - localhost's technical address).
+
+31. Then, in all of the backend's server functions that call the DB, replace the localhost part of the Mongo host's URL with the environment variable DB_IP_ADDRESS, so that your server will be able to send its DB traffic to other IP addresses when mounted on a different environment. This might be unnecessary depending on how the Dockerization process manages inter-container traffic (i.e. you probably won't need to manually point your backend container to the DB's address once we're using Dockerfiles) but it's a useful intermediary step and will maybe teach us more about how IP addresses work... or something.
+
+32. Do the same thing with the frontend's constants file - add a .env variable at the root of the frontend's directory (by hand) with a single value: SERVER_IP=127.0.0.1 (for your workstation AKA laptop), and then read that in the constants file for the URL_PREFIX value, so that the containerized version of the frontend can be run in a pseudo-containerized environment (i.e. with shifting IP addresses for the apps' different services).
+
+33. Now, in a new Powershell terminal, spin up another container with the Ubuntu Kinetic image, and this time put the frontend's code on it, using the same techniques as for the previous image (once we Dockerize this it will be much more efficient). Make sure to map port 1234 to port 1234, since the Docker Host machine listens to its port 2345 but sends that to its internal port 1234. Proceed to install Git, NPM, and then the node modules after checking out the BRANCH of the GitHub repo. Don't forget the .env file which will have the values ENVIRONMENT="Dev", SERVER_URL="172.17.0.3" (the backend container's URL, as seen with the `docker inspect backend` command), SERVER_PORT="8080" (the docker host's port that is mapped to the backend container... that's how this works, right?).
+
+34. Run the Frontend container and then attempt to visit it in the browser on the host host machine (your PC). Fix any configuration issues that are encountered and take note of them, and the set of steps that finally leads to a fully functioning stack. The next step will be to write them into a list, which will then become the project's first Dockerfiles.
+
+35. Back on the development workstation (your PC) update the remainder of the server functions to use the DB_NAME environment variable so that they're harmonized to point to the same database (and also add the default value so that if there is no environment variable then they all point to that value instead).
+
+36. In your original dev environment's .env file, reset the DB_NAME to 'smars' to regain access to your old development data.
+
+37. Once you've ensured your workstation's development environment is fully back to normal, do any last pushes to GitHub and then merge this branch into the master branch, and get ready to start automating all of the steps you've just done.
+
+## Chapter Two: Automating Docker Image Building
+
+### Difficulty Estimate: TBD
+
+### Date: TBD
+
+Once we have our first Docker files, it will be time to implement a way to automate their generation, so that updates to the game's source code are continuously integrated into Docker images (some might call this some type of "pipe line" I reckon).
 
 ## Chapter X: In-Game Notifications
 
@@ -2545,6 +2657,8 @@ As the game matures, it will be more and more desirable to separate features tha
 17. [5: Significant Gameplay issue] When a Colonist has passed their need threshold for rest, their attempts to satisfy any other need are overridden since the needs calculation uses a forEach loop whose last member is 'rest.' This causes Colonists to freeze up in some circumstances, as they are not able to fulfill eat/drink needs even if the rest availability status has been set to 0 (meaning that they should ignore it and try to fulfill one of the other two needs).
 
 ### 18. [5: Significant Gameplay issue] When a Colonist is going to produce in a module on a non-ground floor, they can sometimes start to climb a ladder that is attached to that floor, but that does not go all the way to the ground where they begin to climb it. Colonist appears to climb an invisible ladder until they reach the bottom of the actual ladder, which they continue to climb to the destination. Because the Colonist does not totally freeze up this is considered only a moderate level of severity.
+
+### 19. [1: Minor Edge Case] When the player starts a new game the initial map they're given will be the same as the one that was selected for the previous "New Game" in that browser session. It should be reset so that it is always fetched from the appropriate map collection being displayed (in this case the default map type is "polar").
 
 ## Technical Debt Issues:
 

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { MongoClient, ObjectId } from "mongodb";
 import assert from "assert";
 import { SaveInfo } from "./saveFunctions"
+import { constants } from "../constants";
 
 // Standardize name of the database:
 const dbName = 'smars';
@@ -10,7 +11,7 @@ const collectionName = 'saves';
 const loadGamesForUser = async (req: Request, res: Response) => {
     const { username } = req.params;
     const dbQuery = { username: username };
-    const client = new MongoClient("mongodb://localhost:27017", {});
+    const client = new MongoClient(constants.DB_URL_STRING, {});
     try {
         await client.connect();
         console.log("Database connection established");
@@ -56,7 +57,7 @@ const loadGamesForUser = async (req: Request, res: Response) => {
 const loadGameData = async (req: Request, res: Response) => {
     const { id } = req.params;
     const dbQuery = { "_id": new ObjectId(id) };
-    const client = new MongoClient("mongodb://localhost:27017", {});
+    const client = new MongoClient(constants.DB_URL_STRING, {});
     try {
         await client.connect();
         console.log("Connected to database. Bleep.");

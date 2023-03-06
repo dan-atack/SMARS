@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { MongoClient } from "mongodb";
 import assert from "assert";
+import { constants } from "../constants";
 
 // Standardize name of the database (and collection):
 const dbName = 'smars'
@@ -19,7 +20,7 @@ type MapInfo = {
 const getMap = async (req: Request, res: Response) => {
     const { type } = req.params;
     const dbQuery = { type: type }
-    const client = new MongoClient("mongodb://localhost:27017", {});
+    const client = new MongoClient(constants.DB_URL_STRING, {});
     try {
         await client.connect();
         console.log("Database connection established");
