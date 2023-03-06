@@ -2496,13 +2496,22 @@ Exit Criteria:
 
 ### Date: February 16, 2023
 
-In the first installment of the game's deployment epic, we will create the project's first Dockerfile, and Docker-compose file, and use those to run the game's server from a Docker container, and visit it on a browser on the host machine. The first step towards this will be to manually provision a container running a minimal Linux image to run the game's backend server, then automate the steps required to set this up in a Dockerfile. Next, a Docker-compose file will be created to setup the one container, and configure the network information, port-mapping, environment variables, etc. The chapter will be complete when there is a container running the SMARS backend (server) that is accessible from the localhost URL.
+In the first installment of the game's deployment epic, we will work on deploying Docker images of the SMARS stack on a virtual host machine, and sorting out the manual steps and alterations to the game's source code needed to set up these containers.
+
+Phase one of this first chapter will be to start by spinning up a new Virtual Machine with an Ubuntu Jammy vagrantfile, installing the game's files on that virtual host, and running the full SMARS stack - frontend, backend and database service - from the root of the VM (hereafter referred to as the 'Docker Host'). Replicating the development environment on the Docker Host VM - sans containers at this point - will allow us to practice the steps for deploying SMARS on a machine other than the one it was created on, before going any further.
+
+Once the game's full stack has been deployed successfully on the Docker Host machine, the second phase of this chapter will be to run a Docker container for each service in the stack (frontend, backend, mongo db) by spinning up the latest Docker Mongo image, and then running two blank Ubuntu containers in terminal mode (visiting them in separate Powershell sessions) and provisioning them with the game's code, npm packages, and custom environment values files (not included in source control for... reasons!). The chapter will be complete when the user can launch a game from the hosting laptop's internet browser, and play the game entirely on Docker-hosted containers.
 
 Exit Criteria:
 
-- Server test endpoint can be accessed via a web browser at localhost:8080
-- Server runs in a Docker container
-- Docker-compose is used to bring up the stack
+- [DONE] Server test endpoint can be accessed via a web browser at localhost:8080
+- [DONE] Server (backend) runs in a Docker container
+- [DONE] Frontend runs in another Docker container
+- [DONE] MongoDB docker image is used as a third container (although it is the first to be mounted)
+- [DONE] All three containers run on the Docker host as their own independent stack
+- [DONE] The Docker-hosted game is playable in the host's browser on port 2345, with all features working properly
+- [DONE] All `docker run` commands and .env file contents are recorded, for reference to help create the project's Dockerfiles
+- [DONE] All commands used on the Frontend and Backend containers are recorded in text files, for reference to help create the project's Dockerfiles
 
 1. Create a new Virtual machine for the SMARS project, with a fresh Vagrantfile using the Ubuntu-jammy OS in its own folder in the VirtualMachines directory. This machine will be the SMARS Development Docker Host. Adjust its Vagrant file to map port 8080 on the host machine (i.e. your laptop) to port 7000 on the Docker Host, and map port 2345 on the host machine to port 1234 on the Docker host. Then boot up a virtual box machine with `vagrant up`.
 
@@ -2575,15 +2584,15 @@ Exit Criteria:
 
 32. Do the same thing with the frontend's constants file - add a .env variable at the root of the frontend's directory (by hand) with a single value: SERVER_IP=127.0.0.1 (for your workstation AKA laptop), and then read that in the constants file for the URL_PREFIX value, so that the containerized version of the frontend can be run in a pseudo-containerized environment (i.e. with shifting IP addresses for the apps' different services).
 
-### 30. Now, in a new Powershell terminal, spin up another container with the Ubuntu Kinetic image, and this time put the frontend's code on it, using the same techniques as for the previous image (once we Dockerize this it will be much more efficient). Make sure to map port 1234 to port 1234, since the Docker Host machine listens to its port 2345 but sends that to its internal port 1234. Proceed to install Git, NPM, and then the node modules after checking out the BRANCH of the GitHub repo. Don't forget the .env file which will have the values ENVIRONMENT="Dev", SERVER_URL="172.17.0.3" (the backend container's URL, as seen with the `docker inspect backend` command), SERVER_PORT="8080" (the docker host's port that is mapped to the backend container... that's how this works, right?).
+33. Now, in a new Powershell terminal, spin up another container with the Ubuntu Kinetic image, and this time put the frontend's code on it, using the same techniques as for the previous image (once we Dockerize this it will be much more efficient). Make sure to map port 1234 to port 1234, since the Docker Host machine listens to its port 2345 but sends that to its internal port 1234. Proceed to install Git, NPM, and then the node modules after checking out the BRANCH of the GitHub repo. Don't forget the .env file which will have the values ENVIRONMENT="Dev", SERVER_URL="172.17.0.3" (the backend container's URL, as seen with the `docker inspect backend` command), SERVER_PORT="8080" (the docker host's port that is mapped to the backend container... that's how this works, right?).
 
-### 31. Run the Frontend container and then attempt to visit it in the browser on the host host machine (your PC). Fix any configuration issues that are encountered and take note of them, and the set of steps that finally leads to a fully functioning stack. The next step will be to write them into a list, which will then become the project's first Dockerfiles.
+34. Run the Frontend container and then attempt to visit it in the browser on the host host machine (your PC). Fix any configuration issues that are encountered and take note of them, and the set of steps that finally leads to a fully functioning stack. The next step will be to write them into a list, which will then become the project's first Dockerfiles.
 
-### 98. Back on the development workstation (your PC) update the remainder of the server functions to use the DB_NAME environment variable so that they're harmonized to point to the same database (and also add the default value so that if there is no environment variable then they all point to that value instead).
+35. Back on the development workstation (your PC) update the remainder of the server functions to use the DB_NAME environment variable so that they're harmonized to point to the same database (and also add the default value so that if there is no environment variable then they all point to that value instead).
 
-### 99. In your original dev environment's .env file, reset the DB_NAME to 'smars' to regain access to your old development data.
+36. In your original dev environment's .env file, reset the DB_NAME to 'smars' to regain access to your old development data.
 
-### 100. Once you've ensured your workstation's development environment is fully back to normal, do any last pushes to GitHub and then merge this branch into the master branch, and get ready to start automating all of the steps you've just done.
+37. Once you've ensured your workstation's development environment is fully back to normal, do any last pushes to GitHub and then merge this branch into the master branch, and get ready to start automating all of the steps you've just done.
 
 ## Chapter Two: Automating Docker Image Building
 
