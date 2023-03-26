@@ -2661,7 +2661,9 @@ Exit Criteria:
 
 ### 4. Since the arrangement that was garbledly described in the previous step technically makes the game playable, we should prefer that the frontend communicates with the backend through the same internal (docker compose created) network that the backend uses to speak with the db. Update the frontend Dockerfile's SERVER_URL value to be called SERVER_NAME, and change the value from the number sequence to 'backend,' to match the name of the backend container in the docker-compose file.
 
-### 5. Don't forget to also change the names of the environment variables in the local .env files in the game's original development environment (your laptop).
+5. Don't forget to also change the names of the environment variables in the local .env files in the game's original development environment (your laptop).
+
+6. Update the port number that the frontend's Dockerfile uses to contact the server, from 8080 to 7000 (since they're in the same network now the frontend can signal the backend directly).
 
 ## Chapter Four: Deployment on AWS (?!)
 
