@@ -15,6 +15,6 @@ services:
   db:
     image: mongo:latest
     ports:
-      - "27017:27017"
+      - 27017:27017
     volumes:
       - '/var/lib/docker/volumes/mongo:/data/db'
