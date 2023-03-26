@@ -8,9 +8,9 @@ RUN npm install
 
 ADD . /usr/src/app
 
-ENV ENVIRONMENT="dev"
-ENV SERVER_NAME="backend"
-ENV SERVER_PORT="7000"
+ENV ENVIRONMENT=dev
+ENV SERVER_NAME=localhost
+ENV SERVER_PORT=7000
 
 EXPOSE 1234
 
