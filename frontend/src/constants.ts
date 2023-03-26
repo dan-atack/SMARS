@@ -2,12 +2,12 @@
 import { EventData } from "./modal";
 import { Resource } from "./economyData";
 
-const serverAddress = process.env.SERVER_URL as string || "localhost";
+const serverName = process.env.SERVER_NAME as string || "localhost";
 const serverPort = process.env.SERVER_PORT as string || "7000";
 
 export const constants = {
     // Backend connection
-    URL_PREFIX: `http://${serverAddress}:${serverPort}/api`,
+    URL_PREFIX: `http://${serverName}:${serverPort}/api`,
     // Units of measurement, in pixels
     SCREEN_WIDTH: 1200,       // If adjusting this parameter, make sure to also adjust the WORLD_VIEW_WIDTH just below
     SCREEN_HEIGHT: 720,

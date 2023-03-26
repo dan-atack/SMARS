@@ -2653,7 +2653,15 @@ Exit Criteria:
 - Game is fully playable with resources created by the Docker-compose command
 - Game data persists between multiple runs of docker compose up/down
 
-### 1. Create a new docker-compose file at the root of the project's directory. Use version 3 of docker compose, and create a single 'network' for the project's three services. Create this file in your Windows development environment, and use the git push/pull flow to get it to your VM instance.
+1. Create a new docker-compose file at the root of the project's directory. Use version 3 of docker compose, and create a single 'network' for the project's three services. Create this file in your Windows development environment, and use the git push/pull flow to get it to your VM instance. Run it from there with `docker compose up`.
+
+2. Adjust the environment variable used by the backend to set the IP address for calls to the MongoDB container. Change it to be called DB_CONTAINER_NAME instead, and then instead of giving the DB's numeric IP address, use its alias from the Dockerfile - in this case, db.
+
+3. Push this update to the VM and rebuild the backend's image there. Then try running the docker compose command again and see what happens. Addendum: Success! Connecting the backend to the database actually made the whole stack run, since the frontend is actually being directed to the backend through the host machine's localhost (i.e. via the exposed port on the hosting PC).
+
+### 4. Since the arrangement that was garbledly described in the previous step technically makes the game playable, we should prefer that the frontend communicates with the backend through the same internal (docker compose created) network that the backend uses to speak with the db. Update the frontend Dockerfile's SERVER_URL value to be called SERVER_NAME, and change the value from the number sequence to 'backend,' to match the name of the backend container in the docker-compose file.
+
+### 5. Don't forget to also change the names of the environment variables in the local .env files in the game's original development environment (your laptop).
 
 ## Chapter Four: Deployment on AWS (?!)
 
