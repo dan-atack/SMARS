@@ -7,7 +7,7 @@ const serverPort = process.env.SERVER_PORT as string || "7000";
 
 export const constants = {
     // Backend connection
-    URL_PREFIX: `backend://${serverName}:${serverPort}/api`,
+    URL_PREFIX: `https://${serverName}:${serverPort}/api`,
     // Units of measurement, in pixels
     SCREEN_WIDTH: 1200,       // If adjusting this parameter, make sure to also adjust the WORLD_VIEW_WIDTH just below
     SCREEN_HEIGHT: 720,
