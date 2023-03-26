@@ -1,0 +1,20 @@
+version: "3"
+
+services:
+
+  frontend:
+    image: frontend:latest
+    ports:
+      - "1234:1234"
+
+  backend:
+    image: backend:latest
+    ports:
+      - "7000:7000"
+
+  db:
+    image: mongo:latest
+    ports:
+      - 27017:27017
+    volumes:
+      - '/var/lib/docker/volumes/mongo:/data/db'
