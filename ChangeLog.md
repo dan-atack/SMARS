@@ -2637,13 +2637,23 @@ Exit Criteria:
 
 6. Copy the Docker files for both the front and back end into the this development branch, and commit and push them to the main repo.
 
-### 7. Record, here and on paper, the `docker run` commands for all three containers, (frontend, backend and DB) that were used to create the stack for this chapter (you may record them in the space immediately below the chapter's Exit Criteria).
+7. Record, here and on paper, the `docker run` commands for all three containers, (frontend, backend and DB) that were used to create the stack for this chapter (you may record them in the space immediately below the chapter's Exit Criteria).
 
 ## Chapter Three: Docker Compose Yourself!
 
-### Difficulty Estimate: TBD
+### Difficulty Estimate: 4 for pioneering new technology and workflow, basic theoretical knowledge notwithstanding
 
-### Date: TBD
+### Date: March 25, 2023
+
+Now that the game's first Dockerfiles have been produced, we can perform the final pre-deployment work: the creation of the docker-compose file that will deploy the game's full stack with a single command. From the preliminary readings of the Docker compose literature, we might have to slightly modify our use of environment variables to point the various services towards one another, although it appears that the general principle of doing things that way (i.e. with env variables) is fundamentally solid. Updating the specific way this is done to accomodate the docker compose workflow will undoubtedly strengthen the game's stack, and make it readier for deployment. Once the full stack is running with this new architecture in place, we will be ready to put this bad boy on the web!!!
+
+Exit Criteria:
+
+- Docker-compose file allows the game's stack to be deployed on the Virtual machine with one command
+- Game is fully playable with resources created by the Docker-compose command
+- Game data persists between multiple runs of docker compose up/down
+
+### 1. Create a new docker-compose file at the root of the project's directory. Use version 3 of docker compose, and create a single 'network' for the project's three services. Create this file in your Windows development environment, and use the git push/pull flow to get it to your VM instance.
 
 ## Chapter Four: Deployment on AWS (?!)
 
