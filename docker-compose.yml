@@ -3,12 +3,12 @@ version: "3"
 services:
 
   frontend:
-    image: frontend:latest
+    image: smars-frontend:latest
     ports:
       - "1234:1234"
 
   backend:
-    image: backend:latest
+    image: smars-backend:latest
     ports:
       - "7000:7000"
 
