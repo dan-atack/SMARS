@@ -3,14 +3,24 @@ version: "3"
 services:
 
   frontend:
+    build: ./frontend
     image: smars-frontend:latest
     ports:
-      - "1234:1234"
+      - "80:1234"
+    depends_on:
+      - backend
+    networks:
+      - smars_default
 
   backend:
+    build: ./backend
     image: smars-backend:latest
     ports:
       - "7000:7000"
+    depends_on:
+      - db
+    networks:
+      - smars_default
 
   db:
     image: mongo:latest
@@ -18,3 +28,7 @@ services:
       - 27017:27017
     volumes:
       - '/var/lib/docker/volumes/mongo:/data/db'
+    networks:
+      - smars_default
+networks:
+  smars_default:

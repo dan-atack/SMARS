@@ -2671,35 +2671,63 @@ Exit Criteria:
 
 ### Date: March 26, 2023
 
-Now that all of the Docker resources have been produced, the time has come to attempt to mount this thing on the internet! The first deployment attempt will be a very temporary thing in all likelihood, as it is primarily a proof-of-concept exercise. This chapter's main focus will simply be on achieving that milestone, and accessing the game from your internet browser. Other steps that are likely to be needed are: setting up a repo on Dockerhub to store the game's images, and setting up the AWS CLI on the development workstation's VM. The initial deployment environment will be called 'Staging,' since this is a pre-production deployment test operation. After the first deployment is confirmed we will turn towards optimizing the game's images, and then automating the development/deployment workflow, to prepare for a permanent Production environment release, which will take place a few chapters hence...
+Now that all of the Docker resources have been produced, the time has come to attempt to mount this thing on the internet! The first deployment attempt will be a very temporary thing in all likelihood, as it is primarily a proof-of-concept exercise. This chapter's main focus will simply be on achieving that milestone, and accessing the game from an internet browser. Other steps that are likely to be needed are: setting up a repo on Dockerhub / Amazon ECR to store the game's images, and setting up the AWS CLI on the development workstation's VM. The initial deployment environment will be called 'Staging,' since this is a pre-production deployment test operation. After the first deployment is confirmed we will turn towards optimizing the game's images, and then automating the development/deployment workflow, to prepare for a permanent Production environment release, which will take place a few chapters hence...
 
 Exit Criteria:
 
-- While the deployment is active, the game is accessible at a given URL
-- The game can be visited at this URL from several different devices
-- The game's containers can be stopped, and then redeployed reliably in the cloud environment
+- [DONE] While the deployment is active, the game is accessible at a given URL
+- [DONE] The game can be visited at this URL from several different devices
+- [DONE] The game's containers can be stopped, and then redeployed reliably in the cloud environment
 - AWS setup/deployment operations are documented to support future automation efforts
 
 Not doing (but keeping in mind for future chapters):
 
 - Long-term data persistence
+- Docker container communication troubleshooting
 - HTTPS support/security considerations
 - Docker image weight optimization (he ain't heavy, he's my server)
 - AWS metrics (cost optimization, usage stats, etc.)
-- IAM roles/permissions management
-- Infrastructure as code
+- IAM roles/permissions management (actually did end up doing a bit of that)
+- Infrastructure as code (Terraform)
 
-1. Create a public ECR repository in your AWS account, called 'smars-dev' to store the game's initial Docker images. Like everything else used for this proof-of-concept effort, this will be destroyed later on to save on costs. Later, more permanent endeavours should use a private repo instead, but going public for this first effort will have the added advantage that we will not need to worry about managing IAM permissions/roles right now.
+Steps used to launch the SMARS stack on the web:
 
-2. Install the AWS CLI on your virtual Docker Host machine, and verify that you're using version 2.11 or higher:
+1. Make and/or log in to your root account in AWS.
 
-   apt install -Y awscli
+2. Create an administrative user account using the AWS Identity Management Console; use this account for all subsequent actions, as they are beneath the dignity of being done by the root account.
 
-   aws --version
+3. Create a key pair, and save it to your local computer as a .ppk file.
 
-3. Get a security key from AWS and use it to authenticate your AWS CLI installation, by running the command `aws configure` and providing the key and secret value, as well as the region (which I say is us-east-2 but the recommended command in instruction 4 says us-east-1, so we'll go with their value I guess). Amazon will complain about simply creating a security key for the root user in such a brazen, cowboyish manner; ignore them - for now. In the following chapter we will make more of an effort to master the intricacies and best practices of cloud security and least-privilege permission schemes. For now let's just get things up and running, 'quick and dirty' style.
+4. In the AWS EC2 console, create a security group with the following inbound traffic rules:
 
-4. Push your backend image to the newly-created ECR repo. Do this by going to your ECR in the AWS dashboard, and clicking on the 'View push commands' button. The commands require that you have both Docker and AWS CLI already installed, with your AWS security profile configured, as described in the previous step, so you might need to repeat that configuration sequence (`aws configure`) with a new key if/when the stack's permission schemes get reworked later on.
+- Allow all inbound HTTP traffic on port 80
+- Allow all inbound HTTPS traffic on port 443
+- Allow inbound SSH traffic only from your computer's IP address
+- Allow inbound TCP traffic on port 7000
+
+5. Spin up an EC2 instance with the following properties:
+
+- Ubuntu 22.04 Jammy OS
+- t2.Small EC2 profile
+- 1 x 8GB root volume
+- use the key pair created in step 3
+- attach to the security group created in step 4
+
+6. Open a Putty terminal session and configure it with your .ppk key from step 3. See https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/putty.html for a walkthrough of how to set this up.
+
+7. Log in to your EC2 instance via the Putty terminal as the root user.
+
+8. Install Docker and its sub-components on the EC2, following the steps described here: https://docs.docker.com/engine/install/ubuntu/
+
+9. Check that you have git installed, just to be sure. Install it if it's missing.
+
+10. Create a folder at the location /usr/smars, and checkout the master branch of the smars git repo ( https://github.com/dan-atack/SMARS.git ) in that location.
+
+11. Go to the frontend's Dockerfile, and change its SERVER_NAME ENV variable to the EC2's public IPv4 address (e.g. 3.14.149.201 ).
+
+### 12. From the root of the smars directory, run `docker compose up` to bring up the stack.
+
+### 13. Once the stack reports that it is up and running, try visiting the public IP address of the EC2 in a browser. Make sure the URL address doesn't have an 'https' prefix, as many browsers initially won't take you to a regular 'http' address anymore unless you specify it. The full IP address to reach the game would thus be along the lines of http://3.14.149.201/ at least until we get some SSL certificates up in here!
 
 ## Chapter Five: Working on the Game's Image(s)
 
