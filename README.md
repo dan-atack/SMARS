@@ -2,7 +2,7 @@
 
 ## The Game of Martian Colonization
 
-Play the game now in its Staging Environment at http://3.14.149.201/ (WARNING: gameplay experience may be unstable, and save files are not guaranteed to be preserved, although we'll do our best!)
+Play the game now in its Staging Environment at http://freesmars.com (WARNING: gameplay experience may be unstable, and save files are not guaranteed to be preserved, although we'll do our best!)
 
 <img src="screenshots/Readme-01-Night-Base.png" style="width: 60%;">
 
