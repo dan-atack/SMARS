@@ -2490,6 +2490,28 @@ Exit Criteria:
 
 # Volume II: Deployment to the Web (SMARS 1.0.0)
 
+### Date Started: February 16, 2023
+
+The volume (I'll be damned if I use Jira's terminology, even if 'epic' does have a nicer ring to it!) of SMARS' first deployment to the internet will be about delving into DevOps technology, and making a respectable effort at deploying an application that is not only reliable, but also secure, and well monitored. There will be a good amount of new technology involved, nearly all of which is outside of the currently familiar realms of the 'web stack.' First and foremost on the list of new technologies is Docker, whose mastery is considered an essential part of the DevOps toolkit. After that, the game will be deployed using various resources and services on AWS, with security provided by OpenSSL, and we will prototype the whole deployment effort as much as possible using an Ubuntu server running on a Vagrant/Virtualbox virtual machine.
+
+The purpose of this initiative is twofold: Firstly, to get SMARS to the point where, theoretically at least, it can be seen and played by anyone in the world; and secondly, to put into practice many of the core DevOps skills that have hitherto only been partially developed, or developed in the context of doing a small part of a larger job.
+
+Unlike previous efforts, there is a financial cost involved in this stage of the game's development, as putting things on the cloud isn't free, especially if you're registering a domain name and getting a Certificate Authority (CA) to endorse your website's authenticity. While it is impossible to put a price on learning, one of the minor goals for this effort must nevertheless be to ensure that the game uses resources as efficiently as possible, and runs on the slimmest budget possible, while providing the best quality of service possible.
+
+Volume Exit Criteria:
+
+- [DONE] The game has a fixed domain name that is at least somewhat catchy, as well as pithy.
+- The game can be visited in a web browser using https protocol, with no warnings/suspicion alerts by the browser
+- The game is constantly available (production server has high availability)
+- The game's production database, including save game data, user profiles, etc. is reliably saved/backed up
+- The game can be updated, via a partly or wholly automated process, with minimal downtime in the production environment
+- It is possible to test deployments/updates on a staging server before pushing to production
+- The game's cloud presence has alerts built in regarding billing thresholds
+- The game's cloud presence has alerts built in regarding performance issues
+- The game's docker containers have health checks and their logs can be obtained
+- The game can be deployed, in whole or in part, as code (i.e. with Terraform or similar service)
+- [STRETCH] The game's Docker resources are slimmed down to use as few resources as possible
+
 ## Chapter One: Virtualization and Containerization Prototyping
 
 ### Difficulty Estimate: 5 for navigating the uncharted waters of Docker container building and deployment
@@ -2731,7 +2753,7 @@ Steps used to launch the SMARS stack on the web:
 
 ## Chapter Five: A Place on the Web - Adding an Elastic IP and Domain Name to the AWS Instance
 
-### Difficulty Estimate: 6 for new tech to be added to the stack, plus the 'difficulty' of having to pay more money to host a domain name!
+### Difficulty Estimate: 5 for new tech to be added to the stack, plus the 'difficulty' of having to pay more money to host a domain name!
 
 ### Date: May 5, 2023
 
@@ -2801,7 +2823,30 @@ Exit Criteria:
 - Hit the 'save' button
 - Wait for the Record to update successfully, then visit freesmars.com in the browser to verify that it's able to direct you to the new IP address for the EC2 instance (you should see the login page, in other words)
 
-### 13. Lastly, shut down the server and drop the elastic IP once again to reduce costs during the staging/prototyping operations phase (once we have resolved a few more deployment issues we'll launch a 'production' server that will remain up permanently).
+13. Lastly, shut down the server and drop the elastic IP once again to reduce costs during the staging/prototyping operations phase (once we have resolved a few more deployment issues we'll launch a 'production' server that will remain up permanently).
+
+## Chapter Six: TLS Certificates: Putting the 'S' in HTTPS!
+
+### Difficulty Estimate: 8 for wholly new technology (OpenSSL, advanced Express modules, and maybe even a proxy server!) as well as uncertainty about what is required vis-a-vis the frontend server
+
+### Date: May 7, 2023
+
+The next major hurdle in presenting a respectable web application to the general public will be adding encryption to the server, so that visitors to the site can see a nice, safe 'https' URL prefix when they visit the site. Also because it's safer, of course. Ideally, we would also like to have users' internet browsers view the site without suspicion, so it will eventually be necessary to get a third party Certificate Authority to validate the SSL/TLS certificates that will be used to provide encryption. Since this is somewhat uncharted territory we will attempt to take a gradual approach, by first setting up a free self-signed certificate using OpenSSL, to get the basic 'https' and then once that is successful, proceed to get the certificate signed by a 3rd party authority, to grant legitimacy to freesmars.com!
+
+Exit Criteria:
+
+- The game can can be visited at https://freesmars.com rather than http://freesmars.com
+- The game can be visited in a web browser without receiving any warnings about the site being suspicious in any way
+
+### 1. Since this will be a highly experimental endeavour, the first thing to do will be to fire up the Ubuntu virtual machine on the home computer and rig that up with OpenSSL to make a prototype.
+
+### 2. Next, install Open SSL on the Dockerhost, and use it to generate a key, a CSR (Certificate Signing Request), and a certificate file.
+
+### 3. Next, delete the Docker container and Dockerfile for the backend, if they exist.
+
+### 4. Open a development branch for this chapter on the main computer and use Visual Studio to update the backend's index.ts file code to use https
+
+### 10. fire up the EC2 instance and prepare it for tinkering!
 
 ## Chapter X: In-Game Notifications
 
