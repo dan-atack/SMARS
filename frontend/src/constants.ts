@@ -2,12 +2,15 @@
 import { EventData } from "./modal";
 import { Resource } from "./economyData";
 
+// Get environment variables
+const environment = process.env.ENVIRONMENT as string || "dev";
 const serverName = process.env.SERVER_NAME as string || "localhost";
 const serverPort = process.env.SERVER_PORT as string || "7000";
+const httpsPort = process.env.HTTPS_PORT as string || "443";
 
 export const constants = {
-    // Backend connection
-    URL_PREFIX: `http://${serverName}:${serverPort}/api`,
+    // Backend connection: HTTP in dev environment, or HTTPS in staging/production??
+    URL_PREFIX: environment === "dev" ? `http://${serverName}:${serverPort}/api` : `https://${serverName}:${httpsPort}/api`,
     // Units of measurement, in pixels
     SCREEN_WIDTH: 1200,       // If adjusting this parameter, make sure to also adjust the WORLD_VIEW_WIDTH just below
     SCREEN_HEIGHT: 720,

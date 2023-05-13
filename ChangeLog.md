@@ -2838,13 +2838,19 @@ Exit Criteria:
 - The game can can be visited at https://freesmars.com rather than http://freesmars.com
 - The game can be visited in a web browser without receiving any warnings about the site being suspicious in any way
 
-### 1. Since this will be a highly experimental endeavour, the first thing to do will be to fire up the Ubuntu virtual machine on the home computer and rig that up with OpenSSL to make a prototype.
+1. Since this will be a highly experimental endeavour, the first thing to do will be to fire up the Ubuntu virtual machine on the home computer and rig that up with OpenSSL to make a prototype. Addendum: Most modern Ubuntu distributions already include a version of OpenSSL - it's like they were expecting us to want to build web servers!
 
-### 2. Next, install Open SSL on the Dockerhost, and use it to generate a key, a CSR (Certificate Signing Request), and a certificate file.
+2. Next, use OpenSSL it to generate a key, a CSR (Certificate Signing Request), and a certificate file:
 
-### 3. Next, delete the Docker container and Dockerfile for the backend, if they exist.
+Create key: `openssl genrsa -out key.pem`
+Create Certificate Signing Request: `openssl req -new -key key.pem -out csr.pem`
+Create self-signed certificate: `openssl x509 -req -days 999 -in csr.pem -signkey key.pem -out cert.pem`
 
-### 4. Open a development branch for this chapter on the main computer and use Visual Studio to update the backend's index.ts file code to use https
+3. Next, delete the Docker container and Dockerfile for the backend, if they exist.
+
+4. Open a development branch for this chapter on the main computer and use Visual Studio to update the backend's index.ts file code to import https and create an https server ONLY IF the environment is not 'Dev.' Have this HTTPS server listen on Port 443 if it is created, and have it incorporate the server called 'app' by passing that to the HTTPS server as an argument at its creation. This code will be used in the local prototype build on the Virtualbox Docker Host machine.
+
+### 5. Add a new environment variable, ROOT_DIR, to the backend's Dockerfile, to allow the server to use an absolute path when linking to files that are created outside of the Docker container. This will be used to link the certificates folder in the SMARS directory (outside the containers) to a location inside the container.
 
 ### 10. fire up the EC2 instance and prepare it for tinkering!
 
