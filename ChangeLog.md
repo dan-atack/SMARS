@@ -2840,7 +2840,7 @@ Exit Criteria:
 
 1. Since this will be a highly experimental endeavour, the first thing to do will be to fire up the Ubuntu virtual machine on the home computer and rig that up with OpenSSL to make a prototype. Addendum: Most modern Ubuntu distributions already include a version of OpenSSL - it's like they were expecting us to want to build web servers!
 
-2. Next, use OpenSSL it to generate a key, a CSR (Certificate Signing Request), and a certificate file:
+2. Next, use OpenSSL it to generate a key, a CSR (Certificate Signing Request), and a certificate file, in a new directory called 'certificates' which is created at the root of the smars repo:
 
 Create key: `openssl genrsa -out key.pem`
 Create Certificate Signing Request: `openssl req -new -key key.pem -out csr.pem`
@@ -2858,7 +2858,20 @@ Create self-signed certificate: `openssl x509 -req -days 999 -in csr.pem -signke
 
 8. Test this in the Virtualbox test environment. If the frontend can connect to the (HTTPS secured) backend then we're on the right track!
 
-### 10. fire up the EC2 instance and prepare it for tinkering!
+### 9. Next, fire up the EC2 instance and run through the update procedure thus far to get a self-signed certificate working for the backend container:
+
+- Acquire new elastic IP address
+- Bind elastic IP to EC2 instance
+- Bind smars domain name to elastic IP
+- Start the EC2 instance and log in
+- Pull updated code from this branch
+- Create 'certificates' folder at root of smars repo and create the key, csr and certificate files within
+- Tweak the environment variables in the frontend and backend Dockerfiles to say 'staging'
+- Run `docker compose up`
+- Visit site in the browser to verify that it's still working
+- If successful, decommission server and release the elastic IP
+
+### 10. Now for the hard bit: securing the frontend. In order to do this, we'll need to take the production code created by the parcel build command and try to host that in an experimental Express webserver running in the frontend, so that when we're in a non-development environment we'll have a fundamentally different architecture to serve up the frontend, which is ultimately a 'static' web page (in that it's a very simple HTML document with a very big javascript file attached). Developing an Express server to host the frontend in this new way will require extensive experimentation on the local Ubuntu virtual machine before we can proceed any further. Note any promising milestones towards the development of this architecture below, as we will need to reproduce it on the EC2 server next, if it works. We'll also need to figure out a good way to handle the differences between the development environment and the new, different architecture that will be used for staging and production.
 
 ## Chapter X: In-Game Notifications
 
