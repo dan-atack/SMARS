@@ -2825,7 +2825,7 @@ Exit Criteria:
 
 13. Lastly, shut down the server and drop the elastic IP once again to reduce costs during the staging/prototyping operations phase (once we have resolved a few more deployment issues we'll launch a 'production' server that will remain up permanently).
 
-## Chapter Six: TLS Certificates: Putting the 'S' in HTTPS!
+## Chapter Six: TLS Certificates - Putting the 'S' in HTTPS!
 
 ### Difficulty Estimate: 8 for wholly new technology (OpenSSL, Certbot, and advanced Express modules for HTTPS) as well as uncertainty about what is required vis-a-vis the frontend server
 
@@ -2839,9 +2839,6 @@ Exit Criteria:
 
 - The game's backend can be secured with HTTPS when in a 'staging' or 'production' environment
 - Backend API functionality can be tested in a browser with no warnings or suspicion on HTTPS URL address
-
-- The game can can be played at https://freesmars.com rather than http://freesmars.com
-- The game can be visited in a web browser without receiving any warnings about the site being suspicious in any way
 
 1. Since this will be a highly experimental endeavour, the first thing to do will be to fire up the Ubuntu virtual machine on the home computer and rig that up with OpenSSL to make a prototype. Addendum: Most modern Ubuntu distributions already include a version of OpenSSL - it's like they were expecting us to want to build web servers!
 
@@ -2881,9 +2878,45 @@ Create self-signed certificate: `openssl x509 -req -days 999 -in csr.pem -signke
 
 12. Update the frontend's ENV value for SERVER_NAME for the last time. It's name is freesmars.com. Get your ass to Smars.
 
-13. It turns out that by enabling HTTPS for a domain name is very confusing to the browser if you want to also use if for HTTP requests, as the browser decides to only associate that domain name with HTTPS and in any case sends all traffic to it to your (backend) server port, 443, rendering the frontend inaccessible. A high price for security, you might say, but undoubtedly a fair one. To get around this, we'll need to dedicate a second chapter to the task of converting the frontend's 'build' output code into some sort of public folder, and then hosting that as
+13. It turns out that by enabling HTTPS for a domain name is very confusing to the browser if you want to also use if for HTTP requests, as the browser decides to only associate that domain name with HTTPS and in any case sends all traffic to it to your (backend) server port, 443, rendering the frontend inaccessible. A high price for security, you might say, but undoubtedly a fair one. To get around this, we'll need to dedicate a new chapter to the task of converting the frontend's 'build' output code into some sort of public folder, and then hosting that with an Express server of its own, as a prelude to hosting it under the HTTPS umbrella that currently only extends to the backend's API.
 
-### 12. Now for the hard bit: securing the frontend. In order to do this, we'll need to take the production code created by the parcel build command and try to host that in an experimental Express webserver running in the frontend, so that when we're in a non-development environment we'll have a fundamentally different architecture to serve up the frontend, which is ultimately a 'static' web page (in that it's a very simple HTML document with a very big javascript file attached). Developing an Express server to host the frontend in this new way will require extensive experimentation on the local Ubuntu virtual machine before we can proceed any further. Note any promising milestones towards the development of this architecture below, as we will need to reproduce it on the EC2 server next, if it works. We'll also need to figure out a good way to handle the differences between the development environment and the new, different architecture that will be used for staging and production. An idea now forms: If the frontend truly is, in essence, a static webpage that just runs the p5 code and communicates with the backend's API, why not package it with the backend, so that the server really does server up everything, including the game itself?! Essentially what this would entail is taking the output of the parcel build, getting it to be reachable with a simple Express server
+## Chapter Seven: Securing the Frontend - Using an Express Server to Host the Built Code from Parcel
+
+### Difficulty Estimate: 7 for a somewhat dreaded reckoning with the intricacies of using P5, and integrating the dist folder to work without the Parcel server as an Express App
+
+### Date: May 14, 2023
+
+Since it has now been demonstrated that it is possible to secure the game's server, the only thing that remains to do is to include the page that hosts the game itself under that security umbrella. Since the frontend currently runs on an insecure Parcel development server, there is no way of integrating a TLS/SSL certificate to run with it in that configuration. To provide a fully secure experience, not to mention a much more efficient package for deployment, the time has come to clean up the frontend, and actually use the build output code and host that without the aid of the Parcel development server. The theory here is that if the frontend truly is, in essence, a static webpage that just runs the p5 code and communicates with the backend's API, then it could be served up by an Express server. If this is possible, then in fact the best course of action would be to package it with the backend when producing Docker images for the game, so that the server really does serve up everything, including the game itself! Essentially what this would entail is taking the output of the parcel build, getting it to be reachable with a simple Express server, and then importing the necessary code and files into the backend server and hosting it directly from there, as the server's public folder. This chapter will be complete when the game can be played in the local development environment, with the frontend files server by the backend's Express app.
+
+Exit Criteria:
+
+- The frontend application runs on its own Express server, instead of being hosted by the Parcel dev server
+- The game can can be played at http://localhost:7000, with only a single terminal running the backend server
+
+### 1. Create a new folder, STAGE, at the root of the project's directory, and add it to gitignore.
+
+### 2. Inside STAGE, do a git init and create an Express app.
+
+### 3. Look on the internet or in your files to see an example of a very basic setup for an Express app that serves a single-page website from a public folder, then replicate and run that.
+
+### 4. Copy all of the files from the frontend's dist folder into the STAGE app's public directory, to see what happens if we just try running the Express server with everything dumped in there.
+
+### 5. Do some reading on just what exactly happens when you execute the 'parcel build' command anyway.
+
+## Chapter Eight: Securing the Frontend, Part 2 - Staging Deployment of the Full Game With HTTPS
+
+### Difficulty Estimate: 5 for Rewriting the project's Docker and compose files to work without a frontend container!
+
+### Date: TBD
+
+In order to have very limited and concise directions for each chapter, this chapter will focus on applying the code changes from the previous chapter's experimental work to the project's Dockerfile (singular, if we're eliminating the frontend container!) and validating all changes on the staging environment, as well as meticulously cataloging the workflow needed to achieve this deployment.
+
+Exit Criteria:
+
+- The game can can be played at https://freesmars.com rather than http://freesmars.com
+- The game can be visited in a web browser without receiving any warnings about the site being suspicious in any way
+
+### 1. Step One...
 
 ## Chapter X: In-Game Notifications
 

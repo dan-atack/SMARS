@@ -15,3 +15,5 @@ frontend/dist
 mockups
 # The map editor in its entirety:
 world_editor
+# Production code
+STAGE
