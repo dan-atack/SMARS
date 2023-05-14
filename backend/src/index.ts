@@ -53,8 +53,8 @@ app.get('/api/test', getFrontend);
 // Import TLS certificate and private key (only for staging and production environments)
 if (process.env.ENVIRONMENT?.toLowerCase() !== 'dev') {
     const serverOptions = {
-        cert: fs.readFileSync('certificates/cert.pem'),
-        key: fs.readFileSync('certificates/key.pem')
+        cert: fs.readFileSync('certificates/fullchain1.pem'),
+        key: fs.readFileSync('certificates/privkey1.pem')
     }
     // Create HTTPS server??
     const server = https.createServer(serverOptions, app);
