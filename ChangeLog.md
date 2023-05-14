@@ -2850,7 +2850,13 @@ Create self-signed certificate: `openssl x509 -req -days 999 -in csr.pem -signke
 
 4. Open a development branch for this chapter on the main computer and use Visual Studio to update the backend's index.ts file code to import https and create an https server ONLY IF the environment is not 'Dev.' Have this HTTPS server listen on Port 443 if it is created, and have it incorporate the server called 'app' by passing that to the HTTPS server as an argument at its creation. This code will be used in the local prototype build on the Virtualbox Docker Host machine.
 
-### 5. Add a new environment variable, ROOT_DIR, to the backend's Dockerfile, to allow the server to use an absolute path when linking to files that are created outside of the Docker container. This will be used to link the certificates folder in the SMARS directory (outside the containers) to a location inside the container.
+5. Update the docker-compose file for the backend service to map the volume ./certificates on the Docker host to the location /usr/src/app/certificates on the backend container, so that the container can access the certificates that are created on the Docker Host machine (initially the Virtualbox VM but eventually the EC2 instance). The whole line looks like this: './certificates:/usr/src/app/certificates'
+
+6. Update the Frontend's Dockerfile to add an additional ENV variable: HTTPS_PORT, which will be set to 443.
+
+7. Next, update the Frontend's constants.ts file to import both the ENVIRONMENT and HTTPS_PORT variables, and then set the URL prefix constant to either HTTP (for the development environment only) or HTTPS for all non-development environments. When the HTTPS prefix is in effect, use the HTTPS port variable as well.
+
+8. Test this in the Virtualbox test environment. If the frontend can connect to the (HTTPS secured) backend then we're on the right track!
 
 ### 10. fire up the EC2 instance and prepare it for tinkering!
 
