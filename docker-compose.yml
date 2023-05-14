@@ -19,7 +19,7 @@ services:
       - "7000:7000"
       - "443:443"
     volumes:
-      - './certificates:/usr/src/app/certificates'
+      -  '/etc/letsencrypt/archive/freesmars.com:/usr/src/app/certificates'
     depends_on:
       - db
     networks:

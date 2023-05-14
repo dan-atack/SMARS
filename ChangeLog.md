@@ -2827,15 +2827,20 @@ Exit Criteria:
 
 ## Chapter Six: TLS Certificates: Putting the 'S' in HTTPS!
 
-### Difficulty Estimate: 8 for wholly new technology (OpenSSL, advanced Express modules, and maybe even a proxy server!) as well as uncertainty about what is required vis-a-vis the frontend server
+### Difficulty Estimate: 8 for wholly new technology (OpenSSL, Certbot, and advanced Express modules for HTTPS) as well as uncertainty about what is required vis-a-vis the frontend server
 
 ### Date: May 7, 2023
 
 The next major hurdle in presenting a respectable web application to the general public will be adding encryption to the server, so that visitors to the site can see a nice, safe 'https' URL prefix when they visit the site. Also because it's safer, of course. Ideally, we would also like to have users' internet browsers view the site without suspicion, so it will eventually be necessary to get a third party Certificate Authority to validate the SSL/TLS certificates that will be used to provide encryption. Since this is somewhat uncharted territory we will attempt to take a gradual approach, by first setting up a free self-signed certificate using OpenSSL, to get the basic 'https' and then once that is successful, proceed to get the certificate signed by a 3rd party authority, to grant legitimacy to freesmars.com!
 
+Quick addendum: Since certificate technology is very tricky and making any progress at all is not a guarantee, and since the full implementation of this initiative (i.e. to have the game be playable at an https URL address) will indeed require the use of the "built" frontend code, the chapter was ended early and bisected in order to keep things relatively neat and tidy. We have the HTTPS capability, but the frontend now needs to be re-engineered, which is technologically an entirely different issue.
+
 Exit Criteria:
 
-- The game can can be visited at https://freesmars.com rather than http://freesmars.com
+- The game's backend can be secured with HTTPS when in a 'staging' or 'production' environment
+- Backend API functionality can be tested in a browser with no warnings or suspicion on HTTPS URL address
+
+- The game can can be played at https://freesmars.com rather than http://freesmars.com
 - The game can be visited in a web browser without receiving any warnings about the site being suspicious in any way
 
 1. Since this will be a highly experimental endeavour, the first thing to do will be to fire up the Ubuntu virtual machine on the home computer and rig that up with OpenSSL to make a prototype. Addendum: Most modern Ubuntu distributions already include a version of OpenSSL - it's like they were expecting us to want to build web servers!
@@ -2860,7 +2865,7 @@ Create self-signed certificate: `openssl x509 -req -days 999 -in csr.pem -signke
 
 9. Synchronize the files in the Virtualbox machine with the files in the main development environment and commit them to the official repo, so that there is no 'code drift' between environments. Also, standardize the use of the 'staging' environment in all of the project's Dockerfiles, as the original development environment (on your Windows laptop) does not use docker to run the game, and thus the 'dev' environment variable is never needed in a Docker file. This will save us from having to update that value in either of our other environments (the Virtualbox or the EC2).
 
-### 10. Next, fire up the EC2 instance and run through the update procedure thus far to get a self-signed certificate working for the backend container:
+10. Next, fire up the EC2 instance and run through the update procedure thus far to get a self-signed certificate working for the backend container:
 
 - Acquire new elastic IP address
 - Bind elastic IP to EC2 instance
@@ -2872,9 +2877,13 @@ Create self-signed certificate: `openssl x509 -req -days 999 -in csr.pem -signke
 - Visit site in the browser to verify that it's still working; ADDENDUM: If not, switch the environment for both containers back to 'dev' and try again
 - When finished, decommission server and release the elastic IP
 
-### 11. Final part of phase one of this exercise: Since the browser refuses to cooperate with an unsigned certificate (self-signed counts for nothing on the big bad interwebs), try using the certbot procedure to get a certificate that's been signed by their LetsEncrypt authority, and see if that helps with the security warnings currently blocking progress with the self-signed certificates we got with OpenSSL. The certificates file created by certbot is at /etc/letsencrypt/live/freesmars.com/ so we'll need to map that location to the backend's certificates directory in docker-compose, and then we'll also need to update the certificate file name in the backend's index.ts file from 'cert.pem' to 'fullchain.pem' and the key file from 'key.pem' to 'privkey.pem' and then regenerate the backend image. If this works successfully, replicate these changes in the source-controlled code and commit to the remote repo. NOTE: It appears that the files in the above-mentioned directory are themselves pointers, which is why the Docker container is not able to read them. We'll need to update the docker-compose file to point to their actual locations (inside the ../../archive file on the Docker HOST machine) and then update the backend's index.ts to use the file names given in that directory (privkey1 and fullchain1).
+11. Final part of phase one of this exercise: Since the browser refuses to cooperate with an unsigned certificate (self-signed counts for nothing on the big bad interwebs), try using the Certbot procedure to get a certificate that's been signed by their LetsEncrypt authority, and see if that helps with the security warnings currently blocking progress with the self-signed certificates we got with OpenSSL. The certificates and key files created by certbot are inside the /etc/letsencrypt/archive/freesmars.com file on the Docker HOST machine, and their names are different from the ones we created with OpenSSL, so update the backend's index.ts to use the file names for that directory (privkey1 for the key and fullchain1 for the certificate).
 
-### 12. Now for the hard bit: securing the frontend. In order to do this, we'll need to take the production code created by the parcel build command and try to host that in an experimental Express webserver running in the frontend, so that when we're in a non-development environment we'll have a fundamentally different architecture to serve up the frontend, which is ultimately a 'static' web page (in that it's a very simple HTML document with a very big javascript file attached). Developing an Express server to host the frontend in this new way will require extensive experimentation on the local Ubuntu virtual machine before we can proceed any further. Note any promising milestones towards the development of this architecture below, as we will need to reproduce it on the EC2 server next, if it works. We'll also need to figure out a good way to handle the differences between the development environment and the new, different architecture that will be used for staging and production.
+12. Update the frontend's ENV value for SERVER_NAME for the last time. It's name is freesmars.com. Get your ass to Smars.
+
+13. It turns out that by enabling HTTPS for a domain name is very confusing to the browser if you want to also use if for HTTP requests, as the browser decides to only associate that domain name with HTTPS and in any case sends all traffic to it to your (backend) server port, 443, rendering the frontend inaccessible. A high price for security, you might say, but undoubtedly a fair one. To get around this, we'll need to dedicate a second chapter to the task of converting the frontend's 'build' output code into some sort of public folder, and then hosting that as
+
+### 12. Now for the hard bit: securing the frontend. In order to do this, we'll need to take the production code created by the parcel build command and try to host that in an experimental Express webserver running in the frontend, so that when we're in a non-development environment we'll have a fundamentally different architecture to serve up the frontend, which is ultimately a 'static' web page (in that it's a very simple HTML document with a very big javascript file attached). Developing an Express server to host the frontend in this new way will require extensive experimentation on the local Ubuntu virtual machine before we can proceed any further. Note any promising milestones towards the development of this architecture below, as we will need to reproduce it on the EC2 server next, if it works. We'll also need to figure out a good way to handle the differences between the development environment and the new, different architecture that will be used for staging and production. An idea now forms: If the frontend truly is, in essence, a static webpage that just runs the p5 code and communicates with the backend's API, why not package it with the backend, so that the server really does server up everything, including the game itself?! Essentially what this would entail is taking the output of the parcel build, getting it to be reachable with a simple Express server
 
 ## Chapter X: In-Game Notifications
 
