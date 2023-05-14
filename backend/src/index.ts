@@ -5,6 +5,11 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 
+// Enable HTTPS:
+
+const fs = require('fs');
+const https = require('https');
+
 dotenv.config()
 
 // Required Database Modules
@@ -45,9 +50,26 @@ app.get('/api/test', getFrontend);
 
 // Server Activation
 
-app.listen(PORT, () => {
-    console.log(`Listening on port ${PORT}`);
-    // Validate database connection when server is initialized
-    validateDB();
-})
+// Import TLS certificate and private key (only for staging and production environments)
+if (process.env.ENVIRONMENT?.toLowerCase() !== 'dev') {
+    const serverOptions = {
+        cert: fs.readFileSync('certificates/fullchain1.pem'),
+        key: fs.readFileSync('certificates/privkey1.pem')
+    }
+    // Create HTTPS server??
+    const server = https.createServer(serverOptions, app);
+
+    server.listen(443, () => {
+        console.log(`HTTPS server listening at port 443.`);
+    });
+} else {
+    app.listen(PORT, () => {
+        console.log(`Listening on port ${PORT}`);
+        // Validate database connection when server is initialized
+        validateDB();
+    });
+}
+
+
+
 

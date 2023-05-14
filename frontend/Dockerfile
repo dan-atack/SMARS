@@ -8,9 +8,10 @@ RUN npm install
 
 ADD . /usr/src/app
 
-ENV ENVIRONMENT=dev
-ENV SERVER_NAME=localhost
+ENV ENVIRONMENT=staging
+ENV SERVER_NAME=freesmars.com
 ENV SERVER_PORT=7000
+ENV HTTPS_PORT=443
 
 EXPOSE 1234
 

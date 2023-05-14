@@ -2490,6 +2490,28 @@ Exit Criteria:
 
 # Volume II: Deployment to the Web (SMARS 1.0.0)
 
+### Date Started: February 16, 2023
+
+The volume (I'll be damned if I use Jira's terminology, even if 'epic' does have a nicer ring to it!) of SMARS' first deployment to the internet will be about delving into DevOps technology, and making a respectable effort at deploying an application that is not only reliable, but also secure, and well monitored. There will be a good amount of new technology involved, nearly all of which is outside of the currently familiar realms of the 'web stack.' First and foremost on the list of new technologies is Docker, whose mastery is considered an essential part of the DevOps toolkit. After that, the game will be deployed using various resources and services on AWS, with security provided by OpenSSL, and we will prototype the whole deployment effort as much as possible using an Ubuntu server running on a Vagrant/Virtualbox virtual machine.
+
+The purpose of this initiative is twofold: Firstly, to get SMARS to the point where, theoretically at least, it can be seen and played by anyone in the world; and secondly, to put into practice many of the core DevOps skills that have hitherto only been partially developed, or developed in the context of doing a small part of a larger job.
+
+Unlike previous efforts, there is a financial cost involved in this stage of the game's development, as putting things on the cloud isn't free, especially if you're registering a domain name and getting a Certificate Authority (CA) to endorse your website's authenticity. While it is impossible to put a price on learning, one of the minor goals for this effort must nevertheless be to ensure that the game uses resources as efficiently as possible, and runs on the slimmest budget possible, while providing the best quality of service possible.
+
+Volume Exit Criteria:
+
+- [DONE] The game has a fixed domain name that is at least somewhat catchy, as well as pithy.
+- The game can be visited in a web browser using https protocol, with no warnings/suspicion alerts by the browser
+- The game is constantly available (production server has high availability)
+- The game's production database, including save game data, user profiles, etc. is reliably saved/backed up
+- The game can be updated, via a partly or wholly automated process, with minimal downtime in the production environment
+- It is possible to test deployments/updates on a staging server before pushing to production
+- The game's cloud presence has alerts built in regarding billing thresholds
+- The game's cloud presence has alerts built in regarding performance issues
+- The game's docker containers have health checks and their logs can be obtained
+- The game can be deployed, in whole or in part, as code (i.e. with Terraform or similar service)
+- [STRETCH] The game's Docker resources are slimmed down to use as few resources as possible
+
 ## Chapter One: Virtualization and Containerization Prototyping
 
 ### Difficulty Estimate: 5 for navigating the uncharted waters of Docker container building and deployment
@@ -2731,7 +2753,7 @@ Steps used to launch the SMARS stack on the web:
 
 ## Chapter Five: A Place on the Web - Adding an Elastic IP and Domain Name to the AWS Instance
 
-### Difficulty Estimate: 6 for new tech to be added to the stack, plus the 'difficulty' of having to pay more money to host a domain name!
+### Difficulty Estimate: 5 for new tech to be added to the stack, plus the 'difficulty' of having to pay more money to host a domain name!
 
 ### Date: May 5, 2023
 
@@ -2801,7 +2823,67 @@ Exit Criteria:
 - Hit the 'save' button
 - Wait for the Record to update successfully, then visit freesmars.com in the browser to verify that it's able to direct you to the new IP address for the EC2 instance (you should see the login page, in other words)
 
-### 13. Lastly, shut down the server and drop the elastic IP once again to reduce costs during the staging/prototyping operations phase (once we have resolved a few more deployment issues we'll launch a 'production' server that will remain up permanently).
+13. Lastly, shut down the server and drop the elastic IP once again to reduce costs during the staging/prototyping operations phase (once we have resolved a few more deployment issues we'll launch a 'production' server that will remain up permanently).
+
+## Chapter Six: TLS Certificates: Putting the 'S' in HTTPS!
+
+### Difficulty Estimate: 8 for wholly new technology (OpenSSL, Certbot, and advanced Express modules for HTTPS) as well as uncertainty about what is required vis-a-vis the frontend server
+
+### Date: May 7, 2023
+
+The next major hurdle in presenting a respectable web application to the general public will be adding encryption to the server, so that visitors to the site can see a nice, safe 'https' URL prefix when they visit the site. Also because it's safer, of course. Ideally, we would also like to have users' internet browsers view the site without suspicion, so it will eventually be necessary to get a third party Certificate Authority to validate the SSL/TLS certificates that will be used to provide encryption. Since this is somewhat uncharted territory we will attempt to take a gradual approach, by first setting up a free self-signed certificate using OpenSSL, to get the basic 'https' and then once that is successful, proceed to get the certificate signed by a 3rd party authority, to grant legitimacy to freesmars.com!
+
+Quick addendum: Since certificate technology is very tricky and making any progress at all is not a guarantee, and since the full implementation of this initiative (i.e. to have the game be playable at an https URL address) will indeed require the use of the "built" frontend code, the chapter was ended early and bisected in order to keep things relatively neat and tidy. We have the HTTPS capability, but the frontend now needs to be re-engineered, which is technologically an entirely different issue.
+
+Exit Criteria:
+
+- The game's backend can be secured with HTTPS when in a 'staging' or 'production' environment
+- Backend API functionality can be tested in a browser with no warnings or suspicion on HTTPS URL address
+
+- The game can can be played at https://freesmars.com rather than http://freesmars.com
+- The game can be visited in a web browser without receiving any warnings about the site being suspicious in any way
+
+1. Since this will be a highly experimental endeavour, the first thing to do will be to fire up the Ubuntu virtual machine on the home computer and rig that up with OpenSSL to make a prototype. Addendum: Most modern Ubuntu distributions already include a version of OpenSSL - it's like they were expecting us to want to build web servers!
+
+2. Next, use OpenSSL it to generate a key, a CSR (Certificate Signing Request), and a certificate file, in a new directory called 'certificates' which is created at the root of the smars repo:
+
+Create key: `openssl genrsa -out key.pem`
+Create Certificate Signing Request: `openssl req -new -key key.pem -out csr.pem`
+Create self-signed certificate: `openssl x509 -req -days 999 -in csr.pem -signkey key.pem -out cert.pem`
+
+3. Next, delete the Docker container and Dockerfile for the backend, if they exist.
+
+4. Open a development branch for this chapter on the main computer and use Visual Studio to update the backend's index.ts file code to import https and create an https server ONLY IF the environment is not 'Dev.' Have this HTTPS server listen on Port 443 if it is created, and have it incorporate the server called 'app' by passing that to the HTTPS server as an argument at its creation. This code will be used in the local prototype build on the Virtualbox Docker Host machine.
+
+5. Update the docker-compose file for the backend service to map the volume ./certificates on the Docker host to the location /usr/src/app/certificates on the backend container, so that the container can access the certificates that are created on the Docker Host machine (initially the Virtualbox VM but eventually the EC2 instance). The whole line looks like this: './certificates:/usr/src/app/certificates'
+
+6. Update the Frontend's Dockerfile to add an additional ENV variable: HTTPS_PORT, which will be set to 443.
+
+7. Next, update the Frontend's constants.ts file to import both the ENVIRONMENT and HTTPS_PORT variables, and then set the URL prefix constant to either HTTP (for the development environment only) or HTTPS for all non-development environments. When the HTTPS prefix is in effect, use the HTTPS port variable as well.
+
+8. Test this in the Virtualbox test environment. If the frontend can connect to the (HTTPS secured) backend then we're on the right track!
+
+9. Synchronize the files in the Virtualbox machine with the files in the main development environment and commit them to the official repo, so that there is no 'code drift' between environments. Also, standardize the use of the 'staging' environment in all of the project's Dockerfiles, as the original development environment (on your Windows laptop) does not use docker to run the game, and thus the 'dev' environment variable is never needed in a Docker file. This will save us from having to update that value in either of our other environments (the Virtualbox or the EC2).
+
+10. Next, fire up the EC2 instance and run through the update procedure thus far to get a self-signed certificate working for the backend container:
+
+- Acquire new elastic IP address
+- Bind elastic IP to EC2 instance
+- Bind smars domain name to elastic IP
+- Start the EC2 instance and log in
+- Pull updated code from this branch
+- Create 'certificates' folder at root of smars repo and create the key, csr and certificate files within
+- Run `docker compose up`
+- Visit site in the browser to verify that it's still working; ADDENDUM: If not, switch the environment for both containers back to 'dev' and try again
+- When finished, decommission server and release the elastic IP
+
+11. Final part of phase one of this exercise: Since the browser refuses to cooperate with an unsigned certificate (self-signed counts for nothing on the big bad interwebs), try using the Certbot procedure to get a certificate that's been signed by their LetsEncrypt authority, and see if that helps with the security warnings currently blocking progress with the self-signed certificates we got with OpenSSL. The certificates and key files created by certbot are inside the /etc/letsencrypt/archive/freesmars.com file on the Docker HOST machine, and their names are different from the ones we created with OpenSSL, so update the backend's index.ts to use the file names for that directory (privkey1 for the key and fullchain1 for the certificate).
+
+12. Update the frontend's ENV value for SERVER_NAME for the last time. It's name is freesmars.com. Get your ass to Smars.
+
+13. It turns out that by enabling HTTPS for a domain name is very confusing to the browser if you want to also use if for HTTP requests, as the browser decides to only associate that domain name with HTTPS and in any case sends all traffic to it to your (backend) server port, 443, rendering the frontend inaccessible. A high price for security, you might say, but undoubtedly a fair one. To get around this, we'll need to dedicate a second chapter to the task of converting the frontend's 'build' output code into some sort of public folder, and then hosting that as
+
+### 12. Now for the hard bit: securing the frontend. In order to do this, we'll need to take the production code created by the parcel build command and try to host that in an experimental Express webserver running in the frontend, so that when we're in a non-development environment we'll have a fundamentally different architecture to serve up the frontend, which is ultimately a 'static' web page (in that it's a very simple HTML document with a very big javascript file attached). Developing an Express server to host the frontend in this new way will require extensive experimentation on the local Ubuntu virtual machine before we can proceed any further. Note any promising milestones towards the development of this architecture below, as we will need to reproduce it on the EC2 server next, if it works. We'll also need to figure out a good way to handle the differences between the development environment and the new, different architecture that will be used for staging and production. An idea now forms: If the frontend truly is, in essence, a static webpage that just runs the p5 code and communicates with the backend's API, why not package it with the backend, so that the server really does server up everything, including the game itself?! Essentially what this would entail is taking the output of the parcel build, getting it to be reachable with a simple Express server
 
 ## Chapter X: In-Game Notifications
 
