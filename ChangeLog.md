@@ -2893,15 +2893,21 @@ Exit Criteria:
 - The frontend application runs on its own Express server, instead of being hosted by the Parcel dev server
 - The game can can be played at http://localhost:7000, with only a single terminal running the backend server
 
-### 1. Create a new folder, STAGE, at the root of the project's directory, and add it to gitignore.
+1. Create a new folder, STAGE, at the root of the project's directory, and add it to gitignore.
 
-### 2. Inside STAGE, do a git init and create an Express app.
+2. Inside STAGE, do a git init and create an Express app.
 
-### 3. Look on the internet or in your files to see an example of a very basic setup for an Express app that serves a single-page website from a public folder, then replicate and run that.
+3. Look on the internet or in your files to see an example of a very basic setup for an Express app that serves a single-page website from a public folder, then replicate and run that.
 
-### 4. Copy all of the files from the frontend's dist folder into the STAGE app's public directory, to see what happens if we just try running the Express server with everything dumped in there.
+4. Copy all of the files from the frontend's dist folder into the STAGE app's public directory, to see what happens if we just try running the Express server with everything dumped in there.
 
-### 5. Do some reading on just what exactly happens when you execute the 'parcel build' command anyway.
+5. It appears that the 'dist' folder contents really are it, and the basic STAGE server was able to show the game's login page. Unfortunately, it was not possible to progress further in the game as the backend refused to respond to the frontend's requests to its API, possibly because it has a security policy that blocks requests from its own IP address under certain circumstances. So the solution now will be to attempt to mount the whole game from the backend server, by copying over its public folder and then adding the static folder to the server's index.ts file, simply by adding these two lines:
+
+const publicPath = path.join(\_\_dirname, '../public'); // Since this file is in /src, which is one level above the project's root
+
+app.use(express.static(publicPath));
+
+6. It works!!! Now that this has been validated in Development, we must replicate the effort on the EC2 server,
 
 ## Chapter Eight: Securing the Frontend, Part 2 - Staging Deployment of the Full Game With HTTPS
 

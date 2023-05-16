@@ -28,7 +28,7 @@ Play the game now in its Staging Environment at http://freesmars.com (WARNING: g
 
 <img src="screenshots/Readme-06-Big-base.png" style="width: 60%;">
 
-## To start the project up:
+## To start the project up in local development mode:
 
 Frontend:
 
@@ -45,3 +45,5 @@ Backend:
 Database:
 
     * Ensure mongo service is running
+
+Once the stack has started, you should be able to play the game by going to http://localhost:1234 in your internet browser
