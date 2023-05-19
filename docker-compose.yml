@@ -13,7 +13,7 @@ services:
   #     - smars_default
 
   backend:
-    build: ./backend
+    build: .
     image: smars-backend:latest
     ports:
       - "7000:7000"
