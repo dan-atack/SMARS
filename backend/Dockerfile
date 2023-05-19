@@ -1,4 +1,4 @@
-FROM ubuntu:kinetic
+FROM ubuntu:kinetic as backend
 
 RUN apt-get update
 RUN apt-get install -y npm
@@ -8,6 +8,23 @@ COPY package.json .
 RUN npm install
 
 ADD . /usr/src/app
+
+FROM ubuntu:kinetic AS frontend
+RUN apt-get update
+RUN apt-get install -y npm
+WORKDIR /usr/src/app
+COPY ../frontend/package*.json .
+RUN npm install
+ENV ENVIRONMENT=staging
+ENV SERVER_NAME=freesmars.com
+ENV SERVER_PORT=7000
+ENV HTTPS_PORT=443
+RUN parcel build index.html
+
+FROM ubuntu:kinetic
+WORKDIR /root/
+COPY --from=backend ./usr/src/app /root/
+COPY --from=frontend ./usr/src/app/dist /root/public
 
 ENV PORT=7000
 ENV DB_NAME=smars

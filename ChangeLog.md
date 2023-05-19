@@ -2921,7 +2921,7 @@ Exit Criteria:
 
 - [DONE] The game can can be played at https://freesmars.com rather than http://freesmars.com
 - [DONE] The game can be visited in a web browser without receiving any warnings about the site being suspicious in any way
-- Full frontend build / integration with backend / final backend image creation process is thoroughly documented
+- [DONE] Full frontend build / integration with backend / final backend image creation process is thoroughly documented
 - [STRETCH] New versions of the game's backend image (now the game's only image) are built automatically with a multi-stage Dockerfile
 
 1. Fire up the EC2, connect static IP, Route 53, etc... how can you not wait to automate all of this, by the way?!
@@ -2941,6 +2941,8 @@ Exit Criteria:
 8. Try reaching the game at https://freesmars.com - if you are able to reach the frontend that's the first milestone. If you can also successfully log in and play the game (addendum: you can!!!) then that's a wrap for the experimental/tinkering portion of this chapter. Hurray!!!
 
 9. Next, it's time to start automating some of the assembly process for creating these images, so that we can reduce the massive number of manual steps required for a theoretical update to the game in production. Let's attempt to do this by updating the source code in development to remove the frontend from the docker-compose file, and pushing that to the production environment and trying to build the game's images on the EC2. In a subsequent chapter we can look into building the images somewhere else and pulling them to the EC2 so that it can be as streamlined as possible.
+
+### 10. Now the time has come to experiment with the game's first multi-stage build, which will combine the frontend and backend into a single image without requiring all of the manual steps described above. Or at least not so many of them. Since it will be the backend's Dockerfile that ultimately produces this image, this is where we will start our modifications. The goal of this effort will be to verify that we can modify the frontend code and then integrate that into the deployed version of the game by simply stopping the docker stack, rebuilding the backend image, and re-launching the application. No fussing about with copying and pasting files or manually running the frontend container just to get its build files.
 
 ## Chapter X: In-Game Notifications
 
