@@ -2956,7 +2956,7 @@ Exit Criteria:
 
 13. Finally, validate that the build process works by adding a trivial change to the frontend's source code and then rebuilding and testing the deployment on the cloud. Note any manual steps still required to implement an update in this way:
 
-- Push updated source code to git remote repo
+- Pull updated source code from git remote repo
 - Delete existing smars-backend container
 - Delete smars-backend image <--- NOTE: Since there is no longer a frontend container/image in the stack, should we rename this to smars-server?
 - Run `docker compose up`
