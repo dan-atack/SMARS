@@ -8,8 +8,6 @@ const serverName = process.env.SERVER_NAME as string || "localhost";
 const serverPort = process.env.SERVER_PORT as string || "7000";
 const httpsPort = process.env.HTTPS_PORT as string || "443";
 
-console.log("DELTA");
-
 export const constants = {
     // Backend connection: HTTP in dev environment, or HTTPS in staging/production??
     URL_PREFIX: environment === "dev" ? `http://${serverName}:${serverPort}/api` : `https://${serverName}:${httpsPort}/api`,

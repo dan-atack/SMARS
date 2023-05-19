@@ -2942,7 +2942,42 @@ Exit Criteria:
 
 9. Next, it's time to start automating some of the assembly process for creating these images, so that we can reduce the massive number of manual steps required for a theoretical update to the game in production. Let's attempt to do this by updating the source code in development to remove the frontend from the docker-compose file, and pushing that to the production environment and trying to build the game's images on the EC2. In a subsequent chapter we can look into building the images somewhere else and pulling them to the EC2 so that it can be as streamlined as possible.
 
-### 10. Now the time has come to experiment with the game's first multi-stage build, which will combine the frontend and backend into a single image without requiring all of the manual steps described above. Or at least not so many of them. Since it will be the backend's Dockerfile that ultimately produces this image, this is where we will start our modifications. The goal of this effort will be to verify that we can modify the frontend code and then integrate that into the deployed version of the game by simply stopping the docker stack, rebuilding the backend image, and re-launching the application. No fussing about with copying and pasting files or manually running the frontend container just to get its build files.
+10. Now the time has come to experiment with the game's first multi-stage build, which will combine the frontend and backend into a single image without requiring all of the manual steps described above. Or at least not so many of them. Since it will be the backend's Dockerfile that ultimately produces this image, this is where we will start our modifications. The goal of this effort will be to verify that we can modify the frontend code and then integrate that into the deployed version of the game by simply stopping the docker stack, rebuilding the backend image, and re-launching the application. No fussing about with copying and pasting files or manually running the frontend container just to get its build files.
+
+11. After a significant amount of fussing around with the mult-stage Dockerfile we've finally got something that works - a Dockerfile at the root of the project which combines the package installation, environment variable settings and finally the build command for the frontend into a first stage, followed by a new stage which runs through the steps in the backend's Dockerfile, and then adds the contents of the frontend build's 'dist' folder to the backend's public directory before launching the backend. It should be noted that the backend still runs with the 'dev' command, and thus still has all of its development dependencies installed, making it an unnecessarily fat image, but hey one step at a time.
+
+12. In order to do all of this building it was necessary to learn some handy commands to clear out the Docker cache, as there were a ton of old images/layers built up, eventually to the point that they were impeding further development on the EC2 (which only has a very limited amount of space in its filesystem). The following commands can be used to clear out some much needed space:
+
+- docker image prune -a -f (the -A means 'all' i.e. it includes unused layers; the -f is to 'force' it meaning do not ask for confirmation, do not implore for forgiveness)
+
+- docker builder prune (removes the entire build cache)
+
+(Eventually of course the solution will be to stop building on the EC2 host at all, and to use an image that is as streamlined as possible for the backend component, as we have now done for the frontend, whose size has effectively gone from over 1 GB to just a few dozen MB).
+
+13. Finally, validate that the build process works by adding a trivial change to the frontend's source code and then rebuilding and testing the deployment on the cloud. Note any manual steps still required to implement an update in this way:
+
+- Push updated source code to git remote repo
+- Delete existing smars-backend container
+- Delete smars-backend image <--- NOTE: Since there is no longer a frontend container/image in the stack, should we rename this to smars-server?
+- Run `docker compose up`
+
+14. Clean up the repo: Delete the frontend and backend Dockerfiles, and update the docker-compose file to eliminate the commented-out code for the no-longer-used frontend service.
+
+## Chapter Nine: Persistent Database Volume on the Cloud
+
+### Difficulty Estimate: 5 for new technology (looking at AWS EBS for a first iteration)
+
+### Date: May 19, 2023
+
+Description Paragraph
+
+Exit Criteria:
+
+- Criteria 1
+- Criteria 2
+- ...
+
+### 1. Step One...
 
 ## Chapter X: In-Game Notifications
 
