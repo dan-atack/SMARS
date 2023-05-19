@@ -2,15 +2,15 @@ version: "3"
 
 services:
 
-  frontend:
-    build: ./frontend
-    image: smars-frontend:latest
-    ports:
-      - "80:1234"
-    depends_on:
-      - backend
-    networks:
-      - smars_default
+  # frontend:
+  #   build: ./frontend
+  #   image: smars-frontend:latest
+  #   ports:
+  #     - "80:1234"
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - smars_default
 
   backend:
     build: ./backend
