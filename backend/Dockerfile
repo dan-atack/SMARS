@@ -4,17 +4,16 @@ RUN apt-get update
 RUN apt-get install -y npm
 WORKDIR /usr/src/app
 COPY package.json .
-
 RUN npm install
-
 ADD . /usr/src/app
 
 FROM ubuntu:kinetic AS frontend
 RUN apt-get update
 RUN apt-get install -y npm
 WORKDIR /usr/src/app
-COPY ../frontend/package*.json .
+COPY ~/smars/frontend/package*.json .
 RUN npm install
+ADD ~/smars/frontend/ /usr/src/app
 ENV ENVIRONMENT=staging
 ENV SERVER_NAME=freesmars.com
 ENV SERVER_PORT=7000
