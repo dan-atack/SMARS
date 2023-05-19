@@ -27,9 +27,6 @@ import { GameData } from "./newGameSetup";
 import { Coords } from "./connector";
 import { Resource } from "./economyData";
 
-// TODO: Load Environment variables
-if (process.env.ENVIRONMENT) console.log(process.env.ENVIRONMENT);
-
 export default class Engine extends View {
     // Engine types
     _p5: P5;                    // Although the View class no longer uses it in the constructor, the Engine still does
