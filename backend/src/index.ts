@@ -19,13 +19,8 @@ const validateDB = require('./database_functions/validate_database');
 
 // App Variables
 
-if (!process.env.PORT) {
-    // Exit on error code 1 if the environment variable for PORT is not loaded:
-    console.log("Error: PORT number not found in environment variables.");
-    process.exit(1);
-}
-
-const PORT: number = parseInt(process.env.PORT as string, 10);
+const PORT: number = parseInt(process.env.PORT as string, 10) || 7000;
+const HTTPS_PORT: number = parseInt(process.env.PORT as string, 10) || 443;
 const ENV: string = process.env.ENVIRONMENT?.toLowerCase() as string || 'dev';
 
 const app = express();
@@ -63,7 +58,9 @@ if (ENV !== 'dev') {
     const server = https.createServer(serverOptions, app);
 
     server.listen(443, () => {
-        console.log(`HTTPS server listening at port 443.`);
+        console.log(`HTTPS server listening at port ${HTTPS_PORT}.`);
+        // Validate database connection when server is initialized
+        validateDB();
     });
 } else {
     app.listen(PORT, () => {

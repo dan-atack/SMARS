@@ -24,6 +24,7 @@ COPY backend/. /usr/src/app
 COPY --from=frontend ./usr/src/app/dist/* /usr/src/app/public/
 
 ENV PORT=7000
+ENV HTTPS_PORT=443
 ENV DB_NAME=smars
 ENV DB_CONTAINER_NAME=db
 ENV ENVIRONMENT=staging
