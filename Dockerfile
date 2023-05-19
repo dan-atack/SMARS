@@ -21,7 +21,8 @@ WORKDIR /usr/src/app
 COPY backend/package.json .
 RUN npm install
 COPY backend/. /usr/src/app
-COPY --from=frontend ./usr/src/app/dist/* /usr/src/app/public
+# Add the contents of the frontend's dist folder to the inside of the backend's public folder
+COPY --from=frontend ./usr/src/app/dist/* /usr/src/app/public/
 
 ENV PORT=7000
 ENV DB_NAME=smars
