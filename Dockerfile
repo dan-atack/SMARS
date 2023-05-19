@@ -18,10 +18,10 @@ FROM ubuntu:kinetic
 RUN apt-get update
 RUN apt-get install -y npm
 WORKDIR /usr/src/app
-COPY package.json .
+COPY backend/package.json .
 RUN npm install
-COPY . /usr/src/app
-COPY --from=frontend ./usr/src/app/dist /root/public
+COPY backend/. /usr/src/app
+COPY --from=frontend ./usr/src/app/dist/* /usr/src/app/public
 
 ENV PORT=7000
 ENV DB_NAME=smars
