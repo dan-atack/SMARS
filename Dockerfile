@@ -1,5 +1,5 @@
 # Build frontend package
-FROM ubuntu:kinetic as frontend
+FROM ubuntu:kinetic AS frontend
 RUN apt-get update
 RUN apt-get install -y npm
 WORKDIR /usr/src/app
@@ -10,8 +10,7 @@ ENV ENVIRONMENT=staging
 ENV SERVER_NAME=freesmars.com
 ENV SERVER_PORT=7000
 ENV HTTPS_PORT=443
-
-CMD ["npm", "run", "build"]
+RUN npm run build
 
 # Backend
 FROM ubuntu:kinetic
