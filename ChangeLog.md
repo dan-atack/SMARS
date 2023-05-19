@@ -2825,7 +2825,7 @@ Exit Criteria:
 
 13. Lastly, shut down the server and drop the elastic IP once again to reduce costs during the staging/prototyping operations phase (once we have resolved a few more deployment issues we'll launch a 'production' server that will remain up permanently).
 
-## Chapter Six: TLS Certificates: Putting the 'S' in HTTPS!
+## Chapter Six: TLS Certificates - Putting the 'S' in HTTPS!
 
 ### Difficulty Estimate: 8 for wholly new technology (OpenSSL, Certbot, and advanced Express modules for HTTPS) as well as uncertainty about what is required vis-a-vis the frontend server
 
@@ -2839,9 +2839,6 @@ Exit Criteria:
 
 - The game's backend can be secured with HTTPS when in a 'staging' or 'production' environment
 - Backend API functionality can be tested in a browser with no warnings or suspicion on HTTPS URL address
-
-- The game can can be played at https://freesmars.com rather than http://freesmars.com
-- The game can be visited in a web browser without receiving any warnings about the site being suspicious in any way
 
 1. Since this will be a highly experimental endeavour, the first thing to do will be to fire up the Ubuntu virtual machine on the home computer and rig that up with OpenSSL to make a prototype. Addendum: Most modern Ubuntu distributions already include a version of OpenSSL - it's like they were expecting us to want to build web servers!
 
@@ -2881,9 +2878,106 @@ Create self-signed certificate: `openssl x509 -req -days 999 -in csr.pem -signke
 
 12. Update the frontend's ENV value for SERVER_NAME for the last time. It's name is freesmars.com. Get your ass to Smars.
 
-13. It turns out that by enabling HTTPS for a domain name is very confusing to the browser if you want to also use if for HTTP requests, as the browser decides to only associate that domain name with HTTPS and in any case sends all traffic to it to your (backend) server port, 443, rendering the frontend inaccessible. A high price for security, you might say, but undoubtedly a fair one. To get around this, we'll need to dedicate a second chapter to the task of converting the frontend's 'build' output code into some sort of public folder, and then hosting that as
+13. It turns out that by enabling HTTPS for a domain name is very confusing to the browser if you want to also use if for HTTP requests, as the browser decides to only associate that domain name with HTTPS and in any case sends all traffic to it to your (backend) server port, 443, rendering the frontend inaccessible. A high price for security, you might say, but undoubtedly a fair one. To get around this, we'll need to dedicate a new chapter to the task of converting the frontend's 'build' output code into some sort of public folder, and then hosting that with an Express server of its own, as a prelude to hosting it under the HTTPS umbrella that currently only extends to the backend's API.
 
-### 12. Now for the hard bit: securing the frontend. In order to do this, we'll need to take the production code created by the parcel build command and try to host that in an experimental Express webserver running in the frontend, so that when we're in a non-development environment we'll have a fundamentally different architecture to serve up the frontend, which is ultimately a 'static' web page (in that it's a very simple HTML document with a very big javascript file attached). Developing an Express server to host the frontend in this new way will require extensive experimentation on the local Ubuntu virtual machine before we can proceed any further. Note any promising milestones towards the development of this architecture below, as we will need to reproduce it on the EC2 server next, if it works. We'll also need to figure out a good way to handle the differences between the development environment and the new, different architecture that will be used for staging and production. An idea now forms: If the frontend truly is, in essence, a static webpage that just runs the p5 code and communicates with the backend's API, why not package it with the backend, so that the server really does server up everything, including the game itself?! Essentially what this would entail is taking the output of the parcel build, getting it to be reachable with a simple Express server
+## Chapter Seven: Building the Frontend - Using an Express Server to Host the Built Code from Parcel
+
+### Difficulty Estimate: 7 for a somewhat dreaded reckoning with the intricacies of using P5, and integrating the dist folder to work without the Parcel server as an Express App - Addendum: Turns out it was super easy, barely an inconvenience!
+
+### Date: May 14, 2023
+
+Since it has now been demonstrated that it is possible to secure the game's server, the only thing that remains to do is to include the game's frontend under that same security umbrella. Since the frontend currently runs on an insecure Parcel development server, there is no way of integrating a TLS/SSL certificate to run with it in that configuration. To provide a fully secure experience, not to mention a much more efficient package for deployment, the time has come to clean up the frontend, and actually use the build output code and host that without the aid of the Parcel development server. The theory here is that if the frontend truly is, in essence, a static webpage that just runs the p5 code and communicates with the backend's API, then it could be served up by an Express server. If this is possible, then in fact the best course of action would be to package it with the backend when producing Docker images for the game, since the backend already runs on an Express server! Essentially this would entail taking the output of the parcel build, and then importing it into the backend server and hosting it directly from there, as the server's public folder. This chapter will be complete when the game can be played in the local development environment, with the frontend files served by the backend's Express app.
+
+Exit Criteria:
+
+- [DONE] The frontend application runs on its own Express server, instead of being hosted by the Parcel dev server
+- [DONE] The game can can be played at http://localhost:7000, with only a single terminal running the backend server
+
+1. Create a new folder, STAGE, at the root of the project's directory, and add it to gitignore.
+
+2. Inside STAGE, do a git init and create an Express app.
+
+3. Look on the internet or in your files to see an example of a very basic setup for an Express app that serves a single-page website from a public folder, then replicate and run that.
+
+4. Copy all of the files from the frontend's dist folder into the STAGE app's public directory, to see what happens if we just try running the Express server with everything dumped in there.
+
+5. It appears that the 'dist' folder contents really are it, and the basic STAGE server was able to show the game's login page. Unfortunately, it was not possible to progress further in the game as the backend refused to respond to the frontend's requests to its API, possibly because it has a security policy that blocks requests from its own IP address under certain circumstances. So the solution now will be to attempt to mount the whole game from the backend server, by copying over its public folder and then adding the static folder to the server's index.ts file, simply by adding these two lines:
+
+const publicPath = path.join(\_\_dirname, '../public'); // Since this file is in /src, which is one level above the project's root
+
+app.use(express.static(publicPath));
+
+6. It works!!! Now that this has been validated in Development, we must replicate the effort on the EC2 server, which will form the first phase of the next chapter...
+
+## Chapter Eight: Securing the Frontend - Staging Deployment of the Full Game With HTTPS
+
+### Difficulty Estimate: 5 for Rewriting the project's Docker and compose files to work without a frontend container!
+
+### Date: May 17, 2023
+
+In a rare, pleasant surprise, the `parcel build` output really provided everything that I could have hoped for, and the frontend ran like a dream with the existing backend server. Hardly even had to add any code changes to the old girl. So, for a followup, let's now attempt to put the whole application on the EC2 site, and finally play the game at https://freesmars.com! Initially it will be necessary to use a somewhat unorthodox method to build the frontend's code on the cloud in order to package it with the backend, since the Dockerhost itself is very low on available filespace, and it doesn't have Parcel installed. This means we'll need to modify the frontend's Dockerfile to run the `npm run build` command on entry instead of starting the development server, then mapping the files from the 'dist' folder to a volume on the EC2 (host) machine. From there, it should be possible to use the code developed in the previous chapter to run the whole game in HTTPS in the browser. Since this process is quite convoluted, it will need to be documented in at least slightly greater detail below, once a successful strategy has been devised.
+
+Exit Criteria:
+
+- [DONE] The game can can be played at https://freesmars.com rather than http://freesmars.com
+- [DONE] The game can be visited in a web browser without receiving any warnings about the site being suspicious in any way
+- [DONE] Full frontend build / integration with backend / final backend image creation process is thoroughly documented
+- [STRETCH] New versions of the game's backend image (now the game's only image) are built automatically with a multi-stage Dockerfile
+
+1. Fire up the EC2, connect static IP, Route 53, etc... how can you not wait to automate all of this, by the way?!
+
+2. SSH in to the EC2, and delete the containers and images for the frontend and backend.
+
+3. Alter the frontend's Dockerfile to run the build command instead of the start command for the Parcel server. This will cause the image to produce the html/css files for the Smars static homepage, and then stop running.
+
+4. Next, alter the docker-compose file to create a bind-mount that maps the frontend to a location on the host file system. A bind mount is similar to a regular volume except that it allows the Docker container to create files on the host system OUTSIDE of the docker zone (e.g /srv/frontend - a directory we will need to create, by the way). In hindsight, we could have actually just mapped the frontend files directly into the /smars/backend/public directory and saved the trouble of having to copy them over with an additional command... but we're not going to be keeping this workflow for long so it's not a big deal either way.
+
+5. Run `docker compose up` to bring the stack to life, and generate the frontend files. If successful, the frontend container will stop after the build job completes, leaving only the backend and the database containers running. In any case, we will shut down the entire stack since the backend's image will now need to be rebuilt once we add the frontend files to the public folder on the host machine.
+
+6. Once the stack has been shut down again, delete both frontend and backend containers and images, then copy the frontend's files into the backend's public directory, and then comment out the entire frontend service in the docker-compose file - it has served its purpose and is no longer needed for deploying the game!
+
+7. Rerun `docker compose up` to rebuild the backend's image, which will now contain the frontend's files in the public directory.
+
+8. Try reaching the game at https://freesmars.com - if you are able to reach the frontend that's the first milestone. If you can also successfully log in and play the game (addendum: you can!!!) then that's a wrap for the experimental/tinkering portion of this chapter. Hurray!!!
+
+9. Next, it's time to start automating some of the assembly process for creating these images, so that we can reduce the massive number of manual steps required for a theoretical update to the game in production. Let's attempt to do this by updating the source code in development to remove the frontend from the docker-compose file, and pushing that to the production environment and trying to build the game's images on the EC2. In a subsequent chapter we can look into building the images somewhere else and pulling them to the EC2 so that it can be as streamlined as possible.
+
+10. Now the time has come to experiment with the game's first multi-stage build, which will combine the frontend and backend into a single image without requiring all of the manual steps described above. Or at least not so many of them. Since it will be the backend's Dockerfile that ultimately produces this image, this is where we will start our modifications. The goal of this effort will be to verify that we can modify the frontend code and then integrate that into the deployed version of the game by simply stopping the docker stack, rebuilding the backend image, and re-launching the application. No fussing about with copying and pasting files or manually running the frontend container just to get its build files.
+
+11. After a significant amount of fussing around with the mult-stage Dockerfile we've finally got something that works - a Dockerfile at the root of the project which combines the package installation, environment variable settings and finally the build command for the frontend into a first stage, followed by a new stage which runs through the steps in the backend's Dockerfile, and then adds the contents of the frontend build's 'dist' folder to the backend's public directory before launching the backend. It should be noted that the backend still runs with the 'dev' command, and thus still has all of its development dependencies installed, making it an unnecessarily fat image, but hey one step at a time.
+
+12. In order to do all of this building it was necessary to learn some handy commands to clear out the Docker cache, as there were a ton of old images/layers built up, eventually to the point that they were impeding further development on the EC2 (which only has a very limited amount of space in its filesystem). The following commands can be used to clear out some much needed space:
+
+- docker image prune -a -f (the -A means 'all' i.e. it includes unused layers; the -f is to 'force' it meaning do not ask for confirmation, do not implore for forgiveness)
+
+- docker builder prune (removes the entire build cache)
+
+(Eventually of course the solution will be to stop building on the EC2 host at all, and to use an image that is as streamlined as possible for the backend component, as we have now done for the frontend, whose size has effectively gone from over 1 GB to just a few dozen MB).
+
+13. Finally, validate that the build process works by adding a trivial change to the frontend's source code and then rebuilding and testing the deployment on the cloud. Note any manual steps still required to implement an update in this way:
+
+- Pull updated source code from git remote repo
+- Delete existing smars-backend container
+- Delete smars-backend image <--- NOTE: Since there is no longer a frontend container/image in the stack, should we rename this to smars-server?
+- Run `docker compose up`
+
+14. Clean up the repo: Delete the frontend and backend Dockerfiles, and update the docker-compose file to eliminate the commented-out code for the no-longer-used frontend service.
+
+## Chapter Nine: Persistent Database Volume on the Cloud
+
+### Difficulty Estimate: 5 for new technology (looking at AWS EBS for a first iteration)
+
+### Date: May 19, 2023
+
+Description Paragraph
+
+Exit Criteria:
+
+- Criteria 1
+- Criteria 2
+- ...
+
+### 1. Step One...
 
 ## Chapter X: In-Game Notifications
 
