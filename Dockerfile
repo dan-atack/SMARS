@@ -29,3 +29,5 @@ ENV DB_CONTAINER_NAME=db
 ENV ENVIRONMENT=staging
 EXPOSE 443
 EXPOSE 7000
+
+CMD ["npm", "run", "dev"]
