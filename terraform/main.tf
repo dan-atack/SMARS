@@ -21,10 +21,5 @@ resource "aws_instance" "smars_prod_server" {
 
 resource "aws_key_pair" "smars_prod_key_pair" {
     key_name = "smars_prod_key_pair"
-    public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC0AaFU3jSUgENrKIf6Xcqq7xPGup582qrK
-    n+919LsUYZFb6cID1igSv3CvXZdnr8F18IFJ61oVv9pHf48/6kTItBvPXm4d6Pbl
-    8Amy14bvUhyfbBcpukmcQ6HPP48LnvbHeVMNBKMNvFHeFs2/EsroXy8/vQq4uDwG
-    +qISVOB6OIPvS/A+Q5KttISzzDbnGQag21RoCjCY1B25D+GH6/fqAyWmMYokelbT
-    hmaKOK9CsMI6MEfS0zy4M/u68rHVAvBfSyF709W5SetNH8Lh+4ZuWZzbUtxjssmh
-    AYNdIViTX5s3r8GTJGPcYcod/7hjPQQJQ9e2Wg9M89Nle6AbPhY9"
+    public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC0AaFU3jSUgENrKIf6Xcqq7xPGup582qrKn+919LsUYZFb6cID1igSv3CvXZdnr8F18IFJ61oVv9pHf48/6kTItBvPXm4d6Pbl8Amy14bvUhyfbBcpukmcQ6HPP48LnvbHeVMNBKMNvFHeFs2/EsroXy8/vQq4uDwG+qISVOB6OIPvS/A+Q5KttISzzDbnGQag21RoCjCY1B25D+GH6/fqAyWmMYokelbThmaKOK9CsMI6MEfS0zy4M/u68rHVAvBfSyF709W5SetNH8Lh+4ZuWZzbUtxjssmhAYNdIViTX5s3r8GTJGPcYcod/7hjPQQJQ9e2Wg9M89Nle6AbPhY9"
 }
