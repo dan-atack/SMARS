@@ -19,3 +19,7 @@ mockups
 world_editor
 # Production code
 STAGE
+# Terraform state
+*.tfstate
+*.tfstate.backup
+*.terraform.lock.hcl
