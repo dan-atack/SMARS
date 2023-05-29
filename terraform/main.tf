@@ -17,4 +17,7 @@ resource "aws_instance" "smars_prod_server" {
   ami           = "ami-0a695f0d95cefc163"
   instance_type = "t2.small"
   key_name      = "SMARS_Prod_EC2"
+  tags = {
+    Name = "SMARS_Prod_01"
+  }
 }
