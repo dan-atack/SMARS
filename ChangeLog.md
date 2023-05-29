@@ -2989,7 +2989,9 @@ Exit Criteria:
 
 3. Create a new AWS root user access key to allow Terraform development from the CLI (they say you shouldn't do that, but as a one-man operating team I am authorizing it!).
 
-### 4. Create a Terraform script, main.ts, that creates an EC2 instance called smars_prod_server with the same specs as the staging machine has. Plan, apply, verify, and then destroy.
+4. Create a Terraform script, main.ts, that creates an EC2 instance called smars_prod_server with the same specs as the staging machine has. Plan, apply, verify, and then destroy.
+
+### 5. We'll always need to be able to log into our instances, so find out how to attach a key-pair to the production server instance and verify that it works by logging in with PuTTY. NOTE: This may not be PuTTY's fault, as the new instance is likely going into the 'default' Security Group, which has no access rules enabled for port 22 (or any other ports for that matter - try adding the security group and then revisit this item).
 
 ### 5. Expand the Terraform script to create a Security Group for your production server, called SMARS-Prod-SG, again with the same settings as the staging server. Once again, plan, apply, verify and then destroy.
 
@@ -3002,6 +3004,8 @@ Exit Criteria:
 ### 9. Next, figure out how to import the certificate and key files from the Smars staging server into the production server. This is actually a pretty tricky step, and will require some foxy cleverness to achieve, so don't be shy about asking the AI for more help, when the time comes.
 
 ### 10. Lastly (I think), have Terraform create a DNS record to direct incoming traffic to the production server, and modify the existing record that we're always updating by hand to route traffic from staging.freesmars.com instead of the from the root address, so we can reserve that URL for future staging deployments/tests. Plan, apply, and verify, and if it works... destroy it, as there are still a handful of other pre-launch infrastructure features that need to be added before we take this thing public!
+
+### 11. Extract values from the main.tf file into a separate variables.tf file, like a good Terraformer.
 
 ## Chapter Ten: Persistent Database Volume on the Cloud
 
