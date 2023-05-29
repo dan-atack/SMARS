@@ -45,7 +45,7 @@ resource "aws_security_group" "smars_prod_sg" {
 resource "aws_instance" "smars_prod_server" {
   ami           = "ami-0a695f0d95cefc163"
   instance_type = "t2.small"
-  security_groups = ["${aws_security_group.smars_prod_sg.id}"]
+  vpc_security_group_ids = ["${aws_security_group.smars_prod_sg.id}"]
   key_name      = "SMARS_Prod_EC2"
   tags = {
     Name = "SMARS_Prod_Server"
