@@ -2991,9 +2991,9 @@ Exit Criteria:
 
 4. Create a Terraform script, main.ts, that creates an EC2 instance called smars_prod_server with the same specs as the staging machine has. Plan, apply, verify, and then destroy.
 
-### 5. We'll always need to be able to log into our instances, so find out how to attach a key-pair to the production server instance and verify that it works by logging in with PuTTY. NOTE: This may not be PuTTY's fault, as the new instance is likely going into the 'default' Security Group, which has no access rules enabled for port 22 (or any other ports for that matter - try adding the security group and then revisit this item).
+5. We'll always need to be able to log into our instances, so find out how to attach a key-pair to the production server instance and verify that it works by logging in with PuTTY. NOTE: This may not be PuTTY's fault, as the new instance is likely going into the 'default' Security Group, which has no access rules enabled for port 22 (or any other ports for that matter - try adding the security group and then revisit this item).
 
-### 5. Expand the Terraform script to create a Security Group for your production server, called SMARS-Prod-SG, again with the same settings as the staging server. Once again, plan, apply, verify and then destroy.
+6. Expand the Terraform script to create a Security Group for your production server, called SMARS-Prod-SG, again with the same settings as the staging server. Once again, plan, apply, verify and then destroy.
 
 ### 6. Add an elastic IP address to your TF script, and once again, plan, apply, verify and destroy.
 

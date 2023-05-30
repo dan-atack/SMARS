@@ -51,3 +51,8 @@ resource "aws_instance" "smars_prod_server" {
     Name = "SMARS_Prod_Server"
   }
 }
+
+resource "aws_eip" "smars_prod_eip" {
+  instance = aws_instance.smars_prod_server.id
+  domain   = "vpc"
+}
