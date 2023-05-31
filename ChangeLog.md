@@ -2997,7 +2997,7 @@ Exit Criteria:
 
 7. Add an elastic IP address to your TF script, and once again, plan, apply, verify and destroy.
 
-### 8. Next, have Terraform create a DNS record to direct incoming traffic to the production server via its Elastic IP. As usual, plan, apply, verify and destroy.
+8. Next, have Terraform create a DNS record to direct incoming traffic to the production server via its Elastic IP. As usual, plan, apply, verify and destroy. NOTE: for this to work properly you need to assign the EIP to the instance within its block, and then in the Route53_record resource, take the public_ip value from the EIP resource, NOT from the EC2 (otherwise you're liable to end up with a record that uses the EC2's original IP address, and not the EIP).
 
 9. Modify the existing DNS record used by the staging server to route traffic from staging.freesmars.com instead of the from the root address, so we can reserve that URL for future staging deployments/tests... This will actually require the creation of a new certificate for the staging machine, since the existing one is strictly for freesmars.com, not staging.freesmars.com, so that will be a good opportunity to rehearse the steps needed to create a certificate.
 
@@ -3008,6 +3008,8 @@ Exit Criteria:
 ### 11. Next, figure out how to import the certificate and key files from the Smars staging server into the production server. This is actually a pretty tricky step, and will require some foxy cleverness to achieve, so don't be shy about asking the AI for more help, when the time comes.
 
 ### 12. Extract values from the main.tf file into a separate variables.tf file, like a good Terraformer.
+
+### 13. Create a basic terraform outputs file as well, to gain insight into how your Terraform resources' values will be fed into each other (this assists hugely with the planning phase and helps to avoid unexpected results).
 
 ## Chapter Ten: Persistent Database Volume on the Cloud
 
