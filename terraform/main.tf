@@ -55,3 +55,11 @@ resource "aws_instance" "smars_prod_server" {
 resource "aws_eip" "smars_prod_eip" {
   instance = aws_instance.smars_prod_server.id
 }
+
+resource "aws_route53_record" "freesmars" {
+  zone_id = "Z066017510JYQP23YIULK"
+  name = "freesmars.com"
+  type = "A"
+  ttl = 300
+  records = [aws_eip.smars_prod_eip]
+}

@@ -2995,17 +2995,19 @@ Exit Criteria:
 
 6. Expand the Terraform script to create a Security Group for your production server, called SMARS-Prod-SG, again with the same settings as the staging server. Once again, plan, apply, verify and then destroy.
 
-### 6. Add an elastic IP address to your TF script, and once again, plan, apply, verify and destroy.
+7. Add an elastic IP address to your TF script, and once again, plan, apply, verify and destroy.
 
-### 7. Now for a slightly trickier bit: Add a script resource to your Terraform file (or possibly in its own file - we'll ask Chat GPT what's a best practice for this kind of thing) that installs the Docker Engine on the EC2 host once it's booted up. As before, plan, apply, verify, and then destroy.
+### 8. Next, have Terraform create a DNS record to direct incoming traffic to the production server via its Elastic IP. As usual, plan, apply, verify and destroy.
 
-### 8. Next, it's time to start thinking about getting the game's Docker images installed. Since we still have not developed a method for building the game's images elsewhere, and since we will be faithfully copying the deployment on the staging machine, for now the procedure should be to clone the project's git repository to the /smars directory, and run `docker compose up` to create the game's images and launch the stack (all of this should be done in the context of the EC2's startup script file).
+9. Modify the existing DNS record used by the staging server to route traffic from staging.freesmars.com instead of the from the root address, so we can reserve that URL for future staging deployments/tests... This will actually require the creation of a new certificate for the staging machine, since the existing one is strictly for freesmars.com, not staging.freesmars.com, so that will be a good opportunity to rehearse the steps needed to create a certificate.
 
-### 9. Next, figure out how to import the certificate and key files from the Smars staging server into the production server. This is actually a pretty tricky step, and will require some foxy cleverness to achieve, so don't be shy about asking the AI for more help, when the time comes.
+### 9. Now for a slightly trickier bit: Add a script resource to your Terraform file (or possibly in its own file - we'll ask Chat GPT what's a best practice for this kind of thing) that installs the Docker Engine on the EC2 host once it's booted up. As before, plan, apply, verify, and then destroy.
 
-### 10. Lastly (I think), have Terraform create a DNS record to direct incoming traffic to the production server, and modify the existing record that we're always updating by hand to route traffic from staging.freesmars.com instead of the from the root address, so we can reserve that URL for future staging deployments/tests. Plan, apply, and verify, and if it works... destroy it, as there are still a handful of other pre-launch infrastructure features that need to be added before we take this thing public!
+### 10. Next, it's time to start thinking about getting the game's Docker images installed. Since we still have not developed a method for building the game's images elsewhere, and since we will be faithfully copying the deployment on the staging machine, for now the procedure should be to clone the project's git repository to the /smars directory, and run `docker compose up` to create the game's images and launch the stack (all of this should be done in the context of the EC2's startup script file).
 
-### 11. Extract values from the main.tf file into a separate variables.tf file, like a good Terraformer.
+### 11. Next, figure out how to import the certificate and key files from the Smars staging server into the production server. This is actually a pretty tricky step, and will require some foxy cleverness to achieve, so don't be shy about asking the AI for more help, when the time comes.
+
+### 12. Extract values from the main.tf file into a separate variables.tf file, like a good Terraformer.
 
 ## Chapter Ten: Persistent Database Volume on the Cloud
 
