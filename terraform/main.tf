@@ -47,6 +47,11 @@ resource "aws_instance" "smars_prod_server" {
   instance_type = "t2.small"
   vpc_security_group_ids = ["${aws_security_group.smars_prod_sg.id}"]
   key_name      = "SMARS_Prod_EC2"
+  connection {
+    type = "ssh"
+    user = "root"
+    host = "${self.public_ip}"
+  }
   provisioner "remote-exec" {
     inline = [
         "sudo apt-get update",
