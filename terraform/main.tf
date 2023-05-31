@@ -61,5 +61,5 @@ resource "aws_route53_record" "freesmars" {
   name = "freesmars.com"
   type = "A"
   ttl = 300
-  records = [aws_eip.smars_prod_eip]
+  records = [aws_instance.smars_prod_server.public_ip]
 }
