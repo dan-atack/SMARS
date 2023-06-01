@@ -49,7 +49,7 @@ resource "aws_instance" "smars_prod_server" {
   key_name      = "SMARS_Prod_EC2"
   connection {
     type = "ssh"
-    user = "root"
+    user = "ubuntu"
     host = "${self.public_ip}"
   }
   provisioner "remote-exec" {
