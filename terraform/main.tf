@@ -50,6 +50,7 @@ resource "aws_instance" "smars_prod_server" {
   
   user_data = <<-EOF
     #!/bin/bash
+    # Install Docker
     sudo apt-get update
     sudo apt-get install ca-certificates curl gnupg -y
     sudo install -m 0755 -d /etc/apt/keyrings
@@ -61,7 +62,11 @@ resource "aws_instance" "smars_prod_server" {
     sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
     sudo apt-get update
     sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+    # Get SMARS source code and build the Docker images with Docker compose
     mkdir ~/smars
+    cd ~/smars
+    git clone https://github.com/dan-atack/SMARS.git .
+    docker compose up
   EOF
   
   tags = {

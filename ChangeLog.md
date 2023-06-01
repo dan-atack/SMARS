@@ -3001,7 +3001,7 @@ Exit Criteria:
 
 9. Modify the existing DNS record used by the staging server to route traffic from staging.freesmars.com instead of the from the root address, so we can reserve that URL for future staging deployments/tests... This will actually require the creation of a new certificate for the staging machine, since the existing one is strictly for freesmars.com, not staging.freesmars.com, so that will be a good opportunity to rehearse the steps needed to create a certificate.
 
-### 9. Now for a slightly trickier bit: Add a script resource to your Terraform file (or possibly in its own file - we'll ask Chat GPT what's a best practice for this kind of thing) that installs the Docker Engine on the EC2 host once it's booted up. As before, plan, apply, verify, and then destroy.
+10. Now for a slightly trickier bit: Add a script resource to your Terraform file (or possibly in its own file - we'll ask Chat GPT what's a best practice for this kind of thing) that installs the Docker Engine on the EC2 host once it's booted up. As before, plan, apply, verify, and then destroy. ADDENDUM: After a lot of trial and error, this was achieved by inserting a user_data block, which contains an inline bash script into the AWS instance resource definition.
 
 ### 10. Next, it's time to start thinking about getting the game's Docker images installed. Since we still have not developed a method for building the game's images elsewhere, and since we will be faithfully copying the deployment on the staging machine, for now the procedure should be to clone the project's git repository to the /smars directory, and run `docker compose up` to create the game's images and launch the stack (all of this should be done in the context of the EC2's startup script file).
 
