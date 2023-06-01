@@ -49,6 +49,7 @@ resource "aws_instance" "smars_prod_server" {
   key_name      = "SMARS_Prod_EC2"
   
   user_data = <<EOF
+    #!/bin/bash
     sudo apt-get update
     sudo apt-get install ca-certificates curl gnupg -y
     sudo install -m 0755 -d /etc/apt/keyrings
