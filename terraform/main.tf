@@ -48,13 +48,14 @@ resource "aws_instance" "smars_prod_server" {
   vpc_security_group_ids = ["${aws_security_group.smars_prod_sg.id}"]
   key_name      = "SMARS_Prod_EC2"
   
-  user_data = <<EOF
+  user_data = <<-EOF
     #!/bin/bash
     sudo apt-get update
     sudo apt-get install ca-certificates curl gnupg -y
     sudo install -m 0755 -d /etc/apt/keyrings
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
     sudo chmod a+r /etc/apt/keyrings/docker.gpg
+    mkdir ~/smars
   EOF
   
   tags = {
