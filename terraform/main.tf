@@ -33,6 +33,14 @@ resource "aws_security_group" "smars_prod_sg" {
       cidr_blocks = ["0.0.0.0/0"]
     }
 
+    ingress {
+      description = "HTTP from anywhere"
+      from_port = 80
+      to_port = 80
+      protocol = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+
     egress {
     from_port        = 0
     to_port          = 0
@@ -68,7 +76,7 @@ resource "aws_instance" "smars_prod_server" {
     sudo snap install core; sudo snap refresh core
     sudo snap install --classic certbot
     sudo ln -s /snap/bin/certbot /usr/bin/certbot
-    
+    sudo certbot certonly --non-interactive --agree-tos --email dan_atack@hotmail.com --domain freesmars.com --standalone
     # Get SMARS source code and build the Docker images with Docker compose
     mkdir ~/smars
     cd ~/smars
