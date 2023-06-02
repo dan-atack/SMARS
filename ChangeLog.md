@@ -3005,13 +3005,15 @@ Exit Criteria:
 
 11. Next, it's time to start thinking about getting the game's Docker images installed. Since we still have not developed a method for building the game's images elsewhere, and since we will be faithfully copying the deployment on the staging machine, for now the procedure should be to clone the project's git repository to the /smars directory, and run `docker compose up` to create the game's images and launch the stack (all of this should be done in the context of the EC2's startup script file). ADDENDUM: This method works, but it's critical to note that you mustn't SSH in to the instance for a good couple of minutes after Terraform declares it to be up and running, as it has to assemble the SMARS images via docker compose and if interrupted it will fail in a messy way that doesn't permit a simple re-run of the compose command. You must instead destroy the instance and then re-run the TF apply, and wait again (I'd say give it 10 minutes just to be really safe). After that you can SSH in and check that it's running with `docker ps` and both containers (DB and backend) should be there.
 
-### 11. Finally, the last components we need to get this thing running are the certificate and key files. The way I see it there are two possible methods to get them on the server computer: Either we can add to the post-launch script (user_data) to install Certbot and use it in non-interactive mode to generate a new certificate, OR we can set about creating a permanent volume with EBS, create the certificates by hand, and then keep them on this volume, and ensure it's mapped to the correct location in the EC2's file system. We'll try the former approach first, and if it doesn't work we can try the latter.
+12. Finally, the last components we need to get this thing running are the certificate and key files. The way I see it there are two possible methods to get them on the server computer: Either we can add to the post-launch script (user_data) to install Certbot and use it in non-interactive mode to generate a new certificate, OR we can set about creating a permanent volume with EBS, create the certificates by hand, and then keep them on this volume, and ensure it's mapped to the correct location in the EC2's file system. We'll try the former approach first, and if it doesn't work we can try the latter. If this works, we should be able to visit the game and play it at freesmars.com, on our brand-new pre-production server!
 
-### 12. Extract values from the main.tf file into a separate variables.tf file, like a good Terraformer.
+### 12. Create a terraform variables file, and extract the values for environment, domain name, and zone ID (related to the domain) from the main.tf script, and set them with environment variables instead. Validate this works by setting a test environment variable in the VM workspace, and then launching a build that, within the user_data script, creates a file named after this variable, to ensure it was integrated successfully.
+
+### 14. Create a second SMARS directory on the local Dev VM, and call it smars_prod. In there, set all of the environment variables for the production environment. Rename the original smars directory smars_staging, and do the same with its environment variables.
+
+### 15. List the environment variables and their options in the game's README file.
 
 ### 13. Create a basic terraform outputs file as well, to gain insight into how your Terraform resources' values will be fed into each other (this assists hugely with the planning phase and helps to avoid unexpected results).
-
-### 14. Think about how to differentiate between 'staging' and 'production' environments when deploying with Terraform - it should be possible to do either from the local VM, so maybe a script on that machine and/or some environment variables could be used to alternate between the two.
 
 ## Chapter Ten: Persistent Database Volume on the Cloud
 
