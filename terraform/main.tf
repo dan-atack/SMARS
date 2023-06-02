@@ -62,6 +62,13 @@ resource "aws_instance" "smars_prod_server" {
     sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
     sudo apt-get update
     sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+    # Install Certbot, and use it to create the TLS/SSL certificates required to run the backend's HTTPS mode
+    sudo apt update
+    sudo apt install snapd
+    sudo snap install core; sudo snap refresh core
+    sudo snap install --classic certbot
+    sudo ln -s /snap/bin/certbot /usr/bin/certbot
+    
     # Get SMARS source code and build the Docker images with Docker compose
     mkdir ~/smars
     cd ~/smars
