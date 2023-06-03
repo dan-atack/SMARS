@@ -53,7 +53,7 @@ resource "aws_security_group" "smars_server_sg" {
 resource "aws_instance" "smars_prod_server" {
   ami           = "ami-0a695f0d95cefc163"
   instance_type = "t2.small"
-  vpc_security_group_ids = ["${aws_security_group.smars_prod_sg.id}"]
+  vpc_security_group_ids = ["${aws_security_group.smars_server_sg.id}"]
   key_name      = "SMARS_Prod_EC2"
   
   user_data = <<-EOF
@@ -85,7 +85,7 @@ resource "aws_instance" "smars_prod_server" {
   EOF
   
   tags = {
-    Name = "smars_${smars_environment}_server"
+    Name = "smars_${var.smars_environment}_server"
   }
 }
 
