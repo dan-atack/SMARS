@@ -13,16 +13,16 @@ provider "aws" {
   region = "us-east-2"
 }
 
-resource "aws_security_group" "smars_prod_sg" {
+resource "aws_security_group" "smars_server_sg" {
   description = "SMARS Production Server Security Group"
-  name = "SMARS_Prod_SG"
+  name = "smars_${var.smars_environment}_sg"
 
   ingress {
     description = "SSH from me"
     from_port = 22
     to_port = 22
     protocol = "tcp"
-    cidr_blocks = ["192.226.135.170/32"]
+    cidr_blocks = [var.ssh_allow_origin]
   }
 
   ingress {
@@ -58,46 +58,45 @@ resource "aws_instance" "smars_prod_server" {
   
   user_data = <<-EOF
     #!/bin/bash
-    mkdir ~/"${var.test_var}"
     # Install Docker
-    # sudo apt-get update
-    # sudo apt-get install ca-certificates curl gnupg -y
-    # sudo install -m 0755 -d /etc/apt/keyrings
-    # curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-    # sudo chmod a+r /etc/apt/keyrings/docker.gpg
-    # echo \
-    # "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-    # "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
-    # sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-    # sudo apt-get update
-    # sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
-    # # Install Certbot, and use it to create the TLS/SSL certificates required to run the backend's HTTPS mode
-    # sudo apt update
-    # sudo apt install snapd
-    # sudo snap install core; sudo snap refresh core
-    # sudo snap install --classic certbot
-    # sudo ln -s /snap/bin/certbot /usr/bin/certbot
-    # sudo certbot certonly --non-interactive --agree-tos --email dan_atack@hotmail.com --domain freesmars.com --standalone
+    sudo apt-get update
+    sudo apt-get install ca-certificates curl gnupg -y
+    sudo install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    sudo chmod a+r /etc/apt/keyrings/docker.gpg
+    echo \
+    "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+    "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update
+    sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+    # Install Certbot, and use it to create the TLS/SSL certificates required to run the backend's HTTPS mode
+    sudo apt update
+    sudo apt install snapd
+    sudo snap install core; sudo snap refresh core
+    sudo snap install --classic certbot
+    sudo ln -s /snap/bin/certbot /usr/bin/certbot
+    sudo certbot certonly --non-interactive --agree-tos --email dan_atack@hotmail.com --domain ${var.domain_name} --standalone
     # Get SMARS source code and build the Docker images with Docker compose
-    # mkdir ~/smars
-    # cd ~/smars
-    # git clone https://github.com/dan-atack/SMARS.git .
-    # docker compose up
+    mkdir ~/smars
+    cd ~/smars
+    git clone https://github.com/dan-atack/SMARS.git .
+    docker compose up
   EOF
   
   tags = {
-    Name = "SMARS_Prod_Server"
+    Name = "smars_${smars_environment}_server"
   }
 }
 
-resource "aws_eip" "smars_prod_eip" {
+resource "aws_eip" "smars_server_eip" {
   instance = aws_instance.smars_prod_server.id
 }
 
 resource "aws_route53_record" "freesmars" {
-  zone_id = "Z066017510JYQP23YIULK"
-  name = "freesmars.com"
+  zone_id = var.zone_id
+  name = var.domain_name
   type = "A"
   ttl = 300
-  records = [aws_eip.smars_prod_eip.public_ip]
+  records = [aws_eip.smars_server_eip.public_ip]
 }
