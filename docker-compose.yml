@@ -6,8 +6,8 @@ services:
     build:
       context: .
       args:
-        - TF_VAR_smars_environment=$TF_VAR_smars_environment
-        - TF_VAR_domain_name=$TF_VAR_domain_name
+        - TF_VAR_smars_environment=$smars_environment
+        - TF_VAR_domain_name=$domain_name
     image: smars-backend:latest
     ports:
       - "7000:7000"

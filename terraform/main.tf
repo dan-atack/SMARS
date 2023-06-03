@@ -80,6 +80,9 @@ resource "aws_instance" "smars_prod_server" {
     # Get SMARS source code and build the Docker images with Docker compose
     mkdir ~/smars
     cd ~/smars
+    # Add local environment variable files to assist docker image build
+    echo "smars_environment=${var.smars_environment}" | cat > .env
+    echo "domain_name=${var.domain_name} | cat >> .env
     git clone https://github.com/dan-atack/SMARS.git .
     docker compose up
   EOF

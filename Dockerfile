@@ -8,8 +8,8 @@ WORKDIR /usr/src/app
 COPY frontend/package*.json .
 RUN npm install
 COPY frontend/. /usr/src/app
-ENV ENVIRONMENT=${TF_VAR_smars_environment}
-ENV SERVER_NAME=${TF_VAR_domain_name}
+ENV ENVIRONMENT=${smars_environment}
+ENV SERVER_NAME=${domain_name}
 ENV SERVER_PORT=7000
 ENV HTTPS_PORT=443
 RUN npm run build
