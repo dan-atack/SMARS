@@ -3,17 +3,22 @@ version: "3"
 services:
 
   backend:
-    build: .
+    build:
+      context: .
+      args:
+        - TF_VAR_smars_environment=$TF_VAR_smars_environment
+        - TF_VAR_domain_name=$TF_VAR_domain_name
     image: smars-backend:latest
     ports:
       - "7000:7000"
       - "443:443"
     volumes:
-      -  '/etc/letsencrypt/archive/freesmars.com:/usr/src/app/certificates'
+      -  "/etc/letsencrypt/archive/freesmars.com:/usr/src/app/certificates"
     depends_on:
       - db
     networks:
       - smars_default
+    restart: on-failure
 
   db:
     image: mongo:latest
@@ -23,5 +28,7 @@ services:
       - '/var/lib/docker/volumes/mongo:/data/db'
     networks:
       - smars_default
+    restart: on-failure
+
 networks:
   smars_default:

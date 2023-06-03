@@ -2973,15 +2973,15 @@ Although the infrastructure for SMARS's online presence is only fledgling, the t
 
 Exit Criteria:
 
-- With the `terraform apply` command the following resources are made in a SMARS-production organization (?):
-  - Security group
-  - EC2 instance
-  - Elastic IP
-  - [STRETCH] Elastic IP is connected to DNS address
-  - Docker images for SMARS installed on EC2
-  - Docker engine installed on EC2
-  - [STRETCH] ECR for game's Docker images
-  - [STRETCH] TLS/SSL certificates installed on EC2
+- With the `terraform apply` command the following resources are made on the AWS cloud:
+  - [DONE] Security group
+  - [DONE] EC2 instance
+  - [DONE] Elastic IP
+  - [DONE] Elastic IP is connected to DNS address
+  - [DONE] Docker images for SMARS installed on EC2
+  - [DONE] Docker engine installed on EC2
+  - [DONE] TLS/SSL certificates installed on EC2
+  - [DONE] Game can be played at its URL address on infra deployed entirely by the `terraform apply` command
 
 1. Install the Terraform CLI on the game's virtual development machine, following the instructions found at https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli
 
@@ -3007,13 +3007,13 @@ Exit Criteria:
 
 12. Finally, the last components we need to get this thing running are the certificate and key files. The way I see it there are two possible methods to get them on the server computer: Either we can add to the post-launch script (user_data) to install Certbot and use it in non-interactive mode to generate a new certificate, OR we can set about creating a permanent volume with EBS, create the certificates by hand, and then keep them on this volume, and ensure it's mapped to the correct location in the EC2's file system. We'll try the former approach first, and if it doesn't work we can try the latter. If this works, we should be able to visit the game and play it at freesmars.com, on our brand-new pre-production server!
 
-### 12. Create a terraform variables file, and extract the values for environment, domain name, and zone ID (related to the domain) from the main.tf script, and set them with environment variables instead. Validate this works by setting a test environment variable in the VM workspace, and then launching a build that, within the user_data script, creates a file named after this variable, to ensure it was integrated successfully. Once done, extract all the above-mentioned variables and replace them with terraform variables, then create the values for each of these variables in the environment of the smars directory on the dev VM. Remember to prefix every variable's name from the variables.tf file with "TF_VAR" plus another underscore when defining the values in the local environment (e.g. the variable smars_environment is set by entering the command `export TF_VAR_smars_environment=staging`).
+13. Create a terraform variables file, and extract the values for environment, domain name, and zone ID (related to the domain) from the main.tf script, and set them with environment variables instead. Validate this works by setting a test environment variable in the VM workspace, and then launching a build that, within the user_data script, creates a file named after this variable, to ensure it was integrated successfully. Once done, extract all the above-mentioned variables and replace them with terraform variables, then create the values for each of these variables in the environment of the smars directory on the dev VM. Remember to prefix every variable's name from the variables.tf file with "TF_VAR" plus another underscore when defining the values in the local environment (e.g. the variable smars_environment is set by entering the command `export TF_VAR_smars_environment=staging`). Validate, plan, apply, verify and destroy.
 
-### 14. Create a second SMARS directory on the local Dev VM, and call it smars_prod. In there, set all of the environment variables for the production environment. Rename the original smars directory smars_staging, and do the same with its environment variables.
+14. Create a second SMARS directory on the local Dev VM, and call it smars_prod. In there, set all of the environment variables for the production environment. Rename the original smars directory smars_staging, and do the same with its environment variables.
 
-### 15. List the environment variables and their options in the game's README file.
+15. List the environment variables and their options in the game's README file.
 
-### 13. Create a basic terraform outputs file as well, to gain insight into how your Terraform resources' values will be fed into each other (this assists hugely with the planning phase and helps to avoid unexpected results).
+### 16. Update the project's Dockerfile to also read the same environment variables introduced on step 13. Again, verify by doing the standard plan, apply, verify and destroy routine.
 
 ## Chapter Ten: Persistent Database Volume on the Cloud
 
@@ -3022,6 +3022,22 @@ Exit Criteria:
 ### Date: TBD
 
 Description Paragraph
+
+Exit Criteria:
+
+- Criteria 1
+- Criteria 2
+- ...
+
+### 1. Step One...
+
+## Chapter Eleven: Staging Update Test on the Cloud
+
+### Difficulty Estimate: TBD
+
+### Date: TBD
+
+The final thing to do before taking the system live is to do a simulated update of the game's source code and deploy that to a staging instance, to determine what steps are needed, what can be automated vs what has to be done 'by hand' for each update, and how much of a disruption it is to the game's (currently only) running server instance. Once this process has been understood, we can keep a permanent production server up and running on the cloud, and begin updating it continuously (looks like game UX, storyline and assets are back on the menu boys!).
 
 Exit Criteria:
 
