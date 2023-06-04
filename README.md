@@ -54,7 +54,7 @@ Once the stack has started, you should be able to play the game by going to http
 - cd into terraform directory
 - Set environment variables:
 
-export TF_VAR_smars_environment=<environment>
-export TF_VAR_domain_name=<domain name>
-export TF_VAR_zone_id=<hosted zone ID>
-export TF_VAR_ssh_allow_origin=<ip address for ssh access origin>
+export TF_VAR_SMARS_ENVIRONMENT=<environment>
+export TF_VAR_DOMAIN_NAME=<domain name>
+export TF_VAR_ZONE_ID=<hosted zone ID>
+export TF_VAR_SSH_ALLOW_ORIGIN=<ip address for ssh access origin (e.g. your PC's IP Address)>

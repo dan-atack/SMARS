@@ -15,14 +15,14 @@ provider "aws" {
 
 resource "aws_security_group" "smars_server_sg" {
   description = "SMARS Production Server Security Group"
-  name = "smars_${var.smars_environment}_sg"
+  name = "smars_${var.SMARS_ENVIRONMENT}_sg"
 
   ingress {
     description = "SSH from me"
     from_port = 22
     to_port = 22
     protocol = "tcp"
-    cidr_blocks = [var.ssh_allow_origin]
+    cidr_blocks = [var.SSH_ALLOW_ORIGIN]
   }
 
   ingress {
@@ -76,7 +76,7 @@ resource "aws_instance" "smars_prod_server" {
     sudo snap install core; sudo snap refresh core
     sudo snap install --classic certbot
     sudo ln -s /snap/bin/certbot /usr/bin/certbot
-    sudo certbot certonly --non-interactive --agree-tos --email dan_atack@hotmail.com --domain ${var.domain_name} --standalone
+    sudo certbot certonly --non-interactive --agree-tos --email dan_atack@hotmail.com --domain ${var.DOMAIN_NAME} --standalone
     # Get SMARS source code and build the Docker images with Docker compose
     mkdir ~/smars
     cd ~/smars
@@ -84,13 +84,13 @@ resource "aws_instance" "smars_prod_server" {
     sudo git fetch
     sudo git checkout V-02-CH-09-Terraform-initiated
     # Add local environment variable files to assist docker image build
-    echo "smars_environment=${var.smars_environment}" | cat > .env
-    echo "domain_name=${var.domain_name}" | cat >> .env
+    echo "SMARS_ENVIRONMENT=${var.SMARS_ENVIRONMENT}" | cat > .env
+    echo "DOMAIN_NAME=${var.DOMAIN_NAME}" | cat >> .env
     docker compose up
   EOF
   
   tags = {
-    Name = "smars_${var.smars_environment}_server"
+    Name = "smars_${var.SMARS_ENVIRONMENT}_server"
   }
 }
 
@@ -99,8 +99,8 @@ resource "aws_eip" "smars_server_eip" {
 }
 
 resource "aws_route53_record" "freesmars" {
-  zone_id = var.zone_id
-  name = var.domain_name
+  zone_id = var.ZONE_ID
+  name = var.DOMAIN_NAME
   type = "A"
   ttl = 300
   records = [aws_eip.smars_server_eip.public_ip]

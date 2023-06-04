@@ -1,7 +1,7 @@
 # Build frontend package
 FROM ubuntu:kinetic AS frontend
-ARG SMARS_ENVIRONMENT=staging
-ARG DOMAIN_NAME=staging.freesmars.com
+ARG SMARS_ENVIRONMENT
+ARG DOMAIN_NAME
 RUN apt-get update
 RUN apt-get install -y npm
 WORKDIR /usr/src/app
