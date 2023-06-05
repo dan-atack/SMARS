@@ -8,6 +8,7 @@ WORKDIR /usr/src/app
 COPY frontend/package*.json .
 RUN npm install
 COPY frontend/. /usr/src/app
+
 ENV ENVIRONMENT=${SMARS_ENVIRONMENT}
 ENV SERVER_NAME=${DOMAIN_NAME}
 ENV SERVER_PORT=7000
@@ -16,6 +17,8 @@ RUN npm run build
 
 # Backend
 FROM ubuntu:kinetic
+ARG SMARS_ENVIRONMENT
+ARG DOMAIN_NAME
 RUN apt-get update
 RUN apt-get install -y npm
 WORKDIR /usr/src/app

@@ -58,12 +58,14 @@ if (ENV !== 'dev') {
     const server = https.createServer(serverOptions, app);
 
     server.listen(443, () => {
+        console.log(`Server is running in ${ENV} environment.`);
         console.log(`HTTPS server listening at port ${HTTPS_PORT}.`);
         // Validate database connection when server is initialized
         validateDB();
     });
 } else {
     app.listen(PORT, () => {
+        console.log(`Server is running in ${ENV} environment.`);
         console.log(`Listening on port ${PORT}`);
         // Validate database connection when server is initialized
         validateDB();

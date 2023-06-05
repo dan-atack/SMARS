@@ -6,14 +6,14 @@ services:
     build:
       context: .
       args:
-        - SMARS_ENVIRONMENT=$TF_VAR_SMARS_ENVIRONMENT
-        - DOMAIN_NAME=$TF_VAR_DOMAIN_NAME
+        - SMARS_ENVIRONMENT=${SMARS_ENVIRONMENT}
+        - DOMAIN_NAME=${DOMAIN_NAME}
     image: smars-backend:latest
     ports:
       - "7000:7000"
       - "443:443"
     volumes:
-      -  "/etc/letsencrypt/archive/${TF_VAR_DOMAIN_NAME}:/usr/src/app/certificates"
+      -  "/etc/letsencrypt/archive/${DOMAIN_NAME}:/usr/src/app/certificates"
     depends_on:
       - db
     networks:
