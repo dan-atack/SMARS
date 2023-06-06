@@ -3013,7 +3013,7 @@ Exit Criteria:
 
 15. List the environment variables and their options in the game's README file.
 
-### 16. Update the project's Dockerfile to also read the same environment variables introduced on step 13. Again, verify by doing the standard plan, apply, verify and destroy routine.
+16. Update the project's Dockerfile to also read the same environment variables introduced on step 13. Ensure that the environment variables are created in a .env file by the Terraform main script AFTER the git repo is cloned, but BEFORE the 'docker compose' command (duh). Also ensure that the environment variables are imported by each stage individually, using the ARG statement for each variable to be used (ENVIRONMENT and DOMAIN_NAME are needed by both the frontend and backend stages, and ARG statements are limited in their scope, hence the need to declare them twice). Again, verify by doing the standard plan, apply, verify and then hold off on the destroy, as we will keep the current stack for testing in the next chapter...
 
 ## Chapter Ten: Persistent Database Volume on the Cloud
 
