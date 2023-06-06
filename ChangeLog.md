@@ -2922,7 +2922,7 @@ Exit Criteria:
 - [DONE] The game can can be played at https://freesmars.com rather than http://freesmars.com
 - [DONE] The game can be visited in a web browser without receiving any warnings about the site being suspicious in any way
 - [DONE] Full frontend build / integration with backend / final backend image creation process is thoroughly documented
-- [STRETCH] New versions of the game's backend image (now the game's only image) are built automatically with a multi-stage Dockerfile
+- [STRETCH] [DONE] New versions of the game's backend image (now the game's only image) are built automatically with a multi-stage Dockerfile
 
 1. Fire up the EC2, connect static IP, Route 53, etc... how can you not wait to automate all of this, by the way?!
 
@@ -2963,13 +2963,81 @@ Exit Criteria:
 
 14. Clean up the repo: Delete the frontend and backend Dockerfiles, and update the docker-compose file to eliminate the commented-out code for the no-longer-used frontend service.
 
-## Chapter Nine: Persistent Database Volume on the Cloud
+## Chapter Nine: Terraform Initiated - Using Infrastructure As Code to Prepare the Production Environment
+
+### Difficulty Estimate: 7 for using unfamiliar technology (we have used Terraform before but not very much, and never in the driver's seat)
+
+### Date: May 20, 2023
+
+Although the infrastructure for SMARS's online presence is only fledgling, the time has come to put it in code so that it can be reliably reproduced, maintained and when needed, destroyed. Terraform has been chosen as the Infrastructure-as-Code (IaC) framework that will be used for this endeavour, as I already have some limited experience using it. Since the creation of the staging server gave the opportunity to prototype the architecture that will be needed, now we can focus on replicating this setup using Terraform to generate the necessary resources on AWS. Once this is accomplished it will be much easier to deploy the app, maintain availability during updates, recover from crashes should they occur, and dismantle unnecessary infrastructure to control costs. It will also make it easier to prototype new additions to the cloud's infrastructure and keep a history of all of the changes that are made over the course of time. This chapter will be complete when we can use Terraform to launch an EC2 within a 'production' security group, attached to a static IP address / DNS record, install the project's Docker images and Docker engine on the machine that is produce in this way. Optional objectives to be researched include SSL/TLS certificate installation, and getting the projects images (now for the backend only) from an ECR that may also be made with Terraform.
+
+Exit Criteria:
+
+- With the `terraform apply` command the following resources are made on the AWS cloud:
+  - [DONE] Security group
+  - [DONE] EC2 instance
+  - [DONE] Elastic IP
+  - [DONE] Elastic IP is connected to DNS address
+  - [DONE] Docker images for SMARS installed on EC2
+  - [DONE] Docker engine installed on EC2
+  - [DONE] TLS/SSL certificates installed on EC2
+  - [DONE] Game can be played at its URL address on infra deployed entirely by the `terraform apply` command
+
+1. Install the Terraform CLI on the game's virtual development machine, following the instructions found at https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli
+
+2. Ensure the AWS CLI is also installed and available in this environment.
+
+3. Create a new AWS root user access key to allow Terraform development from the CLI (they say you shouldn't do that, but as a one-man operating team I am authorizing it!).
+
+4. Create a Terraform script, main.ts, that creates an EC2 instance called smars_prod_server with the same specs as the staging machine has. Plan, apply, verify, and then destroy.
+
+5. We'll always need to be able to log into our instances, so find out how to attach a key-pair to the production server instance and verify that it works by logging in with PuTTY. NOTE: This may not be PuTTY's fault, as the new instance is likely going into the 'default' Security Group, which has no access rules enabled for port 22 (or any other ports for that matter - try adding the security group and then revisit this item).
+
+6. Expand the Terraform script to create a Security Group for your production server, called SMARS-Prod-SG, again with the same settings as the staging server. Once again, plan, apply, verify and then destroy.
+
+7. Add an elastic IP address to your TF script, and once again, plan, apply, verify and destroy.
+
+8. Next, have Terraform create a DNS record to direct incoming traffic to the production server via its Elastic IP. As usual, plan, apply, verify and destroy. NOTE: for this to work properly you need to assign the EIP to the instance within its block, and then in the Route53_record resource, take the public_ip value from the EIP resource, NOT from the EC2 (otherwise you're liable to end up with a record that uses the EC2's original IP address, and not the EIP).
+
+9. Modify the existing DNS record used by the staging server to route traffic from staging.freesmars.com instead of the from the root address, so we can reserve that URL for future staging deployments/tests... This will actually require the creation of a new certificate for the staging machine, since the existing one is strictly for freesmars.com, not staging.freesmars.com, so that will be a good opportunity to rehearse the steps needed to create a certificate.
+
+10. Now for a slightly trickier bit: Add a script resource to your Terraform file (or possibly in its own file - we'll ask Chat GPT what's a best practice for this kind of thing) that installs the Docker Engine on the EC2 host once it's booted up. As before, plan, apply, verify, and then destroy. ADDENDUM: After a lot of trial and error, this was achieved by inserting a user_data block, which contains an inline bash script into the AWS instance resource definition.
+
+11. Next, it's time to start thinking about getting the game's Docker images installed. Since we still have not developed a method for building the game's images elsewhere, and since we will be faithfully copying the deployment on the staging machine, for now the procedure should be to clone the project's git repository to the /smars directory, and run `docker compose up` to create the game's images and launch the stack (all of this should be done in the context of the EC2's startup script file). ADDENDUM: This method works, but it's critical to note that you mustn't SSH in to the instance for a good couple of minutes after Terraform declares it to be up and running, as it has to assemble the SMARS images via docker compose and if interrupted it will fail in a messy way that doesn't permit a simple re-run of the compose command. You must instead destroy the instance and then re-run the TF apply, and wait again (I'd say give it 10 minutes just to be really safe). After that you can SSH in and check that it's running with `docker ps` and both containers (DB and backend) should be there.
+
+12. Finally, the last components we need to get this thing running are the certificate and key files. The way I see it there are two possible methods to get them on the server computer: Either we can add to the post-launch script (user_data) to install Certbot and use it in non-interactive mode to generate a new certificate, OR we can set about creating a permanent volume with EBS, create the certificates by hand, and then keep them on this volume, and ensure it's mapped to the correct location in the EC2's file system. We'll try the former approach first, and if it doesn't work we can try the latter. If this works, we should be able to visit the game and play it at freesmars.com, on our brand-new pre-production server!
+
+13. Create a terraform variables file, and extract the values for environment, domain name, and zone ID (related to the domain) from the main.tf script, and set them with environment variables instead. Validate this works by setting a test environment variable in the VM workspace, and then launching a build that, within the user_data script, creates a file named after this variable, to ensure it was integrated successfully. Once done, extract all the above-mentioned variables and replace them with terraform variables, then create the values for each of these variables in the environment of the smars directory on the dev VM. Remember to prefix every variable's name from the variables.tf file with "TF_VAR" plus another underscore when defining the values in the local environment (e.g. the variable smars_environment is set by entering the command `export TF_VAR_smars_environment=staging`). Validate, plan, apply, verify and destroy.
+
+14. Create a second SMARS directory on the local Dev VM, and call it smars_prod. In there, set all of the environment variables for the production environment. Rename the original smars directory smars_staging, and do the same with its environment variables.
+
+15. List the environment variables and their options in the game's README file.
+
+16. Update the project's Dockerfile to also read the same environment variables introduced on step 13. Ensure that the environment variables are created in a .env file by the Terraform main script AFTER the git repo is cloned, but BEFORE the 'docker compose' command (duh). Also ensure that the environment variables are imported by each stage individually, using the ARG statement for each variable to be used (ENVIRONMENT and DOMAIN_NAME are needed by both the frontend and backend stages, and ARG statements are limited in their scope, hence the need to declare them twice). Again, verify by doing the standard plan, apply, verify and then hold off on the destroy, as we will keep the current stack for testing in the next chapter...
+
+## Chapter Ten: Persistent Database Volume on the Cloud
 
 ### Difficulty Estimate: 5 for new technology (looking at AWS EBS for a first iteration)
 
-### Date: May 19, 2023
+### Date: TBD
 
 Description Paragraph
+
+Exit Criteria:
+
+- Criteria 1
+- Criteria 2
+- ...
+
+### 1. Step One...
+
+## Chapter Eleven: Staging Update Test on the Cloud
+
+### Difficulty Estimate: TBD
+
+### Date: TBD
+
+The final thing to do before taking the system live is to do a simulated update of the game's source code and deploy that to a staging instance, to determine what steps are needed, what can be automated vs what has to be done 'by hand' for each update, and how much of a disruption it is to the game's (currently only) running server instance. Once this process has been understood, we can keep a permanent production server up and running on the cloud, and begin updating it continuously (looks like game UX, storyline and assets are back on the menu boys!).
 
 Exit Criteria:
 
