@@ -3024,18 +3024,33 @@ Exit Criteria:
 
 ### Date: June 6, 2023
 
-Now that the game has fully reproducible infrastructure and can be deployed with minimal manual steps in either a Staging or Production environment, the time has come to investigate database volume persistence in the cloud environment. Preliminary investigation shows that it may be possible to detach the volume block from a stopped EC2 instance, and therefore it should be possible to transfer volume blocks from instance to instance (provided they are in the same availability zone). In order to complete this chapter it must be demonstrated that a volume containing a SMARS database can be easily attached to a new instance within the same environment (e.g. a production volume can attach to another production server instance), and all resources are clearly labeled to avoid confusion. It should also be possible to ensure that all deployments use the same AWS availability zone (us-east-2b) to ensure maximum volume sharing capability. Future chapters can deal with the concept of long-term backups and redundancy; for now we just want to make sure we have a procedure for getting the data out of one instance, and placing it into another one, to simulate recovering from an outage event.
+Now that the game has fully reproducible infrastructure and can be deployed with minimal manual steps in either a Staging or Production environment, the time has come to investigate database volume persistence in the cloud environment. Preliminary investigation shows that it may be possible to detach the volume block from a stopped EC2 instance, and therefore it should be possible to transfer volume blocks from instance to instance (provided they are in the same availability zone). However, this is almost certainly not a recommended strategy for ensuring long-term database preservation and stability, and so a different method will be used in this chapter. The goal now will be to do a database 'dump' into an S3 bucket, and then attempt to manually re-mount a backed-up database file into a new container instance. The presence of manual steps is acceptable, at least for now, given that this is a form of 'disaster recovery' and should not be part of the normal development workflow. Having said that, it will be important to fully document the steps taken to successfully remount a backed up database file, and to the extent possible, at least partially automate some of the steps involved.
 
 Exit Criteria:
 
-- All EC2 volumes are labeled (tagged) with the name of the instance they're originally attached to (e.g. smars_production_server)
-- All EC2 instances are created in the same availability zone
-- It is possible to remove a volume from one (stopped or terminated) instance and attach it to another in the same zone
-- Procedure for replacing a volume from one instance to another is fully documented
+- An S3 bucket for database backups is created via Terraform, and connected to the <environment> security group
+- A backup of the smars-database container is created, via a 'database dump,' at first executed manually from within the container
+- The backup file/s can be pushed to the S3 bucket and viewed there
+- Following the destruction of the originating instance/volume, the backup data can be mounted on a brand new instance/volume
+- Procedure for restoring a saved database from the S3 bucket is fully documented
+- Database backups are created on a scheduled basis (say once per day) with the help of a Cron schedule
+- [STRETCH] Database backups that are greater than, say, 30 days old are automatically deleted from the S3 bucket to avoid over-charges
 
 1. Cleanup from the previous chapter: create a terraform destroy script called destroyInfra.sh that loads the local environment variables and then runs 'terraform destroy.' In hindsight, this is really the absolute LEAST you can do to protect the production environment from being accidentally deleted... just sayin!
 
-### 2. Temporarily comment out the certificate creation steps for the user_data script, and then launch a new server from the staging environment. Test its destruction with the new destroyInfra script.
+2. Temporarily comment out the certificate creation steps for the user_data script, and then launch a new server from the staging environment. Test its destruction with the new destroyInfra script.
+
+3. Update the user_data script to use an 'if' condition to only create the certificates if the environment is not 'dev.'
+
+4. Test this by making a third directory at the root of the local VM host, and filling that with 'dev' environment variables.
+
+### 5. Update the Dockerfile to use port 80 for the Dev environment, so that you can mount an instance with the full SMARS stack that is capable of being reached at a new URL, dev.freesmars.com, for experimental work like what will follow in this chapter, without worrying about exceeding LetsEncrypt's weekly certificate/key limits. Plan, apply and destroy until this is validated.
+
+### 3. Add an S3 bucket to the Terraform main script, and create the infrastructure from the DEV environment. Plan, apply, and verify, but don't destroy this time (the next several steps will make use of the same running instance).
+
+### 4. While the dev instance is still running, SSH into the instance and then from there, attempt to create a backup of the database container's smars database by using the mongo dump command. Output to a file location on the Docker host at first.
+
+### 5. Next, install the AWS CLI on the EC2 instance so that it can be ordered to send the copied files to the
 
 ## Chapter Eleven: Staging Update Test on the Cloud
 

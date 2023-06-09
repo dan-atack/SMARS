@@ -10,7 +10,7 @@ services:
         - DOMAIN_NAME=${DOMAIN_NAME}
     image: smars-backend:latest
     ports:
-      - "7000:7000"
+      - "80:80"
       - "443:443"
     volumes:
       -  "/etc/letsencrypt/archive/${DOMAIN_NAME}:/usr/src/app/certificates"

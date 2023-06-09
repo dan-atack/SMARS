@@ -14,7 +14,7 @@ provider "aws" {
 }
 
 resource "aws_security_group" "smars_server_sg" {
-  description = "SMARS Production Server Security Group"
+  description = "SMARS ${var.SMARS_ENVIRONMENT} Server Security Group"
   name = "smars_${var.SMARS_ENVIRONMENT}_sg"
 
   ingress {
@@ -70,13 +70,18 @@ resource "aws_instance" "smars_prod_server" {
     sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
     sudo apt-get update
     sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
-    # Install Certbot, and use it to create the TLS/SSL certificates required to run the backend's HTTPS mode
-    # sudo apt update
-    # sudo apt install snapd
-    # sudo snap install core; sudo snap refresh core
-    # sudo snap install --classic certbot
-    # sudo ln -s /snap/bin/certbot /usr/bin/certbot
-    # sudo certbot certonly --non-interactive --agree-tos --email dan_atack@hotmail.com --domain ${var.DOMAIN_NAME} --standalone
+    # For non-dev environments, install Certbot, and use it to create the TLS/SSL certificates required to run the backend's HTTPS mode
+    if [ $TF_VAR_SMARS_ENVIRONMENT != "dev" ]
+    then 
+        sudo apt update
+        sudo apt install snapd
+        sudo snap install core; sudo snap refresh core
+        sudo snap install --classic certbot
+        sudo ln -s /snap/bin/certbot /usr/bin/certbot
+        sudo certbot certonly --non-interactive --agree-tos --email dan_atack@hotmail.com --domain ${var.DOMAIN_NAME} --standalone
+    else
+        echo "Booting in HTTP mode for Dev environment"
+    fi
     # Get SMARS source code and build the Docker images with Docker compose
     mkdir ~/smars
     cd ~/smars
