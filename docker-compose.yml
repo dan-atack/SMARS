@@ -18,7 +18,7 @@ services:
       - db
     networks:
       - smars_default
-    restart: on-failure
+    restart: unless-stopped
 
   db:
     image: mongo:latest
@@ -28,7 +28,7 @@ services:
       - '/var/lib/docker/volumes/mongo:/data/db'
     networks:
       - smars_default
-    restart: on-failure
+    restart: unless-stopped
 
 networks:
   smars_default:

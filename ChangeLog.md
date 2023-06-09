@@ -2969,7 +2969,7 @@ Exit Criteria:
 
 ### Date: May 20, 2023
 
-Although the infrastructure for SMARS's online presence is only fledgling, the time has come to put it in code so that it can be reliably reproduced, maintained and when needed, destroyed. Terraform has been chosen as the Infrastructure-as-Code (IaC) framework that will be used for this endeavour, as I already have some limited experience using it. Since the creation of the staging server gave the opportunity to prototype the architecture that will be needed, now we can focus on replicating this setup using Terraform to generate the necessary resources on AWS. Once this is accomplished it will be much easier to deploy the app, maintain availability during updates, recover from crashes should they occur, and dismantle unnecessary infrastructure to control costs. It will also make it easier to prototype new additions to the cloud's infrastructure and keep a history of all of the changes that are made over the course of time. This chapter will be complete when we can use Terraform to launch an EC2 within a 'production' security group, attached to a static IP address / DNS record, install the project's Docker images and Docker engine on the machine that is produce in this way. Optional objectives to be researched include SSL/TLS certificate installation, and getting the projects images (now for the backend only) from an ECR that may also be made with Terraform.
+Although the infrastructure for SMARS's online presence is only fledgling, the time has come to put it in code so that it can be reliably reproduced, maintained and when needed, destroyed. Terraform has been chosen as the Infrastructure-as-Code (IaC) framework that will be used for this endeavour, as I already have some limited experience using it. Since the creation of the staging server gave the opportunity to prototype the architecture that will be needed, now we can focus on replicating this setup using Terraform to generate the necessary resources on AWS. Once this is accomplished it will be much easier to deploy the app, maintain availability during updates, recover from crashes should they occur, and dismantle unnecessary infrastructure to control costs. It will also make it easier to prototype new additions to the cloud's infrastructure and keep a history of all of the changes that are made over the course of time. This chapter will be complete when we can use Terraform to launch an EC2 within a 'production' security group, attached to a static IP address / DNS record, install the project's Docker images and Docker engine on the machine that is produce in this way. Additional objectives to be researched include SSL/TLS certificate installation, and getting the projects images (now for the backend only) from an ECR that may also be made with Terraform.
 
 Exit Criteria:
 
@@ -2982,6 +2982,7 @@ Exit Criteria:
   - [DONE] Docker engine installed on EC2
   - [DONE] TLS/SSL certificates installed on EC2
   - [DONE] Game can be played at its URL address on infra deployed entirely by the `terraform apply` command
+  - [DONE] [STRETCH] Game can be deployed to either a 'staging' or 'production' environment by launching the Terraform commands from separately labeled workspaces on the local development VM (each has distinct .env files to differentiate them)
 
 1. Install the Terraform CLI on the game's virtual development machine, following the instructions found at https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli
 
@@ -3013,23 +3014,28 @@ Exit Criteria:
 
 15. List the environment variables and their options in the game's README file.
 
-16. Update the project's Dockerfile to also read the same environment variables introduced on step 13. Ensure that the environment variables are created in a .env file by the Terraform main script AFTER the git repo is cloned, but BEFORE the 'docker compose' command (duh). Also ensure that the environment variables are imported by each stage individually, using the ARG statement for each variable to be used (ENVIRONMENT and DOMAIN_NAME are needed by both the frontend and backend stages, and ARG statements are limited in their scope, hence the need to declare them twice). Again, verify by doing the standard plan, apply, verify and then hold off on the destroy, as we will keep the current stack for testing in the next chapter...
+16. Create a pair of short shell scripts, startPlan and startDeploy, that can be used to export the variables from the local .env file to be used by Terraform, and then call the terraform init, validate and plan commands (for startPlan) and terraform init and apply for startDeploy. Test these in a pre-production environment and then destroy the result once satisfied.
+
+17. Update the project's Dockerfile to also read the same environment variables introduced on step 13. Ensure that the environment variables are created in a .env file by the Terraform main script AFTER the git repo is cloned, but BEFORE the 'docker compose' command (duh). Also ensure that the environment variables are imported by each stage individually, using the ARG statement for each variable to be used (ENVIRONMENT and DOMAIN_NAME are needed by both the frontend and backend stages, and ARG statements are limited in their scope, hence the need to declare them twice). Again, verify by doing the standard plan, apply, verify and then hold off on the destroy, as we will keep the current stack for testing in the next chapter...
 
 ## Chapter Ten: Persistent Database Volume on the Cloud
 
 ### Difficulty Estimate: 5 for new technology (looking at AWS EBS for a first iteration)
 
-### Date: TBD
+### Date: June 6, 2023
 
-Description Paragraph
+Now that the game has fully reproducible infrastructure and can be deployed with minimal manual steps in either a Staging or Production environment, the time has come to investigate database volume persistence in the cloud environment. Preliminary investigation shows that it may be possible to detach the volume block from a stopped EC2 instance, and therefore it should be possible to transfer volume blocks from instance to instance (provided they are in the same availability zone). In order to complete this chapter it must be demonstrated that a volume containing a SMARS database can be easily attached to a new instance within the same environment (e.g. a production volume can attach to another production server instance), and all resources are clearly labeled to avoid confusion. It should also be possible to ensure that all deployments use the same AWS availability zone (us-east-2b) to ensure maximum volume sharing capability. Future chapters can deal with the concept of long-term backups and redundancy; for now we just want to make sure we have a procedure for getting the data out of one instance, and placing it into another one, to simulate recovering from an outage event.
 
 Exit Criteria:
 
-- Criteria 1
-- Criteria 2
-- ...
+- All EC2 volumes are labeled (tagged) with the name of the instance they're originally attached to (e.g. smars_production_server)
+- All EC2 instances are created in the same availability zone
+- It is possible to remove a volume from one (stopped or terminated) instance and attach it to another in the same zone
+- Procedure for replacing a volume from one instance to another is fully documented
 
-### 1. Step One...
+1. Cleanup from the previous chapter: create a terraform destroy script called destroyInfra.sh that loads the local environment variables and then runs 'terraform destroy.' In hindsight, this is really the absolute LEAST you can do to protect the production environment from being accidentally deleted... just sayin!
+
+### 2. Temporarily comment out the certificate creation steps for the user_data script, and then launch a new server from the staging environment. Test its destruction with the new destroyInfra script.
 
 ## Chapter Eleven: Staging Update Test on the Cloud
 
