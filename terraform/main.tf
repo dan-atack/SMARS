@@ -100,7 +100,7 @@ resource "aws_instance" "smars_server_instance" {
 }
 
 resource "aws_eip" "smars_server_eip" {
-  instance = aws_instance.smars_prod_server.id
+  instance = aws_instance.smars_server_instance.id
 }
 
 resource "aws_route53_record" "freesmars" {
