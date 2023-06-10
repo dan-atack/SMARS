@@ -50,7 +50,7 @@ resource "aws_security_group" "smars_server_sg" {
   }
 }
 
-resource "aws_instance" "smars_prod_server" {
+resource "aws_instance" "smars_server_instance" {
   ami           = "ami-0a695f0d95cefc163"
   instance_type = "t2.small"
   vpc_security_group_ids = ["${aws_security_group.smars_server_sg.id}"]
@@ -86,6 +86,8 @@ resource "aws_instance" "smars_prod_server" {
     mkdir ~/smars
     cd ~/smars
     sudo git clone https://github.com/dan-atack/SMARS.git .
+    # TEMPORARY: DELETE AFTER MERGING BRANCH
+    git checkout V-02-CH-10-Permanent-database-volumes
     # Add local environment variable files to assist docker image build
     echo "SMARS_ENVIRONMENT=${var.SMARS_ENVIRONMENT}" | cat > .env
     echo "DOMAIN_NAME=${var.DOMAIN_NAME}" | cat >> .env
