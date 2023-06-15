@@ -50,7 +50,7 @@ resource "aws_security_group" "smars_server_sg" {
   }
 }
 
-# Create the role to be assumed by the server EC2 to allow it to talk to the S3 bucket
+# Create the role that will be assumed by the server instance to allow it to talk to the S3 bucket
 resource "aws_iam_role" "s3_access_role" {
   name = "s3-database-backup-access-role"
 
@@ -62,7 +62,7 @@ resource "aws_iam_role" "s3_access_role" {
           "Action": "sts:AssumeRole",
           "Effect": "Allow",
           "Principal": {
-            "Service": "ec2.amazonaws.com
+            "Service": "ec2.amazonaws.com"
           }
         }
       ]
@@ -70,11 +70,12 @@ resource "aws_iam_role" "s3_access_role" {
   EOF
 }
 
-# Create an IAM policy that specifies access permissions that will be given to the server EC2, allowing it to read/write to the S3 bucket
-
+# Create an IAM policy that specifies access permissions for communicating with the S3 bucket, allowing it to read/write to it
+# TODO: Replace the hard-coded bucket name for 'resource' with a variable for the environment when creating the actual bucket with TF
 resource "aws_iam_policy" "s3_access_policy" {
-  name = "s3-database-backup-access-policy"
-  role = aws_iam_role.s3_access_role.name
+  name        = "s3-database-backup-access-policy"
+  path        = "/"
+  description = "Policy to provide S3 access to the server instance"
 
   policy = <<-EOF
     {
@@ -83,14 +84,28 @@ resource "aws_iam_policy" "s3_access_policy" {
         {
           "Effect": "Allow"
           "Action": [
+            "s3:List*",
             "s3:GetObject",
             "s3:PutObject"
           ],
-          "Resource": "arn:aws:s3:::smars-dev-bucket/*" # Replace with bucket named for the environment?
+          "Resource": "arn:aws:s3:::smars-dev-bucket/*"
         }
       ]
     }
   EOF
+}
+
+# Create an attachment between the S3 access role and the policy, to link them together
+resource "aws_iam_policy_attachment" "s3_access_policy_role" {
+  name       = "s3_access_attachment"
+  roles      = [aws_iam_role.s3_access_role.name]
+  policy_arn = aws_iam_policy.s3_access_policy.arn
+}
+
+# Create an EC2 instance PROFILE to finally connect the role attachment to the EC2 instance
+resource "aws_iam_instance_profile" "s3_access_profile" {
+  name = "s3_access_profile"
+  role = aws_iam_role.s3_access_role.name
 }
 
 resource "aws_instance" "smars_server_instance" {
@@ -98,7 +113,7 @@ resource "aws_instance" "smars_server_instance" {
   instance_type = "t2.small"
   vpc_security_group_ids = ["${aws_security_group.smars_server_sg.id}"]
   key_name      = "SMARS_Prod_EC2"
-  iam_instance_profile = aws_iam_role.s3_access_role.name
+  iam_instance_profile = aws_iam_instance_profile.s3_access_profile.name
   
   user_data = <<-EOF
     #!/bin/bash

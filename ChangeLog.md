@@ -3074,9 +3074,13 @@ Exit Criteria:
 
 12. Next, still in Terraform, create an IAM policy resource (aws_iam_policy) to be associated with the role created in the previous step, that gives permission to read and write items to the Development S3 bucket. Once this has been validated we can add the code for the S3 bucket creation to terraform and use a variable inside the 'resource' attribute for this policy, to point to the bucket for the appropriate environment. For now though, since we're operating with a bucket created outside of terraform, we can just hard-code its name into the script.
 
-13. Next, attach your IAM role to the instance via an IAM instance profile attribute (e.g. iam_instance_profile = aws_iam_role.s3_access_role.name).
+13. Next, create an attachment resource (aws_iam_policy_attachment) that will link your Policy resource to the Role created in step 11. This attachment resource is like a junction that allows you to fuse the policy and the role together so that when the role is given to an instance PROFILE (on which more in a second) it will carry with it the specifications in the POLICY.
 
-14. Finally, update the instance's user_data script to add the steps outlined above to install unzip and the AWS CLI. Then let's get ready to fire this thing up and see if it works!
+14. Create an Instance Profile resource (aws_iam_instance_profile) that is associated to the ROLE created in step 11. This will be the resource that is given to the instance, as its iam_instace_profile attribute.
+
+15. Add the iam_instance_profile attribute to the server instance, to give it the access rights outlined in the policy. A bit convoluted the first time, but it's a good system for managing resource access permissions once you get the hang of it I'll bet!
+
+16. Finally, update the instance's user_data script to add the steps outlined above to install unzip and the AWS CLI. Then let's get ready to fire this thing up and see if it works!
 
 ### 12. Re-launch the dev/test infrastructure, and once it is finished booting up, run the database restore command from step 8 to import the saved data from our old 'production' server.
 
