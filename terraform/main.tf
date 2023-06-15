@@ -50,11 +50,55 @@ resource "aws_security_group" "smars_server_sg" {
   }
 }
 
+# Create the role to be assumed by the server EC2 to allow it to talk to the S3 bucket
+resource "aws_iam_role" "s3_access_role" {
+  name = "s3-database-backup-access-role"
+
+  assume_role_policy = <<-EOF
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Action": "sts:AssumeRole",
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "ec2.amazonaws.com
+          }
+        }
+      ]
+    }
+  EOF
+}
+
+# Create an IAM policy that specifies access permissions that will be given to the server EC2, allowing it to read/write to the S3 bucket
+
+resource "aws_iam_policy" "s3_access_policy" {
+  name = "s3-database-backup-access-policy"
+  role = aws_iam_role.s3_access_role.name
+
+  policy = <<-EOF
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow"
+          "Action": [
+            "s3:GetObject",
+            "s3:PutObject"
+          ],
+          "Resource": "arn:aws:s3:::smars-dev-bucket/*" # Replace with bucket named for the environment?
+        }
+      ]
+    }
+  EOF
+}
+
 resource "aws_instance" "smars_server_instance" {
   ami           = "ami-0a695f0d95cefc163"
   instance_type = "t2.small"
   vpc_security_group_ids = ["${aws_security_group.smars_server_sg.id}"]
   key_name      = "SMARS_Prod_EC2"
+  iam_instance_profile = aws_iam_role.s3_access_role.name
   
   user_data = <<-EOF
     #!/bin/bash
@@ -70,6 +114,11 @@ resource "aws_instance" "smars_server_instance" {
     sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
     sudo apt-get update
     sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+    # Install Unzip and AWS CLI, to allow communication with other resources
+    sudo apt install unzip
+    sudo curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    sudo unzip awscliv2.zip
+    sudo ./aws/install
     # Install Certbot, and use it to create the TLS/SSL certificates required to run the backend's HTTPS mode
     sudo apt update
     sudo apt install snapd

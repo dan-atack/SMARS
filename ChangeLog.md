@@ -3028,7 +3028,7 @@ Now that the game has fully reproducible infrastructure and can be deployed with
 
 Exit Criteria:
 
-- An S3 bucket for database backups is created via Terraform, and connected to the <environment> security group
+- An S3 bucket for database backups is created for each environment
 - A backup of the smars-database container is created, via a 'database dump,' at first executed manually from within the container
 - The backup file/s can be pushed to the S3 bucket and viewed there
 - Following the destruction of the originating instance/volume, the backup data can be mounted on a brand new instance/volume
@@ -3040,17 +3040,57 @@ Exit Criteria:
 
 2. Temporarily comment out the certificate creation steps for the user_data script, and then launch a new server from the staging environment. Test its destruction with the new destroyInfra script.
 
-3. Update the user_data script to use an 'if' condition to only create the certificates if the environment is not 'dev.'
+3. Create a new dev/test environment, which will use the URL test.freesmars.com instead of using staging for development work. Unfortunately the frontend no longer wants to show itself without an HTTPS certificate, so we'll have to create certificates for this URL just as we do for staging and production; try to use them judiciously as we expand our setup.
 
-4. Test this by making a third directory at the root of the local VM host, and filling that with 'dev' environment variables.
+4. Create a new user account, Danzel-dev, and make a quick save file on the dev server. We will use this to practice the archive/restore procedure for the database container.
 
-### 5. Update the Dockerfile to use port 80 for the Dev environment, so that you can mount an instance with the full SMARS stack that is capable of being reached at a new URL, dev.freesmars.com, for experimental work like what will follow in this chapter, without worrying about exceeding LetsEncrypt's weekly certificate/key limits. Plan, apply and destroy until this is validated.
+5. Manually create an S3 bucket and add it to the test environment's security group... ADDENDUM: It appears that S3 buckets are global, as opposed to anchored to a particular region/security group, so there's no need for the SG component.
 
-### 3. Add an S3 bucket to the Terraform main script, and create the infrastructure from the DEV environment. Plan, apply, and verify, but don't destroy this time (the next several steps will make use of the same running instance).
+6. SSH into the dev server instance and, from outside the database container, run the database 'mongodump' command to create a copy of the smars database on the host machine's volume (i.e. not inside the db container). This is the command used to create a mongo dump archive called all-collections.archive at the location ~/mongodump (IMPORTANT: The ~/mongodump directory must be created prior to executing the command):
 
-### 4. While the dev instance is still running, SSH into the instance and then from there, attempt to create a backup of the database container's smars database by using the mongo dump command. Output to a file location on the Docker host at first.
+`docker exec smars-db-1 sh -c 'exec mongodump -d smars --archive' > ~/mongodump/all-collections.archive`
 
-### 5. Next, install the AWS CLI on the EC2 instance so that it can be ordered to send the copied files to the
+7. Next, delete the database volume at /var/lib/docker/volumes/mongo, and restart the stack to verify that the test save file created earlier is no longer available.
+
+8. Next, run the restore command with the stack still running, and verify that the save game file is once again accessible. This was the command that was used successfully:
+
+`docker exec -i smars-db-1 sh -c 'mongorestore --archive' < all-collections.archive`
+
+9. Next, install the AWS CLI on your test instance so that it can communicate with your S3 bucket. Document the installation steps so they can be scripted later:
+
+- sudo apt install unzip
+- sudo curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+- sudo unzip awscliv2.zip
+- sudo ./aws/install
+- Create ~/.aws directory as root user
+- Manually create config and credentials files, and upload your secret key (!)
+- OR, as an alternative to the last 2 steps, create an IAM role and associate it with your server instance, to allow it to talk to your bucket
+
+10. Use the AWS CLI to copy the archive file to your S3 bucket. Once it has been verified that the file was copied successfully, tear down all the dev infrastructure with the destroyInfra.sh tool from your dev VM command line. Copy command for S3 bucket transfer:
+
+`aws s3 cp ~/mongodump/all-collections.archive s3://smars-dev-bucket`
+
+11. Create a new Terraform resource, an IAM Role (aws_iam_role resource) that will be used to attach an access policy for the S3 bucket to the server EC2 instance.
+
+12. Next, still in Terraform, create an IAM policy resource (aws_iam_policy) to be associated with the role created in the previous step, that gives permission to read and write items to the Development S3 bucket. Once this has been validated we can add the code for the S3 bucket creation to terraform and use a variable inside the 'resource' attribute for this policy, to point to the bucket for the appropriate environment. For now though, since we're operating with a bucket created outside of terraform, we can just hard-code its name into the script.
+
+13. Next, attach your IAM role to the instance via an IAM instance profile attribute (e.g. iam_instance_profile = aws_iam_role.s3_access_role.name).
+
+14. Finally, update the instance's user_data script to add the steps outlined above to install unzip and the AWS CLI. Then let's get ready to fire this thing up and see if it works!
+
+### 12. Re-launch the dev/test infrastructure, and once it is finished booting up, run the database restore command from step 8 to import the saved data from our old 'production' server.
+
+### 13. Pull the archive file from the S3 bucket to a local directory, ~/mongorestore.
+
+### 14. Run the restore command from step 8, and then in the browser, attempt to log in with the Danzel-dev username and password. If this works, then the database archive/restore procedure was successful and we can proceed to start automating things.
+
+### 15. Add the AWS CLI installation and setup to the Terraform user_data script block for the EC2 instance.
+
+### 16. Create a Cron schedule to routinely create a database dump every night at midnight, EST. Create some new user accounts and save files (list them separately) and then leave the server on over night to validate the Cron schedule is working.
+
+### 13. The next day, destroy the Dev/test infrastructure again, and then re-deploy it and run the restore command to simulate a full recovery process using automatically stored data.
+
+### 14. Look into creating a policy for the S3 bucket to automatically delete archives that are more than a week old.
 
 ## Chapter Eleven: Staging Update Test on the Cloud
 
