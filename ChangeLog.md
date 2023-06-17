@@ -3087,15 +3087,15 @@ to retrieve the backed up file from S3 bucket use this command (making sure that
 
 17. Re-launch the dev/test infrastructure, and once it is finished booting up, pull the saved database archive from the dev s3 bucket (as shown in step 10), and run the database restore command (as shown in step 8) to import the saved data from our old 'production' server.
 
-### 18. Create a new .sh file with a script that runs the database dump command. Place it, and all of the other shell scripts, in a new 'scripts' folder at the root of the smars directory.
+18. Create a new shell script file that runs the database dump command and saves the output in a file named for the current date, and then runs the S3 copy-to command to store the file in the backup bucket.
 
-### 16. Launch a fresh test instance. Create a Cron schedule to routinely call the database dump script every night at midnight, EST (or earlier if you want to validate it right away). Create some new user accounts and save files (list them separately) and then leave the server on over night to validate the Cron schedule is working.
+19. Launch a fresh test instance. Create a Cron schedule to routinely call the database dump script every night at midnight, EST (or earlier if you want to validate it right away). Create some new user accounts and save files (list them separately) and then leave the server on long enough to validate the Cron schedule is working.
 
-### 13. The next day, destroy the Dev/test infrastructure again, and then re-deploy it and run the restore command to simulate a full recovery process using automatically stored data. Document this process thoroughly in a new document: a user-guide markdown file documenting a database restore procedure to assist your future self if (and when!) a database restore is ever needed.
+20. Add the commands used to generate the cron job to the server instance's user_data script. That file's getting awfully big, eh?
 
-### 14. Add the commands used to generate the cron job to the server instance's user_data script. That file's getting awfully big, eh?
+21. On the Dev S3 bucket, create a policy for the S3 bucket to automatically delete archives that are more than 3 days old.
 
-### 14. Look into creating a policy for the S3 bucket to automatically delete archives that are more than a week old.
+22. Rebuild the project's infrastructure to validate the cron table job's integration. You should now be able to get a full database save if you hurry.
 
 ### 15. Add the S3 bucket, with its retention settings included, to the Terraform main file, and validate the entire stack, then close this chapter!
 
