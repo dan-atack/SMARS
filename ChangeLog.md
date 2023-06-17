@@ -3028,11 +3028,12 @@ Now that the game has fully reproducible infrastructure and can be deployed with
 
 Exit Criteria:
 
-- An S3 bucket for database backups is created for each environment
-- A backup of the smars-database container is created, via a 'database dump,' at first executed manually from within the container
-- The backup file/s can be pushed to the S3 bucket and viewed there
-- Following the destruction of the originating instance/volume, the backup data can be mounted on a brand new instance/volume
-- Procedure for restoring a saved database from the S3 bucket is fully documented
+- An S3 bucket for database backups is created as part of the Terraform deployment
+- [DONE] The server instance's database container can create a backup (archive) file of the game's database
+- [DONE] The server instance's database container can be given a backup (archive) file and use it to restore the game's database
+- [DONE] The backup file/s can be pushed from the server instance to the S3 bucket and viewed there
+- [DONE] Following the destruction of the originating instance/volume, the backed up data can be mounted on a brand new instance/volume
+- Procedure for restoring a saved database from the S3 bucket is fully documented - (First in a series of SMARS Admin how-to guides?!)
 - Database backups are created on a scheduled basis (say once per day) with the help of a Cron schedule
 - [STRETCH] Database backups that are greater than, say, 30 days old are automatically deleted from the S3 bucket to avoid over-charges
 
@@ -3062,13 +3063,15 @@ Exit Criteria:
 - sudo curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 - sudo unzip awscliv2.zip
 - sudo ./aws/install
-- Create ~/.aws directory as root user
-- Manually create config and credentials files, and upload your secret key (!)
-- OR, as an alternative to the last 2 steps, create an IAM role and associate it with your server instance, to allow it to talk to your bucket
+- Configure access permissions for your CLI (see steps 11 - 14 below for more on that!)
 
 10. Use the AWS CLI to copy the archive file to your S3 bucket. Once it has been verified that the file was copied successfully, tear down all the dev infrastructure with the destroyInfra.sh tool from your dev VM command line. Copy command for S3 bucket transfer:
 
 `aws s3 cp ~/mongodump/all-collections.archive s3://smars-dev-bucket`
+
+to retrieve the backed up file from S3 bucket use this command (making sure that the destination directory already exists):
+
+`aws s3 cp s3://smars-dev-bucket/smars.archive ~/smarsrestore`
 
 11. Create a new Terraform resource, an IAM Role (aws_iam_role resource) that will be used to attach an access policy for the S3 bucket to the server EC2 instance.
 
@@ -3080,21 +3083,21 @@ Exit Criteria:
 
 15. Add the iam_instance_profile attribute to the server instance, to give it the access rights outlined in the policy. A bit convoluted the first time, but it's a good system for managing resource access permissions once you get the hang of it I'll bet!
 
-16. Finally, update the instance's user_data script to add the steps outlined above to install unzip and the AWS CLI. Then let's get ready to fire this thing up and see if it works!
+16. Finally, update the instance's user_data script to add the unzip / AWS installation steps listed on step 9 to install unzip and the AWS CLI. Then let's get ready to fire this thing up and see if it works!
 
-### 12. Re-launch the dev/test infrastructure, and once it is finished booting up, run the database restore command from step 8 to import the saved data from our old 'production' server.
+17. Re-launch the dev/test infrastructure, and once it is finished booting up, pull the saved database archive from the dev s3 bucket (as shown in step 10), and run the database restore command (as shown in step 8) to import the saved data from our old 'production' server.
 
-### 13. Pull the archive file from the S3 bucket to a local directory, ~/mongorestore.
+### 18. Create a new .sh file with a script that runs the database dump command. Place it, and all of the other shell scripts, in a new 'scripts' folder at the root of the smars directory.
 
-### 14. Run the restore command from step 8, and then in the browser, attempt to log in with the Danzel-dev username and password. If this works, then the database archive/restore procedure was successful and we can proceed to start automating things.
+### 16. Launch a fresh test instance. Create a Cron schedule to routinely call the database dump script every night at midnight, EST (or earlier if you want to validate it right away). Create some new user accounts and save files (list them separately) and then leave the server on over night to validate the Cron schedule is working.
 
-### 15. Add the AWS CLI installation and setup to the Terraform user_data script block for the EC2 instance.
+### 13. The next day, destroy the Dev/test infrastructure again, and then re-deploy it and run the restore command to simulate a full recovery process using automatically stored data. Document this process thoroughly in a new document: a user-guide markdown file documenting a database restore procedure to assist your future self if (and when!) a database restore is ever needed.
 
-### 16. Create a Cron schedule to routinely create a database dump every night at midnight, EST. Create some new user accounts and save files (list them separately) and then leave the server on over night to validate the Cron schedule is working.
-
-### 13. The next day, destroy the Dev/test infrastructure again, and then re-deploy it and run the restore command to simulate a full recovery process using automatically stored data.
+### 14. Add the commands used to generate the cron job to the server instance's user_data script. That file's getting awfully big, eh?
 
 ### 14. Look into creating a policy for the S3 bucket to automatically delete archives that are more than a week old.
+
+### 15. Add the S3 bucket, with its retention settings included, to the Terraform main file, and validate the entire stack, then close this chapter!
 
 ## Chapter Eleven: Staging Update Test on the Cloud
 

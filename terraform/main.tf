@@ -143,6 +143,8 @@ resource "aws_instance" "smars_server_instance" {
     sudo certbot certonly --non-interactive --agree-tos --email dan_atack@hotmail.com --domain ${var.DOMAIN_NAME} --standalone
     # Get SMARS source code and build the Docker images with Docker compose
     mkdir ~/smars
+    # Prepare directory to store database backups
+    mkdir ~/backups
     cd ~/smars
     sudo git clone https://github.com/dan-atack/SMARS.git .
     # TEMPORARY: DELETE AFTER MERGING BRANCH
