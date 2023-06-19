@@ -20,7 +20,7 @@ const validateDB = require('./database_functions/validate_database');
 // App Variables
 
 const PORT: number = parseInt(process.env.PORT as string, 10) || 7000;
-const HTTPS_PORT: number = parseInt(process.env.PORT as string, 10) || 443;
+const HTTPS_PORT: number = parseInt(process.env.HTTPS_PORT as string, 10) || 443;
 const ENV: string = process.env.ENVIRONMENT?.toLowerCase() as string || 'dev';
 
 const app = express();
