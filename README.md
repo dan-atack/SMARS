@@ -52,9 +52,12 @@ Once the stack has started, you should be able to play the game by going to http
 
 - Pull git repo
 - cd into terraform directory
-- Set environment variables:
+- Create .env file with the following variables:
 
-export TF_VAR_SMARS_ENVIRONMENT=<environment>
-export TF_VAR_DOMAIN_NAME=<domain name>
-export TF_VAR_ZONE_ID=<hosted zone ID>
-export TF_VAR_SSH_ALLOW_ORIGIN=<ip address for ssh access origin (e.g. your PC's IP Address)>
+  export TF_VAR_SMARS_ENVIRONMENT=<environment>
+  export TF_VAR_DOMAIN_NAME=<domain name>
+  export TF_VAR_ZONE_ID=<hosted zone ID>
+  export TF_VAR_SSH_ALLOW_ORIGIN=<ip address for ssh access origin (e.g. your PC's IP Address)>
+
+- Run `bash startPlan` and verify the resulting Terraform plan
+- Run `bash startDeply` and enter 'yes' to confirm Terraform apply

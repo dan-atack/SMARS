@@ -2969,7 +2969,7 @@ Exit Criteria:
 
 ### Date: May 20, 2023
 
-Although the infrastructure for SMARS's online presence is only fledgling, the time has come to put it in code so that it can be reliably reproduced, maintained and when needed, destroyed. Terraform has been chosen as the Infrastructure-as-Code (IaC) framework that will be used for this endeavour, as I already have some limited experience using it. Since the creation of the staging server gave the opportunity to prototype the architecture that will be needed, now we can focus on replicating this setup using Terraform to generate the necessary resources on AWS. Once this is accomplished it will be much easier to deploy the app, maintain availability during updates, recover from crashes should they occur, and dismantle unnecessary infrastructure to control costs. It will also make it easier to prototype new additions to the cloud's infrastructure and keep a history of all of the changes that are made over the course of time. This chapter will be complete when we can use Terraform to launch an EC2 within a 'production' security group, attached to a static IP address / DNS record, install the project's Docker images and Docker engine on the machine that is produce in this way. Optional objectives to be researched include SSL/TLS certificate installation, and getting the projects images (now for the backend only) from an ECR that may also be made with Terraform.
+Although the infrastructure for SMARS's online presence is only fledgling, the time has come to put it in code so that it can be reliably reproduced, maintained and when needed, destroyed. Terraform has been chosen as the Infrastructure-as-Code (IaC) framework that will be used for this endeavour, as I already have some limited experience using it. Since the creation of the staging server gave the opportunity to prototype the architecture that will be needed, now we can focus on replicating this setup using Terraform to generate the necessary resources on AWS. Once this is accomplished it will be much easier to deploy the app, maintain availability during updates, recover from crashes should they occur, and dismantle unnecessary infrastructure to control costs. It will also make it easier to prototype new additions to the cloud's infrastructure and keep a history of all of the changes that are made over the course of time. This chapter will be complete when we can use Terraform to launch an EC2 within a 'production' security group, attached to a static IP address / DNS record, install the project's Docker images and Docker engine on the machine that is produce in this way. Additional objectives to be researched include SSL/TLS certificate installation, and getting the projects images (now for the backend only) from an ECR that may also be made with Terraform.
 
 Exit Criteria:
 
@@ -2982,6 +2982,7 @@ Exit Criteria:
   - [DONE] Docker engine installed on EC2
   - [DONE] TLS/SSL certificates installed on EC2
   - [DONE] Game can be played at its URL address on infra deployed entirely by the `terraform apply` command
+  - [DONE] [STRETCH] Game can be deployed to either a 'staging' or 'production' environment by launching the Terraform commands from separately labeled workspaces on the local development VM (each has distinct .env files to differentiate them)
 
 1. Install the Terraform CLI on the game's virtual development machine, following the instructions found at https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli
 
@@ -3013,23 +3014,94 @@ Exit Criteria:
 
 15. List the environment variables and their options in the game's README file.
 
-16. Update the project's Dockerfile to also read the same environment variables introduced on step 13. Ensure that the environment variables are created in a .env file by the Terraform main script AFTER the git repo is cloned, but BEFORE the 'docker compose' command (duh). Also ensure that the environment variables are imported by each stage individually, using the ARG statement for each variable to be used (ENVIRONMENT and DOMAIN_NAME are needed by both the frontend and backend stages, and ARG statements are limited in their scope, hence the need to declare them twice). Again, verify by doing the standard plan, apply, verify and then hold off on the destroy, as we will keep the current stack for testing in the next chapter...
+16. Create a pair of short shell scripts, startPlan and startDeploy, that can be used to export the variables from the local .env file to be used by Terraform, and then call the terraform init, validate and plan commands (for startPlan) and terraform init and apply for startDeploy. Test these in a pre-production environment and then destroy the result once satisfied.
+
+17. Update the project's Dockerfile to also read the same environment variables introduced on step 13. Ensure that the environment variables are created in a .env file by the Terraform main script AFTER the git repo is cloned, but BEFORE the 'docker compose' command (duh). Also ensure that the environment variables are imported by each stage individually, using the ARG statement for each variable to be used (ENVIRONMENT and DOMAIN_NAME are needed by both the frontend and backend stages, and ARG statements are limited in their scope, hence the need to declare them twice). Again, verify by doing the standard plan, apply, verify and then hold off on the destroy, as we will keep the current stack for testing in the next chapter...
 
 ## Chapter Ten: Persistent Database Volume on the Cloud
 
 ### Difficulty Estimate: 5 for new technology (looking at AWS EBS for a first iteration)
 
-### Date: TBD
+### Date: June 6, 2023
 
-Description Paragraph
+Now that the game has fully reproducible infrastructure and can be deployed with minimal manual steps in either a Staging or Production environment, the time has come to investigate database volume persistence in the cloud environment. Preliminary investigation shows that it may be possible to detach the volume block from a stopped EC2 instance, and therefore it should be possible to transfer volume blocks from instance to instance (provided they are in the same availability zone). However, this is almost certainly not a recommended strategy for ensuring long-term database preservation and stability, and so a different method will be used in this chapter. The goal now will be to do a database 'dump' into an S3 bucket, and then attempt to manually re-mount a backed-up database file into a new container instance. The presence of manual steps is acceptable, at least for now, given that this is a form of 'disaster recovery' and should not be part of the normal development workflow. Having said that, it will be important to fully document the steps taken to successfully remount a backed up database file, and to the extent possible, at least partially automate some of the steps involved.
 
 Exit Criteria:
 
-- Criteria 1
-- Criteria 2
-- ...
+- [DONE] An S3 bucket for database backups in each of the dev and staging environments is created, manually for now
+- [DONE] The server instance's database container can create a backup (archive) file of the game's database
+- [DONE] The server instance's database container can be given a backup (archive) file and use it to restore the game's database
+- [DONE] The backup file/s can be pushed from the server instance to the S3 bucket and viewed there
+- [DONE] Following the destruction of the originating instance/volume, the backed up data can be mounted on a brand new instance/volume
+- [DONE] Procedure for restoring a saved database from the S3 bucket is fully documented - (First in a series of SMARS Admin how-to guides?!)
+- [DONE] Database backups are created on a scheduled basis (say once per day) with the help of a Cron schedule
+- [PENDING] [STRETCH] Database backups that are greater than 28 days old are automatically deleted from the S3 bucket to lower costs
 
-### 1. Step One...
+1. Cleanup from the previous chapter: create a terraform destroy script called destroyInfra.sh that loads the local environment variables and then runs 'terraform destroy.' In hindsight, this is really the absolute LEAST you can do to protect the production environment from being accidentally deleted... just sayin!
+
+2. Temporarily comment out the certificate creation steps for the user_data script, and then launch a new server from the staging environment. Test its destruction with the new destroyInfra script.
+
+3. Create a new dev/test environment, which will use the URL test.freesmars.com instead of using staging for development work. Unfortunately the frontend no longer wants to show itself without an HTTPS certificate, so we'll have to create certificates for this URL just as we do for staging and production; try to use them judiciously as we expand our setup.
+
+4. Create a new user account, Danzel-dev, and make a quick save file on the dev server. We will use this to practice the archive/restore procedure for the database container.
+
+5. Manually create an S3 bucket and add it to the test environment's security group... ADDENDUM: It appears that S3 buckets are global, as opposed to anchored to a particular region/security group, so there's no need for the SG component.
+
+6. SSH into the dev server instance and, from outside the database container, run the database 'mongodump' command to create a copy of the smars database on the host machine's volume (i.e. not inside the db container). This is the command used to create a mongo dump archive called all-collections.archive at the location ~/mongodump (IMPORTANT: The ~/mongodump directory must be created prior to executing the command):
+
+`docker exec smars-db-1 sh -c 'exec mongodump -d smars --archive' > ~/mongodump/all-collections.archive`
+
+7. Next, delete the database volume at /var/lib/docker/volumes/mongo, and restart the stack to verify that the test save file created earlier is no longer available.
+
+8. Next, run the restore command with the stack still running, and verify that the save game file is once again accessible. This was the command that was used successfully:
+
+`docker exec -i smars-db-1 sh -c 'mongorestore --archive' < all-collections.archive`
+
+9. Next, install the AWS CLI on your test instance so that it can communicate with your S3 bucket. Document the installation steps so they can be scripted later:
+
+- sudo apt install unzip
+- sudo curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+- sudo unzip awscliv2.zip
+- sudo ./aws/install
+- Configure access permissions for your CLI (see steps 11 - 14 below for more on that!)
+
+10. Use the AWS CLI to copy the archive file to your S3 bucket. Once it has been verified that the file was copied successfully, tear down all the dev infrastructure with the destroyInfra.sh tool from your dev VM command line. Copy command for S3 bucket transfer:
+
+`aws s3 cp ~/mongodump/all-collections.archive s3://smars-dev-bucket`
+
+to retrieve the backed up file from S3 bucket use this command (making sure that the destination directory already exists):
+
+`aws s3 cp s3://smars-dev-bucket/smars.archive ~/smarsrestore`
+
+11. Create a new Terraform resource, an IAM Role (aws_iam_role resource) that will be used to attach an access policy for the S3 bucket to the server EC2 instance.
+
+12. Next, still in Terraform, create an IAM policy resource (aws_iam_policy) to be associated with the role created in the previous step, that gives permission to read and write items to the Development S3 bucket. Once this has been validated we can add the code for the S3 bucket creation to terraform and use a variable inside the 'resource' attribute for this policy, to point to the bucket for the appropriate environment. For now though, since we're operating with a bucket created outside of terraform, we can just hard-code its name into the script.
+
+13. Next, create an attachment resource (aws_iam_policy_attachment) that will link your Policy resource to the Role created in step 11. This attachment resource is like a junction that allows you to fuse the policy and the role together so that when the role is given to an instance PROFILE (on which more in a second) it will carry with it the specifications in the POLICY.
+
+14. Create an Instance Profile resource (aws_iam_instance_profile) that is associated to the ROLE created in step 11. This will be the resource that is given to the instance, as its iam_instace_profile attribute.
+
+15. Add the iam_instance_profile attribute to the server instance, to give it the access rights outlined in the policy. A bit convoluted the first time, but it's a good system for managing resource access permissions once you get the hang of it I'll bet!
+
+16. Finally, update the instance's user_data script to add the unzip / AWS installation steps listed on step 9 to install unzip and the AWS CLI. Then let's get ready to fire this thing up and see if it works!
+
+17. Re-launch the dev/test infrastructure, and once it is finished booting up, pull the saved database archive from the dev s3 bucket (as shown in step 10), and run the database restore command (as shown in step 8) to import the saved data from our old 'production' server.
+
+18. Create a new shell script file that runs the database dump command and saves the output in a file named for the current date, and then runs the S3 copy-to command to store the file in the backup bucket.
+
+19. Launch a fresh test instance. Create a Cron schedule to routinely call the database dump script every night at midnight, EST (or earlier if you want to validate it right away). Create some new user accounts and save files (list them separately) and then leave the server on long enough to validate the Cron schedule is working.
+
+20. Add the commands used to generate the cron job to the server instance's user_data script. That file's getting awfully big, eh?
+
+21. On the Dev S3 bucket, create a policy for the S3 bucket to automatically delete archives that are more than 3 days old.
+
+22. Rebuild the project's infrastructure to validate the cron table job's integration. You should now be able to get a full database save if you hurry.
+
+23. Tear down and rebuild the dev environment one more time, and practice the database restoral procedure (and write it down) while you're at it.
+
+24. Manually create an S3 bucket for the Staging environment, with retention rules to expire objects after 14 days and delete them after 28 days.
+
+### 17. Remove the reference to this chapter from the main.tf file, and then merge to master. Then, launch a build on the staging environment. If successful, move on to the next chapter. If not, troubleshoot, document all steps taken, then re-launch. Repeat until successful.
 
 ## Chapter Eleven: Staging Update Test on the Cloud
 
