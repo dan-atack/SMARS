@@ -88,7 +88,7 @@ resource "aws_iam_policy" "s3_access_policy" {
             "s3:GetObject",
             "s3:PutObject"
           ],
-          "Resource": "arn:aws:s3:::smars-dev-bucket/*"
+          "Resource": "arn:aws:s3:::smars-${var.SMARS_ENVIRONMENT}-bucket/*"
         }
       ]
     }

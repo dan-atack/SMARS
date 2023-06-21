@@ -3101,7 +3101,23 @@ to retrieve the backed up file from S3 bucket use this command (making sure that
 
 24. Manually create an S3 bucket for the Staging environment, with retention rules to expire objects after 14 days and delete them after 28 days.
 
-### 17. Remove the reference to this chapter from the main.tf file, and then merge to master. Then, launch a build on the staging environment. If successful, move on to the next chapter. If not, troubleshoot, document all steps taken, then re-launch. Repeat until successful.
+25. Remove the reference to this chapter from the main.tf file, and then merge to master. Then, launch a build on the staging environment. If successful, move on to the next chapter.
+
+## Chapter Eleven: Container Logs
+
+### Difficulty Estimate: 3 (for what is expected to be a fairly straightforward implementation with only semi-new technology)
+
+### Date: June 21, 2023
+
+The last DevOps feature to be added before practicing a live update and subsequent production deployment will be to add a Cron job to export the log files from the game's backend container. In the future it might be desireable to do the same for the database, but we can safely put that in the 'DevOps future improvements' Saga (which, by the way, should also be a thing - maybe look into Trello again to organize and sort future development work, fun though it is to use this single, massive log file?). This should be a fairly simple affair, following the standard DevOps playbook: do it a first time manually, and then do it with a script, and then call that script with a Cron job added to the project's existing Cron table. The log files can be pushed to the S3 bucket for the same environment, and a new 30-day retention policy that specifically targets log files will be added to the bucket to prevent it from becoming too heavy. Once this is done it will be time for a quick live-update practice, and then we can finally get back to developing the game!
+
+Exit Criteria:
+
+- Criteria 1
+- Criteria 2
+- ...
+
+### 1. Step One...
 
 ## Chapter Eleven: Staging Update Test on the Cloud
 
