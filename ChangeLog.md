@@ -3028,7 +3028,7 @@ Now that the game has fully reproducible infrastructure and can be deployed with
 
 Exit Criteria:
 
-- An S3 bucket for database backups is created as part of the Terraform deployment
+- [DONE] An S3 bucket for database backups in each of the dev and staging environments is created, manually for now
 - [DONE] The server instance's database container can create a backup (archive) file of the game's database
 - [DONE] The server instance's database container can be given a backup (archive) file and use it to restore the game's database
 - [DONE] The backup file/s can be pushed from the server instance to the S3 bucket and viewed there
@@ -3097,7 +3097,11 @@ to retrieve the backed up file from S3 bucket use this command (making sure that
 
 22. Rebuild the project's infrastructure to validate the cron table job's integration. You should now be able to get a full database save if you hurry.
 
-### 15. Add the S3 bucket, with its retention settings included, to the Terraform main file, and validate the entire stack, then close this chapter!
+### 15. Tear down and rebuild the dev environment one more time, and practice the database restoral procedure (and write it down) while you're at it.
+
+### 16. Manually create an S3 bucket for the Staging environment, with retention rules to expire objects after 14 days and delete them after 28 days.
+
+### 17. Remove the reference to this chapter from the main.tf file, and then merge to master. Then, launch a build on the staging environment. If successful, move on to the next chapter. If not, troubleshoot, document all steps taken, then re-launch. Repeat until successful.
 
 ## Chapter Eleven: Staging Update Test on the Cloud
 
