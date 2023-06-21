@@ -147,8 +147,6 @@ resource "aws_instance" "smars_server_instance" {
     mkdir ~/backups
     cd ~/smars
     sudo git clone https://github.com/dan-atack/SMARS.git .
-    # TEMPORARY: DELETE AFTER MERGING BRANCH
-    git checkout V-02-CH-10-Permanent-database-volumes
     # Add local environment variable files to assist docker image build
     echo "SMARS_ENVIRONMENT=${var.SMARS_ENVIRONMENT}" | cat > .env
     echo "DOMAIN_NAME=${var.DOMAIN_NAME}" | cat >> .env

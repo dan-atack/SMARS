@@ -3033,9 +3033,9 @@ Exit Criteria:
 - [DONE] The server instance's database container can be given a backup (archive) file and use it to restore the game's database
 - [DONE] The backup file/s can be pushed from the server instance to the S3 bucket and viewed there
 - [DONE] Following the destruction of the originating instance/volume, the backed up data can be mounted on a brand new instance/volume
-- Procedure for restoring a saved database from the S3 bucket is fully documented - (First in a series of SMARS Admin how-to guides?!)
-- Database backups are created on a scheduled basis (say once per day) with the help of a Cron schedule
-- [STRETCH] Database backups that are greater than, say, 30 days old are automatically deleted from the S3 bucket to avoid over-charges
+- [DONE] Procedure for restoring a saved database from the S3 bucket is fully documented - (First in a series of SMARS Admin how-to guides?!)
+- [DONE] Database backups are created on a scheduled basis (say once per day) with the help of a Cron schedule
+- [PENDING] [STRETCH] Database backups that are greater than 28 days old are automatically deleted from the S3 bucket to lower costs
 
 1. Cleanup from the previous chapter: create a terraform destroy script called destroyInfra.sh that loads the local environment variables and then runs 'terraform destroy.' In hindsight, this is really the absolute LEAST you can do to protect the production environment from being accidentally deleted... just sayin!
 
@@ -3097,9 +3097,9 @@ to retrieve the backed up file from S3 bucket use this command (making sure that
 
 22. Rebuild the project's infrastructure to validate the cron table job's integration. You should now be able to get a full database save if you hurry.
 
-### 15. Tear down and rebuild the dev environment one more time, and practice the database restoral procedure (and write it down) while you're at it.
+23. Tear down and rebuild the dev environment one more time, and practice the database restoral procedure (and write it down) while you're at it.
 
-### 16. Manually create an S3 bucket for the Staging environment, with retention rules to expire objects after 14 days and delete them after 28 days.
+24. Manually create an S3 bucket for the Staging environment, with retention rules to expire objects after 14 days and delete them after 28 days.
 
 ### 17. Remove the reference to this chapter from the main.tf file, and then merge to master. Then, launch a build on the staging environment. If successful, move on to the next chapter. If not, troubleshoot, document all steps taken, then re-launch. Repeat until successful.
 
