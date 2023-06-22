@@ -147,6 +147,8 @@ resource "aws_instance" "smars_server_instance" {
     mkdir ~/backups
     cd ~/smars
     sudo git clone https://github.com/dan-atack/SMARS.git .
+    # REMOVE AFTER VALIDATION
+    sudo git checkout V-02-CH-11-Docker-container-logs
     # Add local environment variable files to assist docker image build
     echo "SMARS_ENVIRONMENT=${var.SMARS_ENVIRONMENT}" | cat > .env
     echo "DOMAIN_NAME=${var.DOMAIN_NAME}" | cat >> .env
