@@ -3113,11 +3113,14 @@ The last DevOps feature to be added before practicing a live update and subseque
 
 Exit Criteria:
 
-- Criteria 1
-- Criteria 2
-- ...
+- Backend container log files are saved in the logs directory on the server instance
+- Container logs are copied to the S3 bucket for the correct environment
+- Log files in the S3 bucket have a 30-day retention policy
+- [STRETCH] Log files on the server instance are deleted after a similar delay to save space (depending on their size this may not be particularly urgent but worth looking into)
 
-### 1. Step One...
+### 1. First, some Dev environment management: this whole dev/test dichotomy is starting to become a nuisance to manage, but since we still need a "local mode" for the server to run in HTTP instead of HTTPS mode for local development, it is necessary to modify the backend's index.ts to use the HTTP server when the environment is called 'local-dev' instead of 'dev.' Apply this change in the current cloud development deployment, and then modify the .env variable on the local environment. Then do a grep for the word 'test' to make sure it's all rectified.
+
+### 1. Manually extract the backend container's logs to a local directory on the development instance, to see what they look like, how big they are, etc.
 
 ## Chapter Eleven: Staging Update Test on the Cloud
 
