@@ -153,11 +153,12 @@ resource "aws_instance" "smars_server_instance" {
     echo "SMARS_ENVIRONMENT=${var.SMARS_ENVIRONMENT}" | cat > .env
     echo "DOMAIN_NAME=${var.DOMAIN_NAME}" | cat >> .env
     # Setup cron job for database backup creation
-    # Create log file
+    # Create logs directory and docker logs subdirectory, and create empty log file for cron jobs
     mkdir ~/logs
+    mkdir ~/logs/docker
     touch ~/logs/cronjob.log
-    # Add job to cron table to run at one minute after midnight (h=4 so long as we're on UST) every night
-    cd ~/smars && echo "1 4 * * * sudo bash ~/smars/backupDatabase.sh >> ~/logs/cronjob.log 2>&1" | crontab -
+    # Create Cron Jobs for db backup and logging activities
+    sudo bash ~/smars/createCronJobs.sh
     docker compose up
   EOF
   

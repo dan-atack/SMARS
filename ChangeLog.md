@@ -3118,9 +3118,23 @@ Exit Criteria:
 - Log files in the S3 bucket have a 30-day retention policy
 - [STRETCH] Log files on the server instance are deleted after a similar delay to save space (depending on their size this may not be particularly urgent but worth looking into)
 
-### 1. First, some Dev environment management: this whole dev/test dichotomy is starting to become a nuisance to manage, but since we still need a "local mode" for the server to run in HTTP instead of HTTPS mode for local development, it is necessary to modify the backend's index.ts to use the HTTP server when the environment is called 'local-dev' instead of 'dev.' Apply this change in the current cloud development deployment, and then modify the .env variable on the local environment. Then do a grep for the word 'test' to make sure it's all rectified.
+1. First, some Dev environment management: this whole dev/test dichotomy is starting to become a nuisance to manage, but since we still need a "local mode" for the server to run in HTTP instead of HTTPS mode for local development, it is necessary to modify the backend's index.ts to use the HTTP server when the environment is called 'local-dev' instead of 'dev.' Apply this change in the current cloud development deployment, and then modify the .env variable on the local environment. Then do a grep for the word 'test' to make sure it's all rectified.
 
-### 1. Manually extract the backend container's logs to a local directory on the development instance, to see what they look like, how big they are, etc.
+2. Manually extract the backend container's logs to a local file / directory on the development instance, to see what they look like, how big they are, etc. Use this command:
+
+`docker logs smars-backend-1 > ~/logs/docker/smars-backend-1.log`
+
+3. Update the terraform user_data script to create a directory within the logs folder for the docker container logs. This directory must exist for the log files to be placed there without error.
+
+4. Expand on the previous command to make it add new log entries to the existing log file (or create a new one the first time it's run) every hour, using the Docker logs --since option, (note the relative syntax for the "--since 1h" option, which in this case means 'all log entries in the last hour; also note the double greater-than sign, which denotes an appending rather than an overwriting action for the log file):
+
+`docker logs smars-backend-1 --since 1h >> ~/logs/docker/smars-backend-1.log`
+
+### 5. Add a new line to the crontab (by hand) that calls the command above every hour; validate that this works over a period of hours by playing the game and checking that the log file is continually updated with the new events from every hour, without duplicating or overwriting the previous hours' entries.
+
+### 6. Finally, add a third line to the crontab that does an S3 export to a /logs directory in the S3 backup bucket so that every 24 hours the log file in the bucket is replaced with the latest log file from the server instance (which, if everything is configured correctly, will be gradually growing over time without repeating/overwriting any of the day's events). Validate that everything is working properly in the Dev environment before turning to the question of what to do with the database restore procedure...
+
+### 99. An issue has been detected where the database re-load creates duplicate entries for objects (e.g. modules and connectors) that are already present in the database at the time of the restore command's execution. Fix this by scripting the database restore commands so that they can be called with a single command, and make the user enter the date when calling the script (e.g. something like `bash restoredatabase --date 2023-06-21).
 
 ## Chapter Eleven: Staging Update Test on the Cloud
 
