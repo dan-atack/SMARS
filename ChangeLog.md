@@ -3138,7 +3138,9 @@ Exit Criteria:
 
 8. Transfer all 3 of these utility scripts into a new scripts folder, so as to not clutter up the root of the project's directory.
 
-9. Do another push, followed by a full TF plan/apply/validate cycle to verify that all of these changes are working properly and haven't broken anything before proceeding to tackle the question of the database restoral procedure.
+9. Extract the big user_data script from your main.tf file into its own file called configure_instance.sh within the Terraform directory, and then import it into the main.tf file for the aws_instance resource to use, so that we can de-clutter that file a bit.
+
+10. Do another push, followed by a full TF plan/apply/validate cycle to verify that all of these changes are working properly and haven't broken anything before proceeding to tackle the question of the database restoral procedure.
 
 ### 99. An issue has been detected where the database re-load creates duplicate entries for objects (e.g. modules and connectors) that are already present in the database at the time of the restore command's execution. Fix this by scripting the database restore commands so that they can be called with a single command, and make the user enter the date when calling the script (e.g. something like `bash restoredatabase --date 2023-06-21).
 

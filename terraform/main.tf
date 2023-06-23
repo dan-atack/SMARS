@@ -108,6 +108,11 @@ resource "aws_iam_instance_profile" "s3_access_profile" {
   role = aws_iam_role.s3_access_role.name
 }
 
+# Import shell script used to configure the instance once it's launched
+data "local_file" "server_setup_user_data" {
+  filename = "${path.module}/configure_instance.sh"
+}
+
 resource "aws_instance" "smars_server_instance" {
   ami           = "ami-0a695f0d95cefc163"
   instance_type = "t2.small"
@@ -115,50 +120,7 @@ resource "aws_instance" "smars_server_instance" {
   key_name      = "SMARS_Prod_EC2"
   iam_instance_profile = aws_iam_instance_profile.s3_access_profile.name
   
-  user_data = <<-EOF
-    #!/bin/bash
-    # Install Docker
-    sudo apt-get update
-    sudo apt-get install ca-certificates curl gnupg -y
-    sudo install -m 0755 -d /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-    sudo chmod a+r /etc/apt/keyrings/docker.gpg
-    echo \
-    "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-    "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
-    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-    sudo apt-get update
-    sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
-    # Install Unzip and AWS CLI, to allow communication with other resources
-    sudo apt install unzip
-    sudo curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-    sudo unzip awscliv2.zip
-    sudo ./aws/install
-    # Install Certbot, and use it to create the TLS/SSL certificates required to run the backend's HTTPS mode
-    sudo apt update
-    sudo apt install snapd
-    sudo snap install core; sudo snap refresh core
-    sudo snap install --classic certbot
-    sudo ln -s /snap/bin/certbot /usr/bin/certbot
-    sudo certbot certonly --non-interactive --agree-tos --email dan_atack@hotmail.com --domain ${var.DOMAIN_NAME} --standalone
-    # Get SMARS source code and build the Docker images with Docker compose
-    mkdir ~/smars
-    # Prepare directory to store database backups
-    mkdir ~/backups
-    cd ~/smars
-    sudo git clone https://github.com/dan-atack/SMARS.git .
-    # REMOVE AFTER VALIDATION
-    sudo git checkout V-02-CH-11-Docker-container-logs
-    # Add local environment variable files to assist docker image build
-    echo "SMARS_ENVIRONMENT=${var.SMARS_ENVIRONMENT}" | cat > .env
-    echo "DOMAIN_NAME=${var.DOMAIN_NAME}" | cat >> .env
-    # Create logs directory and subdirectories for cron and docker, and create empty log file for cron jobs
-    mkdir ~/logs && mkdir ~/logs/cron && mkdir ~/logs/docker
-    touch ~/logs/cronjob.log
-    # Create Cron Jobs for db backup and logging activities
-    sudo bash ~/smars/scripts/createCronJobs.sh
-    docker compose up
-  EOF
+  user_data = data.local_file.server_setup_user_data
   
   tags = {
     Name = "smars_${var.SMARS_ENVIRONMENT}_server"
