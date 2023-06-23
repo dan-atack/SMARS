@@ -3130,9 +3130,15 @@ Exit Criteria:
 
 `docker logs smars-backend-1 --since 1h >> ~/logs/docker/smars-backend-1.log`
 
-### 5. Add a new line to the crontab (by hand) that calls the command above every hour; validate that this works over a period of hours by playing the game and checking that the log file is continually updated with the new events from every hour, without duplicating or overwriting the previous hours' entries.
+5. Add a new line to the crontab (by hand) that calls the command above every hour; validate that this works over a period of hours by playing the game and checking that the log file is continually updated with the new events from every hour, without duplicating or overwriting the previous hours' entries.
 
-### 6. Finally, add a third line to the crontab that does an S3 export to a /logs directory in the S3 backup bucket so that every 24 hours the log file in the bucket is replaced with the latest log file from the server instance (which, if everything is configured correctly, will be gradually growing over time without repeating/overwriting any of the day's events). Validate that everything is working properly in the Dev environment before turning to the question of what to do with the database restore procedure...
+6. Make a script that calls the docker log command on step 4, and then copies the log file to the S3 bucket like we do for the DB backups.
+
+7. Make a third script file called createCronJobs that sets up both the database backup and logfile update jobs; db backup occurs one minute after midnight and the logging update should be called every hour on the hour (Cron expression: 0 \* \* \* \*).
+
+8. Transfer all 3 of these utility scripts into a new scripts folder, so as to not clutter up the root of the project's directory.
+
+9. Do another push, followed by a full TF plan/apply/validate cycle to verify that all of these changes are working properly and haven't broken anything before proceeding to tackle the question of the database restoral procedure.
 
 ### 99. An issue has been detected where the database re-load creates duplicate entries for objects (e.g. modules and connectors) that are already present in the database at the time of the restore command's execution. Fix this by scripting the database restore commands so that they can be called with a single command, and make the user enter the date when calling the script (e.g. something like `bash restoredatabase --date 2023-06-21).
 

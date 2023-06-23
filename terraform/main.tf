@@ -152,13 +152,11 @@ resource "aws_instance" "smars_server_instance" {
     # Add local environment variable files to assist docker image build
     echo "SMARS_ENVIRONMENT=${var.SMARS_ENVIRONMENT}" | cat > .env
     echo "DOMAIN_NAME=${var.DOMAIN_NAME}" | cat >> .env
-    # Setup cron job for database backup creation
-    # Create logs directory and docker logs subdirectory, and create empty log file for cron jobs
-    mkdir ~/logs
-    mkdir ~/logs/docker
+    # Create logs directory and subdirectories for cron and docker, and create empty log file for cron jobs
+    mkdir ~/logs && mkdir ~/logs/cron && mkdir ~/logs/docker
     touch ~/logs/cronjob.log
     # Create Cron Jobs for db backup and logging activities
-    sudo bash ~/smars/createCronJobs.sh
+    sudo bash ~/smars/scripts/createCronJobs.sh
     docker compose up
   EOF
   
