@@ -108,10 +108,10 @@ resource "aws_iam_instance_profile" "s3_access_profile" {
   role = aws_iam_role.s3_access_role.name
 }
 
-# Import shell script used to configure the instance once it's launched
-data "local_file" "server_setup_user_data" {
-  filename = "${path.module}/configure_instance.sh"
-}
+# 
+# data "template_file" "server_setup_user_data" {
+#   template = "${file(configure_instance.sh.tpl)}"
+# }
 
 resource "aws_instance" "smars_server_instance" {
   ami           = "ami-0a695f0d95cefc163"
@@ -119,8 +119,8 @@ resource "aws_instance" "smars_server_instance" {
   vpc_security_group_ids = ["${aws_security_group.smars_server_sg.id}"]
   key_name      = "SMARS_Prod_EC2"
   iam_instance_profile = aws_iam_instance_profile.s3_access_profile.name
-  
-  user_data = data.local_file.server_setup_user_data
+# Import shell script template used to configure the instance once it's launched
+  user_data     = templatefile("configure_instance.tftpl", { SMARS_ENVIRONMENT = var.SMARS_ENVIRONMENT, DOMAIN_NAME = var.DOMAIN_NAME })
   
   tags = {
     Name = "smars_${var.SMARS_ENVIRONMENT}_server"

@@ -22,7 +22,7 @@ sudo apt install snapd
 sudo snap install core; sudo snap refresh core
 sudo snap install --classic certbot
 sudo ln -s /snap/bin/certbot /usr/bin/certbot
-sudo certbot certonly --non-interactive --agree-tos --email dan_atack@hotmail.com --domain ${var.DOMAIN_NAME} --standalone
+sudo certbot certonly --non-interactive --agree-tos --email dan_atack@hotmail.com --domain ${DOMAIN_NAME} --standalone
 # Get SMARS source code and build the Docker images with Docker compose
 mkdir ~/smars
 # Prepare directory to store database backups
@@ -32,8 +32,8 @@ sudo git clone https://github.com/dan-atack/SMARS.git .
 # REMOVE AFTER VALIDATION
 sudo git checkout V-02-CH-11-Docker-container-logs
 # Add local environment variable files to assist docker image build
-echo "SMARS_ENVIRONMENT=${var.SMARS_ENVIRONMENT}" | cat > .env
-echo "DOMAIN_NAME=${var.DOMAIN_NAME}" | cat >> .env
+echo "SMARS_ENVIRONMENT=${SMARS_ENVIRONMENT}" | cat > .env
+echo "DOMAIN_NAME=${DOMAIN_NAME}" | cat >> .env
 # Create logs directory and subdirectories for cron and docker, and create empty log file for cron jobs
 mkdir ~/logs && mkdir ~/logs/cron && mkdir ~/logs/docker
 touch ~/logs/cronjob.log
