@@ -3113,25 +3113,63 @@ The last DevOps feature to be added before practicing a live update and subseque
 
 Exit Criteria:
 
-- Criteria 1
-- Criteria 2
-- ...
+- [DONE] Backend container log file is updated on an hourly basis and saved in the logs directory on the server instance
+- [DONE] Container logs are copied to the S3 bucket for the correct environment on an hourly basis
 
-### 1. Step One...
+1. First, some Dev environment management: this whole dev/test dichotomy is starting to become a nuisance to manage, but since we still need a "local mode" for the server to run in HTTP instead of HTTPS mode for local development, it is necessary to modify the backend's index.ts to use the HTTP server when the environment is called 'local-dev' instead of 'dev.' Apply this change in the current cloud development deployment, and then modify the .env variable on the local environment. Then do a grep for the word 'test' to make sure it's all rectified.
+
+2. Manually extract the backend container's logs to a local file / directory on the development instance, to see what they look like, how big they are, etc. Use this command:
+
+`docker logs smars-backend-1 > ~/logs/docker/smars-backend-1.log`
+
+3. Update the terraform user_data script to create a directory within the logs folder for the docker container logs. This directory must exist for the log files to be placed there without error.
+
+4. Expand on the previous command to make it add new log entries to the existing log file (or create a new one the first time it's run) every hour, using the Docker logs --since option, (note the relative syntax for the "--since 1h" option, which in this case means 'all log entries in the last hour; also note the double greater-than sign, which denotes an appending rather than an overwriting action for the log file):
+
+`docker logs smars-backend-1 --since 1h >> ~/logs/docker/smars-backend-1.log`
+
+5. Add a new line to the crontab (by hand) that calls the command above every hour; validate that this works over a period of hours by playing the game and checking that the log file is continually updated with the new events from every hour, without duplicating or overwriting the previous hours' entries.
+
+6. Make a script that calls the docker log command on step 4, and then copies the log file to the S3 bucket like we do for the DB backups.
+
+7. Make a third script file called createCronJobs that sets up both the database backup and logfile update jobs; db backup occurs one minute after midnight and the logging update should be called every hour on the hour (Cron expression: 0 \* \* \* \*).
+
+8. Transfer all 3 of these utility scripts into a new scripts folder, so as to not clutter up the root of the project's directory.
+
+9. Extract the big user_data script from your main.tf file into its own file called configure_instance.sh within the Terraform directory, and then import it into the main.tf file for the aws_instance resource to use, so that we can de-clutter that file a bit.
+
+10. Do another push, followed by a full TF plan/apply/validate cycle to verify that all of these changes are working properly and haven't broken anything before proceeding to tackle the question of the database restoral procedure.
+
+11. An issue has been detected where the database re-load creates duplicate entries for objects (e.g. modules and connectors) that are already present in the database at the time of the restore command's execution. Fix this by scripting the database restore commands so that they can be called with a single command, and make the user enter the date when calling the script (e.g. something like `bash restoredatabase 2023-06-21`). Put the database script in the scripts directory and then test it on the dev machine. If successful, delete, clean up the branch-specific code and merge this sucker!
 
 ## Chapter Eleven: Staging Update Test on the Cloud
 
-### Difficulty Estimate: TBD
+### Difficulty Estimate: 6 (For full dress rehearsal of all existing workflows, plus significant thought devoted to workflow planning, documentation, and future task planning/roadmapping)
 
-### Date: TBD
+### Date: June 27, 2023
 
-The final thing to do before taking the system live is to do a simulated update of the game's source code and deploy that to a staging instance, to determine what steps are needed, what can be automated vs what has to be done 'by hand' for each update, and how much of a disruption it is to the game's (currently only) running server instance. Once this process has been understood, we can keep a permanent production server up and running on the cloud, and begin updating it continuously (looks like game UX, storyline and assets are back on the menu boys!).
+The final thing to do before taking the system live will be to practice the full stack deployment, including database backup/restore, followed by a simple update to the game's frontend, in the staging environment. The first purpose here will be to do a full walkthrough of the deployment procedure to verify that everything works properly in a non-development environment, that the database backup system works well, and that the game works well with the Staging S3 bucket. Once this is established, and any necessary final improvements are made to the game's infrastructure (e.g. adding, at minimum, the game's S3 bucket creation to Terraform?!) it will be time to do a quick update to the game's frontend, to figure out the workflow for future updates to the game once it's in production. Key questions to be addressed during this procedure will be: what can be automated vs what has to be done 'by hand' for each update? how much of a disruption it is to the game's (currently only) running server instance? Can we 'offshore' much of the down time needed for an update by building the new docker image elsewhere? (this last question is more of a rhetorical one, of course). Once this process has been understood, and the minimal requirements for an initial production deployment have been met, we can launch the game's first production server, tell all our buddies, and begin the next phase of the actual game's development (looks like game UX, storyline and assets are back on the menu boys!).
 
-Exit Criteria:
+Dress Rehearsal Exit Criteria:
 
-- Criteria 1
-- Criteria 2
-- ...
+- Game is deployed from staging environment with one command and is playable at staging.freesmars.com
+- After > 1 hour game container logs are available in staging S3 bucket
+- After > 24 hours game backup files are available in staging S3 bucket
+- If database is dropped, backup file can be used to restore its contents
+- Game can be played consistently by people on several devices for at least 3 days
+
+Update Procedure Criteria:
+
+- Game can be updated to a new version in the staging environment
+- Players can easily experience the upgrade by refreshing their browser
+- Players' save data is preserved after an update
+
+Pseudo-Update Criteria:
+
+- Game's copyright date updated to 2023 via VERSION_INFO frontend constant
+- Simplified introductory message at the start of the game
+- Basic random events at midnight instead of the poem
+- [STRETCH] login page/account creation tab index issue fixed for password confirm field
 
 ### 1. Step One...
 

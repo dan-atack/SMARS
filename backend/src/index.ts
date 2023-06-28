@@ -21,7 +21,7 @@ const validateDB = require('./database_functions/validate_database');
 
 const PORT: number = parseInt(process.env.PORT as string, 10) || 7000;
 const HTTPS_PORT: number = parseInt(process.env.HTTPS_PORT as string, 10) || 443;
-const ENV: string = process.env.ENVIRONMENT?.toLowerCase() as string || 'dev';
+const ENV: string = process.env.ENVIRONMENT?.toLowerCase() as string || 'local_dev';
 
 const app = express();
 
@@ -47,7 +47,7 @@ app.use(require('./endpoints/saveEndpoints'));
 // Server Activation
 
 // Import TLS certificate and private key (only for staging and production environments)
-if (ENV !== 'dev') {
+if (ENV !== 'local_dev') {
     const serverOptions = {
         cert: fs.readFileSync('certificates/fullchain1.pem'),
         key: fs.readFileSync('certificates/privkey1.pem')

@@ -1,12 +1,13 @@
 variable SMARS_ENVIRONMENT {
   type        = string
-  default     = "staging"
+  default     = "dev"
   description = "Name of the SMARS environment (staging or production)"
 }
 
 variable DOMAIN_NAME {
   type        = string
-  description = "URL at which the game can be played"
+  default     = "test.freesmars.com"
+  description = "URL at which the game can be played (never use 'dev' in a URL - Chrome does not like it!)"
 }
 
 variable ZONE_ID {
