@@ -3113,10 +3113,8 @@ The last DevOps feature to be added before practicing a live update and subseque
 
 Exit Criteria:
 
-- Backend container log files are saved in the logs directory on the server instance
-- Container logs are copied to the S3 bucket for the correct environment
-- Log files in the S3 bucket have a 30-day retention policy
-- [STRETCH] Log files on the server instance are deleted after a similar delay to save space (depending on their size this may not be particularly urgent but worth looking into)
+- [DONE] Backend container log file is updated on an hourly basis and saved in the logs directory on the server instance
+- [DONE] Container logs are copied to the S3 bucket for the correct environment on an hourly basis
 
 1. First, some Dev environment management: this whole dev/test dichotomy is starting to become a nuisance to manage, but since we still need a "local mode" for the server to run in HTTP instead of HTTPS mode for local development, it is necessary to modify the backend's index.ts to use the HTTP server when the environment is called 'local-dev' instead of 'dev.' Apply this change in the current cloud development deployment, and then modify the .env variable on the local environment. Then do a grep for the word 'test' to make sure it's all rectified.
 
@@ -3142,7 +3140,7 @@ Exit Criteria:
 
 10. Do another push, followed by a full TF plan/apply/validate cycle to verify that all of these changes are working properly and haven't broken anything before proceeding to tackle the question of the database restoral procedure.
 
-### 99. An issue has been detected where the database re-load creates duplicate entries for objects (e.g. modules and connectors) that are already present in the database at the time of the restore command's execution. Fix this by scripting the database restore commands so that they can be called with a single command, and make the user enter the date when calling the script (e.g. something like `bash restoredatabase --date 2023-06-21).
+### 99. An issue has been detected where the database re-load creates duplicate entries for objects (e.g. modules and connectors) that are already present in the database at the time of the restore command's execution. Fix this by scripting the database restore commands so that they can be called with a single command, and make the user enter the date when calling the script (e.g. something like `bash restoredatabase --date 2023-06-21). Put the database script in the scripts directory and then test it on the dev machine. If successful, delete, clean up the branch-specific code and merge this sucker!
 
 ## Chapter Eleven: Staging Update Test on the Cloud
 

@@ -108,11 +108,7 @@ resource "aws_iam_instance_profile" "s3_access_profile" {
   role = aws_iam_role.s3_access_role.name
 }
 
-# 
-# data "template_file" "server_setup_user_data" {
-#   template = "${file(configure_instance.sh.tpl)}"
-# }
-
+# Create the server computer (docker host machine)
 resource "aws_instance" "smars_server_instance" {
   ami           = "ami-0a695f0d95cefc163"
   instance_type = "t2.small"
