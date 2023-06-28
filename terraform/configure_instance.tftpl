@@ -29,14 +29,12 @@ mkdir ~/smars
 mkdir ~/backups
 cd ~/smars
 sudo git clone https://github.com/dan-atack/SMARS.git .
-# REMOVE AFTER VALIDATION
-sudo git checkout V-02-CH-11-Docker-container-logs
 # Add local environment variable files to assist docker image build
 echo "SMARS_ENVIRONMENT=${SMARS_ENVIRONMENT}" | cat > .env
 echo "DOMAIN_NAME=${DOMAIN_NAME}" | cat >> .env
 # Create logs directory and subdirectories for cron and docker, and create empty log file for cron jobs
 mkdir ~/logs && mkdir ~/logs/cron && mkdir ~/logs/docker
-touch ~/logs/cronjob.log
+touch ~/logs/cron/cronjob.log
 # Create Cron Jobs for db backup and logging activities
 sudo bash ~/smars/scripts/createCronJobs.sh
 docker compose up

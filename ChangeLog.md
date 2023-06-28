@@ -3140,21 +3140,36 @@ Exit Criteria:
 
 10. Do another push, followed by a full TF plan/apply/validate cycle to verify that all of these changes are working properly and haven't broken anything before proceeding to tackle the question of the database restoral procedure.
 
-### 99. An issue has been detected where the database re-load creates duplicate entries for objects (e.g. modules and connectors) that are already present in the database at the time of the restore command's execution. Fix this by scripting the database restore commands so that they can be called with a single command, and make the user enter the date when calling the script (e.g. something like `bash restoredatabase --date 2023-06-21). Put the database script in the scripts directory and then test it on the dev machine. If successful, delete, clean up the branch-specific code and merge this sucker!
+11. An issue has been detected where the database re-load creates duplicate entries for objects (e.g. modules and connectors) that are already present in the database at the time of the restore command's execution. Fix this by scripting the database restore commands so that they can be called with a single command, and make the user enter the date when calling the script (e.g. something like `bash restoredatabase 2023-06-21`). Put the database script in the scripts directory and then test it on the dev machine. If successful, delete, clean up the branch-specific code and merge this sucker!
 
 ## Chapter Eleven: Staging Update Test on the Cloud
 
-### Difficulty Estimate: TBD
+### Difficulty Estimate: 6 (For full dress rehearsal of all existing workflows, plus significant thought devoted to workflow planning, documentation, and future task planning/roadmapping)
 
-### Date: TBD
+### Date: June 27, 2023
 
-The final thing to do before taking the system live is to do a simulated update of the game's source code and deploy that to a staging instance, to determine what steps are needed, what can be automated vs what has to be done 'by hand' for each update, and how much of a disruption it is to the game's (currently only) running server instance. Once this process has been understood, we can keep a permanent production server up and running on the cloud, and begin updating it continuously (looks like game UX, storyline and assets are back on the menu boys!).
+The final thing to do before taking the system live will be to practice the full stack deployment, including database backup/restore, followed by a simple update to the game's frontend, in the staging environment. The first purpose here will be to do a full walkthrough of the deployment procedure to verify that everything works properly in a non-development environment, that the database backup system works well, and that the game works well with the Staging S3 bucket. Once this is established, and any necessary final improvements are made to the game's infrastructure (e.g. adding, at minimum, the game's S3 bucket creation to Terraform?!) it will be time to do a quick update to the game's frontend, to figure out the workflow for future updates to the game once it's in production. Key questions to be addressed during this procedure will be: what can be automated vs what has to be done 'by hand' for each update? how much of a disruption it is to the game's (currently only) running server instance? Can we 'offshore' much of the down time needed for an update by building the new docker image elsewhere? (this last question is more of a rhetorical one, of course). Once this process has been understood, and the minimal requirements for an initial production deployment have been met, we can launch the game's first production server, tell all our buddies, and begin the next phase of the actual game's development (looks like game UX, storyline and assets are back on the menu boys!).
 
-Exit Criteria:
+Dress Rehearsal Exit Criteria:
 
-- Criteria 1
-- Criteria 2
-- ...
+- Game is deployed from staging environment with one command and is playable at staging.freesmars.com
+- After > 1 hour game container logs are available in staging S3 bucket
+- After > 24 hours game backup files are available in staging S3 bucket
+- If database is dropped, backup file can be used to restore its contents
+- Game can be played consistently by people on several devices for at least 3 days
+
+Update Procedure Criteria:
+
+- Game can be updated to a new version in the staging environment
+- Players can easily experience the upgrade by refreshing their browser
+- Players' save data is preserved after an update
+
+Pseudo-Update Criteria:
+
+- Game's copyright date updated to 2023 via VERSION_INFO frontend constant
+- Simplified introductory message at the start of the game
+- Basic random events at midnight instead of the poem
+- [STRETCH] login page/account creation tab index issue fixed for password confirm field
 
 ### 1. Step One...
 
