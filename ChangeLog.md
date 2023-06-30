@@ -3142,21 +3142,22 @@ Exit Criteria:
 
 11. An issue has been detected where the database re-load creates duplicate entries for objects (e.g. modules and connectors) that are already present in the database at the time of the restore command's execution. Fix this by scripting the database restore commands so that they can be called with a single command, and make the user enter the date when calling the script (e.g. something like `bash restoredatabase 2023-06-21`). Put the database script in the scripts directory and then test it on the dev machine. If successful, delete, clean up the branch-specific code and merge this sucker!
 
-## Chapter Eleven: Staging Update Test on the Cloud
+## Chapter Twelve: Staging Update Test on the Cloud
 
 ### Difficulty Estimate: 6 (For full dress rehearsal of all existing workflows, plus significant thought devoted to workflow planning, documentation, and future task planning/roadmapping)
 
 ### Date: June 27, 2023
 
-The final thing to do before taking the system live will be to practice the full stack deployment, including database backup/restore, followed by a simple update to the game's frontend, in the staging environment. The first purpose here will be to do a full walkthrough of the deployment procedure to verify that everything works properly in a non-development environment, that the database backup system works well, and that the game works well with the Staging S3 bucket. Once this is established, and any necessary final improvements are made to the game's infrastructure (e.g. adding, at minimum, the game's S3 bucket creation to Terraform?!) it will be time to do a quick update to the game's frontend, to figure out the workflow for future updates to the game once it's in production. Key questions to be addressed during this procedure will be: what can be automated vs what has to be done 'by hand' for each update? how much of a disruption it is to the game's (currently only) running server instance? Can we 'offshore' much of the down time needed for an update by building the new docker image elsewhere? (this last question is more of a rhetorical one, of course). Once this process has been understood, and the minimal requirements for an initial production deployment have been met, we can launch the game's first production server, tell all our buddies, and begin the next phase of the actual game's development (looks like game UX, storyline and assets are back on the menu boys!).
+The final thing to do before taking the system live will be to practice the full stack deployment, including database backup/restore, followed by a simple update to the game's frontend, in the staging environment. The first goal here will be to do a full walkthrough of the deployment procedure to verify that everything works properly in a non-development environment, that the database backup system works well, and that the game works well with the Staging S3 bucket. Once this is established, and any necessary final improvements are made to the game's infrastructure (e.g. adding, at minimum, the game's S3 bucket creation to Terraform?!) it will be time to do a quick update to the game's frontend, to figure out the workflow for future updates to the game once it's in production. Key questions to be addressed during this procedure will be: what can be automated vs what has to be done 'by hand' for each update? how much of a disruption it is to the game's (currently only) running server instance? Can we 'offshore' much of the down time needed for an update by building the new docker image elsewhere? (this last question is more of a rhetorical one, of course). Once this process has been understood, and the minimal requirements for an initial production deployment have been met, we can launch the game's first production server, tell all our buddies, and begin the next phase of the actual game's development (looks like game UX, storyline and assets are back on the menu boys!).
 
 Dress Rehearsal Exit Criteria:
 
-- Game is deployed from staging environment with one command and is playable at staging.freesmars.com
-- After > 1 hour game container logs are available in staging S3 bucket
-- After > 24 hours game backup files are available in staging S3 bucket
-- If database is dropped, backup file can be used to restore its contents
-- Game can be played consistently by people on several devices for at least 3 days
+- [DONE] Game is deployed from staging environment with one command and is playable at https://staging.freesmars.com
+- [DONE] After > 1 hour game container logs are available in staging S3 bucket
+- [DONE] Log files are updated and uploaded every hour after the server's launch
+- [DONE] After > 24 hours game backup files are available in staging S3 bucket
+- [DONE] If database is dropped, backup file can be used to restore its contents
+- [DONE] Game can be played consistently by people on several devices for at least 3 days
 
 Update Procedure Criteria:
 
@@ -3169,9 +3170,38 @@ Pseudo-Update Criteria:
 - Game's copyright date updated to 2023 via VERSION_INFO frontend constant
 - Simplified introductory message at the start of the game
 - Basic random events at midnight instead of the poem
+- Backend database functions have fewer console logs
 - [STRETCH] login page/account creation tab index issue fixed for password confirm field
 
-### 1. Step One...
+1. From the staging environment - or should I perhaps call it a "workspace?" - on the local VM (which has become the de facto launching platform for terraforming, it seems) run the startPlan and startDeploy commands from an updated master branch checkout. Wait about 15 minutes and then check to see if the game is up and running at the staging URL.
+
+2. Create a user profile and start a new game, and play it for a while, then save your game. Do the same on at least 2 other computers, and write down the names and passwords for the test users you created. Make sure that each user has at least one save file associated with their name, and write down the names of all save files to keep track of them. They will be needed to verify the database restore procedure.
+
+3. After one day, download the backend's log file from the S3 bucket and examine it.
+
+4. After one day, download that game's most recent database archive and deploy it to the local dev machine's mongo service to verify its integrity.
+
+5. After two days, drop the database in the staging environment. Then run the database restore command for yesterday's backup file, and validate by logging in as all of the test users created on step 2, to ensure they have been recreated. Also check all of the build option lists to ensure no duplicate structures have been created.
+
+6. After the database restore process has been completed, also log into the database container with the 'docker exec' command and look at its mongo database/collections directly to watch them in action. That's pretty much it for the deployment testing as it currently stands, so if you get this far with no snags, congratulations, you're an outstanding DevOps guy!
+
+### 7. Now we need to think about updating this sucker. First, add a simple bit of code to your main.tf script to create an S3 bucket for the current environment. Then, copy the latest log and backup files from the current Staging S3 bucket to your hard drive, and delete it by hand. Test your new S3 bucket code by running a Terraform apply from the local staging "workspace" (as it's now called) and then uploading the log and backup files to it. Finally, restore the database running on the server instance with that backup file to ensure a full connection from instance to bucket and back (maybe we can force a database backup to save the current db to the new bucket before over-writing it with the restored one).
+
+### 8. Next, start work on the code changes that will be introduced as our first "update," starting with the copyright date on the login page. Add two new frontend constants, RELEASE_YEAR and RELEASE_VERSION, both of which are strings. The year will be the current year, and the release version can be '0.1.0' for now. Update the login screen to display both of these values and fire up the local dev environment to test/fine-tune it.
+
+### 9. Rewrite the game's introductory greeting message, and possibly include some logic to make the fonts slightly larger for modals with less than x characters.
+
+### 10. Add a couple of new random events with comical messages and see what effects can be used (we can't give the player more resources other than money just yet since we need to find a way to add stuff to a specific module and not just artificially boost the economy's display value). Don't worry about adding new random event functionality for now, just focus on the "personality" of the messages.
+
+### 11. In the backend's server functions, go in and try to reduce the number of console log messages to just one per DB transaction.
+
+### 12. See if you can figure out what's wrong with the tab order for the login page and fix it if you can!
+
+### 14. Once all of these updates have been validated in the local dev environment, merge all changes to the master branch and prepare to rehearse the update procedure.
+
+### 14. Now, take a minute to reflect on how we'll update this sucker on the cloud. The most obvious procedure would be to simply initiate a git pull from the master branch on the server machine, then wipe its docker images and re-build using docker compose up, but this involves a lengthy down time of about 10 minutes which is not ideal. This may nonetheless be acceptable for now, but rehearse that workflow and document its steps, and then we can spend some time brainstorming to see if there's a better way (or rather, how we might go about implementing a better way, of which several ideas spring to mind).
+
+### 15. Validate the results of the update process that was used in the previous step, to ensure that players can access the update via a browser refresh and/or cache clearing, and that their save data is still there. Once this is validated we can do a final merge
 
 ## Chapter X: In-Game Notifications
 
