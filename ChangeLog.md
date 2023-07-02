@@ -3185,15 +3185,15 @@ Pseudo-Update Criteria:
 
 6. After the database restore process has been completed, also log into the database container with the 'docker exec' command and look at its mongo database/collections directly to watch them in action. That's pretty much it for the deployment testing as it currently stands, so if you get this far with no snags, congratulations, you're an outstanding DevOps guy!
 
-### 7. Now we need to think about updating this sucker. First, add a simple bit of code to your main.tf script to create an S3 bucket for the current environment. Then, copy the latest log and backup files from the current Staging S3 bucket to your hard drive, and delete it by hand. Test your new S3 bucket code by running a Terraform apply from the local staging "workspace" (as it's now called) and then uploading the log and backup files to it. Finally, restore the database running on the server instance with that backup file to ensure a full connection from instance to bucket and back (maybe we can force a database backup to save the current db to the new bucket before over-writing it with the restored one).
+7. Now we need to think about updating this sucker. First, add a simple bit of code to your main.tf script to create an S3 bucket for the current environment. Then, copy the latest log and backup files from the current Staging S3 bucket to your hard drive, and delete it by hand. Test your new S3 bucket code by running a Terraform apply from the local staging "workspace" (as it's now called) and then uploading the log and backup files to it. Finally, restore the database running on the server instance with that backup file to ensure a full connection from instance to bucket and back (maybe we can force a database backup to save the current db to the new bucket before over-writing it with the restored one).
 
-### 8. Next, start work on the code changes that will be introduced as our first "update," starting with the copyright date on the login page. Add two new frontend constants, RELEASE_YEAR and RELEASE_VERSION, both of which are strings. The year will be the current year, and the release version can be '0.1.0' for now. Update the login screen to display both of these values and fire up the local dev environment to test/fine-tune it.
+8. Next, start work on the code changes that will be introduced as our first "update," starting with the copyright date on the login page. Add two new frontend constants, RELEASE_YEAR and RELEASE_VERSION, both of which are strings. The year will be the current year, and the release version can be '0.1.0' for now. Update the login screen to display both of these values and fire up the local dev environment to test/fine-tune it.
 
-### 9. Rewrite the game's introductory greeting message, and possibly include some logic to make the fonts slightly larger for modals with less than x characters.
+9. Rewrite the game's introductory greeting message, and possibly include some logic to make the fonts slightly larger for modals with less than x characters.
 
-### 10. Add a couple of new random events with comical messages and see what effects can be used (we can't give the player more resources other than money just yet since we need to find a way to add stuff to a specific module and not just artificially boost the economy's display value). Don't worry about adding new random event functionality for now, just focus on the "personality" of the messages.
+10. Add a couple of new random events with comical messages and see what effects can be used (we can't give the player more resources other than money just yet since we need to find a way to add stuff to a specific module and not just artificially boost the economy's display value). Don't worry about adding new random event functionality for now, just focus on the "personality" of the messages.
 
-### 11. In the backend's server functions, go in and try to reduce the number of console log messages to just one per DB transaction.
+### 11. In the backend's server functions, go in and try to reduce the number of console log messages to just one per operation.
 
 ### 12. See if you can figure out what's wrong with the tab order for the login page and fix it if you can!
 
@@ -3276,6 +3276,8 @@ Exit Criteria:
 ### 18. [5: Significant Gameplay issue] When a Colonist is going to produce in a module on a non-ground floor, they can sometimes start to climb a ladder that is attached to that floor, but that does not go all the way to the ground where they begin to climb it. Colonist appears to climb an invisible ladder until they reach the bottom of the actual ladder, which they continue to climb to the destination. Because the Colonist does not totally freeze up this is considered only a moderate level of severity.
 
 ### 19. [1: Minor Edge Case] When the player starts a new game the initial map they're given will be the same as the one that was selected for the previous "New Game" in that browser session. It should be reset so that it is always fetched from the appropriate map collection being displayed (in this case the default map type is "polar").
+
+### 20. [2: Inaccurate info display] When new colonists arrive via drop pod the game speed is set to 'fast' mode but the game speed indicator is not set to display this (so if you were going slow or extra fast the setting does not appear to change even though the game's speed does).
 
 ## Technical Debt Issues:
 

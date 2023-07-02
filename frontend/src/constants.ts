@@ -9,6 +9,9 @@ const serverPort = process.env.SERVER_PORT as string || "7000";
 const httpsPort = process.env.HTTPS_PORT as string || "443";
 
 export const constants = {
+    // Game copyright and version info for display on login screen
+    RELEASE_YEAR: "2023",
+    RELEASE_VERSION: "1.0.0",
     // Backend connection: HTTP in dev environment, or HTTPS in staging/production??
     URL_PREFIX: environment === "local_dev" ? `http://${serverName}:${serverPort}/api` : `https://${serverName}:${httpsPort}/api`,
     // Units of measurement, in pixels
@@ -68,28 +71,101 @@ export const constants = {
 
 export const modalData: EventData[] = [
    {
-      id: 0,
-      title: "Confirm Landing Selection",
-      text: "Really? Are you sure this is a good\nlanding site? I mean, it's your call obviously...",
+      id: "landfall",
+      title: "ARRIVAL",
+      text: "Greetings, Earthling!\n\nThe SMARS Corporation welcomes you to your new home.\n\nPlease select your landing site, and for goodness' sakes\nbe careful where you choose to land.\n\nWe can't afford any more rescue missions this quarter.",
+      resolutions: [
+         {
+            text: "That inspires confidence!",
+            outcomes: [["set-mouse-context", "landing"]]
+         }
+      ],
+   },
+   {
+      id: "load-game",
+      title: "YOU'RE BACK!!!",
+      text: `Welcome back, Commander!\n The colonists missed you.\nThey look up to you.`,
       resolutions: [
           {
-              text: "Yes I'm sure!",
+              text: "The feeling is mutual.",
+              outcomes: [["set-mouse-context", "inspect"]]
+          } 
+      ]
+   },
+   {
+      id: "landing-confirm",
+      title: "CONFIRM LANDING SITE",
+      text: "Really? You want to land here?\nI mean okay, it's your call obviously...",
+      resolutions: [
+          {
+              text: "Sure I'm sure!",
               outcomes: [["set-mouse-context", "inspect"], ["start-landing-sequence", 1]]
           },
           {
-            text: "No, go back!",
+            text: "Let's reconsider!",
             outcomes: [["set-mouse-context", "landing"]]
          }
       ]
   },
   {
-      id: 1,
-      title: "Touchdown!",
+      id: "landing-touchdown",
+      title: "TOUCHDOWN!",
       text: "The colonists have arrived at the planet's surface,\nmiraculously unharmed!",
       resolutions: [
          {
             text: "Hallelujah!",
             outcomes: [["set-mouse-context", "inspect"], ["provision-base-structures", 1]]
+         }
+      ]
+   },
+   {
+      id: "midnight",
+      title: "MIDNIGHT ON SMARS",
+      text: "Another day over on the Red Planet, and you can't help but notice\nhow small Phobos and Deimos are compared to the Earth's moon.",
+      resolutions: [
+         {
+            text: "Whoo wee!",
+            outcomes: [["set-mouse-context", "inspect"]]
+         }
+      ]
+   },
+]
+
+export const randomEventsData: EventData[] = [
+   {
+      id: "random-event-1",
+      title: "OXYGEN LEAK",
+      text: "The colonists have reported hearing a faint hissing sound\ncoming from the vicinity of Airlock B.\n\nDue to the high cost of adhesive sealant strips (duct tape),\nit is recommended that colonists use Airlock A for all future\n egress/ingress. Also try and hold your breath more often.",
+      resolutions: [
+         {
+            text: "Buy more tape! (-$500)",
+            outcomes: [["set-mouse-context", "inspect"], ["subtract-money", 50000]]
+         },
+         {
+            text: "Hold breath more often (-$0)",
+            outcomes: [["set-mouse-context", "inspect"]]
+         }
+      ]
+   },
+   {
+      id: "random-event-2",
+      title: "REAGANOMICS",
+      text: "The board of investors likes your style, kid.\nHave a cigar, you're gonna go far.\n\n(The SMARS Corporation is not in any way responsible for\nfires related to lighting cigars inside the habitation module)",
+      resolutions: [
+         {
+            text: "Ride the gravy train (+$1000)",
+            outcomes: [["set-mouse-context", "inspect"], ["add-money", 100000]]
+         }
+      ]
+   },
+   {
+      id: "random-event-3",
+      title: "ECONOMIC DOWNTURN ON EARTH",
+      text: "The board of directors regretfully has to inform you that,\ndue to the ongoing financial uncertainy of Earth's economy,\nyour colony's funding has been reduced, effective immediately.",
+      resolutions: [
+         {
+            text: "Lousy democrats! (-$1000)",
+            outcomes: [["set-mouse-context", "inspect"], ["subtract-money", 100000]]
          }
       ]
    },

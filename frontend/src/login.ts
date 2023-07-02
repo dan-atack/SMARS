@@ -194,7 +194,8 @@ export default class Login extends Screen {
         if (!this._loginMode) p5.text("Confirm Password", this._center, 400);
         if (this._loginMode) p5.text("First time on SMARS?", this._center + 32, 432, 256, 128);
         p5.textSize(12);
-        p5.text("Copyright 2021 Dan Atack Comics Online", this._center, 704);
+        p5.text(`SMARS Version ${constants.RELEASE_VERSION}`, this._center, 684);
+        p5.text(`Copyright ${constants.RELEASE_YEAR} Dan Atack Comics Online`, this._center, 704);
         // Green text begins
         p5.textSize(42);
         p5.fill(constants.GREEN_TERMINAL);
