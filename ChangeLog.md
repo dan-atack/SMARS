@@ -3167,11 +3167,11 @@ Update Procedure Criteria:
 
 Pseudo-Update Criteria:
 
-- Game's copyright date updated to 2023 via VERSION_INFO frontend constant
-- Simplified introductory message at the start of the game
-- Basic random events at midnight instead of the poem
-- Backend database functions have fewer console logs
-- [STRETCH] login page/account creation tab index issue fixed for password confirm field
+- [DONE] Game's copyright date updated to 2023 via VERSION_INFO frontend constant
+- [DONE] Simplified introductory message at the start of the game
+- [DONE] Basic random events have a small chance of occurring every hour in lieu of poetry rehearsals at midnight
+- [DONE] Backend database functions have fewer, more informative console logs
+- [DONE] [STRETCH] login page/account creation tab index issue fixed for password confirm field
 
 1. From the staging environment - or should I perhaps call it a "workspace?" - on the local VM (which has become the de facto launching platform for terraforming, it seems) run the startPlan and startDeploy commands from an updated master branch checkout. Wait about 15 minutes and then check to see if the game is up and running at the staging URL.
 
@@ -3193,9 +3193,9 @@ Pseudo-Update Criteria:
 
 10. Add a couple of new random events with comical messages and see what effects can be used (we can't give the player more resources other than money just yet since we need to find a way to add stuff to a specific module and not just artificially boost the economy's display value). Don't worry about adding new random event functionality for now, just focus on the "personality" of the messages.
 
-### 11. In the backend's server functions, go in and try to reduce the number of console log messages to just one per operation.
+11. In the backend's server functions, go in and try to reduce the number of console log messages to just one per operation. Also, for the messages that are kept, add some more details to make them more informative (e.g. opening DB connection... to do what?)
 
-### 12. See if you can figure out what's wrong with the tab order for the login page and fix it if you can!
+12. See if you can figure out what's wrong with the tab order for the login page and fix it if you can! ADDENDUM: It was super easy, it was just a matter of attaching them to the page in the right order!
 
 ### 14. Once all of these updates have been validated in the local dev environment, merge all changes to the master branch and prepare to rehearse the update procedure.
 

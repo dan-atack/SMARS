@@ -50,6 +50,7 @@ export default class Login extends Screen {
         this._buttons.push(signIn);
         const signUp = new Button("New User", this._center + 32, 512, this.setupSignup, 256, 128, constants.GREEN_TERMINAL, constants.GREEN_DARK);
         this._buttons.push(signUp);
+        // Add input elements to the page in descending order to produce a good tab index
         this.loginInput.parent("app");
         this.loginInput.addClass("login-name");
         this.passwordInput.parent("app");
@@ -77,12 +78,13 @@ export default class Login extends Screen {
         this.passwordInput = p5.createInput("", "password");
         // Add third input for password confirmation:
         this.passwordConfirm = p5.createInput("", "password");
-        this.passwordConfirm.parent("app");
-        this.passwordConfirm.addClass("login-password-confirm")
+        // Add input elements to the page in descending order to produce a good tab index
         this.loginInput.parent("app");
         this.loginInput.addClass("login-name");
         this.passwordInput.parent("app");
         this.passwordInput.addClass("login-password");
+        this.passwordConfirm.parent("app");
+        this.passwordConfirm.addClass("login-password-confirm");
         this._buttons.forEach((button) => {
             button.render(p5);
         });
