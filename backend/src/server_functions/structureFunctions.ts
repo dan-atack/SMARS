@@ -11,7 +11,7 @@ const getStructures = async (req: Request, res: Response) => {
     const client = new MongoClient(constants.DB_URL_STRING, {});
     try {
         await client.connect();
-        console.log("Database connection established.");
+        console.log(`Database connection established. Getting structure data for ${type} ${category}.`);
         const db = client.db(dbName);
         await db
             .collection(category)
@@ -19,22 +19,21 @@ const getStructures = async (req: Request, res: Response) => {
             .toArray((err, result) => {
                 if (result != null) {
                     // If building category exists, filter the result by type before returning to the front-end:
-                    console.log(`Found ${result.length} structures in ${category} collection. Filtering results by type ${type}`);
+                    // console.log(`Found ${result.length} structures in ${category} collection. Filtering results by type ${type}`);
                     const resultsByType = result.filter((structure) => {
                         return structure.type.toLowerCase() === type.toLowerCase();
                     })
-                    console.log(`Returning ${resultsByType.length} results for ${category}/${type} structures`)
+                    console.log(`Found ${resultsByType.length} results for ${type} ${category}.`);
                     res.status(200).json({ status: 200, data: resultsByType });
                     client.close();
-                    console.log("Closing database collection.");
                 } else {
-                    console.log(`No results found for ${type} collection.`);
+                    console.log(`ERROR: No structure data found for ${type} collection.`);
                     res.status(404).json({ status: 404, data: [] })
                     client.close();
-                    console.log("Closing database connection.");
                 }
             })
     } catch (err) {
+        console.log(`ERROR: The following error occurred while trying to find structure data for ${type} ${category}:`);
         console.log(err);
     }
 }
@@ -47,24 +46,23 @@ const getOneStructure = async (req: Request, res: Response) => {
     const client = new MongoClient(constants.DB_URL_STRING, {});
     try {
         await client.connect();
-        console.log("Database connection established.");
+        console.log(`Database connection established. Getting structure data for ${name}.`);
         const db = client.db(dbName);
         await db
             .collection(category)
             .findOne(dbQuery, (err, result) => {
                 if (result != null) {
-                    console.log(`Found result for ${category} named ${name}.`);
+                    console.log(`Found ${name} in ${type} ${category}.`);
                     res.status(200).json({ status: 200, data: result });
                     client.close();
-                    console.log("Closing database connection.");
                 } else {
-                    console.log(`No results found for ${name} in ${category} collection`);
+                    console.log(`ERROR: No results found for ${name} in ${category} collection`);
                     res.status(404).json({ status: 404, data: [] })
                     client.close();
-                    console.log("Closing database connection.");
                 }
             })
     } catch (err) {
+        console.log(`ERROR: The following error occurred while trying to find structure data for ${name}:`);
         console.log(err);
     }
 }
@@ -76,7 +74,7 @@ const getStructureTypes = async (req: Request, res: Response) => {
     const includeTests = false;
     try {
         await client.connect();
-        console.log("Database connection established.");
+        console.log(`Database connection established. Getting structure types information for ${category}.`);
         const db = client.db(dbName);
         await db
             .collection(category)
@@ -84,7 +82,6 @@ const getStructureTypes = async (req: Request, res: Response) => {
             .toArray((err, result) => {
                 if (result != null) {
                     // If the building CATEGORY exists, make a list of all the different TYPES of structure in that category:
-                    console.log(`Found ${result.length} structures in ${category} collection. Determining types.`)
                     let types: string[] = [];
                     // If a structure's type is not already listed, add it to the list of unique types:
                     result.forEach((structure) => {
@@ -97,21 +94,20 @@ const getStructureTypes = async (req: Request, res: Response) => {
                             }
                         }
                     })
-                    console.log(`Returning ${types.length} ${category} types`);
+                    console.log(`Returning ${types.length} ${category} types.`);
                     res.status(200).json({
                         status: 200,
                         data: types
                     });
                     client.close();
-                    console.log("Closing database connection.");
                 } else {
-                    console.log(`No results found for ${category} collection.`);
+                    console.log(`ERROR: No structure types data found for ${category} collection.`);
                     res.status(404).json({ status: 404, data: [] })
                     client.close();
-                    console.log("Closing database connection.");
                 }
             })
     } catch (err) {
+        console.log(`ERROR: The following error occurred while trying to find structure types data for ${category}:`);
         console.log(err);
     }
 }

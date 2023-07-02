@@ -25,7 +25,7 @@ const handleLogin = async (req: Request, res: Response) => {
     const client = new MongoClient(constants.DB_URL_STRING, {});
     try {
         await client.connect();
-        console.log("Connected to database...");
+        console.log(`Database connection established. Attempting to log in as ${username}.`);
         const db = client.db(dbName);  // Use SMARS database
         await db
             .collection(collectionName)  // Users collection
@@ -34,20 +34,20 @@ const handleLogin = async (req: Request, res: Response) => {
                 if (result) {
                     // Check if password matches DB entry:
                     if (result.password === password) {
-                        console.log('Login successful.');
+                        console.log(`LOGIN SUCCESSFUL. Logged in as ${username}.`);
                         res.status(200).json({ status: 200, message: `Login successful. Logged in as ${username}`, username: username })
                     } else {
-                        console.log('Incorrect password');
+                        console.log(`LOGIN ATTEMPT FAILED: Incorrect password provided for ${username}.`);
                         res.status(403).json({ status: 403, message: `Incorrect password for username ${username}`})
                     }
                 } else {
-                    console.log('Username not found');
-                    res.status(404).json({ status: 404, message: `Username ${username} not found.` })
+                    console.log(`ERROR: Username ${username} not found.`);
+                    res.status(404).json({ status: 404, message: `ERROR: Username ${username} not found.` })
                 }
-                console.log('Closing DB connection.');
                 client.close();
             })
     } catch (err) {
+        console.log(`ERROR: The following error occurred while trying to log in as user ${username}:`);
         console.log(err)
     }
 }
@@ -67,7 +67,7 @@ const handleSignup = async (req: Request, res: Response) => {
 
     const client = new MongoClient(constants.DB_URL_STRING, {});
     try {
-        console.log("Connecting to database...");
+        console.log(`Database connection established. Attempting to create new user account for ${username}.`);
         await client.connect();
         const db = client.db(dbName);
         await db
@@ -75,21 +75,20 @@ const handleSignup = async (req: Request, res: Response) => {
             // Search for the username in the db; if it can't be found, move on to next step - otherwise respond that name is taken.
             .findOne(dbQuery, async (err, result) => {
                 if (result) {
-                    console.log(`Username ${username} already exists in database.`);
-                    res.status(409).json({ status: 409, message: `Username ${username} already exists`})
+                    console.log(`ACCOUNT CREATION ERROR: Username ${username} already exists in database.`);
+                    res.status(409).json({ status: 409, message: `ACCOUNT CREATION ERROR: Username ${username} already exists in database`})
                     usernameAvailable = false;  // Only allow operation if username is not already taken.
                 } else {
                     // Initiate DB write operation only if the username does not exist already:
                     const insert = await db.collection(collectionName).insertOne(doc);
                     assert.equal(true, insert.acknowledged);
-                    console.log(`New user entry created for ${username}`);
+                    console.log(`ACCOUNT CREATION SUCCESS: New user entry created for ${username}.`);
                     res.status(201).json({ status: 201, message: `User ${username} registered successfully!`, username: username})
-                    console.log('Closing DB connection.');
                 }
-                console.log('Closing DB connection.');
                 client.close();
             });
     } catch (err) {
+        console.log(`ERROR: The following error occurred while trying to sign up new user ${username}:`);
         console.log(err);
     }
 }

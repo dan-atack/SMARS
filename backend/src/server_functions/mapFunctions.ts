@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { MongoClient } from "mongodb";
-import assert from "assert";
 import { constants } from "../constants";
 
 // Standardize name of the database (and collection):
@@ -23,27 +22,25 @@ const getMap = async (req: Request, res: Response) => {
     const client = new MongoClient(constants.DB_URL_STRING, {});
     try {
         await client.connect();
-        console.log("Database connection established");
+        console.log(`Database connection established. Getting all map files of type: ${type}.`);
         const db = client.db(dbName);
         await db
             .collection(collectionName)
             .find(dbQuery) // Find all for a given type
             .toArray((err, result) => {
                 if (result != null) {
-                    // If there are maps for a given type, see how many there are:
-                    console.log(`Found ${result.length} maps for type ${type}:`);
+                    // If there are maps for a given type, see how many there are and randomly select one
                     const rando = Math.floor(Math.random() * result.length);
-                    console.log(`Randomly selecting map at index position ${rando}`);
+                    console.log(`Loading map data for ${type} map #${rando}.`);
                     res.status(200).json({ status: 200, mapInfo: result[rando]})
                     client.close();
-                    console.log("Closing database client");
                 } else {
-                    console.log(`No maps found for type ${type}`);
+                    console.log(`ERROR: No maps found for type ${type}`);
                     client.close();
-                    console.log("Closing database client");
                 }
             })
     } catch (err) {
+        console.log(`ERROR: The following error occurred while trying to load a map file of type ${type}:`);
         console.log(err);
     }
 }
