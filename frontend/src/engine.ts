@@ -20,7 +20,7 @@ import Connector from "./connector";
 import Module from "./module";
 // Helper/server functions
 import { ModuleInfo, ConnectorInfo, getOneModule, getOneConnector } from "./server_functions";
-import { constants, modalData } from "./constants";
+import { constants, modalData, randomEventsData } from "./constants";
 // Types
 import { ConnectorSaveInfo, ModuleSaveInfo, SaveInfo, GameTime } from "./saveGame";
 import { GameData } from "./newGameSetup";
@@ -628,7 +628,7 @@ export default class Engine extends View {
         const flat = this._map.determineFlatness(gridX - 4, gridX + 4);
         // Prompt the player to confirm landing site before initiating landing sequence
         if (flat) {
-            this.createModal(false, modalData[0]);
+            this.createModal(false, modalData.find((modal) => modal.id ==="landing-confirm"));
             this._landingSiteCoords[0] = gridX - 4; // Set landing site location to the left edge of the landing area
             this._landingSiteCoords[1] = (constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH) - this._map._columns[gridX].length;
         }    
@@ -651,7 +651,7 @@ export default class Engine extends View {
         this._map.setExpanded(false);
         this._hasLanded = true;
         this.placeInitialStructures();
-        this.createModal(false, modalData[1]);
+        this.createModal(false, modalData.find((modal) => modal.id === "landing-touchdown"));
         // Add three new colonists, spread across the landing zone (Y value is -2 since it is the Colonist's head level)
         this._population.addColonist(this._landingSiteCoords[0], this._landingSiteCoords[1] - 2);
         this._population.addColonist(this._landingSiteCoords[0] + 2, this._landingSiteCoords[1] - 2);
@@ -917,14 +917,14 @@ export default class Engine extends View {
                 if (this._gameTime.minute < this._minutesPerHour - 1) {  // Minus one tells the minutes counter to reset to zero after 59
                     this._gameTime.minute ++;
                 } else {
-                    this._gameTime.minute = 0;   // Advance hours (anything on an hourly schedule should go here)
+                    this._gameTime.minute = 0;          // Advance hours (anything on an hourly schedule should go here)
+                    this.generateEvent(8);              // Every hour there is an 8% chance of a random event
                     if (this._gameTime.hour < this._hoursPerClockCycle) {
                         this._gameTime.hour ++;
                         if (this._gameTime.hour === this._hoursPerClockCycle) {  // Advance day/night cycle when hour hits twelve
                             if (this._gameTime.cycle === "AM") {
                                 this._gameTime.cycle = "PM"
                             } else {
-                                this.generateEvent();           // Modal popup appears every time it's a new day.
                                 this._gameTime.cycle = "AM";
                                 this._sky.setSkyColour(constants.GREEN_DARKEST, false); // Reset sky secondary colour at midnight
                                 // Advance date (anything on a daily schedule should go here)
@@ -950,61 +950,47 @@ export default class Engine extends View {
 
     // Prints a welcome-to-the-game message the first time a player begins a game
     createNewGameModal = () => {
-        const data: EventData = {
-            id: 0,
-            title: "Landfall!",
-            text: "The SMARS corporation welcomes you to your new home! \nYou have been appointed by the board of directors to \noversee the latest attempt to establish a colony on this\ndismal speck of dust. They hope that you will be more\nsuccessful than your predecessors. We absolutely cannot\nafford any more rescue missions this quarter.",
-            resolutions: [
-                {
-                    text: "Sounds good, boss!",
-                    outcomes: [["set-mouse-context", "landing"]]
-                }
-            ],
-        }
+        const data: EventData | undefined = modalData.find((modal) => modal.id === "landfall");
         this.createModal(false, data);
     }
 
     // Prints a welcome-back modal when the player loads a saved file
     createLoadGameModal = (username: string) => {
-        const data: EventData = {
-            id: 1,
-            title: "You're back!!!",
-            text: `Welcome back, Commander ${username}!\n The colonists missed you.\nThey look up to you.`,
-            resolutions: [
-                {
-                    text: "The feeling is mutual.",
-                    outcomes: [["set-mouse-context", "inspect"]]
-                } 
-            ]
+        const text = `Welcome back, Commander ${username}!\n The colonists missed you.\nThey look up to you.`
+        const data: EventData | undefined = modalData.find((modal) => modal.id === "load-game");
+        if (data) {
+            data.text = text;
+            this.createModal(false, data);
+        } else {
+            console.log(`Warning: Event data not found for game loading greeting modal.`);
         }
-        this.createModal(false, data);
     }
 
     // In-game event generator: produces scheduled and/or random events which will create modal popups
     generateEvent = (probability?: number) => {     // Probability is given optionally as a percent value
-        const example: EventData = {
-            id: 2,
-            title: "It's a new day on SMARS",
-            text: "What a difference... a Sol makes,\n Twenty-four-and-a-half little hours,\nnot much sun, and no flowers (yet)\nnor yet any rain...\n\nYou have received additional funding.",
-            resolutions: [
-                {
-                    text: "How time flies!",
-                    outcomes: [["set-mouse-context", "inspect"], ["add-money", 50000]]
-                }
-            ]
-        }
         if (probability) {
-            const rand = Math.floor(Math.random() * 100);           // Generate random value and express as a percent
-            if (rand <= probability) this.createModal(true, example);     // Fire if given probability is higher than random value
+            const rand = Math.floor(Math.random() * 100);                   // Generate random value and express as a percent
+            if (rand < probability) {
+                // If a random event occurs, randomly select an event from the random events list
+                const eventId = Math.floor(rand * (100 / probability) * randomEventsData.length / 100);
+                const ev = randomEventsData[eventId];
+                this.createModal(true, ev);       // Event occurs if given probability is higher than random value
+            }
         } else {
-            this.createModal(false, example);
+            // If a non-random event is requested it happens here ("midnight" is a placeholder event in the meantime)
+            const ev: EventData | undefined = modalData.find((modal) => modal.id === "midnight")
+            this.createModal(false, ev);
         }
     }
 
-    createModal = (random: boolean, data: EventData) => {
-        this.setGameOn(false);
-        this._modal = new Modal(this._p5, this.closeModal, random, data);
-        this.setMouseContext("modal");
+    createModal = (random: boolean, data: EventData | undefined) => {
+        if (data) {
+            this.setGameOn(false);
+            this._modal = new Modal(this._p5, this.closeModal, random, data);
+            this.setMouseContext("modal");
+        } else {
+            console.log(`ERROR: Event data not found for modal creation.`);
+        }      
     }
 
     // Resolution parameter tells the Engine, by index position, which resolution to enact
@@ -1027,8 +1013,11 @@ export default class Engine extends View {
                     case "add-money":
                         if (typeof outcome[1] === "number") this._economy._data.addMoney(outcome[1]);
                         break;
+                    case "subtract-money":
+                        if (typeof outcome[1] === "number") this._economy._data.subtractMoney(outcome[1]);
+                        break;
                     default:
-                        console.log(`Unrecognized modal resolution code: ${outcome[0]}`);
+                        console.log(`Warning: Unrecognized modal resolution code: ${outcome[0]}`);
                 }
             })
         }

@@ -134,3 +134,12 @@ resource "aws_route53_record" "freesmars" {
   ttl = 300
   records = [aws_eip.smars_server_eip.public_ip]
 }
+
+resource "aws_s3_bucket" "smars-backups-bucket" {
+  bucket = "smars-${var.SMARS_ENVIRONMENT}-bucket"
+
+  tags   = {
+    Name = "SMARS ${var.SMARS_ENVIRONMENT} Backup Bucket"
+    Environment = "${var.SMARS_ENVIRONMENT}"
+  }
+}

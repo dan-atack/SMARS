@@ -50,6 +50,7 @@ export default class Login extends Screen {
         this._buttons.push(signIn);
         const signUp = new Button("New User", this._center + 32, 512, this.setupSignup, 256, 128, constants.GREEN_TERMINAL, constants.GREEN_DARK);
         this._buttons.push(signUp);
+        // Add input elements to the page in descending order to produce a good tab index
         this.loginInput.parent("app");
         this.loginInput.addClass("login-name");
         this.passwordInput.parent("app");
@@ -77,12 +78,13 @@ export default class Login extends Screen {
         this.passwordInput = p5.createInput("", "password");
         // Add third input for password confirmation:
         this.passwordConfirm = p5.createInput("", "password");
-        this.passwordConfirm.parent("app");
-        this.passwordConfirm.addClass("login-password-confirm")
+        // Add input elements to the page in descending order to produce a good tab index
         this.loginInput.parent("app");
         this.loginInput.addClass("login-name");
         this.passwordInput.parent("app");
         this.passwordInput.addClass("login-password");
+        this.passwordConfirm.parent("app");
+        this.passwordConfirm.addClass("login-password-confirm");
         this._buttons.forEach((button) => {
             button.render(p5);
         });
@@ -194,7 +196,8 @@ export default class Login extends Screen {
         if (!this._loginMode) p5.text("Confirm Password", this._center, 400);
         if (this._loginMode) p5.text("First time on SMARS?", this._center + 32, 432, 256, 128);
         p5.textSize(12);
-        p5.text("Copyright 2021 Dan Atack Comics Online", this._center, 704);
+        p5.text(`SMARS Version ${constants.RELEASE_VERSION}`, this._center, 684);
+        p5.text(`Copyright ${constants.RELEASE_YEAR} Dan Atack Comics Online`, this._center, 704);
         // Green text begins
         p5.textSize(42);
         p5.fill(constants.GREEN_TERMINAL);

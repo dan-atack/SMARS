@@ -124,15 +124,15 @@ const handleSave = async (req: Request, res: Response) => {
     const client = new MongoClient(constants.DB_URL_STRING, {});
     try {
         await client.connect();
-        console.log("Connected to database.");
+        console.log(`Database connection established. Creating new save file for ${saveInfo.username}.`);
         const db = client.db(dbName);
         const insert = await db.collection(collectionName).insertOne(saveInfo);
         assert.equal(insert.acknowledged, true);
-        console.log(`Save file created for ${saveInfo.username}`);
+        console.log(`SAVE FILE CREATION SUCCESS: Created new save file ${saveInfo.game_name} for ${saveInfo.username} at ${saveInfo.time}`);
         res.status(201).json({ message: `Save file created for ${saveInfo.username} at ${saveInfo.time.toString()}` });
-        console.log("Closing database connection.");
         client.close();
     } catch (err) {
+        console.log(`ERROR: The following error occurred while trying to create save file ${saveInfo.game_name} for ${saveInfo.username}:`);
         console.log(err);
         res.status(400).json({ success: true, message: `Error encountered while trying to process save for ${saveInfo.username}` });
     }

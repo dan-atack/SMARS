@@ -9,7 +9,7 @@ export type Resolution = {
 }
 
 export type EventData = {
-    id: number,
+    id: string,                 // Modals are identified with a unique string ID to make them easier to sort through
     title: string,
     text: string,
     resolutions: Resolution[]
@@ -44,9 +44,12 @@ export default class Modal {
         this._height = constants.SCREEN_HEIGHT / 2;
         this._xPosition = constants.WORLD_VIEW_WIDTH / 4;
         this._yPosition = constants.SCREEN_HEIGHT / 4;
-        this._resolutions[0].text.length <= 13 ? this._buttonWidth = 128 : this._buttonWidth = 256; // Button width is conditional
-        this._buttonX = this._xPosition + (this._width / (1 + this._resolutions.length)) - (this._buttonWidth / (1 + this._resolutions.length));
-        this._buttonY = this._yPosition + this._height * 3 / 4;
+        this._buttonWidth = 256; // Buttons are always wide
+        // Buttons' horizontal start position = middle for one resolution, or off to the right if there are two options
+        this._buttonX = this._xPosition + (this._width / (1 + this._resolutions.length)) - (this._buttonWidth / 2 + this._resolutions.length * 18);
+        console.log(this._buttonX);
+        // TODO: Adjust button Y positions if there are more than 2 options available
+        this._buttonY = this._yPosition + this._height * 4 / 5;
         this._buttons = [];
         // Create one button per resolution and have the handler pass the index number of the button to the resolveModal method
         this._resolutions.forEach((res, idx) => {
@@ -76,8 +79,9 @@ export default class Modal {
         p5.rect(this._xPosition + 4, this._yPosition + 4, this._width - 8, this._height - 8);
         p5.textAlign(p5.CENTER, p5.CENTER);
         p5.fill(constants.BLUE_ICE);
+        p5.textSize(28);
         p5.text(this._title, this._xPosition + this._width / 2, this._yPosition + this._height / 8);
-        p5.textSize(16);
+        p5.textSize(18);
         p5.textAlign()
         p5.text(this._text, this._xPosition + this._width / 2, this._yPosition + this._height / 2); // TODO: limit text box size
         this._buttons.forEach((button) => {

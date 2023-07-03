@@ -14,7 +14,7 @@ const loadGamesForUser = async (req: Request, res: Response) => {
     const client = new MongoClient(constants.DB_URL_STRING, {});
     try {
         await client.connect();
-        console.log("Database connection established");
+        console.log(`Database connection established. Getting saved games for ${username}.`);
         const db = client.db(dbName);
         await db
             .collection(collectionName)
@@ -22,7 +22,7 @@ const loadGamesForUser = async (req: Request, res: Response) => {
             .toArray((err, result) => {
                 if (result != null) {
                     // If there are maps for a given type, see how many there are:
-                    console.log(`Found ${result.length} saved games for ${username}:`);
+                    console.log(`Found ${result.length} saved games for ${username}.`);
                     // Return only a small portion of each file's data:
                     let saves: any[] = [];
                     result.forEach((save) => {
@@ -42,14 +42,13 @@ const loadGamesForUser = async (req: Request, res: Response) => {
                     })
                     res.status(200).json({ status: 200, saves: saves})
                     client.close();
-                    console.log("Closing database client");
                 } else {
-                    console.log(`No maps found for type ${username}`);
+                    console.log(`No save games found for ${username}.`);
                     client.close();
-                    console.log("Closing database client");
                 }
             })
     } catch (err) {
+        console.log(`ERROR: The following error occurred while trying to find saved game files for user ${username}:`);
         console.log(err);
     }
 }
@@ -60,20 +59,20 @@ const loadGameData = async (req: Request, res: Response) => {
     const client = new MongoClient(constants.DB_URL_STRING, {});
     try {
         await client.connect();
-        console.log("Connected to database. Bleep.");
+        console.log(`Database connection established. Loading saved game data for save ID ${id}`);
         const db = client.db(dbName);
         await db.collection(collectionName).findOne(dbQuery, (err, result) => {
             if (result != null) {
-                console.log(`Dispatching save data for game ${result.game_name}`);
+                console.log(`Dispatching saved game data for game ${result.game_name}.`);
                 res.status(200).json({ status: 200, data: result })
             } else {
-                console.log(`Save data not found for game ${id}`);
-                res.status(404).json({ status: 404, message: "Save file not found :("});
+                console.log(`Saved game data not found for game ${id}`);
+                res.status(404).json({ status: 404, message: "Saved game file not found :("});
             }
             client.close();
-            console.log("Closing database client.");
         })
     } catch (err) {
+        console.log(`ERROR: The following error occurred while trying to load saved game file ${id}:`);
         console.log(err);
     }
 }
