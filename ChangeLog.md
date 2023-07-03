@@ -3197,7 +3197,7 @@ Pseudo-Update Criteria:
 
 12. See if you can figure out what's wrong with the tab order for the login page and fix it if you can! ADDENDUM: It was super easy, it was just a matter of attaching them to the page in the right order!
 
-### 14. Once all of these updates have been validated in the local dev environment, merge all changes to the master branch and prepare to rehearse the update procedure.
+13. Once all of these updates have been validated in the local dev environment, merge all changes to the master branch and prepare to rehearse the update procedure.
 
 ### 14. Now, take a minute to reflect on how we'll update this sucker on the cloud. The most obvious procedure would be to simply initiate a git pull from the master branch on the server machine, then wipe its docker images and re-build using docker compose up, but this involves a lengthy down time of about 10 minutes which is not ideal. This may nonetheless be acceptable for now, but rehearse that workflow and document its steps, and then we can spend some time brainstorming to see if there's a better way (or rather, how we might go about implementing a better way, of which several ideas spring to mind).
 
