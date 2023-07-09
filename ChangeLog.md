@@ -2492,7 +2492,7 @@ Exit Criteria:
 
 ### Date Started: February 16, 2023
 
-The volume (I'll be damned if I use Jira's terminology, even if 'epic' does have a nicer ring to it!) of SMARS' first deployment to the internet will be about delving into DevOps technology, and making a respectable effort at deploying an application that is not only reliable, but also secure, and well monitored. There will be a good amount of new technology involved, nearly all of which is outside of the currently familiar realms of the 'web stack.' First and foremost on the list of new technologies is Docker, whose mastery is considered an essential part of the DevOps toolkit. After that, the game will be deployed using various resources and services on AWS, with security provided by OpenSSL, and we will prototype the whole deployment effort as much as possible using an Ubuntu server running on a Vagrant/Virtualbox virtual machine.
+The volume (I'll be damned if I use Jira's terminology, even if 'epic' does have a nicer ring to it!) dedicated to SMARS' first deployment to the internet will be about delving into DevOps technology, and making a respectable effort at deploying an application that is not only reliable, but also secure, and well monitored. There will be a good amount of new technology involved, nearly all of which is outside of the currently familiar realms of the 'web stack.' First and foremost on the list of new technologies is Docker, whose mastery is considered an essential part of the DevOps toolkit. After that, the game will be deployed using various resources and services on AWS, with security provided by OpenSSL and Certbot, and we will prototype the whole deployment effort as much as possible using an Ubuntu server running on a Vagrant/Virtualbox virtual machine.
 
 The purpose of this initiative is twofold: Firstly, to get SMARS to the point where, theoretically at least, it can be seen and played by anyone in the world; and secondly, to put into practice many of the core DevOps skills that have hitherto only been partially developed, or developed in the context of doing a small part of a larger job.
 
@@ -2501,16 +2501,17 @@ Unlike previous efforts, there is a financial cost involved in this stage of the
 Volume Exit Criteria:
 
 - [DONE] The game has a fixed domain name that is at least somewhat catchy, as well as pithy.
-- The game can be visited in a web browser using https protocol, with no warnings/suspicion alerts by the browser
-- The game is constantly available (production server has high availability)
-- The game's production database, including save game data, user profiles, etc. is reliably saved/backed up
-- The game can be updated, via a partly or wholly automated process, with minimal downtime in the production environment
-- It is possible to test deployments/updates on a staging server before pushing to production
-- The game's cloud presence has alerts built in regarding billing thresholds
-- The game's cloud presence has alerts built in regarding performance issues
-- The game's docker containers have health checks and their logs can be obtained
-- The game can be deployed, in whole or in part, as code (i.e. with Terraform or similar service)
-- [STRETCH] The game's Docker resources are slimmed down to use as few resources as possible
+- [DONE] The game can be visited in a web browser using https protocol, with no warnings/suspicion alerts by the browser
+- [TBD] The game is constantly available (production server has high availability)
+- [DONE] The game's production database, including save game data, user profiles, etc. is reliably saved/backed up
+- [TBD] The game can be updated, via a partly or wholly automated process, with minimal downtime in the production environment
+- [DONE] It is possible to test deployments/updates on a staging server before pushing to production
+- [NOT-DONE] The game's cloud presence has alerts built in regarding billing thresholds
+- [NOT-DONE] The game's cloud presence has alerts built in regarding performance issues
+- [PARTIALLY-DONE] The game's docker containers have health checks and can reboot if they crash
+- [DONE] The game's docker containers' logs are saved to an external backup system
+- [DONE] The game can be deployed, in whole or in part, as code (i.e. with Terraform or similar service)
+- [STRETCH] [PARTIALLY-DONE] The game's Docker resources are slimmed down to use as few resources as possible
 
 ## Chapter One: Virtualization and Containerization Prototyping
 
@@ -3161,9 +3162,9 @@ Dress Rehearsal Exit Criteria:
 
 Update Procedure Criteria:
 
-- Game can be updated to a new version in the staging environment
-- Players can easily experience the upgrade by refreshing their browser
-- Players' save data is preserved after an update
+- [DONE] Game can be updated to a new version in the staging environment
+- [DONE] Players can easily experience the upgrade by refreshing their browser
+- [DONE] Players' save data is preserved after an update
 
 Pseudo-Update Criteria:
 
@@ -3199,9 +3200,49 @@ Pseudo-Update Criteria:
 
 13. Once all of these updates have been validated in the local dev environment, merge all changes to the master branch and prepare to rehearse the update procedure.
 
-### 14. Now, take a minute to reflect on how we'll update this sucker on the cloud. The most obvious procedure would be to simply initiate a git pull from the master branch on the server machine, then wipe its docker images and re-build using docker compose up, but this involves a lengthy down time of about 10 minutes which is not ideal. This may nonetheless be acceptable for now, but rehearse that workflow and document its steps, and then we can spend some time brainstorming to see if there's a better way (or rather, how we might go about implementing a better way, of which several ideas spring to mind).
+14. Now, take a minute to reflect on how we'll update this sucker on the cloud. The most obvious procedure would be to simply initiate a git pull from the master branch on the server machine, then wipe its docker images and re-build using docker compose up, but this involves a lengthy down time of about 10 minutes (ADDENDUM: No more than 7 minutes) which is not ideal. This may nonetheless be acceptable for now, but rehearse that workflow and document its steps, and then we can spend some time brainstorming to see if there's a better way (or rather, how we might go about implementing a better way, of which several ideas spring to mind).
 
-### 15. Validate the results of the update process that was used in the previous step, to ensure that players can access the update via a browser refresh and/or cache clearing, and that their save data is still there. Once this is validated we can do a final merge
+15. Validate the results of the update process that was used in the previous step, to ensure that players can access the update via a browser refresh and/or cache clearing, and that their save data is still there. Once this is validated we have all of the prerequisites to launch in a production environment. Yay.
+
+# Volume III: Project Management and Continuous Improvement on the Web (SMARS 1.0.1 + )
+
+### Date Started: July 9, 2023
+
+The third stage in SMARS's development will be geared towards making the game, now reliably deployed at https://freesmars.com, more fun and enjoyable for the player, while also continuously improving the game's stability and ease of development experience for its creator. Project management software will be used to help with brainstorming, arranging and prioritizing ideas for future improvements to the game. New work will be divided into three categories of improvement: developing new application features for the game, working on the game's production stack, and creating content for the game, to better take advantage of new features as they are added.
+
+Unlike the previous volume, but like the first one, this stage of development does not have any specific completion requirements. However, progress will be directed towards a number of medium sized groups of complementary features/content bundles that we can call "patch updates" whose requirements will be spelled out in detail in this log file. Aside from that, this log file will continue to record the notes, plans and other minutiae of the game's development day-to-day work, but the exit criteria for each issue will reside on the project management board to avoid wasting time duplicating information. As time goes by, more data may also be recorded in the project management tickets instead of in this file, if it proves to be an easier way of retrieving information.
+
+A new chapter/feature branch nomenclature scheme will also be adopted to match up with the issue numbers created by GitHub Issues while also identifying what type of work is being done. As of now, new feature branches should follow the format:
+
+SMARS-<Github Issues ticket number>-<Issue category (either APPLICATION, PRODUCTION, CONTENT or BUGFIX)>-Some-Issue-Name
+
+e.g. SMARS-36-APPLICATION-Better-Random-Events
+
+or
+
+SMARS-41-PRODUCTION-Add-AWS-Billing-Alerts
+
+Naming issues this way will help with long-term issue debugging and code traceability efforts, increasing the speed with which new features and content can be added to the game.
+
+## Chapter One: Better Random Events
+
+### Difficulty Estimate: 6 (For complete overhaul of the random events system, and expanding Engine functionalities for more diverse random event outcomes)
+
+### Date: July 9, 2023
+
+The game's random events system is a very promising way to add complexity and unpredictability to the game, as well as being an way to add some storyline elements and show a bit of the game's personality. However, before we can add a large selection of more interesting random events we need to improve the game's ability to handle complex event resolutions and move the whole system over to the backend to save the Engine's resources and allow us to pull random events from the game's database instead of the frontend's constants file.
+
+Exit Criteria:
+
+- Random events are from the backend, not the frontend constants file
+- The Engine requests random elements from the backend when a random event fires (probability check can remain in frontend)
+- The Engine sends certain information about the state of the game when requesting a random event
+- The backend has its own logic for deciding which random event to send - it processes the information sent from the frontend
+- The types of outcomes that a random event can lead to are more diverse and interesting (resource gain/loss, morale effects, etc.)
+
+Some preliminary test events will need to be created for this chapter, but a separate, content issue will be created upon the feature's completion as well.
+
+### 1. Step One...
 
 ## Chapter X: In-Game Notifications
 
@@ -3253,31 +3294,31 @@ Exit Criteria:
 
 7. [1: Coding Convention] Colonist class should have a unique ID field, to individuate the colony's population.
 
-### 8. [1: UX / Aesthetic] When a modal popup has more than one possible resolution, the buttons for the different resolutions aren't symmetrically aligned on the horizontal axis (they are pulled slightly to the right it seems).
+8. [1: UX / Aesthetic] When a modal popup has more than one possible resolution, the buttons for the different resolutions aren't symmetrically aligned on the horizontal axis (they are pulled slightly to the right it seems).
 
-### 9. [2: UX / Inaccurate info display] The game speed indicator should always be visible, including at the game start, and when the player returns to the game from the menu.
+9. [2: UX / Inaccurate info display] The game speed indicator should always be visible, including at the game start, and when the player returns to the game from the menu.
 
-### 10. [1: UX / Gameplay] Restrict the base's baseVolume area to only include modules that have the pressurized trait set to true. This would limit the ability to build certain connectors starting or ending in such modules (and potentially have other "cool" consequences too). Addendum is this really a bug??
+10. [8: Major Gameplay issue] Loaded games do not allow the player to scroll all the way to the far right of the map; the section underneath the sidebar becomes unreachable when the player saves and then subsequently reloads the game.
 
-11. [8: Major Gameplay issue] Loaded games do not allow the player to scroll all the way to the far right of the map; the section underneath the sidebar becomes unreachable when the player saves and then subsequently reloads the game.
+11. [5: Save Data Completeness] Although currently not doing much, save game files do not contain the game's map type or difficulty level data - both fields contain a blank string.
 
-12. [5: Save Data Completeness] Although currently not doing much, save game files do not contain the game's map type or difficulty level data - both fields contain a blank string.
+12. [8: Major Gameplay issue] In some circumstances, colonists who have just begun an 'explore' goal will have an action stack that tells them to jump off of a floor, with the false belief that they are stuck up there (even when a ladder to the surface is available).
 
-13. [8: Major Gameplay issue] In some circumstances, colonists who have just begun an 'explore' goal will have an action stack that tells them to jump off of a floor, with the false belief that they are stuck up there (even when a ladder to the surface is available).
+13. [8: Major Gameplay issue] In some circumstances, colonists will climb empty space (in the observed instance, the place where the climb action took place was in between two actual ladders) as though it were an actual ladder.
 
-14. [8: Major Gameplay issue] In some circumstances, colonists will climb empty space (in the observed instance, the place where the climb action took place was in between two actual ladders) as though it were an actual ladder.
+14. [2: UX / Inaccurate info display] The Earth date on the Earth screen is broken. It appears to not take the date from the save game data into account.
 
-15. [2: UX / Inaccurate info display] The Earth date on the Earth screen is broken. It appears to not take the date from the save game data into account.
+### 15. [5: Significant Gameplay issue] When a new module is placed on the ground in a position that makes it flush with an existing floor, Colonists walking across it will momentarily climb up into the air for one block before falling back down. This is likely caused by the incompleteness of the Floor creation/merging strategy used by the Infrastructure Data class.
 
-### 16. [5: Significant Gameplay issue] When a new module is placed on the ground in a position that makes it flush with an existing floor, Colonists walking across it will momentarily climb up into the air for one block before falling back down. This is likely caused by the incompleteness of the Floor creation/merging strategy used by the Infrastructure Data class.
+16. [5: Significant Gameplay issue] When a Colonist has passed their need threshold for rest, their attempts to satisfy any other need are overridden since the needs calculation uses a forEach loop whose last member is 'rest.' This causes Colonists to freeze up in some circumstances, as they are not able to fulfill eat/drink needs even if the rest availability status has been set to 0 (meaning that they should ignore it and try to fulfill one of the other two needs).
 
-17. [5: Significant Gameplay issue] When a Colonist has passed their need threshold for rest, their attempts to satisfy any other need are overridden since the needs calculation uses a forEach loop whose last member is 'rest.' This causes Colonists to freeze up in some circumstances, as they are not able to fulfill eat/drink needs even if the rest availability status has been set to 0 (meaning that they should ignore it and try to fulfill one of the other two needs).
+### 17. [5: Significant Gameplay issue] When a Colonist is going to produce in a module on a non-ground floor, they can sometimes start to climb a ladder that is attached to that floor, but that does not go all the way to the ground where they begin to climb it. Colonist appears to climb an invisible ladder until they reach the bottom of the actual ladder, which they continue to climb to the destination. Because the Colonist does not totally freeze up this is considered only a moderate level of severity.
 
-### 18. [5: Significant Gameplay issue] When a Colonist is going to produce in a module on a non-ground floor, they can sometimes start to climb a ladder that is attached to that floor, but that does not go all the way to the ground where they begin to climb it. Colonist appears to climb an invisible ladder until they reach the bottom of the actual ladder, which they continue to climb to the destination. Because the Colonist does not totally freeze up this is considered only a moderate level of severity.
+### 18. [1: Minor Edge Case] When the player starts a new game the initial map they're given will be the same as the one that was selected for the previous "New Game" in that browser session. It should be reset so that it is always fetched from the appropriate map collection being displayed (in this case the default map type is "polar").
 
-### 19. [1: Minor Edge Case] When the player starts a new game the initial map they're given will be the same as the one that was selected for the previous "New Game" in that browser session. It should be reset so that it is always fetched from the appropriate map collection being displayed (in this case the default map type is "polar").
+### 19. [2: Inaccurate info display] When new colonists arrive via drop pod the game speed is set to 'fast' mode but the game speed indicator is not set to display this (so if you were going slow or extra fast the setting does not appear to change even though the game's speed does).
 
-### 20. [2: Inaccurate info display] When new colonists arrive via drop pod the game speed is set to 'fast' mode but the game speed indicator is not set to display this (so if you were going slow or extra fast the setting does not appear to change even though the game's speed does).
+### 20. [7: Rare but Fatal Gameplay issue] If a random event fires at the same time as a pod of new colonists begins its landing descent, the game becomes frozen and unplayable as the mouse context gets set to 'Inspect' but the player is unable to close the modal window or to access the sidebar. We must add some new logic to manage how modal popups are dealt with when they coincide with other events that alter the game's normal flow and/or that alter the mouse context.
 
 ## Technical Debt Issues:
 
