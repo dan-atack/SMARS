@@ -918,7 +918,7 @@ export default class Engine extends View {
                     this._gameTime.minute ++;
                 } else {
                     this._gameTime.minute = 0;          // Advance hours (anything on an hourly schedule should go here)
-                    this.generateEvent(8);              // Every hour there is an 8% chance of a random event
+                    this.generateEvent(99);              // Every hour there is an 8% chance of a random event
                     if (this._gameTime.hour < this._hoursPerClockCycle) {
                         this._gameTime.hour ++;
                         if (this._gameTime.hour === this._hoursPerClockCycle) {  // Advance day/night cycle when hour hits twelve

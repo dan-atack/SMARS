@@ -3,9 +3,10 @@ import P5 from "p5";
 import Button from "./button";
 import { constants } from "./constants";
 
+// NOTE: If updating either of these type definitions, make sure to copy the update/s to the randomEventFunctions.ts file in the backend
 export type Resolution = {
     text: string,                   // Words on the button
-    outcomes: [string, number | string][]    // A tuple consisting of a type (the the Engine's switch case) and a value (which can be either a string or a number)
+    outcomes: [string, number | string, number?][]    // A tuple consisting of a type (string for Engine's switch case) a value (string or a number), and optionally, an ID number for a colonist or module as the third value
 }
 
 export type EventData = {
