@@ -628,7 +628,7 @@ export default class Engine extends View {
         const flat = this._map.determineFlatness(gridX - 4, gridX + 4);
         // Prompt the player to confirm landing site before initiating landing sequence
         if (flat) {
-            this.createModal(false, modalData.find((modal) => modal.id ==="landing-confirm"));
+            this.createModal(modalData.find((modal) => modal.id ==="landing-confirm"));
             this._landingSiteCoords[0] = gridX - 4; // Set landing site location to the left edge of the landing area
             this._landingSiteCoords[1] = (constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH) - this._map._columns[gridX].length;
         }    
@@ -651,7 +651,7 @@ export default class Engine extends View {
         this._map.setExpanded(false);
         this._hasLanded = true;
         this.placeInitialStructures();
-        this.createModal(false, modalData.find((modal) => modal.id === "landing-touchdown"));
+        this.createModal(modalData.find((modal) => modal.id === "landing-touchdown"));
         // Add three new colonists, spread across the landing zone (Y value is -2 since it is the Colonist's head level)
         this._population.addColonist(this._landingSiteCoords[0], this._landingSiteCoords[1] - 2);
         this._population.addColonist(this._landingSiteCoords[0] + 2, this._landingSiteCoords[1] - 2);
@@ -743,7 +743,7 @@ export default class Engine extends View {
             this._currentEvent = ev;
             this.setMouseContext("wait");
             duration ? this.setWaitTime(duration) : this.setWaitTime(120);  // Default to 2.5 second wait time
-            this.ticksPerMinute = 20;       // Set time rate to 'fast' mode (basic standard)
+            this._sidebar.handleFast();       // Set time rate to 'fast' mode (basic standard) via the sidebar
         } else {
             console.log("Error setting current event:");
             console.log(ev);
@@ -951,7 +951,7 @@ export default class Engine extends View {
     // Prints a welcome-to-the-game message the first time a player begins a game
     createNewGameModal = () => {
         const data: EventData | undefined = modalData.find((modal) => modal.id === "landfall");
-        this.createModal(false, data);
+        this.createModal(data);
     }
 
     // Prints a welcome-back modal when the player loads a saved file
@@ -960,7 +960,7 @@ export default class Engine extends View {
         const data: EventData | undefined = modalData.find((modal) => modal.id === "load-game");
         if (data) {
             data.text = text;
-            this.createModal(false, data);
+            this.createModal(data);
         } else {
             console.log(`Warning: Event data not found for game loading greeting modal.`);
         }
@@ -974,19 +974,19 @@ export default class Engine extends View {
                 // If a random event occurs, randomly select an event from the random events list
                 const eventId = Math.floor(rand * (100 / probability) * randomEventsData.length / 100);
                 const ev = randomEventsData[eventId];
-                this.createModal(true, ev);       // Event occurs if given probability is higher than random value
+                this.createModal(ev);       // Event occurs if given probability is higher than random value
             }
         } else {
             // If a non-random event is requested it happens here ("midnight" is a placeholder event in the meantime)
             const ev: EventData | undefined = modalData.find((modal) => modal.id === "midnight")
-            this.createModal(false, ev);
+            this.createModal(ev);
         }
     }
 
-    createModal = (random: boolean, data: EventData | undefined) => {
+    createModal = (data: EventData | undefined) => {
         if (data) {
             this.setGameOn(false);
-            this._modal = new Modal(this._p5, this.closeModal, random, data);
+            this._modal = new Modal(this._p5, this.closeModal, data);
             this.setMouseContext("modal");
         } else {
             console.log(`ERROR: Event data not found for modal creation.`);

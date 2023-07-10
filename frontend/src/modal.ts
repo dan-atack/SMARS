@@ -17,7 +17,6 @@ export type EventData = {
 
 export default class Modal {
     _p5: P5;
-    _random: boolean;           // To keep track of whether this was a scheduled event or a random one
     _eventData: EventData;      // All event data is now passed directly to the constructor; no lookups to the constants file
     _title: string;
     _text: string;
@@ -32,10 +31,9 @@ export default class Modal {
     _buttons: Button[];
     _closeModal: (resolution: number) => void;        // Engine-level closer function - also resolves the modals various outcomes
 
-    constructor(p5: P5, closeModal: (resolution: number) => void, random: boolean, eventData: EventData) {
+    constructor(p5: P5, closeModal: (resolution: number) => void, eventData: EventData) {
         this._p5 = p5;
         this._closeModal = closeModal;
-        this._random = random;
         this._eventData = eventData;
         this._title = this._eventData.title;
         this._text = this._eventData.text;

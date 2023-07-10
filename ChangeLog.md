@@ -3212,15 +3212,15 @@ The third stage in SMARS's development will be geared towards making the game, n
 
 Unlike the previous volume, but like the first one, this stage of development does not have any specific completion requirements. However, progress will be directed towards a number of medium sized groups of complementary features/content bundles that we can call "patch updates" whose requirements will be spelled out in detail in this log file. Aside from that, this log file will continue to record the notes, plans and other minutiae of the game's development day-to-day work, but the exit criteria for each issue will reside on the project management board to avoid wasting time duplicating information. As time goes by, more data may also be recorded in the project management tickets instead of in this file, if it proves to be an easier way of retrieving information.
 
-A new chapter/feature branch nomenclature scheme will also be adopted to match up with the issue numbers created by GitHub Issues while also identifying what type of work is being done. As of now, new feature branches should follow the format:
+A new chapter/feature branch nomenclature scheme will also be adopted to match up with the issue numbers created by GitHub Issues while also identifying what type of work is being done, and in fact the branch creation can be done entirely via GitHub issues. As of now, new feature branches should follow the format:
 
-SMARS-<Github Issues ticket number>-<Issue category (either APPLICATION, PRODUCTION, CONTENT or BUGFIX)>-Some-Issue-Name
+<issue number>-<category>-<branch-title>
 
-e.g. SMARS-36-APPLICATION-Better-Random-Events
+e.g. 36-application-better-random-events
 
 or
 
-SMARS-41-PRODUCTION-Add-AWS-Billing-Alerts
+41-production-setup-aws-billing-alerts
 
 Naming issues this way will help with long-term issue debugging and code traceability efforts, increasing the speed with which new features and content can be added to the game.
 
