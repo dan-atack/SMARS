@@ -38,6 +38,7 @@ const publicPath = path.join(__dirname, '../public');
 app.use(express.static(publicPath));
 
 // Server Endpoints
+app.use(require('./endpoints/randomEventEndpoints'));
 app.use(require('./endpoints/loginEndpoints'));
 app.use(require('./endpoints/loadEndpoints'));
 app.use(require('./endpoints/mapEndpoints'));

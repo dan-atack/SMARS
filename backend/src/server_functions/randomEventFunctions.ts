@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { MongoClient } from "mongodb";
-import assert from "assert";
 import { constants } from "../constants";
 
 // Standardize name of the database:
@@ -20,13 +19,16 @@ export type EventData = {
     resolutions: Resolution[]
  }
 
+// The RandomEventData class is the unit that will be stored in the database; in addition to the event data it has two fields to allow for more specific random events
 export type RandomEventData = {
-    karma: string       // Either 'good' or 'bad'
-    magnitude: number   // From 1 to 10
-    data: EventData     //
+    karma: string       // Either 'good' or 'bad'   (to help with more specific, semi-random event picking)
+    magnitude: number   // From 1 to 10             (to help with more specific, semi-random event picking)
+    data: EventData     // Engine readable event object
 }
 
 const handleRandomEvent = async (req: Request, res: Response) => {
+    const value: string = req.body;
+    console.log(value); // Value can be 'good' or 'bad' for starters (matcing the karma string options)
     // Version one: Just look up a random event in the random events collection and return it
     const client = new MongoClient(constants.DB_URL_STRING, {});
     try {

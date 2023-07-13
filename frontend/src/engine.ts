@@ -19,7 +19,7 @@ import Colonist from "./colonist";
 import Connector from "./connector";
 import Module from "./module";
 // Helper/server functions
-import { ModuleInfo, ConnectorInfo, getOneModule, getOneConnector } from "./server_functions";
+import { ModuleInfo, ConnectorInfo, getOneModule, getOneConnector, getRandomEvent } from "./server_functions";
 import { constants, modalData, randomEventsData } from "./constants";
 // Types
 import { ConnectorSaveInfo, ModuleSaveInfo, SaveInfo, GameTime } from "./saveGame";
@@ -62,6 +62,12 @@ export default class Engine extends View {
         coords: Coords,     // The location of the event
         value: number       // Intensity of the event (number of colonists, power of meteor strike, etc)
     };
+    // Record the last random event's data
+    _randomEvent: {
+        karma: string,
+        magnitude: number,
+        data: EventData
+    } | null;                   // Random event starts as null
     // In-game time control
     gameOn: boolean;            // If the game is on then the time ticker advances; if not it doesn't
     _tick: number;              // Updated every frame; keeps track of when to advance the game's clock
@@ -81,6 +87,7 @@ export default class Engine extends View {
     updateEarthData: () => void;    // Updater for the date on Earth (for starters)
     getModuleInfo: (setter: (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[], resources?: Resource[][]) => void, category: string, type: string, name: string, locations: number[][], ids?: number[], resources?: Resource[][], crews?: number[][], maintenanceStatuses?: boolean[]) => void;        // Getter function for loading individual structure data from the backend
     getConnectorInfo: (setter: (selectedConnector: ConnectorInfo, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => void, category: string, type: string, name: string, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => void;
+    getRandomEvent: (event_request: [string, number], setter: (ev: {karma: string, magnitude: number, data: EventData}) => void) => void;
 
     constructor(p5: P5, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, updateEarthData: () => void) {
         super(changeView);
@@ -89,6 +96,7 @@ export default class Engine extends View {
         this.updateEarthData = updateEarthData;
         this.getModuleInfo = getOneModule;
         this.getConnectorInfo = getOneConnector;
+        this.getRandomEvent = getRandomEvent;
         this._sidebar = new Sidebar(p5, this.switchScreen, this.changeView, this.setMouseContext, this.setGameSpeed);
         this._sidebarExtended = true;   // Side bar can be partially hidden to expand map view - should this be here or in the SB itself??
         this._gameData = null;
@@ -118,6 +126,7 @@ export default class Engine extends View {
             coords: { x: 0, y: 0 },
             value: 0
         };
+        this._randomEvent = null;
         // Time-keeping:
         // TODO: Make the clock its own component, to de-clutter the Engine.
         this.gameOn = true;                 // By default the game is on when the Engine starts
@@ -971,15 +980,30 @@ export default class Engine extends View {
         if (probability) {
             const rand = Math.floor(Math.random() * 100);                   // Generate random value and express as a percent
             if (rand < probability) {
-                // If a random event occurs, randomly select an event from the random events list
-                const eventId = Math.floor(rand * (100 / probability) * randomEventsData.length / 100);
-                const ev = randomEventsData[eventId];
-                this.createModal(ev);       // Event occurs if given probability is higher than random value
+                // If a random event occurs, fetch a random event from the server
+                this.getRandomEvent(["good", 10], this.setRandomEvent);
+                // const eventId = Math.floor(rand * (100 / probability) * randomEventsData.length / 100);
+                // const ev = randomEventsData[eventId];
+                // if (ev !== undefined) {
+                //     this.createModal(ev);       // Event occurs if given probability is higher than random value
+                // } else {
+                //     console.log("ERROR: Random event data not returned from the server.")
+                // }
+                
             }
         } else {
             // If a non-random event is requested it happens here ("midnight" is a placeholder event in the meantime)
             const ev: EventData | undefined = modalData.find((modal) => modal.id === "midnight")
             this.createModal(ev);
+        }
+    }
+
+    setRandomEvent = (ev: {karma: string, magnitude: number, data: EventData}) => {
+        this._randomEvent = ev;
+        if (ev !== undefined) {
+            this.createModal(ev.data);       // Event occurs if given probability is higher than random value
+        } else {
+            console.log("ERROR: Random event data not returned from the server.")
         }
     }
 
@@ -1021,8 +1045,9 @@ export default class Engine extends View {
                 }
             })
         }
-        // Clear modal data and resume the game
+        // Clear modal data (and random event data?) and resume the game
         this._modal = null;
+        this._randomEvent = null;   // NOTE: You might want to keep this data around so its karma/magnitude can influence the next random event!
         this.setGameOn(true);
     }
 

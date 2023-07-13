@@ -3248,13 +3248,15 @@ Some preliminary test events will need to be created for this chapter, but a sep
 
 3. Create a new server function that can fetch random events from the database and return one at random.
 
-### 4. Convert the existing random events in the frontend's constants file into RandomEventData objects in the world builder's newEvents file. For now we can have generic text in the modal and its resolutions, without the need to include the target module/colonist's information.
+4. Convert the existing random events in the frontend's constants file into RandomEventData objects in the world builder's newEvents file. For now we can have generic text in the modal and its resolutions, without the need to include the target module/colonist's information.
 
-### 5. Push the random events to the game's database.
+5. Push the random events to the game's database.
 
-### 6. Create an endpoint for retrieving random events and add it to the backend's index file.
+6. Add random events data to database seed file, and add random_events to backend database validation function that gets called at the start of the game.
 
-### 7. Create a frontend server function that can retrieve a random event from the server, and have the Engine call it in lieu of reading from the constants file.
+7. Create an endpoint for retrieving random events and add it to the backend's index file.
+
+8. Create a frontend server function that can retrieve a random event from the server, and have the Engine call it in lieu of reading from the constants file.
 
 ## Chapter X: In-Game Notifications
 

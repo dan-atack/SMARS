@@ -39,6 +39,13 @@ const validateDB = async () => {
         } else {
             await seedDB(db, "connectors");
         }
+        console.log('Checking database for random events...');
+        const evs = await db.collection("random_events").find().toArray();
+        if (connectors.length > 0) {
+            console.log(`Found ${evs.length} random events.`);
+        } else {
+            await seedDB(db, "connectors");
+        }
         await client.close();
           
     } catch (err) {

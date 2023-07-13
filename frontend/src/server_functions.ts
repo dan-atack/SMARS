@@ -2,6 +2,7 @@ import { constants } from "./constants";
 import { SaveInfo } from "./saveGame";
 import { SaveSummary } from "./loadGame";
 import { Resource } from "./economyData";
+import { EventData } from "./modal";
 
 // Request body custom types:
 
@@ -250,6 +251,22 @@ export const loadGameData = (game_id: string, setter: (saveInfo: SaveInfo) => vo
     })
 }
 
-export const addition = (x: number, y: number) => {
-    return (x + y);
+// Event request is two sub-arguments: the karma and magnitude of the event being requested (good/bad, 1-100)
+export const getRandomEvent = (event_request: [string, number], setter: (ev: {karma: string, magnitude: number, data: EventData}) => void) => {
+    const url = `${constants.URL_PREFIX}/random-event`;
+    fetch(url, {
+        method: "POST",
+        body: JSON.stringify(event_request),
+        headers: {
+            Accept: "application/json",
+            'Content-Type': "application/json",
+        }
+    })
+    .then((res) => {
+        return res.json();
+    })
+    .then((response) => {
+        console.log(response.ev);
+        setter(response.ev);
+    })
 }
