@@ -926,8 +926,7 @@ export default class Engine extends View {
                 if (this._gameTime.minute < this._minutesPerHour - 1) {  // Minus one tells the minutes counter to reset to zero after 59
                     this._gameTime.minute ++;
                 } else {
-                    this._gameTime.minute = 0;          // Advance hours (anything on an hourly schedule should go here)
-                    this.generateEvent(99);              // Every hour there is an 8% chance of a random event
+                    this._gameTime.minute = 0;          // Advance hours
                     if (this._gameTime.hour < this._hoursPerClockCycle) {
                         this._gameTime.hour ++;
                         if (this._gameTime.hour === this._hoursPerClockCycle) {  // Advance day/night cycle when hour hits twelve
@@ -949,7 +948,9 @@ export default class Engine extends View {
                     } else {
                         this._gameTime.hour = 1;    // Hour never resets to zero
                     }
-                    this.handleHourlyUpdates();     // Handle updates after updating the clock
+                    // Everything on an hourly schedule should go HERE
+                    this.handleHourlyUpdates();             // Handle updates after updating the clock
+                    this.generateEvent(99);                 // Every hour there is an 8% chance of a random event
                 } 
             }
         }
@@ -979,16 +980,11 @@ export default class Engine extends View {
     generateEvent = (probability?: number) => {     // Probability is given optionally as a percent value
         if (probability) {
             const rand = Math.floor(Math.random() * 100);                   // Generate random value and express as a percent
-            if (rand < probability) {
+            // Fire random event if it exceeds probability threshold and if no wait has already been initiated by another event (e.g. landing pod arrival)
+            if (rand < probability && this.mouseContext !== "wait") {
                 // If a random event occurs, fetch a random event from the server
                 this.getRandomEvent(["good", 10], this.setRandomEvent);
-                // const eventId = Math.floor(rand * (100 / probability) * randomEventsData.length / 100);
-                // const ev = randomEventsData[eventId];
-                // if (ev !== undefined) {
-                //     this.createModal(ev);       // Event occurs if given probability is higher than random value
-                // } else {
-                //     console.log("ERROR: Random event data not returned from the server.")
-                // }
+                
                 
             }
         } else {
@@ -1037,8 +1033,28 @@ export default class Engine extends View {
                     case "add-money":
                         if (typeof outcome[1] === "number") this._economy._data.addMoney(outcome[1]);
                         break;
+                    case "add-resource":
+                        // Ensure outcome is properly formatted: index 1 = quantity, index 2 = resource name
+                        if (typeof outcome[1] === "number" && outcome[2]) {
+                            const resource: Resource = [outcome[2], outcome[1]];
+                            const mod = this._infrastructure.findStorageModule(resource);   // Choose module
+                            if (mod) {
+                                this._infrastructure.addResourcesToModule(mod._id, resource);
+                            }
+                        }
+                        
+                        // TODO: Add outcome[1] quantity of the resource to the selected module
+                        // TODO (in the future): Add a fourth outcome value to give the ID of a specific module (and also tell the player in the modal)
+                        break;
                     case "subtract-money":
                         if (typeof outcome[1] === "number") this._economy._data.subtractMoney(outcome[1]);
+                        break;
+                    case "subtract-resource":
+                        // TODO: Same as adding, except you find a module that contains the resource, instead of ones with excess capacity
+                        break;
+                    case "increase-morale":
+                        break;
+                    case "decrease-morale":
                         break;
                     default:
                         console.log(`Warning: Unrecognized modal resolution code: ${outcome[0]}`);

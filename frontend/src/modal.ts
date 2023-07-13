@@ -6,7 +6,7 @@ import { constants } from "./constants";
 // NOTE: If updating either of these type definitions, make sure to copy the update/s to the randomEventFunctions.ts file in the backend
 export type Resolution = {
     text: string,                   // Words on the button
-    outcomes: [string, number | string, number?][]    // A tuple consisting of a type (string for Engine's switch case) a value (string or a number), and optionally, an ID number for a colonist or module as the third value
+    outcomes: [string, number | string, string?][]    // A tuple consisting of a type (string for Engine's switch case) a value (string or a number), and optionally, a third value to specify the type of resource to be added/subtracted from a module
 }
 
 export type EventData = {
