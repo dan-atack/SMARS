@@ -3262,7 +3262,7 @@ Some preliminary test events will need to be created for this chapter, but a sep
 
 10. Once the add-resource case is working, use it as a prototype for remove-resource. Once again, test with a new event and rig the backend.
 
-### 11. Have the Economy display update as soon as a resource-altering event is resolved, rather than waiting for the full hour to pass.
+11. Have the Economy display update as soon as a resource-altering event is resolved, rather than waiting for the full hour to pass.
 
 ### 11. The next type of event will be the colonist morale changers, so let's take a moment to add a new Population class method that can either take a number (positive or negative) representing a change in morale, and then an optional second argument, which would be a list of colonists' IDs. If this argument is given, each colonist on the list receives the morale change, whenever possible (their own updateMorale method doesn't allow exceeding 100 or going below zero). If no list is provided then it simply calls the updateMorale method for every colonist.
 
