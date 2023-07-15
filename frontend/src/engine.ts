@@ -1072,9 +1072,12 @@ export default class Engine extends View {
                             console.log("ERROR: Incorrect outcome data format for 'subtract-resource' event resolution.")
                         }
                         break;
-                    case "increase-morale":
-                        break;
-                    case "decrease-morale":
+                    case "update-morale":   // Unlike the resource events, morale updates can be positive or negative
+                        if (typeof outcome[1] === "number") {
+                            this._population.updateColonistsMorale(outcome[1]);
+                        } else {
+                            console.log("ERROR: Incorrect outcome data format for 'update-morale' event resolution.")
+                        }
                         break;
                     default:
                         console.log(`Warning: Unrecognized modal resolution code: ${outcome[0]}`);
