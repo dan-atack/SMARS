@@ -27,6 +27,7 @@ export default class Modal {
     _xPosition: number;
     _yPosition: number;
     _buttonWidth: number;
+    _buttonMargin: number;
     _buttonX: number;
     _buttonY: number;
     _buttons: Button[];
@@ -43,17 +44,17 @@ export default class Modal {
         this._height = constants.SCREEN_HEIGHT / 2;
         this._xPosition = constants.WORLD_VIEW_WIDTH / 4;
         this._yPosition = constants.SCREEN_HEIGHT / 4;
-        this._buttonWidth = 256; // Buttons are always wide
+        this._buttonWidth = (this._width / 2) - 16; // Buttons take up just less than exactly half of the width of the modal
+        this._buttonMargin = 16;
         // Buttons' horizontal start position = middle for one resolution, or off to the right if there are two options
-        this._buttonX = this._xPosition + (this._width / (1 + this._resolutions.length)) - (this._buttonWidth / 2 + this._resolutions.length * 18);
-        console.log(this._buttonX);
+        this._buttonX = this._resolutions.length % 2 === 1 ? this._xPosition + (this._width / 2) - (this._buttonWidth / 2) : this._xPosition;
         // TODO: Adjust button Y positions if there are more than 2 options available
         this._buttonY = this._yPosition + this._height * 4 / 5;
         this._buttons = [];
         // Create one button per resolution and have the handler pass the index number of the button to the resolveModal method
         this._resolutions.forEach((res, idx) => {
             const handler = () => this.resolveModal(idx);
-            const b = new Button(res.text, this._buttonX + idx * (this._buttonWidth + 16), this._buttonY, handler, this._buttonWidth, 48, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
+            const b = new Button(res.text, this._buttonX + idx * (this._buttonWidth + this._buttonMargin) + (this._resolutions.length % 2 === 0 ? this._buttonMargin / 2: 0), this._buttonY, handler, this._buttonWidth, 48, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
             this._buttons.push(b);
         })
     }

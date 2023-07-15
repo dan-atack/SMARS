@@ -3258,7 +3258,7 @@ Some preliminary test events will need to be created for this chapter, but a sep
 
 8. Create a frontend server function that can retrieve a random event from the server, and have the Engine call it in lieu of reading from the constants file.
 
-### 9. Add a new case for the closeModal method's switch block for the case called 'add-resource'. In it, have the Engine find a module that has at least some capacity for the resource in question, and then add that resource. Validate by adding a new event with this outcome and adding it to the database, then rigging the backend's server function to return only that event.
+9. Add a new case for the closeModal method's switch block for the case called 'add-resource'. In it, have the Engine find a module that has at least some capacity for the resource in question, and then add that resource. Validate by adding a new event with this outcome and adding it to the database, then rigging the backend's server function to return only that event.
 
 ### 10. Once the add-resource case is working, use it as a prototype for remove-resource. Once again, test with a new event and rig the backend.
 
