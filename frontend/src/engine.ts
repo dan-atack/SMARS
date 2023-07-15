@@ -1033,18 +1033,18 @@ export default class Engine extends View {
                     case "add-money":
                         if (typeof outcome[1] === "number") this._economy._data.addMoney(outcome[1]);
                         break;
-                    case "add-resource":
+                    case "add-resource":    // Adds a quantity of a single type of resource to one module
                         // Ensure outcome is properly formatted: index 1 = quantity, index 2 = resource name
                         if (typeof outcome[1] === "number" && outcome[2]) {
                             const resource: Resource = [outcome[2], outcome[1]];
-                            const mod = this._infrastructure.findStorageModule(resource);   // Choose module
+                            const mod = this._infrastructure.findStorageModule(resource);   // Choose a module
                             if (mod) {
+                                console.log(`ADDING ${resource[1]} ${resource[0]} to module ${mod._id}`);
                                 this._infrastructure.addResourcesToModule(mod._id, resource);
+                            } else {
+                                console.log(`Warning: No module found to contain ${resource[0]}`);
                             }
                         }
-                        
-                        // TODO: Add outcome[1] quantity of the resource to the selected module
-                        // TODO (in the future): Add a fourth outcome value to give the ID of a specific module (and also tell the player in the modal)
                         break;
                     case "subtract-money":
                         if (typeof outcome[1] === "number") this._economy._data.subtractMoney(outcome[1]);

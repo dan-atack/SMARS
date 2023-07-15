@@ -9,7 +9,7 @@ const collectionName = 'random_events';
 // Copied from the frontend's Modal.ts file
 export type Resolution = {
     text: string,                   // Words on the button
-    outcomes: [string, number | string, number?][]    // A tuple consisting of a type (string for Engine's switch case) a value (string or a number), and optionally, an ID number for a colonist or module as the third value
+    outcomes: [string, number | string, string?][]    // A tuple consisting of a type (string for Engine's switch case) a value (string or a number), and optionally, a third value to specify the type of resource to be added/subtracted from a module
 }
 
 export type EventData = {
@@ -41,7 +41,8 @@ const handleRandomEvent = async (req: Request, res: Response) => {
             .toArray((err, result) => {
                 if (result != null) {
                     // If there are maps for a given type, see how many there are and randomly select one
-                    const rando = Math.floor(Math.random() * result.length);
+                    // const rando = Math.floor(Math.random() * result.length);
+                    const rando = 4;
                     console.log(`Loading event data for event number ${rando}.`);
                     res.status(200).json({ status: 200, ev: result[rando]})
                     client.close();

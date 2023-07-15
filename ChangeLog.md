@@ -3258,6 +3258,22 @@ Some preliminary test events will need to be created for this chapter, but a sep
 
 8. Create a frontend server function that can retrieve a random event from the server, and have the Engine call it in lieu of reading from the constants file.
 
+### 9. Add a new case for the closeModal method's switch block for the case called 'add-resource'. In it, have the Engine find a module that has at least some capacity for the resource in question, and then add that resource. Validate by adding a new event with this outcome and adding it to the database, then rigging the backend's server function to return only that event.
+
+### 10. Once the add-resource case is working, use it as a prototype for remove-resource. Once again, test with a new event and rig the backend.
+
+### 11. The next type of event will be the colonist morale changers, so let's take a moment to add a new Population class method that can either take a number (positive or negative) representing a change in morale, and then an optional second argument, which would be a list of colonists' IDs. If this argument is given, each colonist on the list receives the morale change, whenever possible (their own updateMorale method doesn't allow exceeding 100 or going below zero). If no list is provided then it simply calls the updateMorale method for every colonist.
+
+### 12. Now make a new case for the closeModal switch block that calls this method, and test it with a new random event that supplies no argument at all with the values in the 'outcomes' tuple (which looks like this by the way: ["change-morale", -5, ]). Test that this outcome is applied to all of the colonists. That will actually be all for the morale methods for now; the colonist IDs list may be useful in the future but for now we will only use this basic case.
+
+### 13. Take this moment to investigate why the game's difficulty is not being saved between sessions and fix this for new saves going forward. For those existing saves that are already missing the data, add a hotfix to the server's load game routine that supplies a default value of 'medium' if a save file is loaded that has no save data. Supplying this missing value in the server function will prevent the Engine from having to deal with corrupted save files, which should always be the policy.
+
+### 14. Now, devote some thought as to the logic that will be used to calculate the karmic alignment and severity of random event requests, both on the Engine's side, and the server's side. How much of a role will each play in determining the type of event that is returned, and what exactly will be the calculus used by each side?
+
+### 98. Consider how to upload new random events (And by extention, other types of content as well) to one of the game's cloud databases. Document the procedure that gets the job done most efficiently.
+
+### 99. Undo dev mode changes: Before commiting this code to the master branch and testing it in a staging environment, make sure that you undo all of the changes made during the course of the chapter's development: Reset the Engine's random event odds; reset the random indexer (or whatever logic now has replaced it) in the random events server function... I think that's it for now.
+
 ## Chapter X: In-Game Notifications
 
 ### Difficulty Estimate: 3 (for developing a message collection system for Engine subclass components, and message prioritization and rendering for the Engine class)
