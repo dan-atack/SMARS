@@ -183,19 +183,21 @@ export default class Infrastructure {
     addResourcesToModule = (moduleId: number, resource: Resource) => {
         const m = this._modules.find(mod => mod._id === moduleId);
         if (m !== undefined) {
-            m.addResource(resource);
+            return m.addResource(resource);
         } else {
             console.log(`Error: Unable to add ${resource[1]} ${resource[0]} to module ${moduleId}. Module ID was not found.`);
         }
+        return 0;
     }
 
     // Does the same thing, but taketh away
-    deductResourceFromModule = (moduleId: number, resource: Resource) => {
+    subtractResourceFromModule = (moduleId: number, resource: Resource) => {
         const m = this._modules.find(mod => mod._id === moduleId);
         if (m !== undefined) {
-            m.deductResource(resource);
+            return m.deductResource(resource);
         } else {
-            console.log(`Error: Unable to deduct ${resource[1]} ${resource[0]} from module ${moduleId}. Module ID was not found.`);
+            console.log(`Error: Unable to subtract ${resource[1]} ${resource[0]} from module ${moduleId}. Module ID was not found.`);
+            return 0;
         }
     }
 

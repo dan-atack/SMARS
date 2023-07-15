@@ -41,10 +41,10 @@ const validateDB = async () => {
         }
         console.log('Checking database for random events...');
         const evs = await db.collection("random_events").find().toArray();
-        if (connectors.length > 0) {
+        if (evs.length > 0) {
             console.log(`Found ${evs.length} random events.`);
         } else {
-            await seedDB(db, "connectors");
+            await seedDB(db, "random_events");
         }
         await client.close();
           

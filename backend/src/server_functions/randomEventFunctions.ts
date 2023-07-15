@@ -41,8 +41,7 @@ const handleRandomEvent = async (req: Request, res: Response) => {
             .toArray((err, result) => {
                 if (result != null) {
                     // If there are maps for a given type, see how many there are and randomly select one
-                    // const rando = Math.floor(Math.random() * result.length);
-                    const rando = 4;
+                    const rando = Math.floor(Math.random() * result.length);
                     console.log(`Loading event data for event number ${rando}.`);
                     res.status(200).json({ status: 200, ev: result[rando]})
                     client.close();

@@ -1040,17 +1040,37 @@ export default class Engine extends View {
                             const mod = this._infrastructure.findStorageModule(resource);   // Choose a module
                             if (mod) {
                                 console.log(`ADDING ${resource[1]} ${resource[0]} to module ${mod._id}`);
-                                this._infrastructure.addResourcesToModule(mod._id, resource);
+                                // Keep track of resource delta to pass to economy display
+                                const r = this._infrastructure.addResourcesToModule(mod._id, resource);
+                                this._economy._data.updateOneResource([resource[0], r]);
                             } else {
                                 console.log(`Warning: No module found to contain ${resource[0]}`);
                             }
+                        } else {
+                            console.log("ERROR: Incorrect outcome data format for 'add-resource' event resolution.")
                         }
                         break;
                     case "subtract-money":
                         if (typeof outcome[1] === "number") this._economy._data.subtractMoney(outcome[1]);
                         break;
                     case "subtract-resource":
-                        // TODO: Same as adding, except you find a module that contains the resource, instead of ones with excess capacity
+                        // Ensure outcome is properly formatted: index 1 = quantity, index 2 = resource name
+                        if (typeof outcome[1] === "number" && outcome[2]) {
+                            const resource: Resource = [outcome[2], outcome[1]];
+                            // Choose a module containing the resource (just pick the first one in the list for now)
+                            const mods = this._infrastructure.findModulesWithResource(resource);
+                            if (mods.length > 0) {
+                                const mod = mods[0];
+                                console.log(`SUBTRACTING ${resource[1]} ${resource[0]} from module ${mod._id}`);
+                                const r = this._infrastructure.subtractResourceFromModule(mod._id, resource);
+                                // Update economy display for the affected resource by SUBTRACTING the resource delta
+                                this._economy._data.updateOneResource([resource[0], -r]);
+                            } else {
+                                console.log(`Warning: No module found to contain ${resource[0]}`);
+                            }
+                        } else {
+                            console.log("ERROR: Incorrect outcome data format for 'subtract-resource' event resolution.")
+                        }
                         break;
                     case "increase-morale":
                         break;
