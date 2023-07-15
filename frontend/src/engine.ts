@@ -34,6 +34,9 @@ export default class Engine extends View {
     _sidebarExtended: boolean;
     _gameData: GameData | null  // Data object for a new game
     _saveInfo: SaveInfo | null  // Data object for a saved game
+    _difficulty: string         // Imported from either the new game or the loaded game
+    _randomEventsEnabled: boolean   // Imported from either the new game or the loaded game
+    _mapType: string            // Imported from either the new game or the loaded game
     _map: Map;
     _infrastructure: Infrastructure;
     _industry: Industry;
@@ -101,6 +104,9 @@ export default class Engine extends View {
         this._sidebarExtended = true;   // Side bar can be partially hidden to expand map view - should this be here or in the SB itself??
         this._gameData = null;
         this._saveInfo = null;  // Saved game info is loaded from the Game module when it calls the setupSavedGame method
+        this._difficulty = "medium" // Provide default values in case of loading failure
+        this._randomEventsEnabled = true;
+        this._mapType = "polar";
         this._map = new Map();
         this._infrastructure = new Infrastructure();
         this._industry = new Industry();
@@ -165,6 +171,9 @@ export default class Engine extends View {
 
     setupNewGame = (gameData: GameData) => {
         this._gameData = gameData;  // gameData object only needs to be set for new games
+        this._difficulty = gameData.difficulty;
+        this._randomEventsEnabled = gameData.randomEvents;
+        this._mapType = gameData.mapType;
         this._map.setup(this._gameData.mapTerrain);
         this._economy._data.addMoney(this._gameData.startingResources[0][1]);
         this._horizontalOffset = this._map._maxOffset / 2;   // Put player in the middle of the map to start out
@@ -175,9 +184,17 @@ export default class Engine extends View {
 
     setupSavedGame = (saveInfo: SaveInfo) => {
         this._saveInfo = saveInfo;
+        // Load game time
         this.setClock(saveInfo.game_time);
         this.updateDayNightCycle();
+        // Load game settings
+        this._difficulty = saveInfo.difficulty;
+        this._randomEventsEnabled = saveInfo.random_events;
+        this._mapType = saveInfo.map_type;
         this._map.setup(this._saveInfo.terrain);
+        console.log(this._difficulty);
+        console.log(this._randomEventsEnabled);
+        console.log(this._mapType);
         // TODO: Extract the map expansion/sidebar pop-up (and the reverse) into a separate method
         this._map.setExpanded(false);   // Map starts in 'expanded' mode by default, so it must tell it the sidebar is open
         this._economy._data.addMoney(saveInfo.resources[0][1]); // Reload money from save data
