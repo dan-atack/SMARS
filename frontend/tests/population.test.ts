@@ -64,4 +64,26 @@ describe("Population", () => {
         population._averageMorale = 100;
         expect(population.determineColonistsForNextLaunch()).toBe(4);
     } )
+
+    test("Can mass update colonists' morale with updateColonistsMorale method", () => {
+        // Set starting values
+        population._colonists[0]._data._morale = 50;
+        population._colonists[1]._data._morale = 55;
+        population._colonists[2]._data._morale = 60;
+        population.updateColonistsMorale(-5);
+        // Verify that each colonist's morale has been reduced by 5
+        expect(population._colonists[0]._data._morale).toBe(45);
+        expect(population._colonists[1]._data._morale).toBe(50);
+        expect(population._colonists[2]._data._morale).toBe(55);
+        // Verify that morale cannot go above 100
+        population.updateColonistsMorale(50);
+        expect(population._colonists[0]._data._morale).toBe(95);
+        expect(population._colonists[1]._data._morale).toBe(100);
+        expect(population._colonists[2]._data._morale).toBe(100);
+        // Verify that morale cannot go below 0
+        population.updateColonistsMorale(-99);
+        expect(population._colonists[0]._data._morale).toBe(0);
+        expect(population._colonists[1]._data._morale).toBe(1);
+        expect(population._colonists[2]._data._morale).toBe(1);
+    })
 })

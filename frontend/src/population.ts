@@ -96,6 +96,18 @@ export default class Population {
         return Math.floor(this._averageMorale / 25);
     }
 
+    // Update morale by value (delta can be +/-) for either a list of colonists, or all of them (if no IDs list is provided)
+    updateColonistsMorale = (delta: number, colonistIds?: number[]) => {
+        if (colonistIds) {
+            console.log("Coming soon: Individually targeted morale effects!");
+        } else {
+            this._colonists.forEach((col) => {
+                col._data.updateMorale(delta);
+                console.log(col._data._morale);
+            })
+        }
+    }
+
     // SECTION 4: COLONIST ROLE MANAGEMENT
 
     assignColonistRole = (colonistID: number, role: [string, number]) => {
