@@ -192,9 +192,6 @@ export default class Engine extends View {
         this._randomEventsEnabled = saveInfo.random_events;
         this._mapType = saveInfo.map_type;
         this._map.setup(this._saveInfo.terrain);
-        console.log(this._difficulty);
-        console.log(this._randomEventsEnabled);
-        console.log(this._mapType);
         // TODO: Extract the map expansion/sidebar pop-up (and the reverse) into a separate method
         this._map.setExpanded(false);   // Map starts in 'expanded' mode by default, so it must tell it the sidebar is open
         this._economy._data.addMoney(saveInfo.resources[0][1]); // Reload money from save data
