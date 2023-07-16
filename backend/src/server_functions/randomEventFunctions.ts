@@ -27,8 +27,12 @@ export type RandomEventData = {
 }
 
 const handleRandomEvent = async (req: Request, res: Response) => {
-    const value: string = req.body;
-    console.log(value); // Value can be 'good' or 'bad' for starters (matcing the karma string options)
+    const values = req.body;
+    const karma: string = values[0];
+    const magnitude: number = values[1];
+    // If Karma and magnitude values are present, do a targeted search of the db; if not simply return a random event with magnitude 1
+    console.log(`Karma: ${karma}`);
+    console.log(`Magnitude: ${magnitude}`);
     // Version one: Just look up a random event in the random events collection and return it
     const client = new MongoClient(constants.DB_URL_STRING, {});
     try {

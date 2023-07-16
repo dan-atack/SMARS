@@ -266,7 +266,6 @@ export const getRandomEvent = (event_request: [string, number], setter: (ev: {ka
         return res.json();
     })
     .then((response) => {
-        console.log(response.ev);
         setter(response.ev);
     })
 }

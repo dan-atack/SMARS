@@ -103,7 +103,6 @@ export default class Population {
         } else {
             this._colonists.forEach((col) => {
                 col._data.updateMorale(delta);
-                console.log(col._data._morale);
             })
         }
     }

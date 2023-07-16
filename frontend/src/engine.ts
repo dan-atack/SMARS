@@ -996,9 +996,34 @@ export default class Engine extends View {
             const rand = Math.floor(Math.random() * 100);                   // Generate random value and express as a percent
             // Fire random event if it exceeds probability threshold and if no wait has already been initiated by another event (e.g. landing pod arrival)
             if (rand < probability && this.mouseContext !== "wait") {
-                // If a random event occurs, fetch a random event from the server
-                this.getRandomEvent(["good", 10], this.setRandomEvent);
-                
+                // If a random event occurs, determine its magnitude and karma with the difficulty level and previous event data
+                const r = Math.floor(Math.random() * 100);
+                // If the previous event was good add its magnitude to the threshold; if it was bad, then subtract its magnitude
+                const previousEventKarma = (this._randomEvent?.karma === "good" ? 1 : -1) * (this._randomEvent?.magnitude || 0);
+                // For difficulty: Add 10 to threshold if on 'hard' mode; subtract 10 if on 'easy' mode. For 'medium' do nothing (even odds)
+                const difficulty = this._difficulty === "medium" ? 0 : this._difficulty === "bad" ? 10 : -10;
+                // The threshold between bad and good: a higher threshold = bad/worse event more likely
+                const threshold = 50 + previousEventKarma + difficulty;
+                console.log("New random value");
+                console.log(r);
+                console.log("Current Threshold factors:");
+                console.log(this._randomEvent?.karma);
+                console.log(this._randomEvent?.magnitude);
+                console.log(this._difficulty);
+                console.log("Current threshold:");
+                console.log(threshold);
+                console.log("Next event request data:");
+                // Karma is decided by whether or not the threshold is surpassed; magnitude is 1/5 of the difference between the two
+                const karma = r >= threshold ? "good" : "bad";
+                let magnitude = Math.min(Math.abs(Math.floor((r - threshold) / 5)), 10);     // Magnitude is always positive and can't exceed 10
+                // Magnitude gets toned down if it's greater than 5 for the first 2 game years
+                if (magnitude > 5 && this._gameTime.year < 2) {
+                    console.log(`Magnitude ${magnitude} is too high. Reducing magnitude.`)
+                    magnitude -= 4;
+                }
+                console.log(`New event karma: ${karma}`);
+                console.log(`New event magnitude: ${magnitude}`);
+                this.getRandomEvent([karma, magnitude], this.setRandomEvent);
                 
             }
         } else {
@@ -1100,7 +1125,6 @@ export default class Engine extends View {
         }
         // Clear modal data (and random event data?) and resume the game
         this._modal = null;
-        this._randomEvent = null;   // NOTE: You might want to keep this data around so its karma/magnitude can influence the next random event!
         this.setGameOn(true);
     }
 
