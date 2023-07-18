@@ -3234,11 +3234,11 @@ The game's random events system is a very promising way to add complexity and un
 
 Exit Criteria:
 
-- Random events are from the backend, not the frontend constants file
-- The Engine requests random elements from the backend when a random event fires (probability check can remain in frontend)
-- The Engine sends certain information about the state of the game when requesting a random event
-- The backend has its own logic for deciding which random event to send - it processes the information sent from the frontend
-- The types of outcomes that a random event can lead to are more diverse and interesting (resource gain/loss, morale effects, etc.)
+- [DONE] Random events are from the backend, not the frontend constants file
+- [DONE] The Engine requests random elements from the backend when a random event fires (probability check can remain in frontend)
+- [DONE] The Engine sends certain information about the state of the game when requesting a random event
+- [DONE] The backend has its own logic for deciding which random event to send - it processes the information sent from the frontend
+- [DONE] The types of outcomes that a random event can lead to are more diverse and interesting (resource gain/loss, morale effects, etc.)
 - [STRETCH] If the random event is an oxygen leak, do an 'oxygen leak' animation on the target module!
 
 Some preliminary test events will need to be created for this chapter, but a separate, content issue will be created upon the feature's completion as well.
@@ -3271,9 +3271,7 @@ Some preliminary test events will need to be created for this chapter, but a sep
 
 14. Take this moment to investigate why the game's difficulty is not being saved between sessions and fix this for new saves going forward. For those existing saves that are already missing the data, add a hotfix to the server's load game routine that supplies a default value of 'medium' if a save file is loaded that has no save data. Supplying this missing value in the server function will prevent the Engine from having to deal with corrupted save files, which should always be the policy.
 
-### 14. Now, devote some thought as to the logic that will be used to calculate the karmic alignment and severity of random event requests, both on the Engine's side, and the server's side. How much of a role will each play in determining the type of event that is returned, and what exactly will be the calculus used by each side?
-
-### 97. Make a new Module method that creates a little animation of a few expanding, semi-transparent grey circles and translates them upwards and to the side. Call this method from the "add-resource" random event case if the outcome's last argument is "oxygen".
+15. Now, devote some thought as to the logic that will be used to calculate the karmic alignment and severity of random event requests, both on the Engine's side, and the server's side. How much of a role will each play in determining the type of event that is returned, and what exactly will be the calculus used by each side? Answer: Engine will keep track of the previous event's karma and magnitude, and use these, as well as the game's difficulty level and duration (high magnitude events will be blocked before year 2) to determine the next event request. The server will then pull events of the same karma as the request, and filter based on magnitude to return the best match possible.
 
 ### 98. Consider how to upload new random events (And by extention, other types of content as well) to one of the game's cloud databases. Document the procedure that gets the job done most efficiently.
 

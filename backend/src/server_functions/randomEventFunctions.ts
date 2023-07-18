@@ -30,9 +30,6 @@ const handleRandomEvent = async (req: Request, res: Response) => {
     const values = req.body;
     const karma: string = values[0];
     const magnitude: number = values[1];
-    // If Karma and magnitude values are present, do a targeted search of the db; if not simply return a random event with magnitude 1
-    console.log(`Karma: ${karma}`);
-    console.log(`Magnitude: ${magnitude}`);
     // Version one: Just look up a random event in the random events collection and return it
     const client = new MongoClient(constants.DB_URL_STRING, {});
     try {
@@ -44,11 +41,27 @@ const handleRandomEvent = async (req: Request, res: Response) => {
             .find() // Find all random events
             .toArray((err, result) => {
                 if (result != null) {
-                    // If there are maps for a given type, see how many there are and randomly select one
-                    const rando = Math.floor(Math.random() * result.length);
-                    console.log(`Loading event data for event number ${rando}.`);
-                    res.status(200).json({ status: 200, ev: result[rando]})
-                    client.close();
+                    // If Karma and magnitude values are present, do targeted search of the db; if not simply return random event with magnitude 1
+                    if (karma && typeof magnitude === "number") {
+                        const aligned = result.filter((ev) => ev.karma === karma);
+                        const resultsByMagnitude = aligned.filter((ev) => ev.magnitude <= magnitude);
+                        const rando = Math.floor(Math.random() * resultsByMagnitude.length);
+                        
+                        // Get only events matching the karma of the request
+                        console.log(`Karma: ${karma}`);
+                        console.log(`Magnitude: ${magnitude}`);
+                        console.log(`${karma} events found with acceptable magnitude (${magnitude} or lower): ${resultsByMagnitude.length}`);
+                        res.status(200).json({ status: 200, ev: resultsByMagnitude[rando]});
+                        client.close();
+                    } else {
+                        // If karma and magnitude are not sent in the request, randomly select a low-magnitude event
+                        // TODO: Select low magnitude only
+                        const resultsByMagnitude = result.filter((ev) => ev.magnitude <= 1);
+                        const rando = Math.floor(Math.random() * resultsByMagnitude.length);
+                        console.log(`Loading event data for event number ${rando}.`);
+                        res.status(200).json({ status: 200, ev: resultsByMagnitude[rando]});
+                        client.close();
+                    }
                 } else {
                     console.log(`ERROR: No random event data found.`);
                     client.close();
