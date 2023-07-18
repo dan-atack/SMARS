@@ -52,7 +52,7 @@ resource "aws_security_group" "smars_server_sg" {
 
 # Create the role that will be assumed by the server instance to allow it to talk to the S3 bucket
 resource "aws_iam_role" "s3_access_role" {
-  name = "s3-database-backup-access-role"
+  name = "s3-${var.SMARS_ENVIRONMENT}-database-backup-access-role"
 
   assume_role_policy = <<-EOF
     {
@@ -73,7 +73,7 @@ resource "aws_iam_role" "s3_access_role" {
 # Create an IAM policy that specifies access permissions for communicating with the S3 bucket, allowing it to read/write to it
 # TODO: Replace the hard-coded bucket name for 'resource' with a variable for the environment when creating the actual bucket with TF
 resource "aws_iam_policy" "s3_access_policy" {
-  name        = "s3-database-backup-access-policy"
+  name        = "s3-${var.SMARS_ENVIRONMENT}-database-backup-access-policy"
   path        = "/"
   description = "Policy to provide S3 access to the server instance"
 
