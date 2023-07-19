@@ -97,14 +97,14 @@ resource "aws_iam_policy" "s3_access_policy" {
 
 # Create an attachment between the S3 access role and the policy, to link them together
 resource "aws_iam_policy_attachment" "s3_access_policy_role" {
-  name       = "s3_access_attachment"
+  name       = "s3_-${var.SMARS_ENVIRONMENT}access_attachment"
   roles      = [aws_iam_role.s3_access_role.name]
   policy_arn = aws_iam_policy.s3_access_policy.arn
 }
 
 # Create an EC2 instance PROFILE to finally connect the role attachment to the EC2 instance
 resource "aws_iam_instance_profile" "s3_access_profile" {
-  name = "s3_access_profile"
+  name = "s3_-${var.SMARS_ENVIRONMENT}access_profile"
   role = aws_iam_role.s3_access_role.name
 }
 
