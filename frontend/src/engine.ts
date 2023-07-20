@@ -20,7 +20,7 @@ import Connector from "./connector";
 import Module from "./module";
 // Helper/server functions
 import { ModuleInfo, ConnectorInfo, getOneModule, getOneConnector, getRandomEvent } from "./server_functions";
-import { constants, modalData, randomEventsData } from "./constants";
+import { constants, modalData } from "./constants";
 // Types
 import { ConnectorSaveInfo, ModuleSaveInfo, SaveInfo, GameTime } from "./saveGame";
 import { GameData } from "./newGameSetup";
@@ -964,7 +964,7 @@ export default class Engine extends View {
                     }
                     // Everything on an hourly schedule should go HERE
                     this.handleHourlyUpdates();             // Handle updates after updating the clock
-                    this.generateEvent(10);                 // Every hour there is an 8% chance of a random event
+                    this.generateEvent(8);                  // Every hour there is an 8% chance of a random event
                 } 
             }
         }
@@ -1004,25 +1004,13 @@ export default class Engine extends View {
                 const difficulty = this._difficulty === "medium" ? 0 : this._difficulty === "bad" ? 10 : -10;
                 // The threshold between bad and good: a higher threshold = bad/worse event more likely
                 const threshold = 50 + previousEventKarma + difficulty;
-                console.log("New random value");
-                console.log(r);
-                console.log("Current Threshold factors:");
-                console.log(this._randomEvent?.karma);
-                console.log(this._randomEvent?.magnitude);
-                console.log(this._difficulty);
-                console.log("Current threshold:");
-                console.log(threshold);
-                console.log("Next event request data:");
                 // Karma is decided by whether or not the threshold is surpassed; magnitude is 1/5 of the difference between the two
                 const karma = r >= threshold ? "good" : "bad";
                 let magnitude = Math.min(Math.abs(Math.floor((r - threshold) / 5)), 10);     // Magnitude is always positive and can't exceed 10
-                // Magnitude gets toned down if it's greater than 5 for the first 2 game years
-                if (magnitude > 5 && this._gameTime.year < 2) {
-                    console.log(`Magnitude ${magnitude} is too high. Reducing magnitude.`)
-                    magnitude -= 4;
+                // Max magnitude is limited, and gradually increases over the first 4 game years
+                if (magnitude > 5 && this._gameTime.year < 4) {
+                    magnitude -= (4 + this._gameTime.year);     // Gradually reduce the reduction until the magnitude is unchanged at year 4
                 }
-                console.log(`New event karma: ${karma}`);
-                console.log(`New event magnitude: ${magnitude}`);
                 this.getRandomEvent([karma, magnitude], this.setRandomEvent);
                 
             }

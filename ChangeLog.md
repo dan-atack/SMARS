@@ -3273,9 +3273,19 @@ Some preliminary test events will need to be created for this chapter, but a sep
 
 15. Now, devote some thought as to the logic that will be used to calculate the karmic alignment and severity of random event requests, both on the Engine's side, and the server's side. How much of a role will each play in determining the type of event that is returned, and what exactly will be the calculus used by each side? Answer: Engine will keep track of the previous event's karma and magnitude, and use these, as well as the game's difficulty level and duration (high magnitude events will be blocked before year 2) to determine the next event request. The server will then pull events of the same karma as the request, and filter based on magnitude to return the best match possible.
 
-### 98. Consider how to upload new random events (And by extention, other types of content as well) to one of the game's cloud databases. Document the procedure that gets the job done most efficiently.
+16. Consider how to upload new random events (And by extention, other types of content as well) to one of the game's cloud databases. Document the procedure that gets the job done most efficiently:
 
-### 99. Undo dev mode changes: Before commiting this code to the master branch and testing it in a staging environment, make sure that you undo all of the changes made during the course of the chapter's development: Reset the Engine's random event odds; reset the random indexer (or whatever logic now has replaced it) in the random events server function... I think that's it for now.
+- Create new randomEvents.json file locally in world editor folder with the new events' data
+- Upload it to the S3 bucket via the AWS dashboard (there is an upload button for files/folders)
+- Log into the server instance via PuTTY
+- Pull the json file from the S3 bucket:
+  `aws s3 cp s3://smars-${env}-bucket/randomEvents.json /tmp/smarsrestore/`
+- Run the MongoImport command to add the JSON file's contents to the database container:
+  `docker exec -i smars-db-1 sh -c 'mongoimport --db="smars" --collection="random_events" --jsonArray' </tmp/smarsrestore/randomEvents.json` (VALIDATED 2023-07-19)
+
+### 99. Undo dev mode changes: Before commiting this code to the master branch and testing it in a staging environment, make sure that you undo all of the changes made during the course of the chapter's development: Reset the Engine's random event odds; reset the random indexer (or whatever logic now has replaced it) in the random events server function; clean up the original events in the constants file; get rid of development console logs.
+
+### 100. Clean up manually created S3 staging bucket so it doesn't interfere with future staging deployment attempts.
 
 ## Chapter X: In-Game Notifications
 

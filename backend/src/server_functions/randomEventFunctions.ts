@@ -46,19 +46,14 @@ const handleRandomEvent = async (req: Request, res: Response) => {
                         const aligned = result.filter((ev) => ev.karma === karma);
                         const resultsByMagnitude = aligned.filter((ev) => ev.magnitude <= magnitude);
                         const rando = Math.floor(Math.random() * resultsByMagnitude.length);
-                        
-                        // Get only events matching the karma of the request
-                        console.log(`Karma: ${karma}`);
-                        console.log(`Magnitude: ${magnitude}`);
+                        // Get only events with equal or lower karma than the request
                         console.log(`${karma} events found with acceptable magnitude (${magnitude} or lower): ${resultsByMagnitude.length}`);
                         res.status(200).json({ status: 200, ev: resultsByMagnitude[rando]});
                         client.close();
                     } else {
                         // If karma and magnitude are not sent in the request, randomly select a low-magnitude event
-                        // TODO: Select low magnitude only
                         const resultsByMagnitude = result.filter((ev) => ev.magnitude <= 1);
                         const rando = Math.floor(Math.random() * resultsByMagnitude.length);
-                        console.log(`Loading event data for event number ${rando}.`);
                         res.status(200).json({ status: 200, ev: resultsByMagnitude[rando]});
                         client.close();
                     }
