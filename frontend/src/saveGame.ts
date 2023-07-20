@@ -55,7 +55,7 @@ export type SaveInfo = {
     difficulty: string,         // Easy, medium or hard - values will be inserted into switch cases throughout the game
     map_type: string,           // From the game's initial settings
     terrain: number[][],        // The 'map' consists of terrain plus structures plus sprites
-    random_events: boolean,     // From the game's initial settings
+    random_events: boolean,     // From the game's initial settings / from the Engine (if the game was previously saved)
     modules: ModuleSaveInfo[],
     connectors: ConnectorSaveInfo[],
     resources: Resource[],

@@ -197,6 +197,7 @@ export default class Module {
             // console.log(`Cannot add resource ${resource[0]} to module ${this._moduleInfo.name} ${this._id}`);
             return 0;   // Always return the quantity added
         }
+        return 0;       // If all else fails, return 0
     }
 
     // Try to remove a resource, and return the quantity that is actually removed

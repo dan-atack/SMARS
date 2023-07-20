@@ -19,8 +19,8 @@ import Colonist from "./colonist";
 import Connector from "./connector";
 import Module from "./module";
 // Helper/server functions
-import { ModuleInfo, ConnectorInfo, getOneModule, getOneConnector } from "./server_functions";
-import { constants, modalData, randomEventsData } from "./constants";
+import { ModuleInfo, ConnectorInfo, getOneModule, getOneConnector, getRandomEvent } from "./server_functions";
+import { constants, modalData } from "./constants";
 // Types
 import { ConnectorSaveInfo, ModuleSaveInfo, SaveInfo, GameTime } from "./saveGame";
 import { GameData } from "./newGameSetup";
@@ -34,6 +34,9 @@ export default class Engine extends View {
     _sidebarExtended: boolean;
     _gameData: GameData | null  // Data object for a new game
     _saveInfo: SaveInfo | null  // Data object for a saved game
+    _difficulty: string         // Imported from either the new game or the loaded game
+    _randomEventsEnabled: boolean   // Imported from either the new game or the loaded game
+    _mapType: string            // Imported from either the new game or the loaded game
     _map: Map;
     _infrastructure: Infrastructure;
     _industry: Industry;
@@ -62,6 +65,12 @@ export default class Engine extends View {
         coords: Coords,     // The location of the event
         value: number       // Intensity of the event (number of colonists, power of meteor strike, etc)
     };
+    // Record the last random event's data
+    _randomEvent: {
+        karma: string,
+        magnitude: number,
+        data: EventData
+    } | null;                   // Random event starts as null
     // In-game time control
     gameOn: boolean;            // If the game is on then the time ticker advances; if not it doesn't
     _tick: number;              // Updated every frame; keeps track of when to advance the game's clock
@@ -81,6 +90,7 @@ export default class Engine extends View {
     updateEarthData: () => void;    // Updater for the date on Earth (for starters)
     getModuleInfo: (setter: (selectedBuilding: ModuleInfo, locations: number[][], ids?: number[], resources?: Resource[][]) => void, category: string, type: string, name: string, locations: number[][], ids?: number[], resources?: Resource[][], crews?: number[][], maintenanceStatuses?: boolean[]) => void;        // Getter function for loading individual structure data from the backend
     getConnectorInfo: (setter: (selectedConnector: ConnectorInfo, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => void, category: string, type: string, name: string, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => void;
+    getRandomEvent: (event_request: [string, number], setter: (ev: {karma: string, magnitude: number, data: EventData}) => void) => void;
 
     constructor(p5: P5, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, updateEarthData: () => void) {
         super(changeView);
@@ -89,10 +99,14 @@ export default class Engine extends View {
         this.updateEarthData = updateEarthData;
         this.getModuleInfo = getOneModule;
         this.getConnectorInfo = getOneConnector;
+        this.getRandomEvent = getRandomEvent;
         this._sidebar = new Sidebar(p5, this.switchScreen, this.changeView, this.setMouseContext, this.setGameSpeed);
         this._sidebarExtended = true;   // Side bar can be partially hidden to expand map view - should this be here or in the SB itself??
         this._gameData = null;
         this._saveInfo = null;  // Saved game info is loaded from the Game module when it calls the setupSavedGame method
+        this._difficulty = "medium" // Provide default values in case of loading failure
+        this._randomEventsEnabled = true;
+        this._mapType = "polar";
         this._map = new Map();
         this._infrastructure = new Infrastructure();
         this._industry = new Industry();
@@ -118,6 +132,7 @@ export default class Engine extends View {
             coords: { x: 0, y: 0 },
             value: 0
         };
+        this._randomEvent = null;
         // Time-keeping:
         // TODO: Make the clock its own component, to de-clutter the Engine.
         this.gameOn = true;                 // By default the game is on when the Engine starts
@@ -156,6 +171,9 @@ export default class Engine extends View {
 
     setupNewGame = (gameData: GameData) => {
         this._gameData = gameData;  // gameData object only needs to be set for new games
+        this._difficulty = gameData.difficulty;
+        this._randomEventsEnabled = gameData.randomEvents;
+        this._mapType = gameData.mapType;
         this._map.setup(this._gameData.mapTerrain);
         this._economy._data.addMoney(this._gameData.startingResources[0][1]);
         this._horizontalOffset = this._map._maxOffset / 2;   // Put player in the middle of the map to start out
@@ -166,8 +184,14 @@ export default class Engine extends View {
 
     setupSavedGame = (saveInfo: SaveInfo) => {
         this._saveInfo = saveInfo;
+        // Load game time
         this.setClock(saveInfo.game_time);
         this.updateDayNightCycle();
+        // Load game settings
+        this._difficulty = saveInfo.difficulty;
+        console.log(`Random events: ${saveInfo.random_events}`);
+        this._randomEventsEnabled = saveInfo.random_events;
+        this._mapType = saveInfo.map_type;
         this._map.setup(this._saveInfo.terrain);
         // TODO: Extract the map expansion/sidebar pop-up (and the reverse) into a separate method
         this._map.setExpanded(false);   // Map starts in 'expanded' mode by default, so it must tell it the sidebar is open
@@ -628,7 +652,7 @@ export default class Engine extends View {
         const flat = this._map.determineFlatness(gridX - 4, gridX + 4);
         // Prompt the player to confirm landing site before initiating landing sequence
         if (flat) {
-            this.createModal(false, modalData.find((modal) => modal.id ==="landing-confirm"));
+            this.createModal(modalData.find((modal) => modal.id ==="landing-confirm"));
             this._landingSiteCoords[0] = gridX - 4; // Set landing site location to the left edge of the landing area
             this._landingSiteCoords[1] = (constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH) - this._map._columns[gridX].length;
         }    
@@ -651,7 +675,7 @@ export default class Engine extends View {
         this._map.setExpanded(false);
         this._hasLanded = true;
         this.placeInitialStructures();
-        this.createModal(false, modalData.find((modal) => modal.id === "landing-touchdown"));
+        this.createModal(modalData.find((modal) => modal.id === "landing-touchdown"));
         // Add three new colonists, spread across the landing zone (Y value is -2 since it is the Colonist's head level)
         this._population.addColonist(this._landingSiteCoords[0], this._landingSiteCoords[1] - 2);
         this._population.addColonist(this._landingSiteCoords[0] + 2, this._landingSiteCoords[1] - 2);
@@ -743,7 +767,7 @@ export default class Engine extends View {
             this._currentEvent = ev;
             this.setMouseContext("wait");
             duration ? this.setWaitTime(duration) : this.setWaitTime(120);  // Default to 2.5 second wait time
-            this.ticksPerMinute = 20;       // Set time rate to 'fast' mode (basic standard)
+            this._sidebar.handleFast();       // Set time rate to 'fast' mode (basic standard) via the sidebar
         } else {
             console.log("Error setting current event:");
             console.log(ev);
@@ -917,8 +941,7 @@ export default class Engine extends View {
                 if (this._gameTime.minute < this._minutesPerHour - 1) {  // Minus one tells the minutes counter to reset to zero after 59
                     this._gameTime.minute ++;
                 } else {
-                    this._gameTime.minute = 0;          // Advance hours (anything on an hourly schedule should go here)
-                    this.generateEvent(8);              // Every hour there is an 8% chance of a random event
+                    this._gameTime.minute = 0;          // Advance hours
                     if (this._gameTime.hour < this._hoursPerClockCycle) {
                         this._gameTime.hour ++;
                         if (this._gameTime.hour === this._hoursPerClockCycle) {  // Advance day/night cycle when hour hits twelve
@@ -940,7 +963,9 @@ export default class Engine extends View {
                     } else {
                         this._gameTime.hour = 1;    // Hour never resets to zero
                     }
-                    this.handleHourlyUpdates();     // Handle updates after updating the clock
+                    // Everything on an hourly schedule should go HERE
+                    this.handleHourlyUpdates();             // Handle updates after updating the clock
+                    this.generateEvent(99);                  // Every hour there is an 8% chance of a random event
                 } 
             }
         }
@@ -951,7 +976,7 @@ export default class Engine extends View {
     // Prints a welcome-to-the-game message the first time a player begins a game
     createNewGameModal = () => {
         const data: EventData | undefined = modalData.find((modal) => modal.id === "landfall");
-        this.createModal(false, data);
+        this.createModal(data);
     }
 
     // Prints a welcome-back modal when the player loads a saved file
@@ -960,33 +985,57 @@ export default class Engine extends View {
         const data: EventData | undefined = modalData.find((modal) => modal.id === "load-game");
         if (data) {
             data.text = text;
-            this.createModal(false, data);
+            this.createModal(data);
         } else {
             console.log(`Warning: Event data not found for game loading greeting modal.`);
         }
     }
 
     // In-game event generator: produces scheduled and/or random events which will create modal popups
-    generateEvent = (probability?: number) => {     // Probability is given optionally as a percent value
-        if (probability) {
+    generateEvent = (probability?: number) => {             // Probability is given optionally as a percent value
+        if (probability && this._randomEventsEnabled) {     // Only produce a random event if the player has enabled them
             const rand = Math.floor(Math.random() * 100);                   // Generate random value and express as a percent
-            if (rand < probability) {
-                // If a random event occurs, randomly select an event from the random events list
-                const eventId = Math.floor(rand * (100 / probability) * randomEventsData.length / 100);
-                const ev = randomEventsData[eventId];
-                this.createModal(true, ev);       // Event occurs if given probability is higher than random value
+            // Fire random event if it exceeds probability threshold and if no wait has already been initiated by another event (e.g. landing pod arrival)
+            if (rand < probability && this.mouseContext !== "wait") {
+                // If a random event occurs, determine its magnitude and karma with the difficulty level and previous event data
+                const r = Math.floor(Math.random() * 100);
+                // If the previous event was good add its magnitude to the threshold; if it was bad, then subtract its magnitude
+                const previousEventKarma = (this._randomEvent?.karma === "good" ? 1 : -1) * (this._randomEvent?.magnitude || 0);
+                // For difficulty: Add 10 to threshold if on 'hard' mode; subtract 10 if on 'easy' mode. For 'medium' do nothing (even odds)
+                const difficulty = this._difficulty === "medium" ? 0 : this._difficulty === "bad" ? 10 : -10;
+                // The threshold between bad and good: a higher threshold = bad/worse event more likely
+                const threshold = 50 + previousEventKarma + difficulty;
+                // Karma is decided by whether or not the threshold is surpassed; magnitude is 1/5 of the difference between the two
+                const karma = r >= threshold ? "good" : "bad";
+                let magnitude = Math.min(Math.abs(Math.floor((r - threshold) / 5)), 10);     // Magnitude is always positive and can't exceed 10
+                // Max magnitude is limited, and gradually increases over the first 4 game years
+                if (magnitude > 5 && this._gameTime.year < 4) {
+                    magnitude -= (4 + this._gameTime.year);     // Gradually reduce the reduction until the magnitude is unchanged at year 4
+                }
+                this.getRandomEvent([karma, magnitude], this.setRandomEvent);
+                
             }
         } else {
+            // NOTE: Until non-random (storyline) events are a complete feature, simply do nothing if an event without a probability is requested (or if random events are not enabled)
             // If a non-random event is requested it happens here ("midnight" is a placeholder event in the meantime)
-            const ev: EventData | undefined = modalData.find((modal) => modal.id === "midnight")
-            this.createModal(false, ev);
+            // const ev: EventData | undefined = modalData.find((modal) => modal.id === "midnight")
+            // this.createModal(ev);
         }
     }
 
-    createModal = (random: boolean, data: EventData | undefined) => {
+    setRandomEvent = (ev: {karma: string, magnitude: number, data: EventData}) => {
+        this._randomEvent = ev;
+        if (ev !== undefined) {
+            this.createModal(ev.data);       // Event occurs if given probability is higher than random value
+        } else {
+            console.log("ERROR: Random event data not returned from the server.")
+        }
+    }
+
+    createModal = (data: EventData | undefined) => {
         if (data) {
             this.setGameOn(false);
-            this._modal = new Modal(this._p5, this.closeModal, random, data);
+            this._modal = new Modal(this._p5, this.closeModal, data);
             this.setMouseContext("modal");
         } else {
             console.log(`ERROR: Event data not found for modal creation.`);
@@ -1013,15 +1062,58 @@ export default class Engine extends View {
                     case "add-money":
                         if (typeof outcome[1] === "number") this._economy._data.addMoney(outcome[1]);
                         break;
+                    case "add-resource":    // Adds a quantity of a single type of resource to one module
+                        // Ensure outcome is properly formatted: index 1 = quantity, index 2 = resource name
+                        if (typeof outcome[1] === "number" && outcome[2]) {
+                            const resource: Resource = [outcome[2], outcome[1]];
+                            const mod = this._infrastructure.findStorageModule(resource);   // Choose a module
+                            if (mod) {
+                                console.log(`ADDING ${resource[1]} ${resource[0]} to module ${mod._id}`);
+                                // Keep track of resource delta to pass to economy display
+                                const r = this._infrastructure.addResourcesToModule(mod._id, resource);
+                                this._economy._data.updateOneResource([resource[0], r]);
+                            } else {
+                                console.log(`Warning: No module found to contain ${resource[0]}`);
+                            }
+                        } else {
+                            console.log("ERROR: Incorrect outcome data format for 'add-resource' event resolution.")
+                        }
+                        break;
                     case "subtract-money":
                         if (typeof outcome[1] === "number") this._economy._data.subtractMoney(outcome[1]);
+                        break;
+                    case "subtract-resource":
+                        // Ensure outcome is properly formatted: index 1 = quantity, index 2 = resource name
+                        if (typeof outcome[1] === "number" && outcome[2]) {
+                            const resource: Resource = [outcome[2], outcome[1]];
+                            // Choose a module containing the resource (just pick the first one in the list for now)
+                            const mods = this._infrastructure.findModulesWithResource(resource);
+                            if (mods.length > 0) {
+                                const mod = mods[0];
+                                console.log(`SUBTRACTING ${resource[1]} ${resource[0]} from module ${mod._id}`);
+                                const r = this._infrastructure.subtractResourceFromModule(mod._id, resource);
+                                // Update economy display for the affected resource by SUBTRACTING the resource delta
+                                this._economy._data.updateOneResource([resource[0], -r]);
+                            } else {
+                                console.log(`Warning: No module found to contain ${resource[0]}`);
+                            }
+                        } else {
+                            console.log("ERROR: Incorrect outcome data format for 'subtract-resource' event resolution.")
+                        }
+                        break;
+                    case "update-morale":   // Unlike the resource events, morale updates can be positive or negative
+                        if (typeof outcome[1] === "number") {
+                            this._population.updateColonistsMorale(outcome[1]);
+                        } else {
+                            console.log("ERROR: Incorrect outcome data format for 'update-morale' event resolution.")
+                        }
                         break;
                     default:
                         console.log(`Warning: Unrecognized modal resolution code: ${outcome[0]}`);
                 }
             })
         }
-        // Clear modal data and resume the game
+        // Clear modal data (and random event data?) and resume the game
         this._modal = null;
         this.setGameOn(true);
     }

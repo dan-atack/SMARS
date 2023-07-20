@@ -338,7 +338,7 @@ describe("Infrastructure base class", () => {
         infra.addResourcesToModule(1002, ["oxygen", 100000]);
         infra.addResourcesToModule(1002, ["equipment", 100000]);
         // Also, deprovision other storage module, since it will attempt to fulfill the requests itself otherwise
-        infra.deductResourceFromModule(1001, ["water", 10000]);
+        infra.subtractResourceFromModule(1001, ["water", 10000]);
         expect(infra._modules[3]._resources).toStrictEqual([
             ["food", 500],
             ["water", 500],
@@ -396,8 +396,8 @@ describe("Infrastructure base class", () => {
     // Returns one module with a resource capacity, prioritizing modules of the 'Storage' type
     test("Can find storage module(s) for a given resource", () => {
         // SETUP: Clear out both storage modules
-        infra.deductResourceFromModule(1001, ["water", 100000]);
-        infra.deductResourceFromModule(1002, ["water", 100000]);
+        infra.subtractResourceFromModule(1001, ["water", 100000]);
+        infra.subtractResourceFromModule(1002, ["water", 100000]);
         // When both storage modules have space, it returns the first one
         expect(infra.findStorageModule(["water", 100])?._id).toBe(1001);        // First storage module
         // When only the second storage module has space it returns that one
@@ -405,7 +405,7 @@ describe("Infrastructure base class", () => {
         expect(infra.findStorageModule(["water", 100])?._id).toBe(1002);        // Second storage module
         // When no 'Storage' modules are available it returns the next available module that can hold the resource
         infra.addResourcesToModule(1002, ["water", 100000]);                    // Setup: Fill second storage module
-        infra.deductResourceFromModule(1003, ["water", 10000]);                 // Setup: Make space in cantina
+        infra.subtractResourceFromModule(1003, ["water", 10000]);                 // Setup: Make space in cantina
         expect(infra.findStorageModule(["water", 100])?._id).toBe(1003);        // Cantina
         // If no suitable modules are available it returns a null
         infra.addResourcesToModule(1003, ["water", 100000]);                    // Setup: Fill cantina

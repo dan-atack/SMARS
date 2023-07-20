@@ -102,6 +102,20 @@ export default class EconomyData {
         })
     }
 
+    // Called by the Engine to update the display/rate-of-change for a single resource (Called in the aftermath of a random event, e.g.)
+    updateOneResource = (delta: Resource) => {
+        // Find the resource to be updated as well as its rate-of-change-display
+        const res: Resource | undefined = this._resources.find((r) => r[0] === delta[0]);
+        const prev: Resource | undefined= this._resourceChangeRates.find((r) => r[0] === delta[0]);
+        if (res && prev) {
+            // If found, add the delta to both, to update their displays
+            res[1] += delta[1];
+            prev[1] += delta[1];
+        } else {
+            console.log(`ERROR: Unable to find ${delta[0]} in resources list.`);
+        }
+    }
+
     // Used to load/reset the rate-of-change values display e.g. at game start/load. If no value is given, it is a reset
     setResourceChangeRates = (resources?: Resource[]) => {
         if (resources) {

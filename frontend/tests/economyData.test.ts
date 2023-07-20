@@ -67,5 +67,33 @@ describe("EconomyData", () => {
             ]
         )
     })
+
+    test("Can update a single resource/rate of change with updateOneResource method", () => {
+        economyData.updateOneResource(["oxygen", -1000]);
+        // NOTE: Using values from the previous test, to illustrate their continuity
+        expect(economyData._resources).toStrictEqual(
+            [
+                ["money", 10000000],
+                ["oxygen", 29000],
+                ["water", 30000],
+                ["food", 10000],
+                ["power", 10000],
+                ["equipment", 0],
+                ["minerals", 0]
+            ]
+        )
+        // Update function updates resource change rate when called
+        expect(economyData._resourceChangeRates).toStrictEqual(
+            [
+                ["money", 0],
+                ["oxygen", 19000],
+                ["water", 20000],
+                ["food", 0],
+                ["power", 10000],
+                ["equipment", 0],
+                ["minerals", 0]
+            ]
+        )
+    })
     
 })

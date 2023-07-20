@@ -129,47 +129,7 @@ export const modalData: EventData[] = [
          }
       ]
    },
-]
-
-export const randomEventsData: EventData[] = [
-   {
-      id: "random-event-1",
-      title: "OXYGEN LEAK",
-      text: "The colonists have reported hearing a faint hissing sound\ncoming from the vicinity of Airlock B.\n\nDue to the high cost of adhesive sealant strips (duct tape),\nit is recommended that colonists use Airlock A for all future\n egress/ingress. Also try and hold your breath more often.",
-      resolutions: [
-         {
-            text: "Buy more tape! (-$500)",
-            outcomes: [["set-mouse-context", "inspect"], ["subtract-money", 50000]]
-         },
-         {
-            text: "Hold breath more often (-$0)",
-            outcomes: [["set-mouse-context", "inspect"]]
-         }
-      ]
-   },
-   {
-      id: "random-event-2",
-      title: "REAGANOMICS",
-      text: "The board of investors likes your style, kid.\nHave a cigar, you're gonna go far.\n\n(The SMARS Corporation is not in any way responsible for\nfires related to lighting cigars inside the habitation module)",
-      resolutions: [
-         {
-            text: "Ride the gravy train (+$1000)",
-            outcomes: [["set-mouse-context", "inspect"], ["add-money", 100000]]
-         }
-      ]
-   },
-   {
-      id: "random-event-3",
-      title: "ECONOMIC DOWNTURN ON EARTH",
-      text: "The board of directors regretfully has to inform you that,\ndue to the ongoing financial uncertainy of Earth's economy,\nyour colony's funding has been reduced, effective immediately.",
-      resolutions: [
-         {
-            text: "Lousy democrats! (-$1000)",
-            outcomes: [["set-mouse-context", "inspect"], ["subtract-money", 100000]]
-         }
-      ]
-   },
-]
+];
 
 // BLOCKTIONARY!!!!
 export type BlockData = {
@@ -179,7 +139,7 @@ export type BlockData = {
     resource: string,
     hp: number,
     yield: number
-}
+};
 
 export const blocks: BlockData[] = [
      {
@@ -246,4 +206,4 @@ export const blocks: BlockData[] = [
          hp: 1000,
          yield: 10
      }
-]
+];

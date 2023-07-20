@@ -3212,15 +3212,15 @@ The third stage in SMARS's development will be geared towards making the game, n
 
 Unlike the previous volume, but like the first one, this stage of development does not have any specific completion requirements. However, progress will be directed towards a number of medium sized groups of complementary features/content bundles that we can call "patch updates" whose requirements will be spelled out in detail in this log file. Aside from that, this log file will continue to record the notes, plans and other minutiae of the game's development day-to-day work, but the exit criteria for each issue will reside on the project management board to avoid wasting time duplicating information. As time goes by, more data may also be recorded in the project management tickets instead of in this file, if it proves to be an easier way of retrieving information.
 
-A new chapter/feature branch nomenclature scheme will also be adopted to match up with the issue numbers created by GitHub Issues while also identifying what type of work is being done. As of now, new feature branches should follow the format:
+A new chapter/feature branch nomenclature scheme will also be adopted to match up with the issue numbers created by GitHub Issues while also identifying what type of work is being done, and in fact the branch creation can be done entirely via GitHub issues. As of now, new feature branches should follow the format:
 
-SMARS-<Github Issues ticket number>-<Issue category (either APPLICATION, PRODUCTION, CONTENT or BUGFIX)>-Some-Issue-Name
+<issue number>-<category>-<branch-title>
 
-e.g. SMARS-36-APPLICATION-Better-Random-Events
+e.g. 36-application-better-random-events
 
 or
 
-SMARS-41-PRODUCTION-Add-AWS-Billing-Alerts
+41-production-setup-aws-billing-alerts
 
 Naming issues this way will help with long-term issue debugging and code traceability efforts, increasing the speed with which new features and content can be added to the game.
 
@@ -3234,15 +3234,58 @@ The game's random events system is a very promising way to add complexity and un
 
 Exit Criteria:
 
-- Random events are from the backend, not the frontend constants file
-- The Engine requests random elements from the backend when a random event fires (probability check can remain in frontend)
-- The Engine sends certain information about the state of the game when requesting a random event
-- The backend has its own logic for deciding which random event to send - it processes the information sent from the frontend
-- The types of outcomes that a random event can lead to are more diverse and interesting (resource gain/loss, morale effects, etc.)
+- [DONE] Random events are from the backend, not the frontend constants file
+- [DONE] The Engine requests random elements from the backend when a random event fires (probability check can remain in frontend)
+- [DONE] The Engine sends certain information about the state of the game when requesting a random event
+- [DONE] The backend has its own logic for deciding which random event to send - it processes the information sent from the frontend
+- [DONE] The types of outcomes that a random event can lead to are more diverse and interesting (resource gain/loss, morale effects, etc.)
+- [STRETCH] If the random event is an oxygen leak, do an 'oxygen leak' animation on the target module!
 
 Some preliminary test events will need to be created for this chapter, but a separate, content issue will be created upon the feature's completion as well.
 
-### 1. Step One...
+1. Create a new type, RandomEventData, which has a karma value as well as a magnitude value, and a data component which is an ordinary EventData type object.
+
+2. Create a new World Builder function that can add random event data of the above type to the database's random_events collection.
+
+3. Create a new server function that can fetch random events from the database and return one at random.
+
+4. Convert the existing random events in the frontend's constants file into RandomEventData objects in the world builder's newEvents file. For now we can have generic text in the modal and its resolutions, without the need to include the target module/colonist's information.
+
+5. Push the random events to the game's database.
+
+6. Add random events data to database seed file, and add random_events to backend database validation function that gets called at the start of the game.
+
+7. Create an endpoint for retrieving random events and add it to the backend's index file.
+
+8. Create a frontend server function that can retrieve a random event from the server, and have the Engine call it in lieu of reading from the constants file.
+
+9. Add a new case for the closeModal method's switch block for the case called 'add-resource'. In it, have the Engine find a module that has at least some capacity for the resource in question, and then add that resource. Validate by adding a new event with this outcome and adding it to the database, then rigging the backend's server function to return only that event.
+
+10. Once the add-resource case is working, use it as a prototype for remove-resource. Once again, test with a new event and rig the backend.
+
+11. Have the Economy display update as soon as a resource-altering event is resolved, rather than waiting for the full hour to pass.
+
+12. The next type of event will be the colonist morale changers, so let's take a moment to add a new Population class method that can either take a number (positive or negative) representing a change in morale, and then an optional second argument, which would be a list of colonists' IDs. If this argument is given, each colonist on the list receives the morale change, whenever possible (their own updateMorale method doesn't allow exceeding 100 or going below zero). If no list is provided then it simply calls the updateMorale method for every colonist.
+
+13. Now make a new case for the closeModal switch block that calls this method, and test it with a new random event that supplies no argument at all with the values in the 'outcomes' tuple (which looks like this by the way: ["update-morale", -5, ]). Test that this outcome is applied to all of the colonists. That will actually be all for the morale methods for now; the colonist IDs list may be useful in the future but for now we will only use this basic case.
+
+14. Take this moment to investigate why the game's difficulty is not being saved between sessions and fix this for new saves going forward. For those existing saves that are already missing the data, add a hotfix to the server's load game routine that supplies a default value of 'medium' if a save file is loaded that has no save data. Supplying this missing value in the server function will prevent the Engine from having to deal with corrupted save files, which should always be the policy.
+
+15. Now, devote some thought as to the logic that will be used to calculate the karmic alignment and severity of random event requests, both on the Engine's side, and the server's side. How much of a role will each play in determining the type of event that is returned, and what exactly will be the calculus used by each side? Answer: Engine will keep track of the previous event's karma and magnitude, and use these, as well as the game's difficulty level and duration (high magnitude events will be blocked before year 2) to determine the next event request. The server will then pull events of the same karma as the request, and filter based on magnitude to return the best match possible.
+
+16. Consider how to upload new random events (And by extention, other types of content as well) to one of the game's cloud databases. Document the procedure that gets the job done most efficiently:
+
+- Create new randomEvents.json file locally in world editor folder with the new events' data
+- Upload it to the S3 bucket via the AWS dashboard (there is an upload button for files/folders)
+- Log into the server instance via PuTTY
+- Pull the json file from the S3 bucket:
+  `aws s3 cp s3://smars-${env}-bucket/randomEvents.json /tmp/smarsrestore/`
+- Run the MongoImport command to add the JSON file's contents to the database container:
+  `docker exec -i smars-db-1 sh -c 'mongoimport --db="smars" --collection="random_events" --jsonArray' </tmp/smarsrestore/randomEvents.json` (VALIDATED 2023-07-19)
+
+17. Undo dev mode changes: Before commiting this code to the master branch and testing it in a staging environment, make sure that you undo all of the changes made during the course of the chapter's development: Reset the Engine's random event odds; reset the random indexer (or whatever logic now has replaced it) in the random events server function; clean up the original events in the constants file; get rid of development console logs.
+
+18. Add the Engine's enableRandomEvents flag to the calculus for creating a random event (so that if the player has de-activated that setting no random events will occur).
 
 ## Chapter X: In-Game Notifications
 

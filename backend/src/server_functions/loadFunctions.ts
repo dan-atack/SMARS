@@ -63,6 +63,14 @@ const loadGameData = async (req: Request, res: Response) => {
         const db = client.db(dbName);
         await db.collection(collectionName).findOne(dbQuery, (err, result) => {
             if (result != null) {
+                if (result.difficulty === "") {
+                    console.log(`Warning: No difficulty settings found for save file ${id} - defaulting to 'medium'`);
+                    result.difficulty = "medium";
+                }
+                if (result.map_type === "") {
+                    console.log(`Warning: No map type settings found for save file ${id} - defaulting to 'polar'`);
+                    result.map_type = "polar";
+                }
                 console.log(`Dispatching saved game data for game ${result.game_name}.`);
                 res.status(200).json({ status: 200, data: result })
             } else {
