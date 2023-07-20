@@ -3283,9 +3283,9 @@ Some preliminary test events will need to be created for this chapter, but a sep
 - Run the MongoImport command to add the JSON file's contents to the database container:
   `docker exec -i smars-db-1 sh -c 'mongoimport --db="smars" --collection="random_events" --jsonArray' </tmp/smarsrestore/randomEvents.json` (VALIDATED 2023-07-19)
 
-### 99. Undo dev mode changes: Before commiting this code to the master branch and testing it in a staging environment, make sure that you undo all of the changes made during the course of the chapter's development: Reset the Engine's random event odds; reset the random indexer (or whatever logic now has replaced it) in the random events server function; clean up the original events in the constants file; get rid of development console logs.
+17. Undo dev mode changes: Before commiting this code to the master branch and testing it in a staging environment, make sure that you undo all of the changes made during the course of the chapter's development: Reset the Engine's random event odds; reset the random indexer (or whatever logic now has replaced it) in the random events server function; clean up the original events in the constants file; get rid of development console logs.
 
-### 100. Clean up manually created S3 staging bucket so it doesn't interfere with future staging deployment attempts.
+18. Add the Engine's enableRandomEvents flag to the calculus for creating a random event (so that if the player has de-activated that setting no random events will occur).
 
 ## Chapter X: In-Game Notifications
 

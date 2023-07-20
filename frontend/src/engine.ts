@@ -189,6 +189,7 @@ export default class Engine extends View {
         this.updateDayNightCycle();
         // Load game settings
         this._difficulty = saveInfo.difficulty;
+        console.log(`Random events: ${saveInfo.random_events}`);
         this._randomEventsEnabled = saveInfo.random_events;
         this._mapType = saveInfo.map_type;
         this._map.setup(this._saveInfo.terrain);
@@ -964,7 +965,7 @@ export default class Engine extends View {
                     }
                     // Everything on an hourly schedule should go HERE
                     this.handleHourlyUpdates();             // Handle updates after updating the clock
-                    this.generateEvent(8);                  // Every hour there is an 8% chance of a random event
+                    this.generateEvent(99);                  // Every hour there is an 8% chance of a random event
                 } 
             }
         }
@@ -991,8 +992,8 @@ export default class Engine extends View {
     }
 
     // In-game event generator: produces scheduled and/or random events which will create modal popups
-    generateEvent = (probability?: number) => {     // Probability is given optionally as a percent value
-        if (probability) {
+    generateEvent = (probability?: number) => {             // Probability is given optionally as a percent value
+        if (probability && this._randomEventsEnabled) {     // Only produce a random event if the player has enabled them
             const rand = Math.floor(Math.random() * 100);                   // Generate random value and express as a percent
             // Fire random event if it exceeds probability threshold and if no wait has already been initiated by another event (e.g. landing pod arrival)
             if (rand < probability && this.mouseContext !== "wait") {
@@ -1015,9 +1016,10 @@ export default class Engine extends View {
                 
             }
         } else {
+            // NOTE: Until non-random (storyline) events are a complete feature, simply do nothing if an event without a probability is requested (or if random events are not enabled)
             // If a non-random event is requested it happens here ("midnight" is a placeholder event in the meantime)
-            const ev: EventData | undefined = modalData.find((modal) => modal.id === "midnight")
-            this.createModal(ev);
+            // const ev: EventData | undefined = modalData.find((modal) => modal.id === "midnight")
+            // this.createModal(ev);
         }
     }
 
