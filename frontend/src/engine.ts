@@ -965,7 +965,7 @@ export default class Engine extends View {
                     }
                     // Everything on an hourly schedule should go HERE
                     this.handleHourlyUpdates();             // Handle updates after updating the clock
-                    this.generateEvent(99);                  // Every hour there is an 8% chance of a random event
+                    this.generateEvent(8);                  // Every hour there is an 8% chance of a random event
                 } 
             }
         }
