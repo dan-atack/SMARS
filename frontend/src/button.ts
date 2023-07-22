@@ -24,6 +24,8 @@ export default class Button {
         this._color = color;
         this._bgColor = bgColor;
         this._fontSize = fontSize;
+        // Use smaller font if label is longer than 32 characters
+        if (this._label.length > 32) this._fontSize = this._fontSize * 3 / 4;
         this._selected = false; // Not set by the constructor
         this.handler = handler;
     }
