@@ -189,7 +189,6 @@ export default class Engine extends View {
         this.updateDayNightCycle();
         // Load game settings
         this._difficulty = saveInfo.difficulty;
-        console.log(`Random events: ${saveInfo.random_events}`);
         this._randomEventsEnabled = saveInfo.random_events;
         this._mapType = saveInfo.map_type;
         this._map.setup(this._saveInfo.terrain);
@@ -965,7 +964,7 @@ export default class Engine extends View {
                     }
                     // Everything on an hourly schedule should go HERE
                     this.handleHourlyUpdates();             // Handle updates after updating the clock
-                    this.generateEvent(80);                  // Every hour there is an 8% chance of a random event
+                    this.generateEvent(8);                  // Every hour there is an 8% chance of a random event
                 } 
             }
         }

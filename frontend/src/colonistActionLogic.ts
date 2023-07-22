@@ -38,7 +38,7 @@ export const createConsumeActionStack = (colonistCoords: Coords, colonistStandin
                         // If the stack is complete, keep track of the fact and update the 'dist' to set this as the closest module
                         stackComplete = true;
                         dist = Math.abs(mod._x - colonistCoords.x);
-                        console.log(`${verb} stack completed.\nDistance: ${dist}\nModule ID: ${mod._id}`);
+                        // console.log(`${verb} stack completed.\nDistance: ${dist}\nModule ID: ${mod._id}`);
                     }
                 } else {
                     console.log(`Error: Floor data not found for module ${mod._id}`);
@@ -51,7 +51,7 @@ export const createConsumeActionStack = (colonistCoords: Coords, colonistStandin
         stack = goToGround(colonistCoords, colonistStandingOn, infra);
     }
     // 6 - Finally, return the action stack for the colonist to start using it
-    console.log(stack.length);
+    // console.log(stack.length);
     return stack;
 }
 
