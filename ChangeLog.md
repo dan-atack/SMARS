@@ -3287,6 +3287,37 @@ Some preliminary test events will need to be created for this chapter, but a sep
 
 18. Add the Engine's enableRandomEvents flag to the calculus for creating a random event (so that if the player has de-activated that setting no random events will occur).
 
+## Chapter Two: Destroying Structures
+
+### Difficulty Estimate: 8 (For refactoring that could get very nasty, and many unit tests needed for reassurance that we got it right)
+
+### Date: July 23, 2023
+
+Following the implementation of the game's random events system, the next essential item on the game's feature list has got to be the ability to remove Modules they had previously built. This will require revisiting some of the game's more elaborate logic for module placement, and how that interacts with more shadowy concepts such as the base's volume, floors, and of course the whole Infrastructure/InfrastructureData class distinction (has the time come for a revolution in that sphere?!)
+
+On the way it will be necessary to consider what rules will be in play when removing Modules (deliberately distinct from Connectors, which will require their own sub-chapter), and consider questions such as:
+
+- Can the player remove any Module they like? Consider: gravity, unique structures (comms dome)
+- What happens to the resources in destroyed Modules? Consider: destroying them vs trying to export them
+- What happens to Connectors that are attached to a destroyed module? Consider: Rules for removing connectors (separate sub-issue down below)
+- Will there be a warning/are-you-sure message? Consider: always? only when resources are shifted? only when resources would be lost?
+- What happens to the Floors data when a module is removed?
+- BONUS: Can we illustrate/show floors in some subtle way as part of module highlighting? Or as an overlay??
+
+Also, in tandem with the above considerations, what is to be done about removing Connectors?
+
+- Will the be removed with the same mouse function/button as Modules?
+- Do they need to be removed first/before a Module that they're connected to?
+-
+
+Exit Criteria:
+
+- Criteria 1
+- Criteria 2
+- ...
+
+### 1. Step One...
+
 ## Chapter X: In-Game Notifications
 
 ### Difficulty Estimate: 3 (for developing a message collection system for Engine subclass components, and message prioritization and rendering for the Engine class)
