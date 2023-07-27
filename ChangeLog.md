@@ -3308,13 +3308,31 @@ Also, in tandem with the above considerations, what is to be done about removing
 
 - Will the be removed with the same mouse function/button as Modules?
 - Do they need to be removed first/before a Module that they're connected to?
--
+- What factors would limit their removal, if any?
 
 Exit Criteria:
 
-- Criteria 1
-- Criteria 2
-- ...
+- Player can select 'demolish' button from sidebar that will enable them to remove either a module or connector
+- Player can click on a connector while in 'demolish' mouse context to remove it
+- Player will be notified (initial via console log) that a connector cannot be removed if there is currently one or more colonists on it
+- Once removed, a connector will no longer be considered by colonists looking to gain access to a floor/module
+- Player can click on a module while in 'demolish' mouse context to remove it
+- When a module is clicked for deletion the following 4 'hard' checks are performed:
+- If the module is underneath another module it cannot be removed and the player is notified (via console message)
+- If the module is attached to at least one 'transport' connector it cannot be removed (and the player is notified)
+- If the module is considered 'essential' (by consulting an Infra class list of essential structure) it cannot be removed and the player is notified
+- If the module contains any colonists it cannot be removed and the player is notified
+- If none of the above 4 conditions are true, the following 'soft' check is then performed:
+- If the module contains any resources, a warning is given (again, for now in the console -in the future this will be upgraded to a confirmation popup)
+- If the module contains resources and the player chooses to proceed (which will be the default behaviour until we have that confirmation popup) all of its resources are pushed to other modules
+- If the module contains no resources, or once its resources have been pushed out, the following steps are carried out to ensure a thorough removal:
+- It is removed from the infra class's modules list
+- The Infra data class removes it from the base volume array
+- The Infra data class removes it from the Floor it is on:
+- If the module is the only module on a floor, the floor is removed entirely
+- If the module is at the edge of a multi-module floor it is removed and the floor's edges are recalculated
+- If the module is in the middle of a multi-module floor, it and all modules to its right are removed from that floor and a new floor ID is generated for the remaining module/s to its right
+- There must be extensive unit tests for all of these criteria, developed prior to the implementation of the features themselves
 
 ### 1. Step One...
 
@@ -3477,4 +3495,4 @@ Exit Criteria:
 - [DONE]It is possible to create a new saved game file for a given user.
 - It is possible to update a saved game file for a given user.
 - [DONE]It is possible to retrieve a list of saved games for a given user.
-- [DONE]It is possible to retrieve all of the game data for a specific saved game file.
+- [DONE]It is possible to retrieve all of the game data for a specific saved game file.x
