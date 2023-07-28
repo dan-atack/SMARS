@@ -342,28 +342,32 @@ export default class Engine extends View {
             // Click is over the map
             if (mouseX > 0 && mouseX < constants.SCREEN_WIDTH && mouseY > 0 && mouseY < constants.SCREEN_HEIGHT) {
                 const [gridX, gridY] = this.getMouseGridPosition(mouseX, mouseY);
+                const coords = { x: gridX, y: gridY }   // For convenience
                 // console.log(`(${gridX}, ${gridY})`);
                 switch (this.mouseContext) {
-                    case "inspect":
-                        this.handleInspect({ x: gridX, y: gridY });
-                        break;
-                    case "placeModule":
-                        this.handleModulePlacement(gridX, gridY);
-                        break;
                     case "connectorStart":
                         this.handleConnectorStartPlacement(gridX, gridY)
                         break;
                     case "connectorStop":
                         this.handleConnectorStopPlacement();
                         break;
-                    case "resource":
-                        this.handleResourceZoneSelect({ x: gridX, y: gridY });
+                    case "demolish":
+                        this.handleDemolish(coords);
+                        break;
+                    case "inspect":
+                        this.handleInspect(coords);
+                        break;
+                    case "landing":
+                        this.confirmLandingSequence(mouseX, mouseY);
                         break;
                     case "modal":
                         this._modal?.handleClicks(mouseX, mouseY);
                         break;
-                    case "landing":
-                        this.confirmLandingSequence(mouseX, mouseY);
+                    case "placeModule":
+                        this.handleModulePlacement(gridX, gridY);
+                        break;
+                    case "resource":
+                        this.handleResourceZoneSelect(coords);
                         break;
                     case "wait":
                         // TODO: Add UI explanation (or sound effect!) indicating that the player can't click during 'wait' mode
@@ -584,6 +588,16 @@ export default class Engine extends View {
         this._population.highlightColonist(0);
         this._infrastructure.highlightStructure(0, false);
         this._map.setHighlightedBlock(null);
+    }
+
+    handleDemolish = (coords: Coords) => {
+        if (this._infrastructure.getConnectorFromCoords(coords)) {          // First, check for Connectors
+            this._infrastructure.removeConnector()
+        } else if (this._infrastructure.getModuleFromCoords(coords)) {      // Then, check for Modules
+            this._infrastructure.removeModule();
+        } else {
+            this.setMouseContext("inspect");        // Revert mouse context to 'inspect' if click is not on a structure
+        }
     }
 
     //// STRUCTURE PLACEMENT METHODS ////

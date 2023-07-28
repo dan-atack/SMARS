@@ -3338,11 +3338,11 @@ Exit Criteria:
 
 1. Start by replacing the 'Overlays' button on the sidebar with a 'demolish' button, and give it the standard yellow colouring of non-disabled mouse context buttons.
 
-### 2. Then, in the mouse context manager/sidebar buttons programming, change the mouse context for the button to 'demolish' and finally have the Engine's click handler log that new context when a click is made with it.
+2. Then, in the mouse context manager/sidebar buttons programming, change the mouse context for the button to 'demolish' and finally have the Engine's click handler log that new context when a click is made with it.
 
-### 3. Create two new, initially empty Infra class methods: removeModule and removeConnector. Initially just have them call their own names when activated.
+3. Create two new, initially empty Infra class methods: removeModule and removeConnector. Initially just have them call their own names when activated.
 
-### 4. Create a new Engine method, handleDemolish, that takes care of the click response for the demolish mouse context, and make it call either the removeConnector or the removeModule method as appropriate when a click occurs, as the Inspect tool handler does. If a click does not fall upon either a module or a connector reset the mouse context to 'inspect.'
+4. Create a new Engine method, handleDemolish, that takes care of the click response for the demolish mouse context, and make it call either the removeConnector or the removeModule method as appropriate when a click occurs, as the Inspect tool handler does. If a click does not fall upon either a module or a connector reset the mouse context to 'inspect.'
 
 ### 5. Find how the animation for the jackhammer was done for the 'resource' mouse context and make a simlar, but simpler animation (Mouse Shadow??) for the 'demolish' mouse context. A simple red X with the cursor's point at its center will suffice for now.
 

@@ -70,24 +70,14 @@ export default class Infrastructure {
         }
     }
 
-    // SECTION 2 - MODULE UPDATER METHODS
+    // SECTION 2 - REMOVING MODULES AND CONNECTORS
 
-    handleHourlyUpdates = (sunlightPercent: number) => {
-        // 0 - Produce power modules' outputs
-        this.resolveModulePowerGeneration(sunlightPercent);
-        // 1- Push outputs from production/power modules
-        this.resolveResourceStoragePushes();
-        // 2 - Compile, then resolve module resource requests
-        const reqs = this.compileModuleResourceRequests();
-        this.resolveModuleResourceRequests(reqs);
-        // 3 - Deduct maintenance costs
-        this.handleModuleMaintenance();
+    removeModule = () => {
+        console.log("Removing module.");
     }
 
-    handleModuleMaintenance = () => {
-        this._modules.forEach((mod) => {
-            mod.handleMaintenance();
-        })
+    removeConnector = () => {
+        console.log("Removing connector.");
     }
 
     // SECTION 3 - VALIDATING MODULE / CONNECTOR PLACEMENT
@@ -177,7 +167,27 @@ export default class Infrastructure {
         }
     }
 
-    // SECTION 4 - ECONOMIC / RESOURCE-RELATED METHODS
+    // SECTION 4 - MODULE UPDATER METHODS
+
+    handleHourlyUpdates = (sunlightPercent: number) => {
+        // 0 - Produce power modules' outputs
+        this.resolveModulePowerGeneration(sunlightPercent);
+        // 1- Push outputs from production/power modules
+        this.resolveResourceStoragePushes();
+        // 2 - Compile, then resolve module resource requests
+        const reqs = this.compileModuleResourceRequests();
+        this.resolveModuleResourceRequests(reqs);
+        // 3 - Deduct maintenance costs
+        this.handleModuleMaintenance();
+    }
+
+    handleModuleMaintenance = () => {
+        this._modules.forEach((mod) => {
+            mod.handleMaintenance();
+        })
+    }
+
+    // SECTION 5 - ECONOMIC / RESOURCE-RELATED METHODS
 
     // Looks up a module and passes it the given resource data
     addResourcesToModule = (moduleId: number, resource: Resource) => {
@@ -362,7 +372,7 @@ export default class Infrastructure {
         
     }
 
-    // SECTION 5 - INFRASTRUCTURE INFO API (GETTER FUNCTIONS)
+    // SECTION 6 - INFRASTRUCTURE INFO API (GETTER FUNCTIONS)
 
     // Returns the ID of the module nearest to a specific location (v.1 considers X-axis only for proximity calculation)
     findModuleNearestToLocation = (modules: Module[], location: Coords) => {
@@ -453,6 +463,8 @@ export default class Infrastructure {
             }
         }
     }
+
+    // SECTION 7 - RENDER ZONE
 
     render = (p5: P5, horizontalOffset: number) => {
         this._horizontalOffset = horizontalOffset;
