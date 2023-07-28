@@ -455,6 +455,10 @@ export default class Engine extends View {
         this._mouseShadow = new MouseShadow(1, 1, true);
     }
 
+    createDemolitionMouseShadow = () => {
+        this._mouseShadow = new MouseShadow(30, 30)
+    }
+
     createJackhammerMouseShadow = () => {
         this._mouseShadow = new MouseShadow(1, 1, false, true);
     }
@@ -514,6 +518,11 @@ export default class Engine extends View {
         if (this.mouseContext === "resource") {
             this.setSidebarSelectedButton();
             this.createJackhammerMouseShadow();
+        }
+        // Then check for demolition mode
+        if (this.mouseContext === "demolish") {
+            this.setSidebarSelectedButton();
+            console.log("Demolition man.")
         }
         // Last, check if the mouse context has been set to 'inspect' and tell it to do the magnifying glass image if so
         if (this.mouseContext === "inspect") {

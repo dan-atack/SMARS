@@ -3313,6 +3313,8 @@ Also, in tandem with the above considerations, what is to be done about removing
 Exit Criteria:
 
 - Player can select 'demolish' button from sidebar that will enable them to remove either a module or connector
+- When in 'demolish' mode the mouse cursor is accompanied by a little red 'X' whose center is at the point of the cursor
+- Player can deselect 'demolish' mode and return to 'inspect' mode simply by clicking on anything that isn't a module or a connector
 - Player can click on a connector while in 'demolish' mouse context to remove it
 - Player will be notified (initial via console log) that a connector cannot be removed if there is currently one or more colonists on it
 - Once removed, a connector will no longer be considered by colonists looking to gain access to a floor/module
@@ -3334,7 +3336,15 @@ Exit Criteria:
 - If the module is in the middle of a multi-module floor, it and all modules to its right are removed from that floor and a new floor ID is generated for the remaining module/s to its right
 - There must be extensive unit tests for all of these criteria, developed prior to the implementation of the features themselves
 
-### 1. Step One...
+1. Start by replacing the 'Overlays' button on the sidebar with a 'demolish' button, and give it the standard yellow colouring of non-disabled mouse context buttons.
+
+### 2. Then, in the mouse context manager/sidebar buttons programming, change the mouse context for the button to 'demolish' and finally have the Engine's click handler log that new context when a click is made with it.
+
+### 3. Create two new, initially empty Infra class methods: removeModule and removeConnector. Initially just have them call their own names when activated.
+
+### 4. Create a new Engine method, handleDemolish, that takes care of the click response for the demolish mouse context, and make it call either the removeConnector or the removeModule method as appropriate when a click occurs, as the Inspect tool handler does. If a click does not fall upon either a module or a connector reset the mouse context to 'inspect.'
+
+### 5. Find how the animation for the jackhammer was done for the 'resource' mouse context and make a simlar, but simpler animation (Mouse Shadow??) for the 'demolish' mouse context. A simple red X with the cursor's point at its center will suffice for now.
 
 ## Chapter X: In-Game Notifications
 
