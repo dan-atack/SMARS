@@ -154,6 +154,18 @@ export default class MouseShadow {
         p5.quad(x - 4, y + tip - 12, x + 4, y + tip - 12, x + 2, y + tip - 2, x - 2, y + tip - 2);
     }
 
+    // Render method for Demolition mode: The RED X (replace with bulldozer in future iteration??)
+    renderDemolitionMode = (p5: P5) => {
+        const x1 = this._x - this._xOffset + constants.BLOCK_WIDTH;
+        const x2 = this._x - this._xOffset
+        const y1 = this._y;
+        const y2 = this._y + constants.BLOCK_WIDTH;
+        p5.stroke(constants.RED_ERROR);
+        p5.strokeWeight(4);
+        p5.line(x1, y1, x2, y2);
+        p5.line(x2, y1, x1, y2);
+    }
+
     render = (p5: P5, x: number, y: number, xOffset: number) => {
         this._xOffset = xOffset;
         p5.fill(this._color);
@@ -161,26 +173,33 @@ export default class MouseShadow {
         if (!this._locked) {
             this.setPosition(x, y);       // If the shadow is not locked, allow it to move
         }
-        // If the mouse is in inspect mode, show a little magnifying glass; otherwise show a rectangle
-        if (this._context === "inspect") {
-            const centerX = this._x - this._xOffset + constants.BLOCK_WIDTH / 2;
-            const centerY = this._y + constants.BLOCK_WIDTH / 2;
-            const rad = constants.BLOCK_WIDTH / 2;
-            p5.noFill();
-            p5.stroke(constants.GRAY_DARK);
-            p5.strokeWeight(5);
-            p5.ellipse(centerX, centerY, this._w + constants.BLOCK_WIDTH / 4);
-            p5.stroke(constants.GRAY_METEOR);
-            p5.strokeWeight(7);
-            p5.line(centerX + rad, centerY + rad, centerX + rad * 2, centerY + rad * 2);
-            p5.strokeWeight(2);
-            p5.stroke(constants.ALMOST_BLACK);
-            p5.ellipse(centerX, centerY, this._w + rad);
-            p5.ellipse(centerX, centerY, this._w);
-        } else if (this._context === "resource") {
-            this.renderJackhammer(p5);
-        } else {
-            p5.rect(this._x - this._xOffset, this._y, this._w, this._h);
-        }
+        // Display a different animation depending on which special mouse context is in use
+        switch (this._context) {
+            case "inspect":
+                const centerX = this._x - this._xOffset + constants.BLOCK_WIDTH / 2;
+                const centerY = this._y + constants.BLOCK_WIDTH / 2;
+                const rad = constants.BLOCK_WIDTH / 2;
+                p5.noFill();
+                p5.stroke(constants.GRAY_DARK);
+                p5.strokeWeight(5);
+                p5.ellipse(centerX, centerY, this._w + constants.BLOCK_WIDTH / 4);
+                p5.stroke(constants.GRAY_METEOR);
+                p5.strokeWeight(7);
+                p5.line(centerX + rad, centerY + rad, centerX + rad * 2, centerY + rad * 2);
+                p5.strokeWeight(2);
+                p5.stroke(constants.ALMOST_BLACK);
+                p5.ellipse(centerX, centerY, this._w + rad);
+                p5.ellipse(centerX, centerY, this._w);
+                break;
+            case "resource":
+                this.renderJackhammer(p5);
+                break;
+            case "demolish":
+                this.renderDemolitionMode(p5);
+                break;
+            default:
+                p5.rect(this._x - this._xOffset, this._y, this._w, this._h);        // Show a rectangle if no context is given
+        };
+        p5.fill(constants.EGGSHELL);
     }
 }

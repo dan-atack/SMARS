@@ -121,7 +121,7 @@ describe("mouseShadow", () => {
     })
 
     // Set Color (two cases)
-    test("Can set color based on validity test", () => {
+    test("Can set color based on validity", () => {
         mouseShadow.setColor(true);
         expect(mouseShadow._color).toBe("#0FFF13");
         mouseShadow.setColor(false);
