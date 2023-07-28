@@ -9,6 +9,7 @@ import { Resource } from "./economyData";
 import { Coords } from "./connector";
 import { MapZone } from "./map";
 import Map from "./map";
+import Population from "./population";
 
 export default class Infrastructure {
     // Infrastructure class types:
@@ -76,8 +77,22 @@ export default class Infrastructure {
         console.log("Removing module.");
     }
 
-    removeConnector = () => {
+    removeConnector = (connector: Connector, population: Population) => {
         console.log("Removing connector.");
+        const proceed = this.checkForConnectorRemoval(connector, population);
+        console.log(`Connector can ${proceed ? "" : "not"} be removed at this time.`);
+    }
+
+    checkForConnectorRemoval = (connector: Connector, population: Population) => {
+        let removable = true;
+        population._colonists.forEach((colonist) => {
+            // Check if the colonist's current action's building ID matches the ID of the connector, and if the colonist is currently climbing (and not just walking past)
+            if (colonist._data._currentAction?.buildingId === connector._id && colonist._data._currentAction?.type === "climb") {
+                console.log("Nope");
+                removable = false;   // Reject the removal if colonist is climbing the ladder, Monty
+            };
+        })
+        return removable;
     }
 
     // SECTION 3 - VALIDATING MODULE / CONNECTOR PLACEMENT
@@ -511,7 +526,12 @@ export default class Infrastructure {
         }
         // Render floors in dev mode only:
         if (process.env.ENVIRONMENT === "dev" || process.env.ENVIRONMENT === "local_dev") {
-            this._data._floors.forEach((floor) => floor.render(p5, this._horizontalOffset));
+            this._data._floors.forEach((floor) => {
+                // Only render floors that are on-screen
+                if (floor._rightSide <= rightEdge || floor._leftSide >= leftEdge) {
+                    floor.render(p5, this._horizontalOffset);
+                }
+            });
         }
         p5.strokeWeight(2);
         p5.stroke(0);

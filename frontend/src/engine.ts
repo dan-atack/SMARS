@@ -596,9 +596,11 @@ export default class Engine extends View {
     }
 
     handleDemolish = (coords: Coords) => {
-        if (this._infrastructure.getConnectorFromCoords(coords)) {          // First, check for Connectors
-            this._infrastructure.removeConnector()
-        } else if (this._infrastructure.getModuleFromCoords(coords)) {      // Then, check for Modules
+        const con = this._infrastructure.getConnectorFromCoords(coords);
+        const mod = this._infrastructure.getModuleFromCoords(coords)
+        if (con) {          // First, check for Connectors
+            this._infrastructure.removeConnector(con, this._population)
+        } else if (mod) {      // Then, check for Modules
             this._infrastructure.removeModule();
         } else {
             this.setMouseContext("inspect");        // Revert mouse context to 'inspect' if click is not on a structure

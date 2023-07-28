@@ -1,6 +1,7 @@
 import Infrastructure from "../src/infrastructure";
 import InfrastructureData from "../src/infrastructureData";
 import Map from "../src/map";
+import Population from "../src/population";
 import { ConnectorInfo, ModuleInfo } from "../src/server_functions";
 
 // TEST DATA
@@ -210,6 +211,14 @@ describe("Infrastructure base class", () => {
     infra._data = new InfrastructureData();  // Necessary... for now
     infra._data.setup(mockography.length);                  // Setup Infra data with the width of the 'map' being used
     
+    // Reset function for easy clearing of the stage from previous tests
+    const reset = () => {
+        infra._modules = [];
+        infra._connectors = [];
+        infra._data = new InfrastructureData();  // Necessary... for now
+        infra._data.setup(mockography.length);
+    }
+
     const mockMap = new Map();
 
     test("Can add new modules", () => {
@@ -424,9 +433,7 @@ describe("Infrastructure base class", () => {
 
     test("resolveResourceStoragePushes sends production/power outputs to available Storage class modules", () => {
         // Setup test conditions - NEW POLICY: WIPE ALL EXISTING STRUCTURES AT START OF EACH TEST
-        infra._modules = [];
-        infra._data = new InfrastructureData();  // Necessary... for now
-        infra._data.setup(mockography.length);
+        reset();
         // Add 2 solar panels, a battery, a hydroponics bay and a storage room
         infra.addModule(4, 25, solarPanelInfo, mockography, zonesData, 1000);
         infra.addModule(7, 25, solarPanelInfo, mockography, zonesData, 1001);
@@ -451,6 +458,34 @@ describe("Infrastructure base class", () => {
         expect(infra._modules[2]._resources[0]).toStrictEqual(["power", 200]);  // From solar panels
         expect(infra._modules[3]._resources[2]).toStrictEqual(["food", 0]),     // Pushed to storage room
         expect(infra._modules[4]._resources[1]).toStrictEqual(["food", 100]);   // From hydro pod
+    })
+
+    test("checkForConnectorRemoval checks if a colonist is climbing a ladder and returns false if so or true otherwise", () => {
+        reset();
+        // Setup: Create two modules in a stack with a ladder connecting the second floor to the ground
+        infra.addModule(0, 25, hydroponicsModuleData, mockography, zonesData, 1001);
+        infra.addModule(0, 22, hydroponicsModuleData, mockography, zonesData, 1002);
+        infra.addConnector({ x: 1, y: 22 }, { x: 1, y: 25 }, ladderData, mockMap, 1003);
+        // Situation 1: Colonist is not overlapping elevator and not climbing - allow removal
+        let pop = new Population();
+        pop.addColonist(2, 25);
+        pop._colonists[0]._data._currentAction = { type: "move", coords: { x: 1, y: 1 }, duration: 0, buildingId: 0 };
+        expect(infra.checkForConnectorRemoval(infra._connectors[0], pop)).toBe(true);
+        // Situation 2: Colonist is overlapping the elevator but not climbing - allow removal
+        let pop2 = new Population();
+        pop2.addColonist(1, 24);
+        pop2._colonists[0]._data._currentAction = { type: "move", coords: { x: 1, y: 1 }, duration: 0, buildingId: 0 };
+        expect(infra.checkForConnectorRemoval(infra._connectors[0], pop2)).toBe(true);
+        // Situation 3: Colonist is climbing but not overlapping the elevator - allow removal
+        let pop3 = new Population();
+        pop3.addColonist(0, 24);
+        pop3._colonists[0]._data._currentAction = { type: "climb", coords: { x: 1, y: 1 }, duration: 0, buildingId: 1004 };
+        expect(infra.checkForConnectorRemoval(infra._connectors[0], pop3)).toBe(true);
+        // Situation 4: Colonist is overlapping the elevator and climbing - DON NOT allow removal
+        let pop4 = new Population();
+        pop4.addColonist(1, 24);
+        pop4._colonists[0]._data._currentAction = { type: "climb", coords: { x: 1, y: 1 }, duration: 0, buildingId: 1003 };
+        expect(infra.checkForConnectorRemoval(infra._connectors[0], pop4)).toBe(false);
     })
 
 })
