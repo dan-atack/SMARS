@@ -1,4 +1,5 @@
 // The Floor represents a single walkable surface within the base, and accompanying information about the modules that comprise it
+import P5 from "p5";
 import { MapZone } from "./map";
 import { constants } from "./constants";
 
@@ -92,4 +93,12 @@ export default class Floor {
     }
 
     // TODO: Add removal functions for Modules and Connectors
+
+    render = (p5: P5, xOffset: number) => {
+        const r = this._rightSide * constants.BLOCK_WIDTH - xOffset + constants.BLOCK_WIDTH;
+        const l = this._leftSide * constants.BLOCK_WIDTH - xOffset;
+        const e = this._elevation * constants.BLOCK_WIDTH + constants.BLOCK_WIDTH;
+        p5.stroke(this._id % 2 === 0 ? constants.GREEN_TERMINAL : constants.YELLOW_TEXT);
+        p5.line(r, e, l, e);
+    }
 }

@@ -3346,6 +3346,15 @@ Exit Criteria:
 
 5. Refactor the MouseShadow class to accept a string argument indicating the type of shadow it should make, and then create a switch case system that uses this argument to produce the various shapes for the different mouse shadow options. Update the mouse shadow unit tests once this is implemented, and add a new one for the 'demolish' context, then add a new shadow with a red 'X' for that context.
 
+### 6. Create a debugging tool (and potential feature down the line): Pass P5 to the Floor class, and make it a part of the Infra class's render function. Give the Floor class a render function, and have it draw a line with a random colour along its length at the floor's elevation level. You can then wrap the call to render floors in a conditional statement to only do it when the environment is "dev" or "local_dev".
+
+### 6. Add the Connector removal check, as its own Infra class method called checkForConnectorRemoval. Since it will only have one check to perform it will contain all of the logic for the following operation: Given the Population class and the Coordinates of a mouse click that was on a Connector, check each colonist to see if their current action is "climb" and their coordinates overlap with the Connector to be removed. If both of these checks are true, that means that a colonist is climbing the targeted ladder, in which case return a value of 'false' so that the remove method knows not to proceed. Develop a unit test for this checking method before writing its code. Test in game as well, by logging the check's outcome and clicking on various ladders. The method should also return true automatically for non-transport (e.g. conduit) type connectors.
+
+### 7. Once the Connector removal check method is ready, it's time to implement the actual removal of the structure. Within the shell of the removeConnector method, after it does the check, write the steps that need to happen to remove a connector:
+
+- Filter it out of the connectors list (Infra class)
+- Floors
+
 ## Chapter X: In-Game Notifications
 
 ### Difficulty Estimate: 3 (for developing a message collection system for Engine subclass components, and message prioritization and rendering for the Engine class)

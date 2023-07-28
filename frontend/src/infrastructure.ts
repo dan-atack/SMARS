@@ -509,6 +509,10 @@ export default class Infrastructure {
             p5.stroke(constants.GREEN_TERMINAL);
             p5.rect(x, y, w, h, 4, 4, 4, 4);
         }
+        // Render floors in dev mode only:
+        if (process.env.ENVIRONMENT === "dev" || process.env.ENVIRONMENT === "local_dev") {
+            this._data._floors.forEach((floor) => floor.render(p5, this._horizontalOffset));
+        }
         p5.strokeWeight(2);
         p5.stroke(0);
     }

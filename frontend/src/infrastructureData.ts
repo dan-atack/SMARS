@@ -6,7 +6,13 @@ import Floor from "./floor";
 import { constants } from "./constants";
 import { MapZone } from "./map";
 
-export type Elevator = { id: number, x: number, top: number, bottom: number, groundZoneId: string }
+export type Elevator = {
+    id: number,
+    x: number,
+    top: number,
+    bottom: number,
+    groundZoneId: string
+}
 
 export default class InfrastructureData {
     // Infra Data class is mostly a calculator for the Infra class to pass values to, so it stores very few of them itself
