@@ -19,15 +19,14 @@ export default class MouseShadow {
     _jackhammerTipPosition: number  // Current frame in the jackhammer animation
     _jackhammerMaxPosition: number  // Maximum frame number for jackhammer animation
     _jackhammerOutward: boolean          // Whether the jackhammer point is coming in or going out
-    _inspectMode: boolean;  // Used to indicate whether the mouse cursor should show the 'inspect tool' animation
-    _resourceMode: boolean; // Used to indicate whether the mouse cursor should show the 'jackhammer' animation
+    _context: string;       // Used to alternate between custom shadow animations (current options are 'inspect', 'resource' and 'demolish')
 
     // W and H are both given in terms of columns, not pixels; inspect and resource are for custom cursor animations
-    constructor(w: number, h: number, inspectMode?: boolean, resource?: boolean) {
+    // UPDATE: Instead of a new optional boolean for every additional mouse context, why not use a single 'context' string and then feed that into a switch case block?
+    constructor(w: number, h: number, context?: string) {
         this._x = 0;    // No inputs are given to construct a mouse shadow; only needed for rendering
         this._y = 0;
-        this._inspectMode = inspectMode || false;   // Unless provided, assume the mouse is not in inspect mode
-        this._resourceMode = resource || false;     // Unless provided, assume the mouse is not in jackhammer mode
+        this._context = context || "";              // Unless provided, assume the mouse shadow has no special context
         this._w = w * constants.BLOCK_WIDTH;        // All values are in terms of pixels
         this._h = h * constants.BLOCK_WIDTH;
         this._color = constants.BLUEGREEN_CRYSTAL;
@@ -163,7 +162,7 @@ export default class MouseShadow {
             this.setPosition(x, y);       // If the shadow is not locked, allow it to move
         }
         // If the mouse is in inspect mode, show a little magnifying glass; otherwise show a rectangle
-        if (this._inspectMode) {
+        if (this._context === "inspect") {
             const centerX = this._x - this._xOffset + constants.BLOCK_WIDTH / 2;
             const centerY = this._y + constants.BLOCK_WIDTH / 2;
             const rad = constants.BLOCK_WIDTH / 2;
@@ -178,7 +177,7 @@ export default class MouseShadow {
             p5.stroke(constants.ALMOST_BLACK);
             p5.ellipse(centerX, centerY, this._w + rad);
             p5.ellipse(centerX, centerY, this._w);
-        } else if (this._resourceMode) {
+        } else if (this._context === "resource") {
             this.renderJackhammer(p5);
         } else {
             p5.rect(this._x - this._xOffset, this._y, this._w, this._h);

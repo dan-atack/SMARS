@@ -445,10 +445,13 @@ export default class Engine extends View {
         this._scrollingRight = false;
     }
 
+    // MOUSE SHADOW CREATION
+
+    // Creates the mouse shadows for modules/connectors
     createMouseShadow = () => {
         const w = this.selectedBuilding?.width || constants.BLOCK_WIDTH;
         let h = this.selectedBuilding?.width || constants.BLOCK_WIDTH;
-        // If structure is a module, find its height parameter; otherwise just use its height twice
+        // If structure is a module, find its height parameter; otherwise just use its width twice
         if (this.selectedBuilding != null && this._infrastructure._data.isModule(this.selectedBuilding)) {
             h = this.selectedBuilding.height;
         }
@@ -456,15 +459,15 @@ export default class Engine extends View {
     }
 
     createInspectToolMouseShadow = () => {
-        this._mouseShadow = new MouseShadow(1, 1, true);
+        this._mouseShadow = new MouseShadow(1, 1, "inspect");
     }
 
     createDemolitionMouseShadow = () => {
-        this._mouseShadow = new MouseShadow(30, 30)
+        this._mouseShadow = new MouseShadow(1, 1);
     }
 
     createJackhammerMouseShadow = () => {
-        this._mouseShadow = new MouseShadow(1, 1, false, true);
+        this._mouseShadow = new MouseShadow(1, 1, "resource");
     }
 
     destroyMouseShadow = () => {
@@ -526,7 +529,7 @@ export default class Engine extends View {
         // Then check for demolition mode
         if (this.mouseContext === "demolish") {
             this.setSidebarSelectedButton();
-            console.log("Demolition man.")
+            this.createDemolitionMouseShadow();
         }
         // Last, check if the mouse context has been set to 'inspect' and tell it to do the magnifying glass image if so
         if (this.mouseContext === "inspect") {
