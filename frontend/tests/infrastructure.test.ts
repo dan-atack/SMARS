@@ -529,4 +529,31 @@ describe("Infrastructure base class", () => {
         expect(pop._colonists[0]._data._currentGoal).toBe("");
     })
 
+    test("checkForModulesAbove specifically checks to see if any other module has any columns that are above the module being removed", () => {
+        reset();
+        // Setup: Two modules, one stacked on top of the other
+        // Attempting to remove the bottom one first is not allowed, but removing the top one is
+        infra.addModule(0, 25, hydroponicsModuleData, mockography, zonesData, 1001);
+        infra.addModule(0, 22, hydroponicsModuleData, mockography, zonesData, 1002);
+        const bottomFloor = infra._modules[0];
+        const topFloor = infra._modules[1];
+        expect(infra.checkForModulesAbove(bottomFloor)).toBe(false);    // Returns false if any modules are detected above (false = halts removal action)
+        expect(infra.checkForModulesAbove(topFloor)).toBe(true);        // Returns true if no modules are detected above (true = all clear for removal)
+        // Advanced: Composite structure - A Pyramid in which only the summit (1008), and one other local peak (1002), can be removed from the stack
+        infra.addModule(3, 25, hydroponicsModuleData, mockography, zonesData, 1003);
+        infra.addModule(6, 25, hydroponicsModuleData, mockography, zonesData, 1004);
+        infra.addModule(9, 25, hydroponicsModuleData, mockography, zonesData, 1005);
+        infra.addModule(4, 22, hydroponicsModuleData, mockography, zonesData, 1006);
+        infra.addModule(7, 22, hydroponicsModuleData, mockography, zonesData, 1007);
+        infra.addModule(5, 19, hydroponicsModuleData, mockography, zonesData, 1008);
+        expect(infra.checkForModulesAbove(infra._modules[0])).toBe(false);
+        expect(infra.checkForModulesAbove(infra._modules[1])).toBe(true);       // Local peak
+        expect(infra.checkForModulesAbove(infra._modules[2])).toBe(false);
+        expect(infra.checkForModulesAbove(infra._modules[3])).toBe(false);
+        expect(infra.checkForModulesAbove(infra._modules[4])).toBe(false);
+        expect(infra.checkForModulesAbove(infra._modules[5])).toBe(false);
+        expect(infra.checkForModulesAbove(infra._modules[6])).toBe(false);
+        expect(infra.checkForModulesAbove(infra._modules[7])).toBe(true);       // Top of the pyramid      
+    })
+
 })

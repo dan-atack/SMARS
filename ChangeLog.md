@@ -3359,14 +3359,25 @@ Exit Criteria:
 - Filter it out of the elevators list (Infra Data class)
 - Reset colonist goals if they were going to use it (Population class)
 
-### 10. Add a new field to the Infra class, essentialStructures. It should be a list of strings, and by default will contain the name of the comms array ("Comms Antenna").
+10. Add a new field to the Infra class, essentialStructures. It should be a list of strings, and by default will contain the name of the comms array ("Comms Antenna").
 
 ### 11. Now begin with the Module removal method, starting with its hard checks method: doHardChecksForModuleRemoval. Since it will have to perform multiple sub-checks, also create a method for each of these (with its own unit tests; the top-level method should also have a unit test as well - developed prior to the actual code, naturally):
 
 - Check for modules above
-- Check for transport connectors
-- Check whether module is occupied (this one can be done inline)
+- Check whether module is occupied by colonists (this one can be done inline)
 - Check whether module is considered an 'essential' structure (can also be done inline)
+
+### 12. Next, once the hard checks are working out as desired, implement the lesser, softChecksForModuleRemoval. This will just be a single check in the end, to see if the module contains any resources. It will still be its own method, of course, in case we wish to elaborate on the conditions in the future, but it should be a pretty quick and easy unit test, at least. If it holds any resources at all, give the notification (and then go ahead anyway).
+
+### 13. Put it all together: if the hard checks pass, and the soft checks do their thing (either printing a message or doing nothing at all) then execute the module's removal:
+
+- First, if it does have resources, attempt to push them to other modules wherever possible
+- Then, filter it out of the modules list (Infra class)
+- Update the base volume to remove its coordinates (Infra Data class)
+- Update the Floors list:
+- - If the module was on its own floor, delete that floor
+- - If the module was on the edge of a floor with at least one other module, adjust that floor's appropriate edge and remove its ID from the floor's module ID list
+- - If the module was in the middle of a floor with another module to either side, remove it, and all the modules to its right from the original floor and adjust that floor's edge; then, place all of the other modules that were removed (those to the right of the removed module) into a NEW floor.
 
 ## Chapter X: In-Game Notifications
 

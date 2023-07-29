@@ -601,7 +601,7 @@ export default class Engine extends View {
         if (con) {          // First, check for Connectors
             this._infrastructure.removeConnector(con, this._population)
         } else if (mod) {      // Then, check for Modules
-            this._infrastructure.removeModule();
+            this._infrastructure.removeModule(mod, this._population);
         } else {
             this.setMouseContext("inspect");        // Revert mouse context to 'inspect' if click is not on a structure
         }

@@ -16,9 +16,10 @@ export default class Infrastructure {
     _data: InfrastructureData;  // Unlike other data classes, Infra data will not hold the modules/connectors lists themselves, but will be passed data about their coordinates, etc so that it can perform checks on potential locations' validity
     _modules: Module[]; 
     _connectors: Connector[];
-    _horizontalOffset: number;  // Value is in pixels
+    _horizontalOffset: number;                  // Value is in pixels
     _highlightedModule: Module | null;
     _highlightedConnector: Connector | null;    // Infra class controls structure highlighting
+    _essentialStructures: string[];             // Essential structures is a list of names of modules that cannot be removed by the player
 
     // Map width is passed to the data class at construction to help with base volume calculations
     constructor() {
@@ -28,6 +29,9 @@ export default class Infrastructure {
         this._horizontalOffset = 0;
         this._highlightedModule = null;  // By default no structures are highlighted
         this._highlightedConnector = null;
+        this._essentialStructures = [
+            "Comms Antenna"
+        ]
     }
 
     setup = (mapWidth: number) => {
@@ -73,12 +77,14 @@ export default class Infrastructure {
 
     // SECTION 2 - REMOVING MODULES AND CONNECTORS
 
-    removeModule = () => {
+    removeModule = (mod: Module, population: Population) => {
         console.log("Removing module.");
+        // STAGE ONE: Hard Checks
+        this.hardChecksForModuleRemoval(mod, population);
     }
 
     removeConnector = (connector: Connector, population: Population) => {
-        console.log(`Removing connector ${connector._id}.`);
+        // console.log(`Removing connector ${connector._id}.`);
         const proceed = this.checkForConnectorRemoval(connector, population);
         if (proceed) {
             // Remove connector from main connectors list
@@ -108,6 +114,22 @@ export default class Infrastructure {
                 removable = false;   // Reject the removal if colonist is climbing the ladder, Monty
             };
         })
+        return removable;
+    }
+
+    hardChecksForModuleRemoval = (mod: Module, pop: Population) => {
+        let removable = true;
+        // Perform checks individually
+        const notLoadBearing = this.checkForModulesAbove(mod);
+    }
+
+    // Specifically handles the question of whether there is a module above the one being removed
+    checkForModulesAbove = (mod: Module) => {
+        let removable = true;
+        const area = this._data.calculateModuleArea(mod._moduleInfo, mod._x, mod._y);
+        const { floor, footprint } = this._data.calculateModuleFootprint(area);
+        console.log(floor);
+        console.log(footprint);
         return removable;
     }
 
