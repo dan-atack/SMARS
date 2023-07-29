@@ -78,9 +78,25 @@ export default class Infrastructure {
     }
 
     removeConnector = (connector: Connector, population: Population) => {
-        console.log("Removing connector.");
+        console.log(`Removing connector ${connector._id}.`);
         const proceed = this.checkForConnectorRemoval(connector, population);
-        console.log(`Connector can ${proceed ? "" : "not"} be removed at this time.`);
+        if (proceed) {
+            // Remove connector from main connectors list
+            this._connectors = this._connectors.filter((con) => con._id !== connector._id);
+            // Remove connector ID from floors' connector ID lists
+            this._data._floors.forEach((floor) => {
+                floor._connectors = floor._connectors.filter((id) => id !== connector._id);
+            })
+            // Remove connector ID from data subclass's elevators list
+            this._data._elevators = this._data._elevators.filter((elev) => elev.id !== connector._id);
+            // Notify population class of the removal
+            population.resolveGoalsWhenStructureRemoved(connector._id);
+            return true;    // Return the success status of the removal request
+        } else {
+            // TODO: Upgrade this to a visible in-game notification
+            console.log(`Notification: Unable to remove connector ${connector._id} at this time. Please wait for colonists to disembark before removing connection infrastructure.`);
+            return false;    // Return the success status of the removal request
+        }
     }
 
     checkForConnectorRemoval = (connector: Connector, population: Population) => {

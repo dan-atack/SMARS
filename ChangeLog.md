@@ -3352,13 +3352,12 @@ Exit Criteria:
 
 8. Before adding the connector removal logic, create a new Population class method to update colonists' action stacks when a structure (connector or module) is removed: Have it check each colonist's action stack and current action, and if it finds the ID of the structure being removed, immediately resolve that colonist's current goal, allowing them to recalculate their course of action. We'll need to validate this with a unit test, naturally, and do it again in the field as soon as the removal feature is implemented.
 
-### 7. Once the Connector removal check method is ready, it's time to implement the actual removal of the structure. Within the shell of the removeConnector method, after it does the check, do each of the following steps to fully remove the connector (add unit tests before coding solution):
+9. Once the Connector removal check method is ready, it's time to implement the actual removal of the structure. Within the shell of the removeConnector method, after it does the check, do each of the following steps to fully remove the connector (add unit tests before coding solution):
 
 - Filter it out of the connectors list (Infra class)
 - Connector ID is removed from each Floor's connectors array (Infra Data / Floor classes)
 - Filter it out of the elevators list (Infra Data class)
-
-### 9. Validate connector removal in-game in as many situations as you can devise.
+- Reset colonist goals if they were going to use it (Population class)
 
 ### 10. Add a new field to the Infra class, essentialStructures. It should be a list of strings, and by default will contain the name of the comms array ("Comms Antenna").
 

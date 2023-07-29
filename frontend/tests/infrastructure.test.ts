@@ -488,4 +488,45 @@ describe("Infrastructure base class", () => {
         expect(infra.checkForConnectorRemoval(infra._connectors[0], pop4)).toBe(false);
     })
 
+    test("removeConnector removes all traces of a connector from the game including infra data/floors", () => {
+        // Setup: Actually keep the same setup as the previous test, but add another connector beside the first one
+        infra.addConnector({ x: 2, y: 22 }, { x: 2, y: 25 }, ladderData, mockMap, 1004);
+        // Also add a population class, with a guy as well, with an action to be cancelled just for good measure
+        let pop = new Population();
+        pop.addColonist(2, 25);
+        pop._colonists[0]._data._currentGoal = "farm";
+        pop._colonists[0]._data._currentAction = {
+            type: "farm",
+            coords: { x: 1, y: 22 },
+            duration: 22,
+            buildingId: 1001
+        };
+        pop._colonists[0]._data._actionStack = [{
+            type: "climb",
+            coords: { x: 1, y: 22 },
+            duration: 0,
+            buildingId: 1003
+        }]
+        // Validate pre-conditions
+        expect(infra._connectors.length).toBe(2);
+        expect(infra._data._floors.length).toBe(2);
+        // TEST ACTION: Remove the first connector (the one from the previous test... helloooo best practices lol)
+        const con = infra.getConnectorFromCoords({ x: 1, y: 23 });
+        if (con !== null) {
+            expect(infra.removeConnector(con, pop)).toBe(true); // The function returns its success status based on whether it was allowed to make the removal
+        } else {
+            throw new Error("ERROR: TEST ARTIFACT NOT FOUND FOR CONNECTOR REMOVAL TEST.");
+        }
+        // Ensure that the removed connector is not included in the top level Connectors list
+        expect(infra._connectors.length).toBe(1);
+        expect(infra._connectors.filter((connector) => connector._id === con._id).length).toBe(0);
+        // Ensure that no floor contains the ID of the removed connector
+        expect(infra._data._floors.filter((floor) => floor._connectors.includes(con._id)).length).toBe(0);
+        // Ensure that the floor data 'elevators' list does not contain any elements whose ID matches that of the removed connector
+        expect(infra._data._elevators.filter((el) => el.id === con._id).length).toBe(0);
+        // Ensure population has had their goals reset
+        expect(pop._colonists[0]._data._currentAction).toBe(null);
+        expect(pop._colonists[0]._data._currentGoal).toBe("");
+    })
+
 })
