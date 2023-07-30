@@ -3363,9 +3363,9 @@ Exit Criteria:
 
 ### 11. Now begin with the Module removal method, starting with its hard checks method: doHardChecksForModuleRemoval. Since it will have to perform multiple sub-checks, also create a method for each of these (with its own unit tests; the top-level method should also have a unit test as well - developed prior to the actual code, naturally):
 
-- Check for modules above
-- Check whether module is occupied by colonists (this one can be done inline)
-- Check whether module is considered an 'essential' structure (can also be done inline)
+- [DONE] Check for modules above
+- [DONE] Check whether module is occupied by colonists OR forms part of a floor that a colonist is currently walking on
+- [DONE] Check whether module is considered an 'essential' structure (can also be done inline)
 
 ### 12. Next, once the hard checks are working out as desired, implement the lesser, softChecksForModuleRemoval. This will just be a single check in the end, to see if the module contains any resources. It will still be its own method, of course, in case we wish to elaborate on the conditions in the future, but it should be a pretty quick and easy unit test, at least. If it holds any resources at all, give the notification (and then go ahead anyway).
 

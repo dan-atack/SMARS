@@ -77,14 +77,16 @@ export default class Infrastructure {
 
     // SECTION 2 - REMOVING MODULES AND CONNECTORS
 
+
+    // SECTION 2A: Top level removal methods
+
     removeModule = (mod: Module, population: Population) => {
-        console.log("Removing module.");
         // STAGE ONE: Hard Checks
+        const removable = this.hardChecksForModuleRemoval(mod, population);
+        console.log(removable);
         // Get module's area and footprint data for the removal process
         const area = this._data.calculateModuleArea(mod._moduleInfo, mod._x, mod._y);
         const { floor, footprint } = this._data.calculateModuleFootprint(area);
-        this.hardChecksForModuleRemoval(mod, population);
-        
     }
 
     removeConnector = (connector: Connector, population: Population) => {
@@ -109,6 +111,8 @@ export default class Infrastructure {
         }
     }
 
+    // SECTION 2B - Hard checks for connector/module removal
+
     checkForConnectorRemoval = (connector: Connector, population: Population) => {
         let removable = true;
         population._colonists.forEach((colonist) => {
@@ -121,9 +125,17 @@ export default class Infrastructure {
     }
 
     hardChecksForModuleRemoval = (mod: Module, pop: Population) => {
-        let removable = true;
         // Perform checks individually - a value of 'true' means the check was passed (no obstruction)
         const notLoadBearing = this.checkForModulesAbove(mod);
+        const nonEssential = !(this._essentialStructures.includes(mod._moduleInfo.name));
+        const notOccupied = this.checkForColonistOccupancy(mod, pop);
+        if (notLoadBearing && nonEssential && notOccupied) {
+            return true;    // If all of the checks are passed, give the go-ahead to the top-level removal function
+        } else {
+            // If any checks fail, tell the top-level removal function not to proceed (and prepare a notification to show to the player)
+            console.log(`The following removal checks failed for module ${mod._id}:\n${notLoadBearing === false ? "Structure above detected\n" : ""}${nonEssential === false ? "Essential structure\n" : ""}${notOccupied === false ? "Structure occupied" : ""}`);
+            return false;
+        }
     }
 
     // Specifically handles the question of whether there is a module above the one being removed
@@ -140,11 +152,31 @@ export default class Infrastructure {
             const right = m._x + m._width;
             if (left < modRight && right > modLeft) {
                 removable = false;
-                // Keep this to use as a warning message
-                console.log(`Notification: Module ${m._id} is supported by the target module (${mod._id})`);
             }
         })
         return removable;
+    }
+
+    // This is a bit more involved than just checking if a module has crew present, as we also need to see if a colonist is walking on the floor provided by a module
+    checkForColonistOccupancy = (mod: Module, pop: Population) => {
+        let removable = true;
+        if (mod._crewPresent.length !== 0) removable = false;   // Check for basic occupancy - if occupied, don't allow removal
+        // Advanced check: If the module is on a non-ground floor and a colonist is in front of it, don't allow removal
+        const floor = this._data._floors.find((fl) => fl._modules.includes(mod._id));
+        if (floor && floor._groundFloorZones.length === 0) {        // Only do this check for non-ground floors
+            const colonistsOnFloor = pop._colonists.filter((col) => col._data._standingOnId === floor._id);
+            colonistsOnFloor.forEach((col) => {
+                if (col._data._x >= mod._x || col._data._x < mod._x + mod._width) removable = false;    // Do not allow removal if colonist is in front of the module
+            })
+        }
+        return removable;
+    }
+
+    // SECTION 2C - Soft checks for module removals
+
+    // Issue a warning if the module is on an occupied, non-ground floor and is the only one with transport connected (such that removing it would strand a colonist)
+    checkForOnlyTransport = (mod: Module) => {
+
     }
 
     // SECTION 3 - VALIDATING MODULE / CONNECTOR PLACEMENT

@@ -556,4 +556,27 @@ describe("Infrastructure base class", () => {
         expect(infra.checkForModulesAbove(infra._modules[7])).toBe(true);       // Top of the pyramid      
     })
 
+    test("checkForColonistOccupancy checks if a module has colonists inside, or if it forms part of the floor they are currently walking on", () => {
+        reset();
+        // Setup: Two modules, one stacked on top of the other, and two colonists (one per module)
+        infra.addModule(0, 25, hydroponicsModuleData, mockography, zonesData, 1001);
+        infra.addModule(0, 22, hydroponicsModuleData, mockography, zonesData, 1002);
+        const pop = new Population();
+        pop.addColonist(0, 26); // Place the first colonist on the ground in front of the first module
+        // TEST ONE: Removal is blocked if a colonist is punched in to a module
+        infra._modules[0].punchIn(pop._colonists[0]._data._id);
+        expect(infra.checkForColonistOccupancy(infra._modules[0],  pop)).toBe(false);   // Cannot remove a module when there is a colonist inside
+        infra._modules[0].punchOut(pop._colonists[0]._data._id);
+        expect(infra.checkForColonistOccupancy(infra._modules[0],  pop)).toBe(true);    // Once the colonist is punched out the module can be removed
+        // TEST TWO: Removal is blocked if a colonist is not punched in, but is standing on the floor provided by the module to be removed
+        pop.addColonist(0, 23); // Place colonist on the second floor (head is one y position "lower" than the floor level, which is 24)
+        pop._colonists[1]._data.detectTerrainBeneath(mockMap, infra);
+        expect(pop._colonists[1]._data._standingOnId).toBe(1004);   // Validate test conditions - colonist is standing on the floor formed by the second module
+        expect(infra._modules[1]._crewPresent.length).toBe(0);      // Validate test conditions - colonist is NOT punched in to module 1002
+        expect(infra.checkForColonistOccupancy(infra._modules[1], pop)).toBe(false); // Cannot remove a module if it is on a non-ground floor and a colonist is standing in front of it
+        pop._colonists[1]._data._y = 26;                            // Now relocate the colonist to the other floor and try again
+        pop._colonists[1]._data.detectTerrainBeneath(mockMap, infra);
+        expect(infra.checkForColonistOccupancy(infra._modules[1], pop)).toBe(true); // Once the colonist is no longer standing on the module's floor, it can be removed
+    })
+
 })
