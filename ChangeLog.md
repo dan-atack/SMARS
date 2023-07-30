@@ -3367,14 +3367,14 @@ Exit Criteria:
 - [DONE] Check whether module is occupied by colonists OR forms part of a floor that a colonist is currently walking on
 - [DONE] Check whether module is considered an 'essential' structure (can also be done inline)
 
-### 12. Next, once the hard checks are working out as desired, implement the lesser, softChecksForModuleRemoval. There will be two of these checks, each of which will require its own method and unit test:
+12. Next, once the hard checks are working out as desired, implement the lesser, softChecksForModuleRemoval. There will be two of these checks, each of which will require its own method and unit test:
 
 - [DONE] Check if the module is empty
-- Check if the module's removal will strand any colonists on the floor
+- [DONE] Check if the module's removal will strand any colonists on the floor
 
 ### 13. Put it all together: if the hard checks pass, and the soft checks do their thing (either printing a message or doing nothing at all) then execute the module's removal:
 
-- First, if it does have resources, attempt to push them to other modules wherever possible
+- First, if it does have resources, attempt to push them to other modules wherever possible (Infra class)
 - Then, filter it out of the modules list (Infra class)
 - Update the base volume to remove its coordinates (Infra Data class)
 - Update the Floors list:

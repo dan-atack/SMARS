@@ -83,13 +83,14 @@ export default class Infrastructure {
     removeModule = (mod: Module, population: Population) => {
         // STAGE ONE: Hard Checks
         const removable = this.hardChecksForModuleRemoval(mod, population);
-        const noWarnings = this.softChecksForModuleRemoval(mod, population);
-        console.log(`Module ${mod._id} removal summary:`);
-        console.log(`Removable: ${removable}`);
-        console.log(`No Warnings: ${noWarnings}`);
-        // Get module's area and footprint data for the removal process
-        const area = this._data.calculateModuleArea(mod._moduleInfo, mod._x, mod._y);
-        const { floor, footprint } = this._data.calculateModuleFootprint(area);
+        if (removable) {
+            console.log(`Removing module ${mod._id}`);
+            this.softChecksForModuleRemoval(mod, population);   // Only bother with the 'soft' checks if the removal is allowed
+            // Get module's area and footprint data for the removal process
+            const area = this._data.calculateModuleArea(mod._moduleInfo, mod._x, mod._y);
+            const { floor, footprint } = this._data.calculateModuleFootprint(area);
+        }
+        
     }
 
     removeConnector = (connector: Connector, population: Population) => {
@@ -136,7 +137,7 @@ export default class Infrastructure {
             return true;    // If all of the checks are passed, give the go-ahead to the top-level removal function
         } else {
             // If any checks fail, tell the top-level removal function not to proceed (and prepare a notification to show to the player)
-            console.log(`Notification: The following removal checks failed for module ${mod._id}:\n${notLoadBearing === false ? "Structure above detected\n" : ""}${nonEssential === false ? "Essential structure\n" : ""}${notOccupied === false ? "Structure occupied" : ""}`);
+            console.log(`Notification: Unable to remove module ${mod._id}:\n${notLoadBearing === false ? "- Module supports other structures\n" : ""}${nonEssential === false ? "- Module is Essential structure\n" : ""}${notOccupied === false ? "- Module is occupied" : ""}`);
             return false;
         }
     }
@@ -207,9 +208,9 @@ export default class Infrastructure {
         if (floor && floor._groundFloorZones.length === 0) {
             // Find out if there are colonists on the floor
             const occupied = pop._colonists.filter((col) => col._data._standingOnId === floor._id).length > 0;
-            // Find out if floor has only one connector attached AND that connector overlaps the targeted module
-            const overlap = this._data._elevators.filter((el) => floor._connectors.includes(el.id) && (el.x >= mod._x && el.x < mod._x + mod._width)).length === 1;
-            const onlyExit = floor._connectors.length === 1 && overlap;
+            // Find out if floor's only connectors overlap with the module (even if there are multiple connectors)
+            const overlapping = this._data._elevators.filter((el) => floor._connectors.includes(el.id) && (el.x >= mod._x && el.x < mod._x + mod._width)).length;
+            const onlyExit = floor._connectors.length === overlapping;
             if (occupied && onlyExit) {
                 allClear = false;
             }
