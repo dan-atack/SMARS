@@ -80,7 +80,11 @@ export default class Infrastructure {
     removeModule = (mod: Module, population: Population) => {
         console.log("Removing module.");
         // STAGE ONE: Hard Checks
+        // Get module's area and footprint data for the removal process
+        const area = this._data.calculateModuleArea(mod._moduleInfo, mod._x, mod._y);
+        const { floor, footprint } = this._data.calculateModuleFootprint(area);
         this.hardChecksForModuleRemoval(mod, population);
+        
     }
 
     removeConnector = (connector: Connector, population: Population) => {
@@ -110,7 +114,6 @@ export default class Infrastructure {
         population._colonists.forEach((colonist) => {
             // Check if the colonist's current action's building ID matches the ID of the connector, and if the colonist is currently climbing (and not just walking past)
             if (colonist._data._currentAction?.buildingId === connector._id && colonist._data._currentAction?.type === "climb") {
-                console.log("Nope");
                 removable = false;   // Reject the removal if colonist is climbing the ladder, Monty
             };
         })
@@ -119,17 +122,28 @@ export default class Infrastructure {
 
     hardChecksForModuleRemoval = (mod: Module, pop: Population) => {
         let removable = true;
-        // Perform checks individually
+        // Perform checks individually - a value of 'true' means the check was passed (no obstruction)
         const notLoadBearing = this.checkForModulesAbove(mod);
     }
 
     // Specifically handles the question of whether there is a module above the one being removed
     checkForModulesAbove = (mod: Module) => {
         let removable = true;
-        const area = this._data.calculateModuleArea(mod._moduleInfo, mod._x, mod._y);
-        const { floor, footprint } = this._data.calculateModuleFootprint(area);
-        console.log(floor);
-        console.log(footprint);
+        // Determine module left and right edges for convenience
+        const modLeft = mod._x;
+        const modRight = mod._x + mod._width;
+        // Get a list of other modules whose y value is lower (higher altitude) than this one
+        const modulesAbove = this._modules.filter((m) => m._y < mod._y);
+        modulesAbove.forEach((m) => {
+            // Using each module's x location and its width, find out if it overlaps the target module at any point
+            const left = m._x;
+            const right = m._x + m._width;
+            if (left < modRight && right > modLeft) {
+                removable = false;
+                // Keep this to use as a warning message
+                console.log(`Notification: Module ${m._id} is supported by the target module (${mod._id})`);
+            }
+        })
         return removable;
     }
 
