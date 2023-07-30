@@ -460,6 +460,8 @@ describe("Infrastructure base class", () => {
         expect(infra._modules[4]._resources[1]).toStrictEqual(["food", 100]);   // From hydro pod
     })
 
+    // REMOVING STRUCTURES
+
     test("checkForConnectorRemoval checks if a colonist is climbing a ladder and returns false if so or true otherwise", () => {
         reset();
         // Setup: Create two modules in a stack with a ladder connecting the second floor to the ground
@@ -529,7 +531,7 @@ describe("Infrastructure base class", () => {
         expect(pop._colonists[0]._data._currentGoal).toBe("");
     })
 
-    test("checkForModulesAbove specifically checks to see if any other module has any columns that are above the module being removed", () => {
+    test("checkForModulesAbove specifically checks to see if any other module has any columns that are above the module being removed (hard check)", () => {
         reset();
         // Setup: Two modules, one stacked on top of the other
         // Attempting to remove the bottom one first is not allowed, but removing the top one is
@@ -556,7 +558,7 @@ describe("Infrastructure base class", () => {
         expect(infra.checkForModulesAbove(infra._modules[7])).toBe(true);       // Top of the pyramid      
     })
 
-    test("checkForColonistOccupancy checks if a module has colonists inside, or if it forms part of the floor they are currently walking on", () => {
+    test("checkForColonistOccupancy checks if a module has colonists inside, or if it forms part of the floor they are currently walking on (hard check)", () => {
         reset();
         // Setup: Two modules, one stacked on top of the other, and two colonists (one per module)
         infra.addModule(0, 25, hydroponicsModuleData, mockography, zonesData, 1001);
@@ -577,6 +579,19 @@ describe("Infrastructure base class", () => {
         pop._colonists[1]._data._y = 26;                            // Now relocate the colonist to the other floor and try again
         pop._colonists[1]._data.detectTerrainBeneath(mockMap, infra);
         expect(infra.checkForColonistOccupancy(infra._modules[1], pop)).toBe(true); // Once the colonist is no longer standing on the module's floor, it can be removed
+    })
+
+    test("checkIfModuleHasResources will come up false if the module contains any resources, or true otherwise (soft check)", () => {
+        reset();
+        // Setup: One module, initially empty, then with a resource added
+        infra.addModule(0, 25, hydroponicsModuleData, mockography, zonesData, 1001);
+        expect(infra.checkIfModuleIsEmpty(infra._modules[0])).toBe(true);
+        infra.addResourcesToModule(1001, ["water", 1]);
+        expect(infra.checkIfModuleIsEmpty(infra._modules[0])).toBe(false);
+    })
+
+    test("checkModuleRemovalWillNotStrand sees if removing a module will cause a colonist to be stranded on the affected floor (soft check)", () => {
+        
     })
 
 })

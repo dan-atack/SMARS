@@ -83,7 +83,9 @@ export default class Infrastructure {
     removeModule = (mod: Module, population: Population) => {
         // STAGE ONE: Hard Checks
         const removable = this.hardChecksForModuleRemoval(mod, population);
-        console.log(removable);
+        const noWarnings = this.softChecksForModuleRemoval(mod, population);
+        console.log(`Removable: ${removable}`);
+        console.log(`No Warnings: ${noWarnings}`);
         // Get module's area and footprint data for the removal process
         const area = this._data.calculateModuleArea(mod._moduleInfo, mod._x, mod._y);
         const { floor, footprint } = this._data.calculateModuleFootprint(area);
@@ -133,7 +135,7 @@ export default class Infrastructure {
             return true;    // If all of the checks are passed, give the go-ahead to the top-level removal function
         } else {
             // If any checks fail, tell the top-level removal function not to proceed (and prepare a notification to show to the player)
-            console.log(`The following removal checks failed for module ${mod._id}:\n${notLoadBearing === false ? "Structure above detected\n" : ""}${nonEssential === false ? "Essential structure\n" : ""}${notOccupied === false ? "Structure occupied" : ""}`);
+            console.log(`Notification: The following removal checks failed for module ${mod._id}:\n${notLoadBearing === false ? "Structure above detected\n" : ""}${nonEssential === false ? "Essential structure\n" : ""}${notOccupied === false ? "Structure occupied" : ""}`);
             return false;
         }
     }
@@ -174,9 +176,35 @@ export default class Infrastructure {
 
     // SECTION 2C - Soft checks for module removals
 
-    // Issue a warning if the module is on an occupied, non-ground floor and is the only one with transport connected (such that removing it would strand a colonist)
-    checkForOnlyTransport = (mod: Module) => {
+    softChecksForModuleRemoval = (mod: Module, pop: Population) => {
+        const isEmpty = this.checkIfModuleIsEmpty(mod);
+        const willNotStrand = this.checkModuleRemovalWillNotStrand(mod, pop);
+        if (isEmpty && willNotStrand) {
+            console.log(`No additional warnings for module ${mod._id} removal.`);
+            return true;
+        } else {
+            console.log(`Notification: The following removal warnings were detected for module ${mod._id}:\n${isEmpty === false ? "Structure contains resources\n" : ""}${willNotStrand === false ? "Structure's removal will strand colonist/s\n" : ""}`);
+            return false;
+        }
+    }
 
+    checkIfModuleIsEmpty = (mod: Module) => {
+        const capacities = mod._resourceCapacity();
+        let isEmpty = true;   // Set to false if any of the resources in the module's capacity list has a quantity greater than 0
+        if (capacities.length > 0) {
+            capacities.forEach((res) => {
+                if (mod.getResourceQuantity(res) > 0) isEmpty = false;
+            })
+        }
+        return isEmpty;
+    }
+
+    // Issue a warning if the module is on an occupied, non-ground floor and is the only one with transport connected (such that removing it would strand a colonist)
+    checkModuleRemovalWillNotStrand = (mod: Module, pop: Population) => {
+        // Find out the floor the module is on
+        // Find out if there are colonists on the floor
+        // Find out if the floor has at least one connector that does not overlap with the module to be removed
+        return true;
     }
 
     // SECTION 3 - VALIDATING MODULE / CONNECTOR PLACEMENT
