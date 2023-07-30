@@ -16,7 +16,7 @@ export default class Floor {
     // To create a floor we need the floor's ID and elevation only; we can add its first module after construction by calling the add module method
     constructor(id: number, elevation: number) {
         this._id = id;
-        this._leftSide = 0;
+        this._leftSide = -1;        // Unique value of -1 is used to indicate that we have a new floor whose left side has not yet been set
         this._rightSide = 0;
         this._elevation = elevation;
         this._modules = [];
@@ -28,8 +28,8 @@ export default class Floor {
     updateFootprint = (footprint: number[]) => {
         // Ensure the footprint is well ordered:
         footprint.sort((a, b) => a - b);
-        // Update left side if the footprint is further left, or if it has not been set yet (value = 0)
-        if (footprint[0] < this._leftSide || this._leftSide === 0) {
+        // Update left side if the footprint is further left, or if it has not been set yet (value = -1)
+        if (footprint[0] < this._leftSide || this._leftSide === -1) {
             this._leftSide = footprint[0];
         }
         if (footprint[footprint.length - 1] > this._rightSide) {

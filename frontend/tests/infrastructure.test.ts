@@ -591,7 +591,18 @@ describe("Infrastructure base class", () => {
     })
 
     test("checkModuleRemovalWillNotStrand sees if removing a module will cause a colonist to be stranded on the affected floor (soft check)", () => {
-        
+        reset();
+        // Setup: Four modules forming a block, with a single ladder at the far left edge providing the only access to the second floor, and one colonist at the far right of that floor
+        infra.addModule(0, 25, hydroponicsModuleData, mockography, zonesData, 2001);
+        infra.addModule(3, 25, hydroponicsModuleData, mockography, zonesData, 2002);
+        infra.addModule(0, 22, hydroponicsModuleData, mockography, zonesData, 2003);
+        infra.addModule(3, 22, hydroponicsModuleData, mockography, zonesData, 2004);
+        infra.addConnector({ x: 5, y: 21 }, { x: 0, y: 25 }, ladderData, mockMap, 2005);
+        const pop = new Population();
+        pop.addColonist(1, 23);
+        pop._colonists[0]._data.detectTerrainBeneath(mockMap, infra);
+        // Validate test conditions: Colonist is on the second floor
+        expect(pop._colonists[0]._data._standingOnId).toBe(1005);
     })
 
 })
