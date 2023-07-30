@@ -3361,16 +3361,16 @@ Exit Criteria:
 
 10. Add a new field to the Infra class, essentialStructures. It should be a list of strings, and by default will contain the name of the comms array ("Comms Antenna").
 
-11. Now begin with the Module removal method, starting with its hard checks method: doHardChecksForModuleRemoval. Since it will have to perform multiple sub-checks, also create a method for each of these (with its own unit tests; the top-level method should also have a unit test as well - developed prior to the actual code, naturally):
+11. Now begin with the Module removal method, starting with its hard checks method: doHardChecksForModuleRemoval. Since it will have to perform multiple sub-checks, create a method for each of these (with its own unit test - developed prior to the actual code, naturally):
 
 - [DONE] Check for modules above
 - [DONE] Check whether module is occupied by colonists OR forms part of a floor that a colonist is currently walking on
 - [DONE] Check whether module is considered an 'essential' structure (can also be done inline)
 
-### 12. Next, once the hard checks are working out as desired, implement the lesser, softChecksForModuleRemoval. There will be two of these checks:
+### 12. Next, once the hard checks are working out as desired, implement the lesser, softChecksForModuleRemoval. There will be two of these checks, each of which will require its own method and unit test:
 
-- Check if the module contains any resources (inline)
-- Check if the module's removal will strand any colonists on the floor (dedicated method)
+- [DONE] Check if the module is empty
+- Check if the module's removal will strand any colonists on the floor
 
 ### 13. Put it all together: if the hard checks pass, and the soft checks do their thing (either printing a message or doing nothing at all) then execute the module's removal:
 

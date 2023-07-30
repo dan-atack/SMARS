@@ -84,6 +84,7 @@ export default class Infrastructure {
         // STAGE ONE: Hard Checks
         const removable = this.hardChecksForModuleRemoval(mod, population);
         const noWarnings = this.softChecksForModuleRemoval(mod, population);
+        console.log(`Module ${mod._id} removal summary:`);
         console.log(`Removable: ${removable}`);
         console.log(`No Warnings: ${noWarnings}`);
         // Get module's area and footprint data for the removal process
@@ -168,7 +169,7 @@ export default class Infrastructure {
         if (floor && floor._groundFloorZones.length === 0) {        // Only do this check for non-ground floors
             const colonistsOnFloor = pop._colonists.filter((col) => col._data._standingOnId === floor._id);
             colonistsOnFloor.forEach((col) => {
-                if (col._data._x >= mod._x || col._data._x < mod._x + mod._width) removable = false;    // Do not allow removal if colonist is in front of the module
+                if (col._data._x >= mod._x && col._data._x < mod._x + mod._width) removable = false;    // Do not allow removal if colonist is in front of the module
             })
         }
         return removable;
@@ -180,7 +181,6 @@ export default class Infrastructure {
         const isEmpty = this.checkIfModuleIsEmpty(mod);
         const willNotStrand = this.checkModuleRemovalWillNotStrand(mod, pop);
         if (isEmpty && willNotStrand) {
-            console.log(`No additional warnings for module ${mod._id} removal.`);
             return true;
         } else {
             console.log(`Notification: The following removal warnings were detected for module ${mod._id}:\n${isEmpty === false ? "Structure contains resources\n" : ""}${willNotStrand === false ? "Structure's removal will strand colonist/s\n" : ""}`);
@@ -201,10 +201,20 @@ export default class Infrastructure {
 
     // Issue a warning if the module is on an occupied, non-ground floor and is the only one with transport connected (such that removing it would strand a colonist)
     checkModuleRemovalWillNotStrand = (mod: Module, pop: Population) => {
-        // Find out the floor the module is on
-        // Find out if there are colonists on the floor
-        // Find out if the floor has at least one connector that does not overlap with the module to be removed
-        return true;
+        let allClear = true;
+        // Find out the floor the module is on, and if it is not on the ground, then proceed to the next level of checks
+        const floor = this._data._floors.find((fl) => fl._modules.includes(mod._id));
+        if (floor && floor._groundFloorZones.length === 0) {
+            // Find out if there are colonists on the floor
+            const occupied = pop._colonists.filter((col) => col._data._standingOnId === floor._id).length > 0;
+            // Find out if floor has only one connector attached AND that connector overlaps the targeted module
+            const overlap = this._data._elevators.filter((el) => floor._connectors.includes(el.id) && (el.x >= mod._x && el.x < mod._x + mod._width)).length === 1;
+            const onlyExit = floor._connectors.length === 1 && overlap;
+            if (occupied && onlyExit) {
+                allClear = false;
+            }
+        }
+        return allClear;
     }
 
     // SECTION 3 - VALIDATING MODULE / CONNECTOR PLACEMENT
