@@ -3374,8 +3374,8 @@ Exit Criteria:
 
 ### 13. Put it all together: if the hard checks pass, and the soft checks do their thing (either printing a message or doing nothing at all) then execute the module's removal:
 
-- First, if it does have resources, attempt to push them to other modules wherever possible (Infra class)
-- Then, filter it out of the modules list (Infra class)
+- [DONE] First, if it does have resources, attempt to push them to other modules wherever possible (Infra class)
+- [DONE] Then, filter it out of the modules list (Infra class)
 - Tell colonists not to use it anymore (Population class)
 - Update the base volume to remove its coordinates (Infra Data class)
 - Update the Floors list (Infra Data class):

@@ -6,7 +6,7 @@ import { ConnectorInfo, ModuleInfo } from "../src/server_functions";
 
 // TEST DATA
 
-const landerModuleInfo: ModuleInfo = { 
+const landerModuleInfo: ModuleInfo = {
     name: "Lander",
     width: 3,
     height: 2,
@@ -15,7 +15,7 @@ const landerModuleInfo: ModuleInfo = {
     columnStrength: 2,
     durability: 10,
     buildCosts: [
-        [ "money", 200000 ]
+        ["money", 200000]
     ],
     maintenanceCosts: [
         ["power", 1]
@@ -35,7 +35,7 @@ const storageModuleInfo: ModuleInfo = {
     pressurized: true,
     columnStrength: 10,
     durability: 100,
-    buildCosts:[
+    buildCosts: [
         ["money", 100000]
     ],  // money
     maintenanceCosts: [
@@ -59,7 +59,7 @@ const batteryModuleInfo: ModuleInfo = {
     pressurized: false,
     columnStrength: 10,
     durability: 100,
-    buildCosts:[
+    buildCosts: [
         ["money", 100000]
     ],
     maintenanceCosts: [],
@@ -78,7 +78,7 @@ const cantinaModuleInfo: ModuleInfo = {
     pressurized: true,
     columnStrength: 10,
     durability: 100,
-    buildCosts:[
+    buildCosts: [
         ["money", 100000]
     ],
     maintenanceCosts: [
@@ -101,7 +101,7 @@ const powerPlantInfo: ModuleInfo = {
     pressurized: false,
     columnStrength: 10,
     durability: 100,
-    buildCosts:[
+    buildCosts: [
         ["money", 1000000]
     ],
     maintenanceCosts: [],
@@ -190,7 +190,7 @@ const airVentData: ConnectorInfo = {
     type: "conduit",
     resourcesCarried: ["oxygen"],
     maxFlowRate: 1,
-    buildCosts:[
+    buildCosts: [
         ["money", 10000]
     ],
     maintenanceCosts: [],
@@ -206,11 +206,11 @@ const zonesData = [
 ]
 
 describe("Infrastructure base class", () => {
-    
+
     const infra = new Infrastructure();
     infra._data = new InfrastructureData();  // Necessary... for now
     infra._data.setup(mockography.length);                  // Setup Infra data with the width of the 'map' being used
-    
+
     // Reset function for easy clearing of the stage from previous tests
     const reset = () => {
         infra._modules = [];
@@ -232,13 +232,13 @@ describe("Infrastructure base class", () => {
     })
 
     test("Can provision a module with a resource", () => {
-        infra.addResourcesToModule(1000, [ "water", 500 ]);         // Should NOT be able to add water to a lander module
-        infra.addResourcesToModule(1001, [ "water", 500 ]);         // Should be able to add water to storage module
-        infra.addResourcesToModule(1002, [ "water", 1000000 ])      // Should only be able to fill up to max capacity
-        infra.addResourcesToModule(1003, [ "water", 500 ]);         // Provision the cantina with food and water for later tests
-        infra.addResourcesToModule(1003, [ "food", 500 ]);
+        infra.addResourcesToModule(1000, ["water", 500]);         // Should NOT be able to add water to a lander module
+        infra.addResourcesToModule(1001, ["water", 500]);         // Should be able to add water to storage module
+        infra.addResourcesToModule(1002, ["water", 1000000])      // Should only be able to fill up to max capacity
+        infra.addResourcesToModule(1003, ["water", 500]);         // Provision the cantina with food and water for later tests
+        infra.addResourcesToModule(1003, ["food", 500]);
         expect(infra._modules[0]._resources).toStrictEqual([
-            [ "power", 0 ]
+            ["power", 0]
         ]);
         expect(infra._modules[1]._resources).toStrictEqual([
             ["oxygen", 0],
@@ -258,7 +258,7 @@ describe("Infrastructure base class", () => {
             ["power", 0]
         ])
     })
-    
+
     // NOTE: There are now two varieties of this test, one with the optional 'lifeSupp' parameter, and one without
     test("Can find module/s with a particular resource (Life Support not specified)", () => {
         // All modules, except the Lander, should contain some water...
@@ -273,34 +273,34 @@ describe("Infrastructure base class", () => {
     test("Can find the module nearest to a set of coordinates", () => {
         const mods = infra.findModulesWithResource(["water", 10]);
         expect(mods.length).toBe(3);                                        // Three modules now contain water
-        expect(infra.findModuleNearestToLocation(mods, { x: 0, y: 10})).toBe(1001);     // Expect rightmost module to be nearest
-        expect(infra.findModuleNearestToLocation(mods, { x: 15, y: 10})).toBe(1002);    // Expect leftmost module to be nearest
+        expect(infra.findModuleNearestToLocation(mods, { x: 0, y: 10 })).toBe(1001);     // Expect rightmost module to be nearest
+        expect(infra.findModuleNearestToLocation(mods, { x: 15, y: 10 })).toBe(1002);    // Expect leftmost module to be nearest
     })
 
     test("Can find the module that contains a set of coordinates", () => {
         // Test each corner of the storage module at (8, 22) (4 x 3 width times height), inside and out
         // Top left corner
-        expect(infra.getModuleFromCoords({x: 8, y: 22})?._id).toBe(1003);     // Inside (top left corner)
-        expect(infra.getModuleFromCoords({x: 8, y: 21})).toBe(null);                // Too high
-        expect(infra.getModuleFromCoords({x: 7, y: 22})).toBe(null);                // Too far left
+        expect(infra.getModuleFromCoords({ x: 8, y: 22 })?._id).toBe(1003);     // Inside (top left corner)
+        expect(infra.getModuleFromCoords({ x: 8, y: 21 })).toBe(null);                // Too high
+        expect(infra.getModuleFromCoords({ x: 7, y: 22 })).toBe(null);                // Too far left
         // Top right corner
-        expect(infra.getModuleFromCoords({x: 11, y: 22})?._id).toBe(1003);    // Inside (top right corner)
-        expect(infra.getModuleFromCoords({x: 11, y: 21})).toBe(null);               // Too high
-        expect(infra.getModuleFromCoords({x: 12, y: 22})).toBe(null);               // Too far right
+        expect(infra.getModuleFromCoords({ x: 11, y: 22 })?._id).toBe(1003);    // Inside (top right corner)
+        expect(infra.getModuleFromCoords({ x: 11, y: 21 })).toBe(null);               // Too high
+        expect(infra.getModuleFromCoords({ x: 12, y: 22 })).toBe(null);               // Too far right
         // Bottom right corner
-        expect(infra.getModuleFromCoords({x: 11, y: 24})?._id).toBe(1003);    // Inside (bottom right corner)
-        expect(infra.getModuleFromCoords({x: 11, y: 25})?._id).toBe(1001);    // Too low (other module)
-        expect(infra.getModuleFromCoords({x: 12, y: 23})).toBe(null);               // Too far right
+        expect(infra.getModuleFromCoords({ x: 11, y: 24 })?._id).toBe(1003);    // Inside (bottom right corner)
+        expect(infra.getModuleFromCoords({ x: 11, y: 25 })?._id).toBe(1001);    // Too low (other module)
+        expect(infra.getModuleFromCoords({ x: 12, y: 23 })).toBe(null);               // Too far right
         // Bottom left corner
-        expect(infra.getModuleFromCoords({x: 8, y: 24})?._id).toBe(1003);     // Inside (bottom left corner)
-        expect(infra.getModuleFromCoords({x: 8, y: 25})?._id).toBe(1001);     // Too low (other module)
-        expect(infra.getModuleFromCoords({x: 7, y: 24})).toBe(null);                // Too far left
+        expect(infra.getModuleFromCoords({ x: 8, y: 24 })?._id).toBe(1003);     // Inside (bottom left corner)
+        expect(infra.getModuleFromCoords({ x: 8, y: 25 })?._id).toBe(1001);     // Too low (other module)
+        expect(infra.getModuleFromCoords({ x: 7, y: 24 })).toBe(null);                // Too far left
     })
 
     test("Can find a Connector that overlaps a set of coordinates", () => {
         // Setup: Add two connectors that overlap at one point, (8, 25)
-        infra.addConnector({ x: 8, y: 27 }, { x: 8, y: 22}, airVentData, mockMap, 2000);     
-        infra.addConnector({ x: 6, y: 25 }, { x: 10, y: 25}, airVentData, mockMap, 2001);
+        infra.addConnector({ x: 8, y: 27 }, { x: 8, y: 22 }, airVentData, mockMap, 2000);
+        infra.addConnector({ x: 6, y: 25 }, { x: 10, y: 25 }, airVentData, mockMap, 2001);
         // Vertical
         expect(infra.getConnectorFromCoords({ x: 8, y: 27 })?._id).toBe(2000);      // Top
         expect(infra.getConnectorFromCoords({ x: 8, y: 22 })?._id).toBe(2000);      // Bottom
@@ -449,7 +449,7 @@ describe("Infrastructure base class", () => {
         expect(infra._modules[1]._resources[0]).toStrictEqual(["power", 100]);
         expect(infra._modules[2]._resources[0]).toStrictEqual(["power", 0]);
         expect(infra._modules[3]._resources[2]).toStrictEqual(["food", 100]),
-        expect(infra._modules[4]._resources[1]).toStrictEqual(["food", 0]);
+            expect(infra._modules[4]._resources[1]).toStrictEqual(["food", 0]);
         // Run test
         infra.resolveResourceStoragePushes();
         // Validate results - production modules are empty and storage modules are (partially) filled
@@ -457,7 +457,7 @@ describe("Infrastructure base class", () => {
         expect(infra._modules[1]._resources[0]).toStrictEqual(["power", 0]);    // Pushed to battery
         expect(infra._modules[2]._resources[0]).toStrictEqual(["power", 200]);  // From solar panels
         expect(infra._modules[3]._resources[2]).toStrictEqual(["food", 0]),     // Pushed to storage room
-        expect(infra._modules[4]._resources[1]).toStrictEqual(["food", 100]);   // From hydro pod
+            expect(infra._modules[4]._resources[1]).toStrictEqual(["food", 100]);   // From hydro pod
     })
 
     // REMOVING STRUCTURES
@@ -567,9 +567,9 @@ describe("Infrastructure base class", () => {
         pop.addColonist(0, 26); // Place the first colonist on the ground in front of the first module
         // TEST ONE: Removal is blocked if a colonist is punched in to a module
         infra._modules[0].punchIn(pop._colonists[0]._data._id);
-        expect(infra.checkForColonistOccupancy(infra._modules[0],  pop)).toBe(false);   // Cannot remove a module when there is a colonist inside
+        expect(infra.checkForColonistOccupancy(infra._modules[0], pop)).toBe(false);   // Cannot remove a module when there is a colonist inside
         infra._modules[0].punchOut(pop._colonists[0]._data._id);
-        expect(infra.checkForColonistOccupancy(infra._modules[0],  pop)).toBe(true);    // Once the colonist is punched out the module can be removed
+        expect(infra.checkForColonistOccupancy(infra._modules[0], pop)).toBe(true);    // Once the colonist is punched out the module can be removed
         // TEST TWO: Removal is blocked if a colonist is not punched in, but is standing on the floor provided by the module to be removed
         pop.addColonist(0, 23); // Place colonist on the second floor (head is one y position "lower" than the floor level, which is 24)
         pop._colonists[1]._data.detectTerrainBeneath(mockMap, infra);
@@ -627,5 +627,86 @@ describe("Infrastructure base class", () => {
         // TOTO: ADD VALIDATION PART 3: Can we do it in reverse?? (I.E. storage purged into production module)
         // NOTE: Not doing for this chapter
     })
+
+    test("updateBaseVolumeForRemovedModule removes a module's coordinate points from the base volume map", () => {
+        reset();
+        // Setup: Two modules, side by side, slightly into the map
+        infra.addModule(1, 25, hydroponicsModuleData, mockography, zonesData, 2001);
+        infra.addModule(4, 25, storageModuleInfo, mockography, zonesData, 2002);
+        expect(infra._data._baseVolume).toStrictEqual([     // Validate test setup
+            [],
+            [25, 26, 27],
+            [25, 26, 27],
+            [25, 26, 27],
+            [25, 26, 27],
+            [25, 26, 27],
+            [25, 26, 27],
+            [25, 26, 27],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            []
+        ])
+        // VALIDATION: When we remove the first module, all of its coordinates are removed from the base's volume
+        expect(infra.updateBaseVolumeForRemovedModule(infra._modules[0])).toBe(9);  // Removal method reports how many coordinates were removed
+        expect(infra._data._baseVolume).toStrictEqual([
+            [],
+            [],
+            [],
+            [],
+            [25, 26, 27],
+            [25, 26, 27],
+            [25, 26, 27],
+            [25, 26, 27],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            []
+        ])
+        // VALIDATION 2: When the second module is removed, the base volume is emptied entirely
+        expect(infra.updateBaseVolumeForRemovedModule(infra._modules[1])).toBe(12); // Second module is 3 x 4
+        expect(infra._data._baseVolume).toStrictEqual([
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            []
+        ])
+    });
+    
 
 })

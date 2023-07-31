@@ -85,16 +85,18 @@ export default class Infrastructure {
         const removable = this.hardChecksForModuleRemoval(mod, population);
         if (removable) {
             console.log(`Removing module ${mod._id}`);
-            // Rather than a top-level soft checks method, call each of those checks individually
-            const moduleEmpty = this.checkIfModuleIsEmpty(mod);                 // Only bother with the 'soft' checks if the removal is allowed
-            this.checkModuleRemovalWillNotStrand(mod, population);              // No need to save the outcome for this check at present
+            // STAGE TWO: Soft Checks - Rather than a top-level soft checks method, call each of these checks individually
+            const moduleEmpty = this.checkIfModuleIsEmpty(mod);                 // Check for resources
+            this.checkModuleRemovalWillNotStrand(mod, population);              // Check if removal will strand a colonist
             // Call sub-routines for module removal:
             if (!moduleEmpty) this.purgeResourcesFromRemovedModule(mod);        // Purge resources if they are present
             this.updateBaseVolumeForRemovedModule(mod);                         // Update base volume
             this.updateFloorsForRemovedModule(mod);                             // Update floors
             this._modules = this._modules.filter((m) => m._id !== mod._id);     // Filter out the module by its ID
+            population.resolveGoalsWhenStructureRemoved(mod._id);               // Tell colonists to forget about it
+        } else {
+            console.log(`Notification: Unable to remove module ${mod._id}.`);
         }
-        
     }
 
     removeConnector = (connector: Connector, population: Population) => {
@@ -229,7 +231,15 @@ export default class Infrastructure {
     }
 
     updateBaseVolumeForRemovedModule = (mod: Module) => {
-
+        // Get the module's area, then remove all of its coordinate points from the base volume using the data class's helper method
+        const area = this._data.calculateModuleArea(mod._moduleInfo, mod._x, mod._y);
+        const removed = this._data.removeCoordsFromBaseVolume(area);
+        if (removed - area.length === 0) {
+            return removed;
+        } else {
+            console.log(`Warning: Only removed ${removed} out of ${area.length} base volume coordinates for module ${mod._id}`);
+            return removed;
+        }
     }
 
     updateFloorsForRemovedModule = (mod: Module) => {

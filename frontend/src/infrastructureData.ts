@@ -196,6 +196,25 @@ export default class InfrastructureData {
         })
     }
 
+    // Helper method for module removal - takes a list of coordinate points and removes them all, AND returns the total number of points removed
+    removeCoordsFromBaseVolume = (coords: Coords[]) => {
+        let removed = 0;    // Keep track of how many coordinate points are removed
+        if (coords.length > 0) {
+            coords.forEach((point) => {
+                const len = this._baseVolume[point.x].length;   // Keep track of column length prior to removal
+                this._baseVolume[point.x] = this._baseVolume[point.x].filter((y) => y !== point.y);
+                if (len - this._baseVolume[point.x].length === 1) {
+                    removed++;
+                } else {
+                    console.log(`Warning: Failed to remove base volume coordinates at (${point.x}, ${point.y})`);
+                }
+            })
+        } else {
+            console.log("Warning: No coordinates provided for removal as part of base volume update");
+        }
+        return removed;
+    }
+
     // FLOOR-RELATED METHODS
 
     // Top-level update method for adding new modules
