@@ -85,10 +85,14 @@ export default class Infrastructure {
         const removable = this.hardChecksForModuleRemoval(mod, population);
         if (removable) {
             console.log(`Removing module ${mod._id}`);
-            this.softChecksForModuleRemoval(mod, population);   // Only bother with the 'soft' checks if the removal is allowed
-            // Get module's area and footprint data for the removal process
-            const area = this._data.calculateModuleArea(mod._moduleInfo, mod._x, mod._y);
-            const { floor, footprint } = this._data.calculateModuleFootprint(area);
+            // Rather than a top-level soft checks method, call each of those checks individually
+            const moduleEmpty = this.checkIfModuleIsEmpty(mod);                 // Only bother with the 'soft' checks if the removal is allowed
+            this.checkModuleRemovalWillNotStrand(mod, population);              // No need to save the outcome for this check at present
+            // Call sub-routines for module removal:
+            if (!moduleEmpty) this.purgeResourcesFromRemovedModule(mod);        // Purge resources if they are present
+            this.updateBaseVolumeForRemovedModule(mod);                         // Update base volume
+            this.updateFloorsForRemovedModule(mod);                             // Update floors
+            this._modules = this._modules.filter((m) => m._id !== mod._id);     // Filter out the module by its ID
         }
         
     }
@@ -128,6 +132,7 @@ export default class Infrastructure {
         return removable;
     }
 
+    // Calls all of the hard checks together, since a single failure for any of them is sufficient to halt the removal
     hardChecksForModuleRemoval = (mod: Module, pop: Population) => {
         // Perform checks individually - a value of 'true' means the check was passed (no obstruction)
         const notLoadBearing = this.checkForModulesAbove(mod);
@@ -176,18 +181,7 @@ export default class Infrastructure {
         return removable;
     }
 
-    // SECTION 2C - Soft checks for module removals
-
-    softChecksForModuleRemoval = (mod: Module, pop: Population) => {
-        const isEmpty = this.checkIfModuleIsEmpty(mod);
-        const willNotStrand = this.checkModuleRemovalWillNotStrand(mod, pop);
-        if (isEmpty && willNotStrand) {
-            return true;
-        } else {
-            console.log(`Notification: The following removal warnings were detected for module ${mod._id}:\n${isEmpty === false ? "Structure contains resources\n" : ""}${willNotStrand === false ? "Structure's removal will strand colonist/s\n" : ""}`);
-            return false;
-        }
-    }
+    // SECTION 2C - Soft checks for module removals (both checks are called individually by the top-level removal method rather than being called together like the hard checks are)
 
     checkIfModuleIsEmpty = (mod: Module) => {
         const capacities = mod._resourceCapacity();
@@ -197,6 +191,7 @@ export default class Infrastructure {
                 if (mod.getResourceQuantity(res) > 0) isEmpty = false;
             })
         }
+        console.log(`Notification: Module ${mod._id} contains resources. Attempting to push to other modules prior to destruction.`);
         return isEmpty;
     }
 
@@ -213,9 +208,32 @@ export default class Infrastructure {
             const onlyExit = floor._connectors.length === overlapping;
             if (occupied && onlyExit) {
                 allClear = false;
+                console.log(`Notification: Module ${mod._id}'s removal will strand colonist/s. Removal will proceed but just thought you'd like to know.`);
             }
         }
         return allClear;
+    }
+
+    // SECTION 2D - Sub-commands for module removal
+
+    purgeResourcesFromRemovedModule = (mod: Module) => {
+        // For each resource in the module, attempt to find another module to use as storage for it and transfer as much as possible to that module
+        mod._resources.forEach((res) => {
+            const storage = this.findStorageModule(res);
+            if (storage) {
+                this.transferResources(res, mod, storage);
+            } else {
+                console.log(`Notification: Resource storage capacity not found for ${res[0]}`);
+            }
+        })
+    }
+
+    updateBaseVolumeForRemovedModule = (mod: Module) => {
+
+    }
+
+    updateFloorsForRemovedModule = (mod: Module) => {
+
     }
 
     // SECTION 3 - VALIDATING MODULE / CONNECTOR PLACEMENT
@@ -508,6 +526,20 @@ export default class Infrastructure {
             })
         })
         
+    }
+
+    // Reusable function for transferring resources from one module to another
+    transferResources = (res: Resource, from: Module, to: Module) => {
+        const capacity = to.getResourceCapacityAvailable(res[0]);       // Get capacity for the receiving end
+        const quantity = from.getResourceQuantity(res[0]);              // Get the quantity being sent
+        let transferred = 0;
+        if (capacity > quantity) {
+            transferred = from.deductResource(res);                 // Subtract (and prepare to transfer) the whole amount if there is more capacity than quantity
+        } else {
+            transferred = from.deductResource([res[0], capacity]);  // Otherwise just send the max amount for which capacity exists (and 'spill' the rest)
+        }
+        // console.log(`Transferring ${transferred} ${res[0]} from module ${from._id} to module ${to._id}`);
+        to.addResource([res[0], transferred]);      // Complete the transfer
     }
 
     // SECTION 6 - INFRASTRUCTURE INFO API (GETTER FUNCTIONS)

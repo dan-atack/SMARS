@@ -610,4 +610,22 @@ describe("Infrastructure base class", () => {
         expect(infra.checkModuleRemovalWillNotStrand(infra._modules[2], pop)).toBe(true);
     })
 
+    test("purgeResourcesFromRemovedModule pushes all of a module's resources to other modules prior to its removal", () => {
+        reset();
+        // Setup: Two modules, one of which is empty, the other of which contains resources
+        infra.addModule(0, 25, hydroponicsModuleData, mockography, zonesData, 2001);
+        infra.addModule(3, 25, storageModuleInfo, mockography, zonesData, 2002);
+        infra.addResourcesToModule(2001, ["water", 1000]);
+        infra.addResourcesToModule(2001, ["food", 1000]);
+        infra.purgeResourcesFromRemovedModule(infra._modules[0]);
+        // VALIDATION PART 1: Target module has no resources
+        expect(infra._modules[0].getResourceQuantity("water")).toBe(0);
+        expect(infra._modules[0].getResourceQuantity("food")).toBe(0);
+        // VALIDATION PART 2: Storage module has target module's resources transferred to it
+        expect(infra._modules[1].getResourceQuantity("water")).toBe(1000);
+        expect(infra._modules[1].getResourceQuantity("food")).toBe(1000);
+        // TOTO: ADD VALIDATION PART 3: Can we do it in reverse?? (I.E. storage purged into production module)
+        // NOTE: Not doing for this chapter
+    })
+
 })

@@ -3376,8 +3376,9 @@ Exit Criteria:
 
 - First, if it does have resources, attempt to push them to other modules wherever possible (Infra class)
 - Then, filter it out of the modules list (Infra class)
+- Tell colonists not to use it anymore (Population class)
 - Update the base volume to remove its coordinates (Infra Data class)
-- Update the Floors list:
+- Update the Floors list (Infra Data class):
 - - If the module was on its own floor, delete that floor
 - - If the module was on the edge of a floor with at least one other module, adjust that floor's appropriate edge and remove its ID from the floor's module ID list
 - - If the module was in the middle of a floor with another module to either side, remove it, and all the modules to its right from the original floor and adjust that floor's edge; then, place all of the other modules that were removed (those to the right of the removed module) into a NEW floor.
