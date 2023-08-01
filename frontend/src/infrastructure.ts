@@ -89,7 +89,10 @@ export default class Infrastructure {
             const moduleEmpty = this.checkIfModuleIsEmpty(mod);                 // Check for resources
             this.checkModuleRemovalWillNotStrand(mod, population);              // Check if removal will strand a colonist
             // Call sub-routines for module removal:
-            if (!moduleEmpty) this.purgeResourcesFromRemovedModule(mod);        // Purge resources if they are present
+            if (!moduleEmpty) {
+                console.log(`Notification: Attempting to relocate resources from module ${mod._id} prior to its removal.`);
+                this.purgeResourcesFromRemovedModule(mod);        // Purge resources if they are present
+            }
             this.updateBaseVolumeForRemovedModule(mod);                         // Update base volume
             this.updateFloorsForRemovedModule(mod);                             // Update floors
             this._modules = this._modules.filter((m) => m._id !== mod._id);     // Filter out the module by its ID
@@ -193,7 +196,6 @@ export default class Infrastructure {
                 if (mod.getResourceQuantity(res) > 0) isEmpty = false;
             })
         }
-        console.log(`Notification: Module ${mod._id} contains resources. Attempting to push to other modules prior to destruction.`);
         return isEmpty;
     }
 
@@ -243,7 +245,31 @@ export default class Infrastructure {
     }
 
     updateFloorsForRemovedModule = (mod: Module) => {
-
+        // Calculate the footprint and pass it, along with the ID of the module being removed, to the floor manager
+        const area = this._data.calculateModuleArea(mod._moduleInfo, mod._x, mod._y);
+        const { footprint } = this._data.calculateModuleFootprint(area);
+        const floor = this._data._floors.find((fl) => fl._modules.includes(mod._id));    // Find the floor
+        if (floor) {
+            // Is the module the only one on that floor? If so, delete the Floor
+            if (floor._modules.length === 1) {
+                console.log(`Module ${mod._id} is the only module on floor ${floor._id}. Deleting both.`);
+                this._data._floors = this._data._floors.filter((fl) => fl._id !== floor._id);
+                // Is the module on the left/right edge of a floor that contains other modules? If so, remove its ID and adjust floor's edge
+            } else if (footprint[0] === floor._leftSide) {
+                console.log(`Module ${mod._id} is at the left edge of floor ${floor._id}`);
+                floor._modules = floor._modules.filter((id) => id !== mod._id); // Filter out the ID
+                floor._leftSide += mod._width;                  // Floor's left edge retreats by the width of the module
+            } else if (footprint[footprint.length - 1] === floor._rightSide) {
+                console.log(`Module ${mod._id} is at the right edge of floor ${floor._id}`);
+                floor._modules = floor._modules.filter((id) => id !== mod._id); // Filter out the ID
+                floor._rightSide -= mod._width;                  // Floor's right edge retreats by the width of the module
+            }
+        } else {
+            console.log(`ERROR: Floor containing module ID ${mod._id} not found during module removal cleanup.`);
+        }
+        
+        
+        // Is the module in the middle of a floor, with at least one other module to either side? If so, remove it and all modules to its right and create a new floor with those modules (splitting the original floor)
     }
 
     // SECTION 3 - VALIDATING MODULE / CONNECTOR PLACEMENT

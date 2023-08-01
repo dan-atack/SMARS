@@ -3354,10 +3354,10 @@ Exit Criteria:
 
 9. Once the Connector removal check method is ready, it's time to implement the actual removal of the structure. Within the shell of the removeConnector method, after it does the check, do each of the following steps to fully remove the connector (add unit tests before coding solution):
 
-- Filter it out of the connectors list (Infra class)
-- Connector ID is removed from each Floor's connectors array (Infra Data / Floor classes)
-- Filter it out of the elevators list (Infra Data class)
-- Reset colonist goals if they were going to use it (Population class)
+- [DONE] Filter it out of the connectors list (Infra class)
+- [DONE] Connector ID is removed from each Floor's connectors array (Infra Data / Floor classes)
+- [DONE] Filter it out of the elevators list (Infra Data class)
+- [DONE] Reset colonist goals if they were going to use it (Population class)
 
 10. Add a new field to the Infra class, essentialStructures. It should be a list of strings, and by default will contain the name of the comms array ("Comms Antenna").
 
@@ -3376,8 +3376,8 @@ Exit Criteria:
 
 - [DONE] First, if it does have resources, attempt to push them to other modules wherever possible (Infra class)
 - [DONE] Then, filter it out of the modules list (Infra class)
-- Tell colonists not to use it anymore (Population class)
-- Update the base volume to remove its coordinates (Infra Data class)
+- [DONE] Tell colonists not to use it anymore (Population class)
+- [DONE] Update the base volume to remove its coordinates (Infra Data class)
 - Update the Floors list (Infra Data class):
 - - If the module was on its own floor, delete that floor
 - - If the module was on the edge of a floor with at least one other module, adjust that floor's appropriate edge and remove its ID from the floor's module ID list

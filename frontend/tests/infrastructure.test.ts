@@ -707,6 +707,32 @@ describe("Infrastructure base class", () => {
             []
         ])
     });
+
+    test("updateFloorsForRemovedModule correctly cleans up the data class's floors array when a module is removed", () => {
+        reset();
+        // Setup for 3 test cases (all removals will be on upper floors, just because)
+        // CASE A - Module is the only one on its floor (using upper floor here) - when removed, its floor is also removed
+        infra.addModule(0, 25, hydroponicsModuleData, mockography, zonesData, 2001);
+        infra.addModule(0, 22, hydroponicsModuleData, mockography, zonesData, 2002);    // Remove
+        expect(infra._data._floors.length).toBe(2);     // Verify setup
+        infra.updateFloorsForRemovedModule(infra._modules[1]);
+        expect(infra._data._floors.length).toBe(1);     // Verify floor removal
+        reset();
+        // CASE B - Module is on the left/right edge of a floor with other modules - when removed, its ID is removed and the edge adjusted
+        infra.addModule(0, 25, hydroponicsModuleData, mockography, zonesData, 2001);
+        infra.addModule(3, 25, hydroponicsModuleData, mockography, zonesData, 2002);
+        infra.addModule(6, 25, hydroponicsModuleData, mockography, zonesData, 2003);
+        infra.addModule(0, 22, hydroponicsModuleData, mockography, zonesData, 2004);    // Remove first (Left edge)
+        infra.addModule(3, 22, hydroponicsModuleData, mockography, zonesData, 2005);    // First floor
+        infra.addModule(6, 22, hydroponicsModuleData, mockography, zonesData, 2006);    // Remove first (Right edge)
+        expect(infra._data._floors[1]._leftSide).toBe(0);           // Validate test setup
+        expect(infra._data._floors[1]._rightSide).toBe(8);
+        expect(infra._data._floors[1]._modules).toStrictEqual([2004, 2005, 2006]);
+        infra.updateFloorsForRemovedModule(infra._modules[3]);      // Remove leftmost module
+        expect(infra._data._floors[1]._leftSide).toBe(3);
+        infra.updateFloorsForRemovedModule(infra._modules[5]);      // Remove rightmost module
+        expect(infra._data._floors[1]._rightSide).toBe(5);
+    })
     
 
 })
