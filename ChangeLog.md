@@ -3297,18 +3297,18 @@ Following the implementation of the game's random events system, the next essent
 
 On the way it will be necessary to consider what rules will be in play when removing Modules (deliberately distinct from Connectors, which will require their own sub-chapter), and consider questions such as:
 
-- Can the player remove any Module they like? Consider: gravity, unique structures (comms dome)
-- What happens to the resources in destroyed Modules? Consider: destroying them vs trying to export them
-- What happens to Connectors that are attached to a destroyed module? Consider: Rules for removing connectors (separate sub-issue down below)
-- Will there be a warning/are-you-sure message? Consider: always? only when resources are shifted? only when resources would be lost?
-- What happens to the Floors data when a module is removed?
-- BONUS: Can we illustrate/show floors in some subtle way as part of module highlighting? Or as an overlay??
+- Can the player remove any Module they like? Consider: gravity, unique structures (comms dome) --> There will be exceptions/limits
+- What happens to the resources in destroyed Modules? --> They will be exported to other modules, whenever possible
+- What happens to Connectors that are attached to a destroyed module? --> Nothing (see below for more on connector removals)
+- Will there be a warning/are-you-sure message? --> Yes, but only in the console for now (next chapter will upgrade this)
+- What happens to the Floors data when a module is removed? --> It gets updated; same with base volume map
+- BONUS: Can we illustrate/show floors in some subtle way as part of module highlighting? Or as an overlay?? --> Yes, but only in Dev mode for now
 
 Also, in tandem with the above considerations, what is to be done about removing Connectors?
 
-- Will the be removed with the same mouse function/button as Modules?
-- Do they need to be removed first/before a Module that they're connected to?
-- What factors would limit their removal, if any?
+- Will they be removed with the same mouse function/button as Modules? --> YES
+- Do they need to be removed first/before a Module that they're connected to? --> Not necessarily, although there will be some guardrails
+- What factors would limit their removal, if any? --> Ladders annot be removed while a colonist is climbing them
 
 Exit Criteria:
 
@@ -3379,9 +3379,12 @@ Exit Criteria:
 - [DONE] Tell colonists not to use it anymore (Population class)
 - [DONE] Update the base volume to remove its coordinates (Infra Data class)
 - Update the Floors list (Infra Data class):
-- - If the module was on its own floor, delete that floor
-- - If the module was on the edge of a floor with at least one other module, adjust that floor's appropriate edge and remove its ID from the floor's module ID list
+- - [DONE] If the module was on its own floor, delete that floor
+- - [DONE] If the module was on the edge of a floor with at least one other module, adjust that floor's appropriate edge and remove its ID from the floor's module ID list
 - - If the module was in the middle of a floor with another module to either side, remove it, and all the modules to its right from the original floor and adjust that floor's edge; then, place all of the other modules that were removed (those to the right of the removed module) into a NEW floor.
+- - Update the connector ID lists of any floors that are affected by any modules' removal
+
+### 14. Fix the issue where distant floors can be merged wrongly (it's maybe picking the first floor whose elevation matches?)
 
 ## Chapter X: In-Game Notifications
 

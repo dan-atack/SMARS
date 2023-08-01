@@ -715,7 +715,7 @@ describe("Infrastructure base class", () => {
         infra.addModule(0, 25, hydroponicsModuleData, mockography, zonesData, 2001);
         infra.addModule(0, 22, hydroponicsModuleData, mockography, zonesData, 2002);    // Remove
         expect(infra._data._floors.length).toBe(2);     // Verify setup
-        infra.updateFloorsForRemovedModule(infra._modules[1]);
+        infra.updateFloorsForRemovedModule(infra._modules[1], mockMap);
         expect(infra._data._floors.length).toBe(1);     // Verify floor removal
         reset();
         // CASE B - Module is on the left/right edge of a floor with other modules - when removed, its ID is removed and the edge adjusted
@@ -728,10 +728,30 @@ describe("Infrastructure base class", () => {
         expect(infra._data._floors[1]._leftSide).toBe(0);           // Validate test setup
         expect(infra._data._floors[1]._rightSide).toBe(8);
         expect(infra._data._floors[1]._modules).toStrictEqual([2004, 2005, 2006]);
-        infra.updateFloorsForRemovedModule(infra._modules[3]);      // Remove leftmost module
+        infra.updateFloorsForRemovedModule(infra._modules[3], mockMap);      // Remove leftmost module
         expect(infra._data._floors[1]._leftSide).toBe(3);
-        infra.updateFloorsForRemovedModule(infra._modules[5]);      // Remove rightmost module
+        infra.updateFloorsForRemovedModule(infra._modules[5], mockMap);      // Remove rightmost module
         expect(infra._data._floors[1]._rightSide).toBe(5);
+        reset();
+        // CASE C - Module is in the middle, with at least one module to either side - when removed, a new floor is created for the modules to the right of the original
+        infra.addModule(0, 25, hydroponicsModuleData, mockography, zonesData, 2001);
+        infra.addModule(3, 25, hydroponicsModuleData, mockography, zonesData, 2002);
+        infra.addModule(6, 25, hydroponicsModuleData, mockography, zonesData, 2003);
+        infra.addModule(0, 22, hydroponicsModuleData, mockography, zonesData, 2004);
+        infra.addModule(3, 22, hydroponicsModuleData, mockography, zonesData, 2005);    // Remove the middle one, dividing the floor into two
+        infra.addModule(6, 22, hydroponicsModuleData, mockography, zonesData, 2006);
+        expect(infra._data._floors[1]._leftSide).toBe(0);           // Validate test setup
+        expect(infra._data._floors[1]._rightSide).toBe(8);
+        expect(infra._data._floors[1]._modules).toStrictEqual([2004, 2005, 2006]);
+        expect(infra._data._floors.length).toBe(2);
+        infra.updateFloorsForRemovedModule(infra._modules[4], mockMap);      // Remove the middle one
+        expect(infra._data._floors.length).toBe(3);                 // VALIDATION: There should now be 3 floors (one on the ground and two on top)
+        expect(infra._data._floors[1]._modules).toStrictEqual([2004]);  // Only the leftmost module should remain on the original upper floor
+        expect(infra._data._floors[1]._leftSide).toBe(0);           // The original floor's left side should remain where it was
+        expect(infra._data._floors[1]._rightSide).toBe(2);          // The original floor's right side should be at the edge of its only module
+        expect(infra._data._floors[2]._modules).toStrictEqual([2006]);  // New floor should be created, containing the rightmost module
+        expect(infra._data._floors[2]._leftSide).toBe(6);           // New floor's left edge is the left edge of the rightmost module
+        expect(infra._data._floors[2]._rightSide).toBe(8);          // New floor's right edge is the right edge of the rightmost module
     })
     
 

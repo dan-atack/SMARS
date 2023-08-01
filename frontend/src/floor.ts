@@ -70,6 +70,10 @@ export default class Floor {
         this._connectors.push(connectorId);
     }
 
+    removeConnector = (connectorId: number) => {
+        this._connectors = this._connectors.filter((id) => id !== connectorId);
+    }
+
     setGroundFloorZones = (zones: MapZone[]) => {
         zones.forEach((zone) => {
             if (this._groundFloorZones.find((z) => {

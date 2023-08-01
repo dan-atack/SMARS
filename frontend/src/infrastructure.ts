@@ -80,7 +80,7 @@ export default class Infrastructure {
 
     // SECTION 2A: Top level removal methods
 
-    removeModule = (mod: Module, population: Population) => {
+    removeModule = (mod: Module, population: Population, map: Map) => {
         // STAGE ONE: Hard Checks
         const removable = this.hardChecksForModuleRemoval(mod, population);
         if (removable) {
@@ -94,7 +94,7 @@ export default class Infrastructure {
                 this.purgeResourcesFromRemovedModule(mod);        // Purge resources if they are present
             }
             this.updateBaseVolumeForRemovedModule(mod);                         // Update base volume
-            this.updateFloorsForRemovedModule(mod);                             // Update floors
+            this.updateFloorsForRemovedModule(mod, map);                             // Update floors
             this._modules = this._modules.filter((m) => m._id !== mod._id);     // Filter out the module by its ID
             population.resolveGoalsWhenStructureRemoved(mod._id);               // Tell colonists to forget about it
         } else {
@@ -244,7 +244,7 @@ export default class Infrastructure {
         }
     }
 
-    updateFloorsForRemovedModule = (mod: Module) => {
+    updateFloorsForRemovedModule = (mod: Module, map: Map) => {
         // Calculate the footprint and pass it, along with the ID of the module being removed, to the floor manager
         const area = this._data.calculateModuleArea(mod._moduleInfo, mod._x, mod._y);
         const { footprint } = this._data.calculateModuleFootprint(area);
@@ -263,13 +263,40 @@ export default class Infrastructure {
                 console.log(`Module ${mod._id} is at the right edge of floor ${floor._id}`);
                 floor._modules = floor._modules.filter((id) => id !== mod._id); // Filter out the ID
                 floor._rightSide -= mod._width;                  // Floor's right edge retreats by the width of the module
+            } else {
+                // If the module isn't alone, and it isn't on either edge, then it must be in the middle of a floor
+                // If so, remove it and all modules to its right and create a new floor with those modules (splitting the original floor)
+                console.log(`Module ${mod._id} is in the middle of floor ${floor._id}`);
+                // Split along the removed module: reset the floor's left edge, and get the ID's of all modules to its right and remove them
+                floor._rightSide = mod._x - 1;                                      // Reset floor's right edge
+                floor._modules = floor._modules.filter((id) => mod._id !== id);     // Remove the ID of the destroyed module
+                let newFloorMods: Module[] = [];
+                floor._modules.forEach((id) => {
+                    const m = this.getModuleFromID(id);
+                    if (m && m._x > mod._x) newFloorMods.push(m); 
+                });
+                if (newFloorMods.length > 0) {      // Add all modules on the right of the removed one to a new Floor
+                    newFloorMods.forEach((m) => {
+                        floor._modules = floor._modules.filter((id) => id !== m._id);   // Remove ID from the original floor
+                        const area = this._data.calculateModuleArea(m._moduleInfo, m._x, m._y);
+                        const footprint = this._data.calculateModuleFootprint(area);
+                        this._data.addModuleToFloors(m._id, footprint, map._topography, map._zones);
+                    })
+                } else {
+                    console.log(`Warning: No modules found to the right of removed module (${mod._id})`);
+                }
             }
+            // Lastly, remove connectors from the original floor if they no longer fall within its bounds
+            const removeConnectors: Connector[] = this._connectors.filter((con) => floor._connectors.includes(con._id) && con._leftEdge > floor._rightSide)
+            removeConnectors.forEach((c) => {
+                floor._connectors = floor._connectors.filter((id) => id !== c._id);
+            });
         } else {
             console.log(`ERROR: Floor containing module ID ${mod._id} not found during module removal cleanup.`);
         }
         
         
-        // Is the module in the middle of a floor, with at least one other module to either side? If so, remove it and all modules to its right and create a new floor with those modules (splitting the original floor)
+        
     }
 
     // SECTION 3 - VALIDATING MODULE / CONNECTOR PLACEMENT
