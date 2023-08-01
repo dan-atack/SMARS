@@ -3372,7 +3372,7 @@ Exit Criteria:
 - [DONE] Check if the module is empty
 - [DONE] Check if the module's removal will strand any colonists on the floor
 
-### 13. Put it all together: if the hard checks pass, and the soft checks do their thing (either printing a message or doing nothing at all) then execute the module's removal:
+13. Put it all together: if the hard checks pass, and the soft checks do their thing (either printing a message or doing nothing at all) then execute the module's removal:
 
 - [DONE] First, if it does have resources, attempt to push them to other modules wherever possible (Infra class)
 - [DONE] Then, filter it out of the modules list (Infra class)
@@ -3381,8 +3381,8 @@ Exit Criteria:
 - Update the Floors list (Infra Data class):
 - - [DONE] If the module was on its own floor, delete that floor
 - - [DONE] If the module was on the edge of a floor with at least one other module, adjust that floor's appropriate edge and remove its ID from the floor's module ID list
-- - If the module was in the middle of a floor with another module to either side, remove it, and all the modules to its right from the original floor and adjust that floor's edge; then, place all of the other modules that were removed (those to the right of the removed module) into a NEW floor.
-- - Update the connector ID lists of any floors that are affected by any modules' removal
+- - [DONE] If the module was in the middle of a floor with another module to either side, remove it, and all the modules to its right from the original floor and adjust that floor's edge; then, place all of the other modules that were removed (those to the right of the removed module) into a NEW floor.
+- - [DONE] Update the connector ID lists of any floors that are affected by any modules' removal
 
 ### 14. Fix the issue where distant floors can be merged wrongly (it's maybe picking the first floor whose elevation matches?)
 

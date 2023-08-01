@@ -243,7 +243,7 @@ export default class InfrastructureData {
                 adjacents[0].addModule(moduleId, fp);
             } else if (adjacents.length === 2) {
                 // Merge two existing floors if they are both adjacent to the new one (in which case it's right between them)
-                this.combineFloors(existingFloors[0]._id, existingFloors[1]._id, moduleId);
+                this.combineFloors(adjacents[0]._id, adjacents[1]._id, moduleId);
             }
         }
     }
