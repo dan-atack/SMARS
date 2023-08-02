@@ -3312,29 +3312,30 @@ Also, in tandem with the above considerations, what is to be done about removing
 
 Exit Criteria:
 
-- Player can select 'demolish' button from sidebar that will enable them to remove either a module or connector
-- When in 'demolish' mode the mouse cursor is accompanied by a little red 'X' whose center is at the point of the cursor
-- Player can deselect 'demolish' mode and return to 'inspect' mode simply by clicking on anything that isn't a module or a connector
-- Player can click on a connector while in 'demolish' mouse context to remove it
-- Player will be notified (initial via console log) that a connector cannot be removed if there is currently one or more colonists on it
-- Once removed, a connector will no longer be considered by colonists looking to gain access to a floor/module
-- Player can click on a module while in 'demolish' mouse context to remove it
-- When a module is clicked for deletion the following 4 'hard' checks are performed:
-- If the module is underneath another module it cannot be removed and the player is notified (via console message)
-- If the module is attached to at least one 'transport' connector it cannot be removed (and the player is notified)
-- If the module is considered 'essential' (by consulting an Infra class list of essential structure) it cannot be removed and the player is notified
-- If the module contains any colonists it cannot be removed and the player is notified
-- If none of the above 4 conditions are true, the following 'soft' check is then performed:
-- If the module contains any resources, a warning is given (again, for now in the console -in the future this will be upgraded to a confirmation popup)
-- If the module contains resources and the player chooses to proceed (which will be the default behaviour until we have that confirmation popup) all of its resources are pushed to other modules
+- [DONE] Player can select 'demolish' button from sidebar that will enable them to remove either a module or connector
+- [DONE] When in 'demolish' mode the mouse cursor is accompanied by a little red 'X' whose center is at the point of the cursor
+- [DONE] Player can deselect 'demolish' mode and return to 'inspect' mode simply by clicking on anything that isn't a module or a connector
+- [DONE] Player can click on a connector while in 'demolish' mouse context to remove it
+- [DONE] Player will be notified (initially via console log) that a connector cannot be removed if there is currently one or more colonists on it
+- [DONE] Once removed, a connector will no longer be considered by colonists looking to gain access to a floor/module
+- [DONE] Player can click on a module while in 'demolish' mouse context to remove it
+- [DONE] When a module is clicked for deletion the following 3 'hard' checks are performed:
+- [DONE] If the module is underneath another module it cannot be removed and the player is notified (via console message)
+- [DONE] If the module is considered 'essential' it cannot be removed and the player is notified
+- [DONE] If the module contains any colonists it cannot be removed and the player is notified
+- [DONE] If none of the above 3 conditions are true, the following 'soft' checks are then performed:
+- [DONE] If the module contains any resources, a warning is given (again, for now in the console -in the future this will be upgraded to a confirmation popup)
+- [DONE] If the module's removal will strand any colonists on the remaining part of the floor, a warning is given
+- [DONE] When the module demolition finally occurs, If the module contains resources, all of its resources are pushed to other modules
 - If the module contains no resources, or once its resources have been pushed out, the following steps are carried out to ensure a thorough removal:
-- It is removed from the infra class's modules list
-- The Infra data class removes it from the base volume array
-- The Infra data class removes it from the Floor it is on:
-- If the module is the only module on a floor, the floor is removed entirely
-- If the module is at the edge of a multi-module floor it is removed and the floor's edges are recalculated
-- If the module is in the middle of a multi-module floor, it and all modules to its right are removed from that floor and a new floor ID is generated for the remaining module/s to its right
-- There must be extensive unit tests for all of these criteria, developed prior to the implementation of the features themselves
+- [DONE] It is removed from the infra class's modules list
+- [DONE] The Infra data class removes it from the base volume array
+- [DONE] The Infra data class removes it from the Floor it is on:
+- [DONE] If the module is the only module on a floor, the floor is removed entirely
+- [DONE] If the module is at the edge of a multi-module floor it is removed and the floor's edges are recalculated
+- [DONE] If the module is in the middle of a multi-module floor, it and all modules to its right are removed from that floor and a new floor ID is generated for the remaining module/s to its right
+- [DONE] Whenever a module is removed from a floor, that floor's connector IDs list is updated
+- [DONE] There must be extensive unit tests for all of these criteria, developed prior to the implementation of the features themselves
 
 1. Start by replacing the 'Overlays' button on the sidebar with a 'demolish' button, and give it the standard yellow colouring of non-disabled mouse context buttons.
 
