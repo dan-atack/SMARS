@@ -342,28 +342,32 @@ export default class Engine extends View {
             // Click is over the map
             if (mouseX > 0 && mouseX < constants.SCREEN_WIDTH && mouseY > 0 && mouseY < constants.SCREEN_HEIGHT) {
                 const [gridX, gridY] = this.getMouseGridPosition(mouseX, mouseY);
+                const coords = { x: gridX, y: gridY }   // For convenience
                 // console.log(`(${gridX}, ${gridY})`);
                 switch (this.mouseContext) {
-                    case "inspect":
-                        this.handleInspect({ x: gridX, y: gridY });
-                        break;
-                    case "placeModule":
-                        this.handleModulePlacement(gridX, gridY);
-                        break;
                     case "connectorStart":
                         this.handleConnectorStartPlacement(gridX, gridY)
                         break;
                     case "connectorStop":
                         this.handleConnectorStopPlacement();
                         break;
-                    case "resource":
-                        this.handleResourceZoneSelect({ x: gridX, y: gridY });
+                    case "demolish":
+                        this.handleDemolish(coords);
+                        break;
+                    case "inspect":
+                        this.handleInspect(coords);
+                        break;
+                    case "landing":
+                        this.confirmLandingSequence(mouseX, mouseY);
                         break;
                     case "modal":
                         this._modal?.handleClicks(mouseX, mouseY);
                         break;
-                    case "landing":
-                        this.confirmLandingSequence(mouseX, mouseY);
+                    case "placeModule":
+                        this.handleModulePlacement(gridX, gridY);
+                        break;
+                    case "resource":
+                        this.handleResourceZoneSelect(coords);
                         break;
                     case "wait":
                         // TODO: Add UI explanation (or sound effect!) indicating that the player can't click during 'wait' mode
@@ -441,10 +445,13 @@ export default class Engine extends View {
         this._scrollingRight = false;
     }
 
+    // MOUSE SHADOW CREATION
+
+    // Creates the mouse shadows for modules/connectors
     createMouseShadow = () => {
         const w = this.selectedBuilding?.width || constants.BLOCK_WIDTH;
         let h = this.selectedBuilding?.width || constants.BLOCK_WIDTH;
-        // If structure is a module, find its height parameter; otherwise just use its height twice
+        // If structure is a module, find its height parameter; otherwise just use its width twice
         if (this.selectedBuilding != null && this._infrastructure._data.isModule(this.selectedBuilding)) {
             h = this.selectedBuilding.height;
         }
@@ -452,12 +459,18 @@ export default class Engine extends View {
     }
 
     createInspectToolMouseShadow = () => {
-        this._mouseShadow = new MouseShadow(1, 1, true);
+        this._mouseShadow = new MouseShadow(1, 1, "inspect");
+    }
+
+    createDemolitionMouseShadow = () => {
+        this._mouseShadow = new MouseShadow(1, 1, "demolish");
     }
 
     createJackhammerMouseShadow = () => {
-        this._mouseShadow = new MouseShadow(1, 1, false, true);
+        this._mouseShadow = new MouseShadow(1, 1, "resource");
     }
+
+    // NOTE: When adding a new type of mouse shadow/context, be sure to also add it to the Engine's render block AND renderMouseShadow method
 
     destroyMouseShadow = () => {
         this._mouseShadow = null;
@@ -514,6 +527,11 @@ export default class Engine extends View {
         if (this.mouseContext === "resource") {
             this.setSidebarSelectedButton();
             this.createJackhammerMouseShadow();
+        }
+        // Then check for demolition mode
+        if (this.mouseContext === "demolish") {
+            this.setSidebarSelectedButton();
+            this.createDemolitionMouseShadow();
         }
         // Last, check if the mouse context has been set to 'inspect' and tell it to do the magnifying glass image if so
         if (this.mouseContext === "inspect") {
@@ -575,6 +593,18 @@ export default class Engine extends View {
         this._population.highlightColonist(0);
         this._infrastructure.highlightStructure(0, false);
         this._map.setHighlightedBlock(null);
+    }
+
+    handleDemolish = (coords: Coords) => {
+        const con = this._infrastructure.getConnectorFromCoords(coords);
+        const mod = this._infrastructure.getModuleFromCoords(coords)
+        if (con) {          // First, check for Connectors
+            this._infrastructure.removeConnector(con, this._population)
+        } else if (mod) {      // Then, check for Modules
+            this._infrastructure.removeModule(mod, this._population, this._map);
+        } else {
+            this.setMouseContext("inspect");        // Revert mouse context to 'inspect' if click is not on a structure
+        }
     }
 
     //// STRUCTURE PLACEMENT METHODS ////
@@ -1125,8 +1155,8 @@ export default class Engine extends View {
             this.renderBuildingShadow();
         } else if (this.mouseContext === "landing") {
             this.renderLandingPath();
-        } else if (this.mouseContext === "inspect" || this.mouseContext === "resource") {
-            this.renderInspectOrResourceTool();
+        } else if (this.mouseContext === "inspect" || this.mouseContext === "resource" || this.mouseContext === "demolish") {
+            this.renderCustomMouseShadow();
         }
     }
 
@@ -1172,7 +1202,7 @@ export default class Engine extends View {
     }
 
     // For rendering the inspect tool OR the resource tool
-    renderInspectOrResourceTool = () => {
+    renderCustomMouseShadow = () => {
         // Only render the Inspect Tool if mouse is over the map area (not the sidebar) and there is no modal
         if (this._p5.mouseX < constants.SCREEN_WIDTH - this._sidebar._width && !this._modal && this._mouseShadow) {
             let [x, y] = this.getMouseGridPosition(this._p5.mouseX, this._p5.mouseY);
@@ -1220,7 +1250,8 @@ export default class Engine extends View {
         if (this._hasLanded) {
             this._sidebar.render(this._gameTime.minute, this._gameTime.hour, this._gameTime.cycle);
         }
-        if (this.mouseContext === "inspect" || this.mouseContext === "resource") {
+        // If rendering a special mouse cursor, do it after rendering everything else
+        if (this.mouseContext === "inspect" || this.mouseContext === "resource" || this.mouseContext === "demolish") {
             this.renderMouseShadow();
         }
         if (this._modal) {
@@ -1231,5 +1262,6 @@ export default class Engine extends View {
             this.renderBlockHighlighting(p5);
         }
         // p5.text(`Sunlight: ${this._sunlight}`, 120, 300);
+        // p5.text(this._mouseShadow?._context || "NONE", 200, 200);
     }
 }

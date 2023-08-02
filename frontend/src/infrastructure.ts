@@ -9,15 +9,17 @@ import { Resource } from "./economyData";
 import { Coords } from "./connector";
 import { MapZone } from "./map";
 import Map from "./map";
+import Population from "./population";
 
 export default class Infrastructure {
     // Infrastructure class types:
     _data: InfrastructureData;  // Unlike other data classes, Infra data will not hold the modules/connectors lists themselves, but will be passed data about their coordinates, etc so that it can perform checks on potential locations' validity
     _modules: Module[]; 
     _connectors: Connector[];
-    _horizontalOffset: number;  // Value is in pixels
+    _horizontalOffset: number;                  // Value is in pixels
     _highlightedModule: Module | null;
     _highlightedConnector: Connector | null;    // Infra class controls structure highlighting
+    _essentialStructures: string[];             // Essential structures is a list of names of modules that cannot be removed by the player
 
     // Map width is passed to the data class at construction to help with base volume calculations
     constructor() {
@@ -27,6 +29,9 @@ export default class Infrastructure {
         this._horizontalOffset = 0;
         this._highlightedModule = null;  // By default no structures are highlighted
         this._highlightedConnector = null;
+        this._essentialStructures = [
+            "Comms Antenna"
+        ]
     }
 
     setup = (mapWidth: number) => {
@@ -70,24 +75,228 @@ export default class Infrastructure {
         }
     }
 
-    // SECTION 2 - MODULE UPDATER METHODS
+    // SECTION 2 - REMOVING MODULES AND CONNECTORS
 
-    handleHourlyUpdates = (sunlightPercent: number) => {
-        // 0 - Produce power modules' outputs
-        this.resolveModulePowerGeneration(sunlightPercent);
-        // 1- Push outputs from production/power modules
-        this.resolveResourceStoragePushes();
-        // 2 - Compile, then resolve module resource requests
-        const reqs = this.compileModuleResourceRequests();
-        this.resolveModuleResourceRequests(reqs);
-        // 3 - Deduct maintenance costs
-        this.handleModuleMaintenance();
+
+    // SECTION 2A: Top level removal methods
+
+    removeModule = (mod: Module, population: Population, map: Map) => {
+        // STAGE ONE: Hard Checks
+        const removable = this.hardChecksForModuleRemoval(mod, population);
+        if (removable) {
+            console.log(`Removing module ${mod._id}`);
+            // STAGE TWO: Soft Checks - Rather than a top-level soft checks method, call each of these checks individually
+            const moduleEmpty = this.checkIfModuleIsEmpty(mod);                 // Check for resources
+            this.checkModuleRemovalWillNotStrand(mod, population);              // Check if removal will strand a colonist
+            // Call sub-routines for module removal:
+            if (!moduleEmpty) {
+                console.log(`Notification: Attempting to relocate resources from module ${mod._id} prior to its removal.`);
+                this.purgeResourcesFromRemovedModule(mod);        // Purge resources if they are present
+            }
+            this.updateBaseVolumeForRemovedModule(mod);                         // Update base volume
+            this.updateFloorsForRemovedModule(mod, map);                             // Update floors
+            this._modules = this._modules.filter((m) => m._id !== mod._id);     // Filter out the module by its ID
+            population.resolveGoalsWhenStructureRemoved(mod._id);               // Tell colonists to forget about it
+        } else {
+            console.log(`Notification: Unable to remove module ${mod._id}.`);
+        }
     }
 
-    handleModuleMaintenance = () => {
-        this._modules.forEach((mod) => {
-            mod.handleMaintenance();
+    removeConnector = (connector: Connector, population: Population) => {
+        // console.log(`Removing connector ${connector._id}.`);
+        const proceed = this.checkForConnectorRemoval(connector, population);
+        if (proceed) {
+            // Remove connector from main connectors list
+            this._connectors = this._connectors.filter((con) => con._id !== connector._id);
+            // Remove connector ID from floors' connector ID lists
+            this._data._floors.forEach((floor) => {
+                floor._connectors = floor._connectors.filter((id) => id !== connector._id);
+            })
+            // Remove connector ID from data subclass's elevators list
+            this._data._elevators = this._data._elevators.filter((elev) => elev.id !== connector._id);
+            // Notify population class of the removal
+            population.resolveGoalsWhenStructureRemoved(connector._id);
+            return true;    // Return the success status of the removal request
+        } else {
+            // TODO: Upgrade this to a visible in-game notification
+            console.log(`Notification: Unable to remove connector ${connector._id} at this time. Please wait for colonists to disembark before removing connection infrastructure.`);
+            return false;    // Return the success status of the removal request
+        }
+    }
+
+    // SECTION 2B - Hard checks for connector/module removal
+
+    checkForConnectorRemoval = (connector: Connector, population: Population) => {
+        let removable = true;
+        population._colonists.forEach((colonist) => {
+            // Check if the colonist's current action's building ID matches the ID of the connector, and if the colonist is currently climbing (and not just walking past)
+            if (colonist._data._currentAction?.buildingId === connector._id && colonist._data._currentAction?.type === "climb") {
+                removable = false;   // Reject the removal if colonist is climbing the ladder, Monty
+            };
         })
+        return removable;
+    }
+
+    // Calls all of the hard checks together, since a single failure for any of them is sufficient to halt the removal
+    hardChecksForModuleRemoval = (mod: Module, pop: Population) => {
+        // Perform checks individually - a value of 'true' means the check was passed (no obstruction)
+        const notLoadBearing = this.checkForModulesAbove(mod);
+        const nonEssential = !(this._essentialStructures.includes(mod._moduleInfo.name));
+        const notOccupied = this.checkForColonistOccupancy(mod, pop);
+        if (notLoadBearing && nonEssential && notOccupied) {
+            return true;    // If all of the checks are passed, give the go-ahead to the top-level removal function
+        } else {
+            // If any checks fail, tell the top-level removal function not to proceed (and prepare a notification to show to the player)
+            console.log(`Notification: Unable to remove module ${mod._id}:\n${notLoadBearing === false ? "- Module supports other structures\n" : ""}${nonEssential === false ? "- Module is Essential structure\n" : ""}${notOccupied === false ? "- Module is occupied" : ""}`);
+            return false;
+        }
+    }
+
+    // Specifically handles the question of whether there is a module above the one being removed
+    checkForModulesAbove = (mod: Module) => {
+        let removable = true;
+        // Determine module left and right edges for convenience
+        const modLeft = mod._x;
+        const modRight = mod._x + mod._width;
+        // Get a list of other modules whose y value is lower (higher altitude) than this one
+        const modulesAbove = this._modules.filter((m) => m._y < mod._y);
+        modulesAbove.forEach((m) => {
+            // Using each module's x location and its width, find out if it overlaps the target module at any point
+            const left = m._x;
+            const right = m._x + m._width;
+            if (left < modRight && right > modLeft) {
+                removable = false;
+            }
+        })
+        return removable;
+    }
+
+    // This is a bit more involved than just checking if a module has crew present, as we also need to see if a colonist is walking on the floor provided by a module
+    checkForColonistOccupancy = (mod: Module, pop: Population) => {
+        let removable = true;
+        if (mod._crewPresent.length !== 0) removable = false;   // Check for basic occupancy - if occupied, don't allow removal
+        // Advanced check: If the module is on a non-ground floor and a colonist is in front of it, don't allow removal
+        const floor = this._data._floors.find((fl) => fl._modules.includes(mod._id));
+        if (floor && floor._groundFloorZones.length === 0) {        // Only do this check for non-ground floors
+            const colonistsOnFloor = pop._colonists.filter((col) => col._data._standingOnId === floor._id);
+            colonistsOnFloor.forEach((col) => {
+                if (col._data._x >= mod._x && col._data._x < mod._x + mod._width) removable = false;    // Do not allow removal if colonist is in front of the module
+            })
+        }
+        return removable;
+    }
+
+    // SECTION 2C - Soft checks for module removals (both checks are called individually by the top-level removal method rather than being called together like the hard checks are)
+
+    checkIfModuleIsEmpty = (mod: Module) => {
+        const capacities = mod._resourceCapacity();
+        let isEmpty = true;   // Set to false if any of the resources in the module's capacity list has a quantity greater than 0
+        if (capacities.length > 0) {
+            capacities.forEach((res) => {
+                if (mod.getResourceQuantity(res) > 0) isEmpty = false;
+            })
+        }
+        return isEmpty;
+    }
+
+    // Issue a warning if the module is on an occupied, non-ground floor and is the only one with transport connected (such that removing it would strand a colonist)
+    checkModuleRemovalWillNotStrand = (mod: Module, pop: Population) => {
+        let allClear = true;
+        // Find out the floor the module is on, and if it is not on the ground, then proceed to the next level of checks
+        const floor = this._data._floors.find((fl) => fl._modules.includes(mod._id));
+        if (floor && floor._groundFloorZones.length === 0) {
+            // Find out if there are colonists on the floor
+            const occupied = pop._colonists.filter((col) => col._data._standingOnId === floor._id).length > 0;
+            // Find out if floor's only connectors overlap with the module (even if there are multiple connectors)
+            const overlapping = this._data._elevators.filter((el) => floor._connectors.includes(el.id) && (el.x >= mod._x && el.x < mod._x + mod._width)).length;
+            const onlyExit = floor._connectors.length === overlapping;
+            if (occupied && onlyExit) {
+                allClear = false;
+                console.log(`Notification: Module ${mod._id}'s removal will strand colonist/s. Removal will proceed but just thought you'd like to know.`);
+            }
+        }
+        return allClear;
+    }
+
+    // SECTION 2D - Sub-commands for module removal
+
+    purgeResourcesFromRemovedModule = (mod: Module) => {
+        // For each resource in the module, attempt to find another module to use as storage for it and transfer as much as possible to that module
+        mod._resources.forEach((res) => {
+            const storage = this.findStorageModule(res);
+            if (storage) {
+                this.transferResources(res, mod, storage);
+            } else {
+                console.log(`Notification: Resource storage capacity not found for ${res[0]}`);
+            }
+        })
+    }
+
+    updateBaseVolumeForRemovedModule = (mod: Module) => {
+        // Get the module's area, then remove all of its coordinate points from the base volume using the data class's helper method
+        const area = this._data.calculateModuleArea(mod._moduleInfo, mod._x, mod._y);
+        const removed = this._data.removeCoordsFromBaseVolume(area);
+        if (removed - area.length === 0) {
+            return removed;
+        } else {
+            console.log(`Warning: Only removed ${removed} out of ${area.length} base volume coordinates for module ${mod._id}`);
+            return removed;
+        }
+    }
+
+    updateFloorsForRemovedModule = (mod: Module, map: Map) => {
+        // Calculate the footprint and pass it, along with the ID of the module being removed, to the floor manager
+        const area = this._data.calculateModuleArea(mod._moduleInfo, mod._x, mod._y);
+        const { footprint } = this._data.calculateModuleFootprint(area);
+        const floor = this._data._floors.find((fl) => fl._modules.includes(mod._id));    // Find the floor
+        if (floor) {
+            // Is the module the only one on that floor? If so, delete the Floor
+            if (floor._modules.length === 1) {
+                console.log(`Module ${mod._id} is the only module on floor ${floor._id}. Deleting both.`);
+                this._data._floors = this._data._floors.filter((fl) => fl._id !== floor._id);
+                // Is the module on the left/right edge of a floor that contains other modules? If so, remove its ID and adjust floor's edge
+            } else if (footprint[0] === floor._leftSide) {
+                console.log(`Module ${mod._id} is at the left edge of floor ${floor._id}`);
+                floor._modules = floor._modules.filter((id) => id !== mod._id); // Filter out the ID
+                floor._leftSide += mod._width;                  // Floor's left edge retreats by the width of the module
+            } else if (footprint[footprint.length - 1] === floor._rightSide) {
+                console.log(`Module ${mod._id} is at the right edge of floor ${floor._id}`);
+                floor._modules = floor._modules.filter((id) => id !== mod._id); // Filter out the ID
+                floor._rightSide -= mod._width;                  // Floor's right edge retreats by the width of the module
+            } else {
+                // If the module isn't alone, and it isn't on either edge, then it must be in the middle of a floor
+                // If so, remove it and all modules to its right and create a new floor with those modules (splitting the original floor)
+                console.log(`Module ${mod._id} is in the middle of floor ${floor._id}`);
+                // Split along the removed module: reset the floor's left edge, and get the ID's of all modules to its right and remove them
+                floor._rightSide = mod._x - 1;                                      // Reset floor's right edge
+                floor._modules = floor._modules.filter((id) => mod._id !== id);     // Remove the ID of the destroyed module
+                let newFloorMods: Module[] = [];
+                floor._modules.forEach((id) => {
+                    const m = this.getModuleFromID(id);
+                    if (m && m._x > mod._x) newFloorMods.push(m); 
+                });
+                if (newFloorMods.length > 0) {      // Add all modules on the right of the removed one to a new Floor
+                    newFloorMods.forEach((m) => {
+                        floor._modules = floor._modules.filter((id) => id !== m._id);   // Remove ID from the original floor
+                        const area = this._data.calculateModuleArea(m._moduleInfo, m._x, m._y);
+                        const footprint = this._data.calculateModuleFootprint(area);
+                        this._data.addModuleToFloors(m._id, footprint, map._topography, map._zones);
+                    })
+                } else {
+                    console.log(`Warning: No modules found to the right of removed module (${mod._id})`);
+                }
+            }
+            // Lastly, remove connectors from the original floor if they no longer fall within its bounds
+            const removeConnectors: Connector[] = this._connectors.filter((con) => floor._connectors.includes(con._id) && con._leftEdge > floor._rightSide)
+            removeConnectors.forEach((c) => {
+                floor._connectors = floor._connectors.filter((id) => id !== c._id);
+            });
+        } else {
+            console.log(`ERROR: Floor containing module ID ${mod._id} not found during module removal cleanup.`);
+        }
+        
+        
+        
     }
 
     // SECTION 3 - VALIDATING MODULE / CONNECTOR PLACEMENT
@@ -177,7 +386,27 @@ export default class Infrastructure {
         }
     }
 
-    // SECTION 4 - ECONOMIC / RESOURCE-RELATED METHODS
+    // SECTION 4 - MODULE UPDATER METHODS
+
+    handleHourlyUpdates = (sunlightPercent: number) => {
+        // 0 - Produce power modules' outputs
+        this.resolveModulePowerGeneration(sunlightPercent);
+        // 1- Push outputs from production/power modules
+        this.resolveResourceStoragePushes();
+        // 2 - Compile, then resolve module resource requests
+        const reqs = this.compileModuleResourceRequests();
+        this.resolveModuleResourceRequests(reqs);
+        // 3 - Deduct maintenance costs
+        this.handleModuleMaintenance();
+    }
+
+    handleModuleMaintenance = () => {
+        this._modules.forEach((mod) => {
+            mod.handleMaintenance();
+        })
+    }
+
+    // SECTION 5 - ECONOMIC / RESOURCE-RELATED METHODS
 
     // Looks up a module and passes it the given resource data
     addResourcesToModule = (moduleId: number, resource: Resource) => {
@@ -362,7 +591,21 @@ export default class Infrastructure {
         
     }
 
-    // SECTION 5 - INFRASTRUCTURE INFO API (GETTER FUNCTIONS)
+    // Reusable function for transferring resources from one module to another
+    transferResources = (res: Resource, from: Module, to: Module) => {
+        const capacity = to.getResourceCapacityAvailable(res[0]);       // Get capacity for the receiving end
+        const quantity = from.getResourceQuantity(res[0]);              // Get the quantity being sent
+        let transferred = 0;
+        if (capacity > quantity) {
+            transferred = from.deductResource(res);                 // Subtract (and prepare to transfer) the whole amount if there is more capacity than quantity
+        } else {
+            transferred = from.deductResource([res[0], capacity]);  // Otherwise just send the max amount for which capacity exists (and 'spill' the rest)
+        }
+        // console.log(`Transferring ${transferred} ${res[0]} from module ${from._id} to module ${to._id}`);
+        to.addResource([res[0], transferred]);      // Complete the transfer
+    }
+
+    // SECTION 6 - INFRASTRUCTURE INFO API (GETTER FUNCTIONS)
 
     // Returns the ID of the module nearest to a specific location (v.1 considers X-axis only for proximity calculation)
     findModuleNearestToLocation = (modules: Module[], location: Coords) => {
@@ -454,6 +697,8 @@ export default class Infrastructure {
         }
     }
 
+    // SECTION 7 - RENDER ZONE
+
     render = (p5: P5, horizontalOffset: number) => {
         this._horizontalOffset = horizontalOffset;
         // Only render one screen width's worth, taking horizontal offset into account:
@@ -496,6 +741,15 @@ export default class Infrastructure {
             p5.strokeWeight(4);
             p5.stroke(constants.GREEN_TERMINAL);
             p5.rect(x, y, w, h, 4, 4, 4, 4);
+        }
+        // Render floors in dev mode only:
+        if (process.env.ENVIRONMENT === "dev" || process.env.ENVIRONMENT === "local_dev") {
+            this._data._floors.forEach((floor) => {
+                // Only render floors that are on-screen
+                if (floor._rightSide <= rightEdge || floor._leftSide >= leftEdge) {
+                    floor.render(p5, this._horizontalOffset);
+                }
+            });
         }
         p5.strokeWeight(2);
         p5.stroke(0);

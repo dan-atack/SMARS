@@ -1,11 +1,12 @@
 import Infrastructure from "../src/infrastructure";
 import InfrastructureData from "../src/infrastructureData";
 import Map from "../src/map";
+import Population from "../src/population";
 import { ConnectorInfo, ModuleInfo } from "../src/server_functions";
 
 // TEST DATA
 
-const landerModuleInfo: ModuleInfo = { 
+const landerModuleInfo: ModuleInfo = {
     name: "Lander",
     width: 3,
     height: 2,
@@ -14,7 +15,7 @@ const landerModuleInfo: ModuleInfo = {
     columnStrength: 2,
     durability: 10,
     buildCosts: [
-        [ "money", 200000 ]
+        ["money", 200000]
     ],
     maintenanceCosts: [
         ["power", 1]
@@ -34,7 +35,7 @@ const storageModuleInfo: ModuleInfo = {
     pressurized: true,
     columnStrength: 10,
     durability: 100,
-    buildCosts:[
+    buildCosts: [
         ["money", 100000]
     ],  // money
     maintenanceCosts: [
@@ -58,7 +59,7 @@ const batteryModuleInfo: ModuleInfo = {
     pressurized: false,
     columnStrength: 10,
     durability: 100,
-    buildCosts:[
+    buildCosts: [
         ["money", 100000]
     ],
     maintenanceCosts: [],
@@ -77,7 +78,7 @@ const cantinaModuleInfo: ModuleInfo = {
     pressurized: true,
     columnStrength: 10,
     durability: 100,
-    buildCosts:[
+    buildCosts: [
         ["money", 100000]
     ],
     maintenanceCosts: [
@@ -100,7 +101,7 @@ const powerPlantInfo: ModuleInfo = {
     pressurized: false,
     columnStrength: 10,
     durability: 100,
-    buildCosts:[
+    buildCosts: [
         ["money", 1000000]
     ],
     maintenanceCosts: [],
@@ -189,7 +190,7 @@ const airVentData: ConnectorInfo = {
     type: "conduit",
     resourcesCarried: ["oxygen"],
     maxFlowRate: 1,
-    buildCosts:[
+    buildCosts: [
         ["money", 10000]
     ],
     maintenanceCosts: [],
@@ -205,11 +206,19 @@ const zonesData = [
 ]
 
 describe("Infrastructure base class", () => {
-    
+
     const infra = new Infrastructure();
     infra._data = new InfrastructureData();  // Necessary... for now
     infra._data.setup(mockography.length);                  // Setup Infra data with the width of the 'map' being used
-    
+
+    // Reset function for easy clearing of the stage from previous tests
+    const reset = () => {
+        infra._modules = [];
+        infra._connectors = [];
+        infra._data = new InfrastructureData();  // Necessary... for now
+        infra._data.setup(mockography.length);
+    }
+
     const mockMap = new Map();
 
     test("Can add new modules", () => {
@@ -223,13 +232,13 @@ describe("Infrastructure base class", () => {
     })
 
     test("Can provision a module with a resource", () => {
-        infra.addResourcesToModule(1000, [ "water", 500 ]);         // Should NOT be able to add water to a lander module
-        infra.addResourcesToModule(1001, [ "water", 500 ]);         // Should be able to add water to storage module
-        infra.addResourcesToModule(1002, [ "water", 1000000 ])      // Should only be able to fill up to max capacity
-        infra.addResourcesToModule(1003, [ "water", 500 ]);         // Provision the cantina with food and water for later tests
-        infra.addResourcesToModule(1003, [ "food", 500 ]);
+        infra.addResourcesToModule(1000, ["water", 500]);         // Should NOT be able to add water to a lander module
+        infra.addResourcesToModule(1001, ["water", 500]);         // Should be able to add water to storage module
+        infra.addResourcesToModule(1002, ["water", 1000000])      // Should only be able to fill up to max capacity
+        infra.addResourcesToModule(1003, ["water", 500]);         // Provision the cantina with food and water for later tests
+        infra.addResourcesToModule(1003, ["food", 500]);
         expect(infra._modules[0]._resources).toStrictEqual([
-            [ "power", 0 ]
+            ["power", 0]
         ]);
         expect(infra._modules[1]._resources).toStrictEqual([
             ["oxygen", 0],
@@ -249,7 +258,7 @@ describe("Infrastructure base class", () => {
             ["power", 0]
         ])
     })
-    
+
     // NOTE: There are now two varieties of this test, one with the optional 'lifeSupp' parameter, and one without
     test("Can find module/s with a particular resource (Life Support not specified)", () => {
         // All modules, except the Lander, should contain some water...
@@ -264,34 +273,34 @@ describe("Infrastructure base class", () => {
     test("Can find the module nearest to a set of coordinates", () => {
         const mods = infra.findModulesWithResource(["water", 10]);
         expect(mods.length).toBe(3);                                        // Three modules now contain water
-        expect(infra.findModuleNearestToLocation(mods, { x: 0, y: 10})).toBe(1001);     // Expect rightmost module to be nearest
-        expect(infra.findModuleNearestToLocation(mods, { x: 15, y: 10})).toBe(1002);    // Expect leftmost module to be nearest
+        expect(infra.findModuleNearestToLocation(mods, { x: 0, y: 10 })).toBe(1001);     // Expect rightmost module to be nearest
+        expect(infra.findModuleNearestToLocation(mods, { x: 15, y: 10 })).toBe(1002);    // Expect leftmost module to be nearest
     })
 
     test("Can find the module that contains a set of coordinates", () => {
         // Test each corner of the storage module at (8, 22) (4 x 3 width times height), inside and out
         // Top left corner
-        expect(infra.getModuleFromCoords({x: 8, y: 22})?._id).toBe(1003);     // Inside (top left corner)
-        expect(infra.getModuleFromCoords({x: 8, y: 21})).toBe(null);                // Too high
-        expect(infra.getModuleFromCoords({x: 7, y: 22})).toBe(null);                // Too far left
+        expect(infra.getModuleFromCoords({ x: 8, y: 22 })?._id).toBe(1003);     // Inside (top left corner)
+        expect(infra.getModuleFromCoords({ x: 8, y: 21 })).toBe(null);                // Too high
+        expect(infra.getModuleFromCoords({ x: 7, y: 22 })).toBe(null);                // Too far left
         // Top right corner
-        expect(infra.getModuleFromCoords({x: 11, y: 22})?._id).toBe(1003);    // Inside (top right corner)
-        expect(infra.getModuleFromCoords({x: 11, y: 21})).toBe(null);               // Too high
-        expect(infra.getModuleFromCoords({x: 12, y: 22})).toBe(null);               // Too far right
+        expect(infra.getModuleFromCoords({ x: 11, y: 22 })?._id).toBe(1003);    // Inside (top right corner)
+        expect(infra.getModuleFromCoords({ x: 11, y: 21 })).toBe(null);               // Too high
+        expect(infra.getModuleFromCoords({ x: 12, y: 22 })).toBe(null);               // Too far right
         // Bottom right corner
-        expect(infra.getModuleFromCoords({x: 11, y: 24})?._id).toBe(1003);    // Inside (bottom right corner)
-        expect(infra.getModuleFromCoords({x: 11, y: 25})?._id).toBe(1001);    // Too low (other module)
-        expect(infra.getModuleFromCoords({x: 12, y: 23})).toBe(null);               // Too far right
+        expect(infra.getModuleFromCoords({ x: 11, y: 24 })?._id).toBe(1003);    // Inside (bottom right corner)
+        expect(infra.getModuleFromCoords({ x: 11, y: 25 })?._id).toBe(1001);    // Too low (other module)
+        expect(infra.getModuleFromCoords({ x: 12, y: 23 })).toBe(null);               // Too far right
         // Bottom left corner
-        expect(infra.getModuleFromCoords({x: 8, y: 24})?._id).toBe(1003);     // Inside (bottom left corner)
-        expect(infra.getModuleFromCoords({x: 8, y: 25})?._id).toBe(1001);     // Too low (other module)
-        expect(infra.getModuleFromCoords({x: 7, y: 24})).toBe(null);                // Too far left
+        expect(infra.getModuleFromCoords({ x: 8, y: 24 })?._id).toBe(1003);     // Inside (bottom left corner)
+        expect(infra.getModuleFromCoords({ x: 8, y: 25 })?._id).toBe(1001);     // Too low (other module)
+        expect(infra.getModuleFromCoords({ x: 7, y: 24 })).toBe(null);                // Too far left
     })
 
     test("Can find a Connector that overlaps a set of coordinates", () => {
         // Setup: Add two connectors that overlap at one point, (8, 25)
-        infra.addConnector({ x: 8, y: 27 }, { x: 8, y: 22}, airVentData, mockMap, 2000);     
-        infra.addConnector({ x: 6, y: 25 }, { x: 10, y: 25}, airVentData, mockMap, 2001);
+        infra.addConnector({ x: 8, y: 27 }, { x: 8, y: 22 }, airVentData, mockMap, 2000);
+        infra.addConnector({ x: 6, y: 25 }, { x: 10, y: 25 }, airVentData, mockMap, 2001);
         // Vertical
         expect(infra.getConnectorFromCoords({ x: 8, y: 27 })?._id).toBe(2000);      // Top
         expect(infra.getConnectorFromCoords({ x: 8, y: 22 })?._id).toBe(2000);      // Bottom
@@ -424,9 +433,7 @@ describe("Infrastructure base class", () => {
 
     test("resolveResourceStoragePushes sends production/power outputs to available Storage class modules", () => {
         // Setup test conditions - NEW POLICY: WIPE ALL EXISTING STRUCTURES AT START OF EACH TEST
-        infra._modules = [];
-        infra._data = new InfrastructureData();  // Necessary... for now
-        infra._data.setup(mockography.length);
+        reset();
         // Add 2 solar panels, a battery, a hydroponics bay and a storage room
         infra.addModule(4, 25, solarPanelInfo, mockography, zonesData, 1000);
         infra.addModule(7, 25, solarPanelInfo, mockography, zonesData, 1001);
@@ -442,7 +449,7 @@ describe("Infrastructure base class", () => {
         expect(infra._modules[1]._resources[0]).toStrictEqual(["power", 100]);
         expect(infra._modules[2]._resources[0]).toStrictEqual(["power", 0]);
         expect(infra._modules[3]._resources[2]).toStrictEqual(["food", 100]),
-        expect(infra._modules[4]._resources[1]).toStrictEqual(["food", 0]);
+            expect(infra._modules[4]._resources[1]).toStrictEqual(["food", 0]);
         // Run test
         infra.resolveResourceStoragePushes();
         // Validate results - production modules are empty and storage modules are (partially) filled
@@ -450,7 +457,302 @@ describe("Infrastructure base class", () => {
         expect(infra._modules[1]._resources[0]).toStrictEqual(["power", 0]);    // Pushed to battery
         expect(infra._modules[2]._resources[0]).toStrictEqual(["power", 200]);  // From solar panels
         expect(infra._modules[3]._resources[2]).toStrictEqual(["food", 0]),     // Pushed to storage room
-        expect(infra._modules[4]._resources[1]).toStrictEqual(["food", 100]);   // From hydro pod
+            expect(infra._modules[4]._resources[1]).toStrictEqual(["food", 100]);   // From hydro pod
     })
+
+    // REMOVING STRUCTURES
+
+    test("checkForConnectorRemoval checks if a colonist is climbing a ladder and returns false if so or true otherwise", () => {
+        reset();
+        // Setup: Create two modules in a stack with a ladder connecting the second floor to the ground
+        infra.addModule(0, 25, hydroponicsModuleData, mockography, zonesData, 1001);
+        infra.addModule(0, 22, hydroponicsModuleData, mockography, zonesData, 1002);
+        infra.addConnector({ x: 1, y: 22 }, { x: 1, y: 25 }, ladderData, mockMap, 1003);
+        // Situation 1: Colonist is not overlapping elevator and not climbing - allow removal
+        let pop = new Population();
+        pop.addColonist(2, 25);
+        pop._colonists[0]._data._currentAction = { type: "move", coords: { x: 1, y: 1 }, duration: 0, buildingId: 0 };
+        expect(infra.checkForConnectorRemoval(infra._connectors[0], pop)).toBe(true);
+        // Situation 2: Colonist is overlapping the elevator but not climbing - allow removal
+        let pop2 = new Population();
+        pop2.addColonist(1, 24);
+        pop2._colonists[0]._data._currentAction = { type: "move", coords: { x: 1, y: 1 }, duration: 0, buildingId: 0 };
+        expect(infra.checkForConnectorRemoval(infra._connectors[0], pop2)).toBe(true);
+        // Situation 3: Colonist is climbing but not overlapping the elevator - allow removal
+        let pop3 = new Population();
+        pop3.addColonist(0, 24);
+        pop3._colonists[0]._data._currentAction = { type: "climb", coords: { x: 1, y: 1 }, duration: 0, buildingId: 1004 };
+        expect(infra.checkForConnectorRemoval(infra._connectors[0], pop3)).toBe(true);
+        // Situation 4: Colonist is overlapping the elevator and climbing - DON NOT allow removal
+        let pop4 = new Population();
+        pop4.addColonist(1, 24);
+        pop4._colonists[0]._data._currentAction = { type: "climb", coords: { x: 1, y: 1 }, duration: 0, buildingId: 1003 };
+        expect(infra.checkForConnectorRemoval(infra._connectors[0], pop4)).toBe(false);
+    })
+
+    test("removeConnector removes all traces of a connector from the game including infra data/floors", () => {
+        // Setup: Actually keep the same setup as the previous test, but add another connector beside the first one
+        infra.addConnector({ x: 2, y: 22 }, { x: 2, y: 25 }, ladderData, mockMap, 1004);
+        // Also add a population class, with a guy as well, with an action to be cancelled just for good measure
+        let pop = new Population();
+        pop.addColonist(2, 25);
+        pop._colonists[0]._data._currentGoal = "farm";
+        pop._colonists[0]._data._currentAction = {
+            type: "farm",
+            coords: { x: 1, y: 22 },
+            duration: 22,
+            buildingId: 1001
+        };
+        pop._colonists[0]._data._actionStack = [{
+            type: "climb",
+            coords: { x: 1, y: 22 },
+            duration: 0,
+            buildingId: 1003
+        }]
+        // Validate pre-conditions
+        expect(infra._connectors.length).toBe(2);
+        expect(infra._data._floors.length).toBe(2);
+        // TEST ACTION: Remove the first connector (the one from the previous test... helloooo best practices lol)
+        const con = infra.getConnectorFromCoords({ x: 1, y: 23 });
+        if (con !== null) {
+            expect(infra.removeConnector(con, pop)).toBe(true); // The function returns its success status based on whether it was allowed to make the removal
+        } else {
+            throw new Error("ERROR: TEST ARTIFACT NOT FOUND FOR CONNECTOR REMOVAL TEST.");
+        }
+        // Ensure that the removed connector is not included in the top level Connectors list
+        expect(infra._connectors.length).toBe(1);
+        expect(infra._connectors.filter((connector) => connector._id === con._id).length).toBe(0);
+        // Ensure that no floor contains the ID of the removed connector
+        expect(infra._data._floors.filter((floor) => floor._connectors.includes(con._id)).length).toBe(0);
+        // Ensure that the floor data 'elevators' list does not contain any elements whose ID matches that of the removed connector
+        expect(infra._data._elevators.filter((el) => el.id === con._id).length).toBe(0);
+        // Ensure population has had their goals reset
+        expect(pop._colonists[0]._data._currentAction).toBe(null);
+        expect(pop._colonists[0]._data._currentGoal).toBe("");
+    })
+
+    test("checkForModulesAbove specifically checks to see if any other module has any columns that are above the module being removed (hard check)", () => {
+        reset();
+        // Setup: Two modules, one stacked on top of the other
+        // Attempting to remove the bottom one first is not allowed, but removing the top one is
+        infra.addModule(0, 25, hydroponicsModuleData, mockography, zonesData, 1001);
+        infra.addModule(0, 22, hydroponicsModuleData, mockography, zonesData, 1002);
+        const bottomFloor = infra._modules[0];
+        const topFloor = infra._modules[1];
+        expect(infra.checkForModulesAbove(bottomFloor)).toBe(false);    // Returns false if any modules are detected above (false = halts removal action)
+        expect(infra.checkForModulesAbove(topFloor)).toBe(true);        // Returns true if no modules are detected above (true = all clear for removal)
+        // Advanced: Composite structure - A Pyramid in which only the summit (1008), and one other local peak (1002), can be removed from the stack
+        infra.addModule(3, 25, hydroponicsModuleData, mockography, zonesData, 1003);
+        infra.addModule(6, 25, hydroponicsModuleData, mockography, zonesData, 1004);
+        infra.addModule(9, 25, hydroponicsModuleData, mockography, zonesData, 1005);
+        infra.addModule(4, 22, hydroponicsModuleData, mockography, zonesData, 1006);
+        infra.addModule(7, 22, hydroponicsModuleData, mockography, zonesData, 1007);
+        infra.addModule(5, 19, hydroponicsModuleData, mockography, zonesData, 1008);
+        expect(infra.checkForModulesAbove(infra._modules[0])).toBe(false);
+        expect(infra.checkForModulesAbove(infra._modules[1])).toBe(true);       // Local peak
+        expect(infra.checkForModulesAbove(infra._modules[2])).toBe(false);
+        expect(infra.checkForModulesAbove(infra._modules[3])).toBe(false);
+        expect(infra.checkForModulesAbove(infra._modules[4])).toBe(false);
+        expect(infra.checkForModulesAbove(infra._modules[5])).toBe(false);
+        expect(infra.checkForModulesAbove(infra._modules[6])).toBe(false);
+        expect(infra.checkForModulesAbove(infra._modules[7])).toBe(true);       // Top of the pyramid      
+    })
+
+    test("checkForColonistOccupancy checks if a module has colonists inside, or if it forms part of the floor they are currently walking on (hard check)", () => {
+        reset();
+        // Setup: Two modules, one stacked on top of the other, and two colonists (one per module)
+        infra.addModule(0, 25, hydroponicsModuleData, mockography, zonesData, 1001);
+        infra.addModule(0, 22, hydroponicsModuleData, mockography, zonesData, 1002);
+        const pop = new Population();
+        pop.addColonist(0, 26); // Place the first colonist on the ground in front of the first module
+        // TEST ONE: Removal is blocked if a colonist is punched in to a module
+        infra._modules[0].punchIn(pop._colonists[0]._data._id);
+        expect(infra.checkForColonistOccupancy(infra._modules[0], pop)).toBe(false);   // Cannot remove a module when there is a colonist inside
+        infra._modules[0].punchOut(pop._colonists[0]._data._id);
+        expect(infra.checkForColonistOccupancy(infra._modules[0], pop)).toBe(true);    // Once the colonist is punched out the module can be removed
+        // TEST TWO: Removal is blocked if a colonist is not punched in, but is standing on the floor provided by the module to be removed
+        pop.addColonist(0, 23); // Place colonist on the second floor (head is one y position "lower" than the floor level, which is 24)
+        pop._colonists[1]._data.detectTerrainBeneath(mockMap, infra);
+        expect(pop._colonists[1]._data._standingOnId).toBe(1004);   // Validate test conditions - colonist is standing on the floor formed by the second module
+        expect(infra._modules[1]._crewPresent.length).toBe(0);      // Validate test conditions - colonist is NOT punched in to module 1002
+        expect(infra.checkForColonistOccupancy(infra._modules[1], pop)).toBe(false); // Cannot remove a module if it is on a non-ground floor and a colonist is standing in front of it
+        pop._colonists[1]._data._y = 26;                            // Now relocate the colonist to the other floor and try again
+        pop._colonists[1]._data.detectTerrainBeneath(mockMap, infra);
+        expect(infra.checkForColonistOccupancy(infra._modules[1], pop)).toBe(true); // Once the colonist is no longer standing on the module's floor, it can be removed
+    })
+
+    test("checkIfModuleHasResources will come up false if the module contains any resources, or true otherwise (soft check)", () => {
+        reset();
+        // Setup: One module, initially empty, then with a resource added
+        infra.addModule(0, 25, hydroponicsModuleData, mockography, zonesData, 1001);
+        expect(infra.checkIfModuleIsEmpty(infra._modules[0])).toBe(true);
+        infra.addResourcesToModule(1001, ["water", 1]);
+        expect(infra.checkIfModuleIsEmpty(infra._modules[0])).toBe(false);
+    })
+
+    test("checkModuleRemovalWillNotStrand sees if removing a module will cause a colonist to be stranded on the affected floor (soft check)", () => {
+        reset();
+        // Setup: Four modules forming a block, with a single ladder at the far left edge providing the only access to the second floor, and one colonist at the far right of that floor
+        infra.addModule(0, 25, hydroponicsModuleData, mockography, zonesData, 2001);
+        infra.addModule(3, 25, hydroponicsModuleData, mockography, zonesData, 2002);
+        infra.addModule(0, 22, hydroponicsModuleData, mockography, zonesData, 2003);
+        infra.addModule(3, 22, hydroponicsModuleData, mockography, zonesData, 2004);
+        infra.addConnector({ x: 0, y: 21 }, { x: 0, y: 25 }, ladderData, mockMap, 2005);
+        const pop = new Population();
+        pop.addColonist(1, 23);
+        pop._colonists[0]._data.detectTerrainBeneath(mockMap, infra);
+        // Validate test conditions: Colonist is on the second floor
+        expect(pop._colonists[0]._data._standingOnId).toBe(1005);
+        // TEST ONE: Validate that removing the leftmost module (upon which the colonist is not standing, but which is essential for their departure) gives a warning
+        expect(infra.checkModuleRemovalWillNotStrand(infra._modules[2], pop)).toBe(false);
+        // TEST TWO: Validate that, after adding a second ladder that does not overlap the leftmost module, the warning is no longer needed (as the removal would not strand the colonist)
+        infra.addConnector({ x: 5, y: 21 }, { x: 5, y: 25 }, ladderData, mockMap, 2006);
+        expect(infra.checkModuleRemovalWillNotStrand(infra._modules[2], pop)).toBe(true);
+    })
+
+    test("purgeResourcesFromRemovedModule pushes all of a module's resources to other modules prior to its removal", () => {
+        reset();
+        // Setup: Two modules, one of which is empty, the other of which contains resources
+        infra.addModule(0, 25, hydroponicsModuleData, mockography, zonesData, 2001);
+        infra.addModule(3, 25, storageModuleInfo, mockography, zonesData, 2002);
+        infra.addResourcesToModule(2001, ["water", 1000]);
+        infra.addResourcesToModule(2001, ["food", 1000]);
+        infra.purgeResourcesFromRemovedModule(infra._modules[0]);
+        // VALIDATION PART 1: Target module has no resources
+        expect(infra._modules[0].getResourceQuantity("water")).toBe(0);
+        expect(infra._modules[0].getResourceQuantity("food")).toBe(0);
+        // VALIDATION PART 2: Storage module has target module's resources transferred to it
+        expect(infra._modules[1].getResourceQuantity("water")).toBe(1000);
+        expect(infra._modules[1].getResourceQuantity("food")).toBe(1000);
+        // TOTO: ADD VALIDATION PART 3: Can we do it in reverse?? (I.E. storage purged into production module)
+        // NOTE: Not doing for this chapter
+    })
+
+    test("updateBaseVolumeForRemovedModule removes a module's coordinate points from the base volume map", () => {
+        reset();
+        // Setup: Two modules, side by side, slightly into the map
+        infra.addModule(1, 25, hydroponicsModuleData, mockography, zonesData, 2001);
+        infra.addModule(4, 25, storageModuleInfo, mockography, zonesData, 2002);
+        expect(infra._data._baseVolume).toStrictEqual([     // Validate test setup
+            [],
+            [25, 26, 27],
+            [25, 26, 27],
+            [25, 26, 27],
+            [25, 26, 27],
+            [25, 26, 27],
+            [25, 26, 27],
+            [25, 26, 27],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            []
+        ])
+        // VALIDATION: When we remove the first module, all of its coordinates are removed from the base's volume
+        expect(infra.updateBaseVolumeForRemovedModule(infra._modules[0])).toBe(9);  // Removal method reports how many coordinates were removed
+        expect(infra._data._baseVolume).toStrictEqual([
+            [],
+            [],
+            [],
+            [],
+            [25, 26, 27],
+            [25, 26, 27],
+            [25, 26, 27],
+            [25, 26, 27],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            []
+        ])
+        // VALIDATION 2: When the second module is removed, the base volume is emptied entirely
+        expect(infra.updateBaseVolumeForRemovedModule(infra._modules[1])).toBe(12); // Second module is 3 x 4
+        expect(infra._data._baseVolume).toStrictEqual([
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            []
+        ])
+    });
+
+    test("updateFloorsForRemovedModule correctly cleans up the data class's floors array when a module is removed", () => {
+        reset();
+        // Setup for 3 test cases (all removals will be on upper floors, just because)
+        // CASE A - Module is the only one on its floor (using upper floor here) - when removed, its floor is also removed
+        infra.addModule(0, 25, hydroponicsModuleData, mockography, zonesData, 2001);
+        infra.addModule(0, 22, hydroponicsModuleData, mockography, zonesData, 2002);    // Remove
+        expect(infra._data._floors.length).toBe(2);     // Verify setup
+        infra.updateFloorsForRemovedModule(infra._modules[1], mockMap);
+        expect(infra._data._floors.length).toBe(1);     // Verify floor removal
+        reset();
+        // CASE B - Module is on the left/right edge of a floor with other modules - when removed, its ID is removed and the edge adjusted
+        infra.addModule(0, 25, hydroponicsModuleData, mockography, zonesData, 2001);
+        infra.addModule(3, 25, hydroponicsModuleData, mockography, zonesData, 2002);
+        infra.addModule(6, 25, hydroponicsModuleData, mockography, zonesData, 2003);
+        infra.addModule(0, 22, hydroponicsModuleData, mockography, zonesData, 2004);    // Remove first (Left edge)
+        infra.addModule(3, 22, hydroponicsModuleData, mockography, zonesData, 2005);    // First floor
+        infra.addModule(6, 22, hydroponicsModuleData, mockography, zonesData, 2006);    // Remove first (Right edge)
+        expect(infra._data._floors[1]._leftSide).toBe(0);           // Validate test setup
+        expect(infra._data._floors[1]._rightSide).toBe(8);
+        expect(infra._data._floors[1]._modules).toStrictEqual([2004, 2005, 2006]);
+        infra.updateFloorsForRemovedModule(infra._modules[3], mockMap);      // Remove leftmost module
+        expect(infra._data._floors[1]._leftSide).toBe(3);
+        infra.updateFloorsForRemovedModule(infra._modules[5], mockMap);      // Remove rightmost module
+        expect(infra._data._floors[1]._rightSide).toBe(5);
+        reset();
+        // CASE C - Module is in the middle, with at least one module to either side - when removed, a new floor is created for the modules to the right of the original
+        infra.addModule(0, 25, hydroponicsModuleData, mockography, zonesData, 2001);
+        infra.addModule(3, 25, hydroponicsModuleData, mockography, zonesData, 2002);
+        infra.addModule(6, 25, hydroponicsModuleData, mockography, zonesData, 2003);
+        infra.addModule(0, 22, hydroponicsModuleData, mockography, zonesData, 2004);
+        infra.addModule(3, 22, hydroponicsModuleData, mockography, zonesData, 2005);    // Remove the middle one, dividing the floor into two
+        infra.addModule(6, 22, hydroponicsModuleData, mockography, zonesData, 2006);
+        expect(infra._data._floors[1]._leftSide).toBe(0);           // Validate test setup
+        expect(infra._data._floors[1]._rightSide).toBe(8);
+        expect(infra._data._floors[1]._modules).toStrictEqual([2004, 2005, 2006]);
+        expect(infra._data._floors.length).toBe(2);
+        infra.updateFloorsForRemovedModule(infra._modules[4], mockMap);      // Remove the middle one
+        expect(infra._data._floors.length).toBe(3);                 // VALIDATION: There should now be 3 floors (one on the ground and two on top)
+        expect(infra._data._floors[1]._modules).toStrictEqual([2004]);  // Only the leftmost module should remain on the original upper floor
+        expect(infra._data._floors[1]._leftSide).toBe(0);           // The original floor's left side should remain where it was
+        expect(infra._data._floors[1]._rightSide).toBe(2);          // The original floor's right side should be at the edge of its only module
+        expect(infra._data._floors[2]._modules).toStrictEqual([2006]);  // New floor should be created, containing the rightmost module
+        expect(infra._data._floors[2]._leftSide).toBe(6);           // New floor's left edge is the left edge of the rightmost module
+        expect(infra._data._floors[2]._rightSide).toBe(8);          // New floor's right edge is the right edge of the rightmost module
+    })
+    
 
 })

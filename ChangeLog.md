@@ -3287,6 +3287,106 @@ Some preliminary test events will need to be created for this chapter, but a sep
 
 18. Add the Engine's enableRandomEvents flag to the calculus for creating a random event (so that if the player has de-activated that setting no random events will occur).
 
+## Chapter Two: Destroying Structures
+
+### Difficulty Estimate: 8 (For refactoring that could get very nasty, and many unit tests needed for reassurance that we got it right)
+
+### Date: July 23, 2023
+
+Following the implementation of the game's random events system, the next essential item on the game's feature list has got to be the ability to remove Modules they had previously built. This will require revisiting some of the game's more elaborate logic for module placement, and how that interacts with more shadowy concepts such as the base's volume, floors, and of course the whole Infrastructure/InfrastructureData class distinction (has the time come for a revolution in that sphere?!)
+
+On the way it will be necessary to consider what rules will be in play when removing Modules (deliberately distinct from Connectors, which will require their own sub-chapter), and consider questions such as:
+
+- Can the player remove any Module they like? Consider: gravity, unique structures (comms dome) --> There will be exceptions/limits
+- What happens to the resources in destroyed Modules? --> They will be exported to other modules, whenever possible
+- What happens to Connectors that are attached to a destroyed module? --> Nothing (see below for more on connector removals)
+- Will there be a warning/are-you-sure message? --> Yes, but only in the console for now (next chapter will upgrade this)
+- What happens to the Floors data when a module is removed? --> It gets updated; same with base volume map
+- BONUS: Can we illustrate/show floors in some subtle way as part of module highlighting? Or as an overlay?? --> Yes, but only in Dev mode for now
+
+Also, in tandem with the above considerations, what is to be done about removing Connectors?
+
+- Will they be removed with the same mouse function/button as Modules? --> YES
+- Do they need to be removed first/before a Module that they're connected to? --> Not necessarily, although there will be some guardrails
+- What factors would limit their removal, if any? --> Ladders annot be removed while a colonist is climbing them
+
+Exit Criteria:
+
+- [DONE] Player can select 'demolish' button from sidebar that will enable them to remove either a module or connector
+- [DONE] When in 'demolish' mode the mouse cursor is accompanied by a little red 'X' whose center is at the point of the cursor
+- [DONE] Player can deselect 'demolish' mode and return to 'inspect' mode simply by clicking on anything that isn't a module or a connector
+- [DONE] Player can click on a connector while in 'demolish' mouse context to remove it
+- [DONE] Player will be notified (initially via console log) that a connector cannot be removed if there is currently one or more colonists on it
+- [DONE] Once removed, a connector will no longer be considered by colonists looking to gain access to a floor/module
+- [DONE] Player can click on a module while in 'demolish' mouse context to remove it
+- [DONE] When a module is clicked for deletion the following 3 'hard' checks are performed:
+- [DONE] If the module is underneath another module it cannot be removed and the player is notified (via console message)
+- [DONE] If the module is considered 'essential' it cannot be removed and the player is notified
+- [DONE] If the module contains any colonists it cannot be removed and the player is notified
+- [DONE] If none of the above 3 conditions are true, the following 'soft' checks are then performed:
+- [DONE] If the module contains any resources, a warning is given (again, for now in the console -in the future this will be upgraded to a confirmation popup)
+- [DONE] If the module's removal will strand any colonists on the remaining part of the floor, a warning is given
+- [DONE] When the module demolition finally occurs, If the module contains resources, all of its resources are pushed to other modules
+- If the module contains no resources, or once its resources have been pushed out, the following steps are carried out to ensure a thorough removal:
+- [DONE] It is removed from the infra class's modules list
+- [DONE] The Infra data class removes it from the base volume array
+- [DONE] The Infra data class removes it from the Floor it is on:
+- [DONE] If the module is the only module on a floor, the floor is removed entirely
+- [DONE] If the module is at the edge of a multi-module floor it is removed and the floor's edges are recalculated
+- [DONE] If the module is in the middle of a multi-module floor, it and all modules to its right are removed from that floor and a new floor ID is generated for the remaining module/s to its right
+- [DONE] Whenever a module is removed from a floor, that floor's connector IDs list is updated
+- [DONE] There must be extensive unit tests for all of these criteria, developed prior to the implementation of the features themselves
+
+1. Start by replacing the 'Overlays' button on the sidebar with a 'demolish' button, and give it the standard yellow colouring of non-disabled mouse context buttons.
+
+2. Then, in the mouse context manager/sidebar buttons programming, change the mouse context for the button to 'demolish' and finally have the Engine's click handler log that new context when a click is made with it.
+
+3. Create two new, initially empty Infra class methods: removeModule and removeConnector. Initially just have them call their own names when activated.
+
+4. Create a new Engine method, handleDemolish, that takes care of the click response for the demolish mouse context, and make it call either the removeConnector or the removeModule method as appropriate when a click occurs, as the Inspect tool handler does. If a click does not fall upon either a module or a connector reset the mouse context to 'inspect.'
+
+5. Refactor the MouseShadow class to accept a string argument indicating the type of shadow it should make, and then create a switch case system that uses this argument to produce the various shapes for the different mouse shadow options. Update the mouse shadow unit tests once this is implemented, and add a new one for the 'demolish' context, then add a new shadow with a red 'X' for that context.
+
+6. Create a debugging tool (and potential feature down the line): Pass P5 to the Floor class, and make it a part of the Infra class's render function. Give the Floor class a render function, and have it draw a line with a random colour along its length at the floor's elevation level. You can then wrap the call to render floors in a conditional statement to only do it when the environment is "dev" or "local_dev".
+
+7. Add the Connector removal check, as its own Infra class method called checkForConnectorRemoval. Since it will only have one check to perform it will contain all of the logic for the following operation: Given the ID of the connector to be removed and the Population class, check each colonist to see if their current action is "climb" and their coordinates overlap with the Connector to be removed. If both of these checks are true, that means that a colonist is climbing the targeted ladder, in which case return a value of 'false' so that the remove method knows not to proceed. Develop a unit test for this checking method before writing its code. Test in game as well, by logging the check's outcome and clicking on various ladders. The method should also return true automatically for non-transport (e.g. conduit) type connectors.
+
+8. Before adding the connector removal logic, create a new Population class method to update colonists' action stacks when a structure (connector or module) is removed: Have it check each colonist's action stack and current action, and if it finds the ID of the structure being removed, immediately resolve that colonist's current goal, allowing them to recalculate their course of action. We'll need to validate this with a unit test, naturally, and do it again in the field as soon as the removal feature is implemented.
+
+9. Once the Connector removal check method is ready, it's time to implement the actual removal of the structure. Within the shell of the removeConnector method, after it does the check, do each of the following steps to fully remove the connector (add unit tests before coding solution):
+
+- [DONE] Filter it out of the connectors list (Infra class)
+- [DONE] Connector ID is removed from each Floor's connectors array (Infra Data / Floor classes)
+- [DONE] Filter it out of the elevators list (Infra Data class)
+- [DONE] Reset colonist goals if they were going to use it (Population class)
+
+10. Add a new field to the Infra class, essentialStructures. It should be a list of strings, and by default will contain the name of the comms array ("Comms Antenna").
+
+11. Now begin with the Module removal method, starting with its hard checks method: doHardChecksForModuleRemoval. Since it will have to perform multiple sub-checks, create a method for each of these (with its own unit test - developed prior to the actual code, naturally):
+
+- [DONE] Check for modules above
+- [DONE] Check whether module is occupied by colonists OR forms part of a floor that a colonist is currently walking on
+- [DONE] Check whether module is considered an 'essential' structure (can also be done inline)
+
+12. Next, once the hard checks are working out as desired, implement the lesser, softChecksForModuleRemoval. There will be two of these checks, each of which will require its own method and unit test:
+
+- [DONE] Check if the module is empty
+- [DONE] Check if the module's removal will strand any colonists on the floor
+
+13. Put it all together: if the hard checks pass, and the soft checks do their thing (either printing a message or doing nothing at all) then execute the module's removal:
+
+- [DONE] First, if it does have resources, attempt to push them to other modules wherever possible (Infra class)
+- [DONE] Then, filter it out of the modules list (Infra class)
+- [DONE] Tell colonists not to use it anymore (Population class)
+- [DONE] Update the base volume to remove its coordinates (Infra Data class)
+- Update the Floors list (Infra Data class):
+- - [DONE] If the module was on its own floor, delete that floor
+- - [DONE] If the module was on the edge of a floor with at least one other module, adjust that floor's appropriate edge and remove its ID from the floor's module ID list
+- - [DONE] If the module was in the middle of a floor with another module to either side, remove it, and all the modules to its right from the original floor and adjust that floor's edge; then, place all of the other modules that were removed (those to the right of the removed module) into a NEW floor.
+- - [DONE] Update the connector ID lists of any floors that are affected by any modules' removal
+
+### 14. Fix the issue where distant floors can be merged wrongly (it's maybe picking the first floor whose elevation matches?)
+
 ## Chapter X: In-Game Notifications
 
 ### Difficulty Estimate: 3 (for developing a message collection system for Engine subclass components, and message prioritization and rendering for the Engine class)
@@ -3446,4 +3546,4 @@ Exit Criteria:
 - [DONE]It is possible to create a new saved game file for a given user.
 - It is possible to update a saved game file for a given user.
 - [DONE]It is possible to retrieve a list of saved games for a given user.
-- [DONE]It is possible to retrieve all of the game data for a specific saved game file.
+- [DONE]It is possible to retrieve all of the game data for a specific saved game file.x

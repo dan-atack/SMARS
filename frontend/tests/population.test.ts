@@ -1,7 +1,77 @@
+import { ColonistAction } from "../src/colonistData";
 import Population from "../src/population";
+import { ModuleInfo } from "../src/server_functions";
+import { ConnectorInfo } from "../src/server_functions";
+import Infrastructure from "../src/infrastructure";
+import InfrastructureData from "../src/infrastructureData";
+import Map from "../src/map";
+
+// For test structures
+const hydroponicsModuleData: ModuleInfo = {
+    name: "Hydroponics Pod",
+    width: 3,
+    height: 3,
+    type: "Production",
+    pressurized: true,
+    columnStrength: 1,
+    durability: 100,
+    buildCosts: [
+        ["money", 100000],
+    ],
+    maintenanceCosts: [
+        ["power", 10]
+    ],
+    productionInputs: [     // Plant life needs: water, CO2 and light (in this case electric light)
+        ["water", 5]
+    ],
+    productionOutputs: [
+        ["food", 10],
+        ["oxygen", 10],
+    ],
+    storageCapacity: [
+        ["oxygen", 1000],
+        ["water", 2500],
+        ["food", 1000],
+    ],
+    crewCapacity: 1,
+    shapes: []
+}
+
+const ladderData: ConnectorInfo = {
+    name: "Ladder",
+    type: "transport",
+    resourcesCarried: ["crew"],
+    maxFlowRate: 2,
+    buildCosts: [
+        ["money", 7500]
+    ],
+    maintenanceCosts: [],
+    vertical: true,
+    horizontal: false,
+    width: 1
+}
+
+// Fake terrain data: plug into Infra class's structure adding methods (ground level is 26 meaning structures' y values should be 25)
+const mockography = [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10];
+const zonesData = [
+    { id: '0026', leftEdge: { x: 0, y: 26 }, rightEdge: { x: 15, y: 26 } }
+]
+
+const mockMap = new Map;
 
 describe("Population", () => {
     const population = new Population();
+    const infra = new Infrastructure();
+    infra._data = new InfrastructureData();                 // Necessary... for now
+    infra._data.setup(mockography.length);                  // Setup Infra data with the width of the 'map' being used
+
+    const reset = () => {
+        population._colonists = [];
+        infra._modules = [];
+        infra._connectors = [];
+        infra._data = new InfrastructureData();
+        infra._data.setup(mockography.length);
+    }
 
     test("Defines addColonist", () => {
         expect(typeof population.addColonist).toBe("function");
@@ -86,4 +156,69 @@ describe("Population", () => {
         expect(population._colonists[1]._data._morale).toBe(1);
         expect(population._colonists[2]._data._morale).toBe(1);
     })
+
+    test("Can resolve current goal for all colonists with an action in their stack that uses a removed structure", () => {
+        reset();
+        // Setup: 3 colonists for 3 possible outcomes: two of them need to use the removed structure as an action towards their current goal
+        population.addColonist(1, 24);
+        population.addColonist(4, 25);
+        population.addColonist(2, 22);
+        const removedBuildingId = 1003;
+        // Setup Colonist A: current action is to climb the ladder; he is in position and currently climbing and his goal is to farm
+        population._colonists[0]._data._currentGoal = "farm";
+        population._colonists[0]._data._currentAction = {
+            type: "climb",
+            coords: { x: 1, y: 22 },
+            duration: 0,
+            buildingId: 1003
+        };
+        // Setup Colonist B: current action is to move, but has a climb with the removed structure's ID in his action stack
+        population._colonists[1]._data._currentGoal = "farm";
+        population._colonists[1]._data._currentAction = {
+            type: "move",
+            coords: { x: 1, y: 25 },
+            duration: 0,
+            buildingId: 0
+        };
+        population._colonists[1]._data._actionStack = [
+            {
+                type: "climb",
+                coords: { x: 1, y: 22 },
+                duration: 0,
+                buildingId: 1003
+            },
+            {
+                type: "farm",
+                coords: { x: 0, y: 22 },
+                duration: 22,
+                buildingId: 1005
+            }
+        ];
+        // Setup Colonist C: current action is to farm, and has no other items in his stack
+        population._colonists[2]._data._currentGoal = "farm";
+        population._colonists[2]._data._currentAction = {
+            type: "farm",
+            coords: { x: 0, y: 22 },
+            duration: 25,
+            buildingId: 1005
+        };
+        // Expected outcome: Colonists A and B have their goal resolved immediately and colonist C does not, and goes on farming
+        population.resolveGoalsWhenStructureRemoved(1003);
+        // Goal canceled since current action uses removed structure ID
+        expect(population._colonists[0]._data._currentAction).toBe(null);
+        expect(population._colonists[0]._data._currentGoal).toBe("");
+        // Goal canceled since action stack contains removed structure ID
+        expect(population._colonists[1]._data._currentAction).toBe(null);
+        expect(population._colonists[1]._data._actionStack).toStrictEqual([]);
+        expect(population._colonists[1]._data._currentGoal).toBe("");
+        // Goal remains in place
+        expect(population._colonists[2]._data._currentGoal).toBe("farm");
+        expect(population._colonists[2]._data._currentAction).toStrictEqual({
+            type: "farm",
+            coords: { x: 0, y: 22 },
+            duration: 25,
+            buildingId: 1005
+        })
+    })
+
 })

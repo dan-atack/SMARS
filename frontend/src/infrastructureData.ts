@@ -6,7 +6,13 @@ import Floor from "./floor";
 import { constants } from "./constants";
 import { MapZone } from "./map";
 
-export type Elevator = { id: number, x: number, top: number, bottom: number, groundZoneId: string }
+export type Elevator = {
+    id: number,
+    x: number,
+    top: number,
+    bottom: number,
+    groundZoneId: string
+}
 
 export default class InfrastructureData {
     // Infra Data class is mostly a calculator for the Infra class to pass values to, so it stores very few of them itself
@@ -15,7 +21,6 @@ export default class InfrastructureData {
     _baseVolume: number[][];    // Works the same as the terrain map, but to keep track of the base's inner area
     _floors: Floor[];           // Floors are a formation of one or more modules, representing walkable surfaces within the base
     _elevators: Elevator[]    // Basic data to keep track of inter-floor connectors
-    _moduleResources: Resource[];   // The data that will be passed to the Economy class
 
     constructor() {
         this._justBuilt = null;         // When a building has just been added, set this to the building's data
@@ -23,15 +28,6 @@ export default class InfrastructureData {
         this._baseVolume = [];          // Starts with just an array - setup sets its length
         this._floors = [];
         this._elevators = [];
-        this._moduleResources = [
-            ["money", 0],
-            ["oxygen", 0],
-            ["water", 0],
-            ["food", 0],
-            ["power", 0],
-            ["equipment", 0],
-            ["minerals", 0]
-        ];
     }
 
     setup (mapWidth: number) {
@@ -200,6 +196,25 @@ export default class InfrastructureData {
         })
     }
 
+    // Helper method for module removal - takes a list of coordinate points and removes them all, AND returns the total number of points removed
+    removeCoordsFromBaseVolume = (coords: Coords[]) => {
+        let removed = 0;    // Keep track of how many coordinate points are removed
+        if (coords.length > 0) {
+            coords.forEach((point) => {
+                const len = this._baseVolume[point.x].length;   // Keep track of column length prior to removal
+                this._baseVolume[point.x] = this._baseVolume[point.x].filter((y) => y !== point.y);
+                if (len - this._baseVolume[point.x].length === 1) {
+                    removed++;
+                } else {
+                    console.log(`Warning: Failed to remove base volume coordinates at (${point.x}, ${point.y})`);
+                }
+            })
+        } else {
+            console.log("Warning: No coordinates provided for removal as part of base volume update");
+        }
+        return removed;
+    }
+
     // FLOOR-RELATED METHODS
 
     // Top-level update method for adding new modules
@@ -228,7 +243,7 @@ export default class InfrastructureData {
                 adjacents[0].addModule(moduleId, fp);
             } else if (adjacents.length === 2) {
                 // Merge two existing floors if they are both adjacent to the new one (in which case it's right between them)
-                this.combineFloors(existingFloors[0]._id, existingFloors[1]._id, moduleId);
+                this.combineFloors(adjacents[0]._id, adjacents[1]._id, moduleId);
             }
         }
     }

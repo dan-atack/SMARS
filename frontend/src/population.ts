@@ -78,6 +78,17 @@ export default class Population {
         this.updateMoraleRating();
     }
 
+    // Cancels the current goal of all colonists whose action stacks / current action refer to a structure that has been removed
+    resolveGoalsWhenStructureRemoved = (structureId: number) => {
+        this._colonists.forEach((col) => {
+            const current = col._data._currentAction?.buildingId === structureId;
+            const stack = col._data._actionStack.filter((action) => action.buildingId === structureId).length > 0;
+            if ( current || stack ) {
+                col._data.resolveGoal();
+            }
+        })
+    }
+
     // SECTION 3: COLONIST MORALE FUNCTIONS
 
     // Called after each hourly update, to get the average morale of all the colonists in the base
