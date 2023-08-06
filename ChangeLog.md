@@ -3423,11 +3423,13 @@ Exit Criteria:
 - Unit tests are created for the Notification and Popup classes
 - At the chapter's end there are no more console log notifications of any kind that the player can see (there will still be error messages, but we'll deal with that matter later)
 
-### 1. Create a new Class, Notifications, that will be the gatherer of all the messages from the various components in the game. Give it its basic fields, backlog, queue, currentDisplay and currentClickResponse, and set their default values for the constructor function.
+1. Create a new Class, Notifications, that will be the gatherer of all the messages from the various components in the game. Give it its basic fields, backlog, queue, currentDisplay and currentClickResponse, and set their default values for the constructor function.
 
-### 2. Create the type definition for Message, which contains a subject (string/switch case code), a smarsTime (to keep track of when the message was created), entityID (number) and finally of course, the actual text of the message to be shown.
+2. Create the type definition for Message, which contains a subject (string/switch case code), a smarsTime (to keep track of when the message was created), entityID (number) and finally of course, the actual text of the message to be shown.
 
 ### 3. Bring the Notifications class into the Engine and import the Message type as well, and have the Engine feed some preliminary messages to the Notifications manager via its addNewMessageToBacklog method. Develop this method, and a unit test as well, before doing the integration with the Engine.
+
+### 4.
 
 ### 98. Update the Inspec display functionality to only print the detailed readout in Dev environment.
 

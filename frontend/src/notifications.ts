@@ -24,4 +24,9 @@ export default class Notifications {
         this._currentDisplayPopup = null;
         this._currentClickResponse = null;
     }
+
+    addMessageToBacklog = (message: Message) => {
+        this._backlog.push(message);
+    }
+
 }
