@@ -3385,17 +3385,53 @@ Exit Criteria:
 - - [DONE] If the module was in the middle of a floor with another module to either side, remove it, and all the modules to its right from the original floor and adjust that floor's edge; then, place all of the other modules that were removed (those to the right of the removed module) into a NEW floor.
 - - [DONE] Update the connector ID lists of any floors that are affected by any modules' removal
 
-### 14. Fix the issue where distant floors can be merged wrongly (it's maybe picking the first floor whose elevation matches?)
+14. Fix the issue where distant floors can be merged wrongly (it's maybe picking the first floor whose elevation matches?)
 
-## Chapter X: In-Game Notifications
+## Chapter Three: In-Game Notifications
 
-### Difficulty Estimate: 3 (for developing a message collection system for Engine subclass components, and message prioritization and rendering for the Engine class)
+### Difficulty Estimate: 5 (for developing a new Engine subclass component, Messages, which will collect, prioritize, and render messages collected by the Engine)
 
-### Date: TBD
+### Date: August 1, 2023
 
-The final, FINAL thing to do before the game's first release is to implement a simple in-game notification system that does not interrupt the player like the modal dialogues, but which displays helpful prompts to the player without pausing the game. These should be simple messages displayed by the Engine whenever a console log warning would pop up, to indicate that there is a problem in the base that requires the player's attention, such as a lack of a resource needed for production, or colonists going hungry/thirsty/etc.
+A highly anticipated and long-overdue feature that is critical to the game's UX is to implement a simple in-game notification system that does not interrupt the player like the modal dialogues, but which displays helpful prompts to the player without pausing the game. These should be simple messages displayed by the Engine whenever a console log warning would pop up, to indicate that a command was not successful, or that there is a problem in the base that requires the player's attention such as a lack of a resource needed for production, or colonists going hungry/thirsty/etc.
 
-Exit Criteria: TBD
+Exit Criteria:
+
+- If the player clicks to do an action that is not permitted, a popup appears at or near where the failed mouse click occurred with a short message about why the action was not permitted:
+- When a structure cannot be demolished
+- When a structure cannot be placed
+- When a mining zone cannot be assigned
+- When the game is in 'wait' mode
+- If the player clicks to do an action that succeeds, a small success message should be shown near the mouse click:
+- When a mining zone is established / removed
+- When a structure is successfully placed
+- When a structure is successfully demolished and a soft check/warning would be issued
+- If there is a more general type of issue within the base, the player is notified by a short-lived display banner which pops up near the top of the screen:
+- When a colonist is unable to enter a module
+- When a colonist loses morale due to not eating, drinking or sleeping
+- When a colonist is not able to reach a floor / module
+- When a module cannot be found to store a resource
+- When a module has an insufficient amount of a resource
+- When there are no food production modules (and food / air is below a certain threshold)
+- When there are no water mining zones (and water is below a certain threshold)
+- When there are no solar panels (and power is below a certain threshold)
+- If a non-random event occurs, the player is notified by a short-lived display banner which pops up near the top of the screen:
+- When a new ship is launched from Earth
+- When new colonists arrive from Earth
+- Banners are displayed according to their urgency, and are routinely filtered and updated by the Notifications manager class
+- Popups and banners have a life expectancy that can be set individually by the Notifications manager class
+- Unit tests are created for the Notification and Popup classes
+- At the chapter's end there are no more console log notifications of any kind that the player can see (there will still be error messages, but we'll deal with that matter later)
+
+### 1. Create a new Class, Notifications, that will be the gatherer of all the messages from the various components in the game. Give it its basic fields, backlog, queue, currentDisplay and currentClickResponse, and set their default values for the constructor function.
+
+### 2. Create the type definition for Message, which contains a subject (string/switch case code), a smarsTime (to keep track of when the message was created), entityID (number) and finally of course, the actual text of the message to be shown.
+
+### 3. Bring the Notifications class into the Engine and import the Message type as well, and have the Engine feed some preliminary messages to the Notifications manager via its addNewMessageToBacklog method. Develop this method, and a unit test as well, before doing the integration with the Engine.
+
+### 98. Update the Inspec display functionality to only print the detailed readout in Dev environment.
+
+### 99. Clean up unconverted console logs from previous chapter
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
