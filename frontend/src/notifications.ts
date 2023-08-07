@@ -26,7 +26,19 @@ export default class Notifications {
     }
 
     addMessageToBacklog = (message: Message) => {
-        this._backlog.push(message);
+        if (message && typeof message.subject === "string" && message.text.length > 0) {
+            this._backlog.push(message);
+            console.log(this._backlog);
+            return true;        // Return whether the message was succesfully added or not
+        } else {
+            console.log(`Error: was unable to add new message with subject ${message.subject} to notifications backlog`);
+            return false;
+        }
+    }
+
+    filterMessageBacklog = () => {
+        // Eliminate messages with duplicate subject lines, keeping the newest one only
+
     }
 
 }

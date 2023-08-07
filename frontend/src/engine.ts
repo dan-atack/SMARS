@@ -9,6 +9,7 @@ import Industry from "./industry";
 import Economy from "./economy";
 import Population from "./population";
 import Modal, { EventData } from "./modal";
+import Notifications, { Message } from "./notifications";
 import Lander from "./lander";
 import DropPod from "./dropPod";
 import MouseShadow from "./mouseShadow";
@@ -27,6 +28,7 @@ import { GameData } from "./newGameSetup";
 import { Coords } from "./connector";
 import { Resource } from "./economyData";
 
+
 export default class Engine extends View {
     // Engine types
     _p5: P5;                    // Although the View class no longer uses it in the constructor, the Engine still does
@@ -42,10 +44,11 @@ export default class Engine extends View {
     _industry: Industry;
     _economy: Economy;
     _population: Population;
-    _modal: Modal | null;
-    _animation: Lander | DropPod | null; // This field holds the current entity being used to control animations, if there is one
-    _mouseShadow: MouseShadow | null;    // This field will hold a mouse shadow entity if a building is being placed
-    _sky: Sky;                  // The animations component for the sky, including sunlight levels and atmospheric effects
+    _notifications: Notifications;          // Notifications class manages all of the in-game messages that are displayed on-screen to the player
+    _modal: Modal | null;                   // Start with no modal
+    _animation: Lander | DropPod | null;    // This field holds the current entity being used to control animations, if there is one
+    _mouseShadow: MouseShadow | null;       // This field will hold a mouse shadow entity if a building is being placed
+    _sky: Sky;                              // The animations component for the sky, including sunlight levels and atmospheric effects
     // Map scrolling control
     _horizontalOffset: number;  // This will be used to offset all elements in the game's world, starting with the map
     _scrollDistance: number;    // Pixels from the edge of the world area in which scrolling occurs
@@ -112,6 +115,7 @@ export default class Engine extends View {
         this._industry = new Industry();
         this._economy = new Economy(p5);
         this._population = new Population();
+        this._notifications = new Notifications();
         this._modal = null;
         this._animation = null;
         this._mouseShadow = null;
@@ -336,14 +340,12 @@ export default class Engine extends View {
     handleClicks = (mouseX: number, mouseY: number) => {
         // Click is in sidebar (unless modal is open or the player has not chosen a landing site, or mouse context is wait):
         if (mouseX > constants.SCREEN_WIDTH - this._sidebar._width && !this._modal && this._hasLanded && this.mouseContext != "wait") {
-            // console.log("Click in sidebar");
             this._sidebar.handleClicks(mouseX, mouseY);
         } else {
             // Click is over the map
             if (mouseX > 0 && mouseX < constants.SCREEN_WIDTH && mouseY > 0 && mouseY < constants.SCREEN_HEIGHT) {
                 const [gridX, gridY] = this.getMouseGridPosition(mouseX, mouseY);
                 const coords = { x: gridX, y: gridY }   // For convenience
-                // console.log(`(${gridX}, ${gridY})`);
                 switch (this.mouseContext) {
                     case "connectorStart":
                         this.handleConnectorStartPlacement(gridX, gridY)
@@ -370,11 +372,17 @@ export default class Engine extends View {
                         this.handleResourceZoneSelect(coords);
                         break;
                     case "wait":
-                        // TODO: Add UI explanation (or sound effect!) indicating that the player can't click during 'wait' mode
-                        // console.log("Mouse click response suppressed. Reason: 'In wait mode'");
+                        // Send message to Notifications system indicating that the player can't click during 'wait' mode
+                        const message: Message = {
+                            subject: "command-must-wait",
+                            smarsTime: this._gameTime,
+                            entityID: 0,
+                            text: "One moment please - mouse clicks are disabled during animations"
+                        }
+                        this._notifications.addMessageToBacklog(message);
                         break;
                     default:
-                        console.log(`Unknown mouse context used: ${this.mouseContext}`);
+                        console.log(`ERROR: Unknown mouse context used: ${this.mouseContext}`);
                 }
                 this.getMouseGridPosition(mouseX, mouseY);
             } 
@@ -629,9 +637,14 @@ export default class Engine extends View {
                     this._infrastructure.addModule(x, y, this.selectedBuilding,  this._map._topography, this._map._zones,);
                     this._economy._data.subtractMoney(this.selectedBuilding.buildCosts[0][1]);
                 } else {
-                    // TODO: Display this info to the player with an in-game message of some kind
-                    console.log(`Clear: ${clear}`);
-                    console.log(`Affordable: ${affordable}`);
+                    // Notify the player, via in-game popup message, that their placement is no good (or that they cannot afford the new module)
+                    const message: Message = {
+                        subject: "command-structure-fail",
+                        smarsTime: this._gameTime,
+                        entityID: 0,
+                        text: `Unable to place new module:\n${clear ? "Insufficient funds" : "Location blocked"}`
+                    }
+                    this._notifications.addMessageToBacklog(message);
                 }
             }
         }

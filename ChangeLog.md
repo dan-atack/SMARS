@@ -3397,7 +3397,7 @@ A highly anticipated and long-overdue feature that is critical to the game's UX 
 
 Exit Criteria:
 
-- If the player clicks to do an action that is not permitted, a popup appears at or near where the failed mouse click occurred with a short message about why the action was not permitted:
+- If the player clicks to do an action that is not permitted, a popup appears near where the click occurred with a message about why the action was not permitted:
 - When a structure cannot be demolished
 - When a structure cannot be placed
 - When a mining zone cannot be assigned
@@ -3427,11 +3427,17 @@ Exit Criteria:
 
 2. Create the type definition for Message, which contains a subject (string/switch case code), a smarsTime (to keep track of when the message was created), entityID (number) and finally of course, the actual text of the message to be shown.
 
-### 3. Bring the Notifications class into the Engine and import the Message type as well, and have the Engine feed some preliminary messages to the Notifications manager via its addNewMessageToBacklog method. Develop this method, and a unit test as well, before doing the integration with the Engine.
+3. Bring the Notifications class into the Engine and import the Message type as well, and have the Engine feed some preliminary messages to the Notifications manager via its addNewMessageToBacklog method. Develop this method, and a unit test as well, before doing the integration with the Engine. Start with a mouse click during wait mode as the first message the Engine will pass to the Notifications class, and have the Notifications class print the message to the console when it receives it.
 
-### 4.
+4. Add one more message, for when a module cannot be built, and validate that it enters the backlog and contains a relevant statement of the obstacle.
 
-### 98. Update the Inspec display functionality to only print the detailed readout in Dev environment.
+### 5. Now it's time to develop a rudimentary message filtering/prioritization system. We'll start by having it simply root out any messages with duplicate subject lines, so that multiple clicks during wait more, or multiple failed attempts to create the same structure will not be kept in the backlog. Have the filtration method, called filterMessageBacklog, be its own method, (with a lovely unit test, of course) and have the addMessageToBacklog method call it every time it's triggered - either by a mouse-click or by a routine update (of which, more to come soon).
+
+### 6. Create the Popup class, with fields in its constructor for text, colour, duration and (optionally) coordinates. Also program in the default values for all of these attributes, plus other factors like text size, etc. Give it a basic render function and then of course also add a simple unit test to get things started in that direction.
+
+### 7. Import the Popup class into Notifications, and create a new method for that class called createPopupFromClick, which will produce a new Popup object and save it as the currentClickResponse. Unit test this, and then try deploying it in-game to see what it looks like!
+
+98. Update the Inspec display functionality to only print the detailed readout to the console in the local / Dev environment.
 
 ### 99. Clean up unconverted console logs from previous chapter
 
