@@ -2,6 +2,7 @@
 import P5 from "p5";
 import { Coords } from "./connector";
 import { GameTime } from "./saveGame";
+import { compareGameTimes } from "./engineHelpers";
 
 // Message template definition
 export type Message = {
@@ -25,8 +26,13 @@ export default class Notifications {
         this._currentClickResponse = null;
     }
 
+    // Adds a new message to the backlog and ensures the list is in good order (no duplicate messages, etc)
     addMessageToBacklog = (message: Message) => {
         if (message && typeof message.subject === "string" && message.text.length > 0) {
+            // Check for duplicates (same subject and text) and filter them out
+            if (this._backlog.find((msg) => msg.subject === message.subject && msg.text === msg.text)) {
+                this._backlog = this._backlog.filter((msg) => msg.subject !== message.subject || msg.text !== message.text);
+            }
             this._backlog.push(message);
             console.log(this._backlog);
             return true;        // Return whether the message was succesfully added or not
@@ -34,11 +40,6 @@ export default class Notifications {
             console.log(`Error: was unable to add new message with subject ${message.subject} to notifications backlog`);
             return false;
         }
-    }
-
-    filterMessageBacklog = () => {
-        // Eliminate messages with duplicate subject lines, keeping the newest one only
-
     }
 
     clearMessageBacklog = () => {
