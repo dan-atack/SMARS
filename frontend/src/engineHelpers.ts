@@ -42,9 +42,11 @@ export const compareGameTimes = (timeA: GameTime, timeB: GameTime) => {
             } else if (timeB.cycle === "PM" && timeA.cycle === "AM") {
                 return timeB;
             } else {    // If the cycle is the same, proceed to compare the hour (making an exception for 12 since it's actually the lowest)
-                if (timeA.hour > timeB.hour && timeA.hour !== 12) {
+                const a = timeA.hour === 12 ? 0 : timeA.hour;
+                const b = timeB.hour === 12 ? 0 : timeB.hour;
+                if (a > b) {
                     return timeA;
-                } else if (timeB.hour > timeA.hour && timeB.hour !== 12) {
+                } else if (b > a) {
                     return timeB;
                 } else {    // Finally, if the hours are also the same, compare by the minute
                     if (timeA.minute > timeB.minute) {

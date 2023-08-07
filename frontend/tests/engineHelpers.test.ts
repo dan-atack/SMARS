@@ -46,11 +46,26 @@ describe("Engine Helper functions", () => {
             sol: 4,
             year: 1
         };
+        const timeG: GameTime = {   // Testing the twelves
+            minute: 0,
+            hour: 12,
+            cycle: "AM",
+            sol: 4,
+            year: 1
+        };
+        const timeH: GameTime = {   // Testing the twelves
+            minute: 0,
+            hour: 11,
+            cycle: "AM",
+            sol: 4,
+            year: 1
+        };
         expect(compareGameTimes(timeA, timeB)).toStrictEqual(timeB);
         expect(compareGameTimes(timeB, timeC)).toStrictEqual(timeC);
         expect(compareGameTimes(timeC, timeD)).toStrictEqual(timeC);    // C is later than D
         expect(compareGameTimes(timeA, timeD)).toStrictEqual(timeA);    // D is earlier than any of them
         expect(compareGameTimes(timeE, timeF)).toStrictEqual(timeE);    // Time E is the latest of all
+        expect(compareGameTimes(timeG, timeH)).toStrictEqual(timeH);    // 11 AM is later than 12 AM? What a country!
     })
     
 

@@ -41,4 +41,8 @@ export default class Notifications {
 
     }
 
+    clearMessageBacklog = () => {
+        this._backlog = [];
+    }
+
 }
