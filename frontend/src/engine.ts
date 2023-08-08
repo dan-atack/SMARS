@@ -373,12 +373,7 @@ export default class Engine extends View {
                         break;
                     case "wait":
                         // Send message to Notifications system indicating that the player can't click during 'wait' mode
-                        const message: MessageData = {
-                            subject: "command-must-wait",
-                            smarsTime: this._gameTime,
-                            entityID: 0,
-                            text: "Please Wait:\nAnimation in progress"
-                        }
+                        const message = this.createMessage("command-must-wait", 0, "Please Wait:\nAnimation in progress");
                         this._notifications.createMessageFromClick({ x: mouseX, y: mouseY }, message);
                         break;
                     default:
@@ -494,23 +489,13 @@ export default class Engine extends View {
             } else {
                 // Notify the player if an invalid resource type has been selected
                 const crds = { x: coords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: coords.y * constants.BLOCK_WIDTH};
-                const message: MessageData = {
-                    subject: "command-resource-invalid",
-                    smarsTime: this._gameTime,
-                    entityID: 0,
-                    text: "Must select tile\ncontaining water"
-                }
+                const message = this.createMessage("command-resource-invalid", 0, "Must select tile\ncontaining water");
                 this._notifications.createMessageFromClick(crds, message, 16);
             }
         } else {
             // Notify the player in-game that they must select a tile on the surface
             const crds = { x: coords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: coords.y * constants.BLOCK_WIDTH};
-            const message: MessageData = {
-                subject: "command-resource-no-surface",
-                smarsTime: this._gameTime,
-                entityID: 0,
-                text: "Click on surface tile\nto add/remove mining zone"
-            }
+            const message = this.createMessage("command-resource-no-surface", 0, "Click on surface tile\nto add/remove mining zone");
             this._notifications.createMessageFromClick(crds, message, 16);
         }
     }
@@ -629,25 +614,22 @@ export default class Engine extends View {
         // Get pixelated coordinates for success/failure message
         const crds = { x: coords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: coords.y * constants.BLOCK_WIDTH};
         if (con) {          // First, check for Connectors
-            this._infrastructure.removeConnector(con, this._population)
+            const outcome = this._infrastructure.removeConnector(con, this._population);
+            if (outcome.success) {
+                const message = this.createMessage("command-demolish-success", con._id, outcome.message);
+                this._notifications.createMessageFromClick(crds, message);
+            } else {
+                const message = this.createMessage("command-demolish-failure", con._id, outcome.message);
+                this._notifications.createMessageFromClick(crds, message);
+            }
         } else if (mod) {      // Then, check for Modules
             // Depending on the outcome of the removal request, send a success/failure message for the player to see in-game
             const outcome: { success: boolean, message: string } = this._infrastructure.removeModule(mod, this._population, this._map);
             if (outcome.success) {
-                const message: MessageData = {
-                    subject: "command-demolish-success",
-                    entityID: mod._id,
-                    smarsTime: this._gameTime,
-                    text: outcome.message
-                };
+                const message = this.createMessage("command-demolish-success", mod._id, outcome.message);
                 this._notifications.createMessageFromClick(crds, message);
             } else {
-                const message: MessageData = {
-                    subject: "command-demolish-failure",
-                    entityID: mod._id,
-                    smarsTime: this._gameTime,
-                    text: outcome.message
-                };
+                const message = this.createMessage("command-demolish-failure", mod._id, outcome.message);
                 this._notifications.createMessageFromClick(crds, message);
             }
         } else {
@@ -679,12 +661,7 @@ export default class Engine extends View {
                 } else {
                     // Notify the player in-game that their placement is no good (or that they cannot afford the new module)
                     const coords = { x: x * constants.BLOCK_WIDTH - this._horizontalOffset, y: y * constants.BLOCK_WIDTH};
-                    const message: MessageData = {
-                        subject: "command-structure-fail",
-                        smarsTime: this._gameTime,
-                        entityID: 0,
-                        text: `Unable to place new module:\n${clear ? "Insufficient funds" : "Location invalid"}`
-                    }
+                    const message = this.createMessage("command-structure-fail", 0, `Unable to place new module:\n${clear ? "Insufficient funds" : "Location invalid"}`);
                     this._notifications.createMessageFromClick(coords, message);
                 }
             }
@@ -1203,6 +1180,17 @@ export default class Engine extends View {
         // Clear modal data (and random event data?) and resume the game
         this._modal = null;
         this.setGameOn(true);
+    }
+
+    // Creates a messageData object to feed to the Notifications system
+    createMessage = (subject: string, entityId: number, text: string) => {
+        const message: MessageData = {
+            subject: subject,
+            smarsTime: this._gameTime,
+            entityID: entityId,
+            text: text
+        };
+        return message;
     }
 
     //// RENDER METHODS ////

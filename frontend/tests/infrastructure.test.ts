@@ -515,7 +515,7 @@ describe("Infrastructure base class", () => {
         // TEST ACTION: Remove the first connector (the one from the previous test... helloooo best practices lol)
         const con = infra.getConnectorFromCoords({ x: 1, y: 23 });
         if (con !== null) {
-            expect(infra.removeConnector(con, pop)).toBe(true); // The function returns its success status based on whether it was allowed to make the removal
+            expect(infra.removeConnector(con, pop).success).toBe(true); // The function returns its success status based on whether it was allowed to make the removal
         } else {
             throw new Error("ERROR: TEST ARTIFACT NOT FOUND FOR CONNECTOR REMOVAL TEST.");
         }

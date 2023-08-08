@@ -83,8 +83,7 @@ export default class Infrastructure {
     // Returns a message to be displayed to the player regarding the outcome of the removal attempt
     removeModule = (mod: Module, population: Population, map: Map) => {
         // STAGE ONE: Hard Checks
-        // This value will be either a true, or a string containing the reasons why the check/s failed
-        const removable = this.hardChecksForModuleRemoval(mod, population);
+        const removable = this.hardChecksForModuleRemoval(mod, population); // Either true, or a string containing the check/s that failed
         let outcome: { success: boolean, message: string } = { success: true, message: "" };
         if (removable === true) {
             // STAGE TWO: Soft Checks - Rather than a top-level soft checks method, call each of these checks individually
@@ -109,9 +108,10 @@ export default class Infrastructure {
     }
 
     removeConnector = (connector: Connector, population: Population) => {
-        // console.log(`Removing connector ${connector._id}.`);
-        const proceed = this.checkForConnectorRemoval(connector, population);
-        if (proceed) {
+        // As with the modules, this value will be either a true, or a string containing the reasons why the check/s failed
+        const removable = this.checkForConnectorRemoval(connector, population); // Either true, or a string containing the check/s that failed
+        let outcome: { success: boolean, message: string } = { success: true, message: "" };
+        if (removable === true) {
             // Remove connector from main connectors list
             this._connectors = this._connectors.filter((con) => con._id !== connector._id);
             // Remove connector ID from floors' connector ID lists
@@ -122,11 +122,13 @@ export default class Infrastructure {
             this._data._elevators = this._data._elevators.filter((elev) => elev.id !== connector._id);
             // Notify population class of the removal
             population.resolveGoalsWhenStructureRemoved(connector._id);
-            return true;    // Return the success status of the removal request
+            outcome.message = `Successfully removed\n${connector._connectorInfo.name}`;
+            return outcome;    // Return the outcome of the removal request
         } else {
             // TODO: Upgrade this to a visible in-game notification
-            console.log(`Notification: Unable to remove connector ${connector._id} at this time. Please wait for colonists to disembark before removing connection infrastructure.`);
-            return false;    // Return the success status of the removal request
+            outcome.message = `Cannot remove connector # ${connector._id}:\nWait for colonists to disembark`;
+            outcome.success = false;
+            return outcome;    // Return the putcome of the removal request
         }
     }
 
@@ -153,7 +155,7 @@ export default class Infrastructure {
             return true;    // If all of the checks are passed, give the go-ahead to the top-level removal function
         } else {
             // If any checks fail, tell the top-level removal function not to proceed (and prepare a notification to show to the player)
-            return `Unable to remove module ${mod._id}:\n${notLoadBearing === false ? "- Module supports other structures\n" : ""}${nonEssential === false ? "- Module is Essential structure\n" : ""}${notOccupied === false ? "- Module is occupied" : ""}`;
+            return `Unable to remove module ${mod._id}:${notLoadBearing === false ? "\n- Module supports other structures" : ""}${nonEssential === false ? "\n- Module is Essential structure" : ""}${notOccupied === false ? "\n- Module is occupied" : ""}`;
         }
     }
 

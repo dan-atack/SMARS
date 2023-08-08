@@ -3399,7 +3399,7 @@ Exit Criteria:
 
 - If the player clicks to do an action that is not permitted, a popup appears near where the click occurred with a message about why the action was not permitted:
 - When a structure cannot be demolished
-- - Module
+- - [DONE] Module
 - - Connector
 - [DONE] When a structure cannot be placed
 - [DONE] When a mining zone cannot be assigned
