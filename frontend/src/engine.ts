@@ -661,7 +661,7 @@ export default class Engine extends View {
                 } else {
                     // Notify the player in-game that their placement is no good (or that they cannot afford the new module)
                     const coords = { x: x * constants.BLOCK_WIDTH - this._horizontalOffset, y: y * constants.BLOCK_WIDTH};
-                    const message = this.createMessage("command-structure-fail", 0, `Unable to place new module:\n${clear ? "Insufficient funds" : "Location invalid"}`);
+                    const message = this.createMessage("command-module-fail", 0, `Unable to place new module:\n${clear ? "Insufficient funds" : "Location invalid"}`);
                     this._notifications.createMessageFromClick(coords, message);
                 }
             }
@@ -674,6 +674,10 @@ export default class Engine extends View {
         if (this._infrastructure._data.checkConnectorEndpointPlacement(x, y, this._map._mapData)) {
             this._mouseShadow?.setLocked(true, {x: x, y: y});   // Lock the shadow's position when start location is chosen
             this.setMouseContext("connectorStop");
+        } else {    // If the start location is invalid show a popup
+            const crds = { x: x * constants.BLOCK_WIDTH - this._horizontalOffset, y: y * constants.BLOCK_WIDTH};
+            const message = this.createMessage("command-connector-fail", 0, "Cannot start connector\nat this location");
+            this._notifications.createMessageFromClick(crds, message);
         }
     }
 
@@ -692,6 +696,9 @@ export default class Engine extends View {
                 this._infrastructure.addConnector(start, stop, this.selectedBuilding, this._map);
                 this._economy._data.subtractMoney(cost);
             } else {
+                const crds = { x: this._mouseShadow._connectorStopCoords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: this._mouseShadow._connectorStopCoords.y * constants.BLOCK_WIDTH}
+                const message = this.createMessage("command-connector-fail", 0, `Cannot place connector:\n${clear ? "Insufficient funds" : "Invalid location"}`);
+                this._notifications.createMessageFromClick(crds, message);
                 // TODO: Display this info to the player with an in-game message of some kind
                 console.log(`Clear: ${clear}`);
                 console.log(`Affordable: ${affordable}`);
@@ -1109,7 +1116,7 @@ export default class Engine extends View {
     // Resolution parameter tells the Engine, by index position, which resolution to enact
     closeModal = (resolution: number) => {
         if (this._modal) {
-            // Carry out each outcome instruction for the modal's resolution. TODO: Allow user to choose among up to 3 options
+            // Carry out each outcome instruction for the modal's resolution. TODO: Allow user to choose among 3 or more options
             this._modal._resolutions[resolution].outcomes.forEach((outcome) => {
                 switch (outcome[0]) {
                     case "start-landing-sequence":

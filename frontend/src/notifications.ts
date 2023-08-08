@@ -69,7 +69,8 @@ export default class Notifications {
                 colour = "red";
                 duration = 50;      // Short duration for animation interruption clicks
                 break;
-            case "command-structure-fail":
+            case "command-connector-fail":
+            case "command-module-fail":
                 colour = "red";
                 duration = 100;
                 break;
