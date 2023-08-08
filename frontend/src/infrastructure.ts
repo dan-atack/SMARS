@@ -80,25 +80,31 @@ export default class Infrastructure {
 
     // SECTION 2A: Top level removal methods
 
+    // Returns a message to be displayed to the player regarding the outcome of the removal attempt
     removeModule = (mod: Module, population: Population, map: Map) => {
         // STAGE ONE: Hard Checks
+        // This value will be either a true, or a string containing the reasons why the check/s failed
         const removable = this.hardChecksForModuleRemoval(mod, population);
-        if (removable) {
-            console.log(`Removing module ${mod._id}`);
+        let outcome: { success: boolean, message: string } = { success: true, message: "" };
+        if (removable === true) {
             // STAGE TWO: Soft Checks - Rather than a top-level soft checks method, call each of these checks individually
             const moduleEmpty = this.checkIfModuleIsEmpty(mod);                 // Check for resources
             this.checkModuleRemovalWillNotStrand(mod, population);              // Check if removal will strand a colonist
+            // TODO: Add a separate notification message / confirmation popup when a soft check is failed
             // Call sub-routines for module removal:
             if (!moduleEmpty) {
-                console.log(`Notification: Attempting to relocate resources from module ${mod._id} prior to its removal.`);
                 this.purgeResourcesFromRemovedModule(mod);        // Purge resources if they are present
             }
             this.updateBaseVolumeForRemovedModule(mod);                         // Update base volume
             this.updateFloorsForRemovedModule(mod, map);                             // Update floors
             this._modules = this._modules.filter((m) => m._id !== mod._id);     // Filter out the module by its ID
             population.resolveGoalsWhenStructureRemoved(mod._id);               // Tell colonists to forget about it
+            outcome.message = `Successfully removed\n${mod._moduleInfo.name}`;        // Update outcome message if removal is successful
+            return outcome;
         } else {
-            console.log(`Notification: Unable to remove module ${mod._id}.`);
+            outcome.success = false;
+            outcome.message = removable;
+            return outcome;   // If removal is not possible this should be a string telling why it can't be done
         }
     }
 
@@ -147,8 +153,7 @@ export default class Infrastructure {
             return true;    // If all of the checks are passed, give the go-ahead to the top-level removal function
         } else {
             // If any checks fail, tell the top-level removal function not to proceed (and prepare a notification to show to the player)
-            console.log(`Notification: Unable to remove module ${mod._id}:\n${notLoadBearing === false ? "- Module supports other structures\n" : ""}${nonEssential === false ? "- Module is Essential structure\n" : ""}${notOccupied === false ? "- Module is occupied" : ""}`);
-            return false;
+            return `Unable to remove module ${mod._id}:\n${notLoadBearing === false ? "- Module supports other structures\n" : ""}${nonEssential === false ? "- Module is Essential structure\n" : ""}${notOccupied === false ? "- Module is occupied" : ""}`;
         }
     }
 
@@ -252,21 +257,17 @@ export default class Infrastructure {
         if (floor) {
             // Is the module the only one on that floor? If so, delete the Floor
             if (floor._modules.length === 1) {
-                console.log(`Module ${mod._id} is the only module on floor ${floor._id}. Deleting both.`);
                 this._data._floors = this._data._floors.filter((fl) => fl._id !== floor._id);
                 // Is the module on the left/right edge of a floor that contains other modules? If so, remove its ID and adjust floor's edge
             } else if (footprint[0] === floor._leftSide) {
-                console.log(`Module ${mod._id} is at the left edge of floor ${floor._id}`);
                 floor._modules = floor._modules.filter((id) => id !== mod._id); // Filter out the ID
                 floor._leftSide += mod._width;                  // Floor's left edge retreats by the width of the module
             } else if (footprint[footprint.length - 1] === floor._rightSide) {
-                console.log(`Module ${mod._id} is at the right edge of floor ${floor._id}`);
                 floor._modules = floor._modules.filter((id) => id !== mod._id); // Filter out the ID
                 floor._rightSide -= mod._width;                  // Floor's right edge retreats by the width of the module
             } else {
                 // If the module isn't alone, and it isn't on either edge, then it must be in the middle of a floor
                 // If so, remove it and all modules to its right and create a new floor with those modules (splitting the original floor)
-                console.log(`Module ${mod._id} is in the middle of floor ${floor._id}`);
                 // Split along the removed module: reset the floor's left edge, and get the ID's of all modules to its right and remove them
                 floor._rightSide = mod._x - 1;                                      // Reset floor's right edge
                 floor._modules = floor._modules.filter((id) => mod._id !== id);     // Remove the ID of the destroyed module

@@ -54,21 +54,34 @@ export default class Notifications {
 
     // Called directly by the Engine when a mouse click results in a message being created
     createMessageFromClick = (coords: Coords, data: MessageData, textSize?: number) => {
-        if (this._currentClickResponse === null) {
-            const colour = constants.RED_BG;
-            let duration = 150; // Default duration is 150 frames (~3 seconds)
-            switch (data.subject) {
-                case "command-must-wait":
-                    duration = 50;     // Short duration for animation interruption clicks
-                    break;
-                case "command-structure-fail":
-                    duration = 100;
-                    break;
-                default:
-                    duration = 200;
-            }
-            this._currentClickResponse = new Message(data.text, colour, duration, coords, textSize);
+        // Unless there is a good reason, over-ride the existing message whenever a new click is triggered
+        let colour = "green";
+        let duration = 150; // Default duration is 150 frames (~3 seconds)
+        switch (data.subject) {     // Determine message duration and colouring based on the subject line
+            case "command-demolish-success":
+                duration = 100;
+                break;
+            case "command-demolish-failure":
+                colour = "red";
+                duration = 150;
+                break;
+            case "command-must-wait":
+                colour = "red";
+                duration = 50;      // Short duration for animation interruption clicks
+                break;
+            case "command-structure-fail":
+                colour = "red";
+                duration = 100;
+                break;
+            case "command-resource-invalid":
+                colour = "red";
+            case "command-resource-no-surface":
+                coords.y -= 80;     // Move the message up to avoid obscuring the cursor for followup click attempts
+                duration = 125;
+            default:
+                duration = 200;
         }
+        this._currentClickResponse = new Message(data.text, colour, duration, coords, textSize);
     }
 
     expireCurrentClickResponse = () => {

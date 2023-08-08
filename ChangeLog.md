@@ -3399,9 +3399,11 @@ Exit Criteria:
 
 - If the player clicks to do an action that is not permitted, a popup appears near where the click occurred with a message about why the action was not permitted:
 - When a structure cannot be demolished
-- When a structure cannot be placed
-- When a mining zone cannot be assigned
-- When the game is in 'wait' mode
+- - Module
+- - Connector
+- [DONE] When a structure cannot be placed
+- [DONE] When a mining zone cannot be assigned
+- [DONE] When the game is in 'wait' mode
 - If the player clicks to do an action that succeeds, a small success message should be shown near the mouse click:
 - When a mining zone is established / removed
 - When a structure is successfully placed
@@ -3433,9 +3435,11 @@ Exit Criteria:
 
 5. Now it's time to develop a rudimentary message filtering/prioritization system. We'll start by having it simply root out any messages with duplicate subject lines, so that multiple clicks during a wait period, or multiple failed attempts to create the same structure will not be kept in the backlog. Start by adding an updated unit test to the addMessageToBacklog method, and then update it to only allow a single instance of a message (comparing subject and text values only) in the backlog at a time.
 
-### 6. Create the Popup class, with fields in its constructor for text, colour, duration and (optionally) coordinates. Also program in the default values for all of these attributes, plus other factors like text size, etc. Give it a basic render function and then of course also add a simple unit test to get things started in that direction.
+6. Create the Popup class, with fields in its constructor for text, colour, duration and (optionally) coordinates. Also program in the default values for all of these attributes, plus other factors like text size, etc. Give it a basic render function and then of course also add a simple unit test to get things started in that direction.
 
-### 7. Import the Popup class into Notifications, and create a new method for that class called createPopupFromClick, which will produce a new Popup object and save it as the currentClickResponse. Unit test this, and then try deploying it in-game to see what it looks like!
+7. Import the Popup class into Notifications, and create a new method for that class called createPopupFromClick, which will produce a new Popup object and save it as the currentClickResponse. Have the Engine use this instead of the backlog method when adding click-response notifications; ensure that the untreated mouse coordinates (just the pixels, ma'am) are used instead of grid location/offset values. Add the render method for Notifications to the Engine, as the final thing (i.e. top layer) to be rendered.
+
+### 8. Add the rest of the click response messages and tweak their creation parameters to ensure each one appears in the correct colour, font size, etc. and also has a reasonable duration before disappearing.
 
 98. Update the Inspec display functionality to only print the detailed readout to the console in the local / Dev environment.
 

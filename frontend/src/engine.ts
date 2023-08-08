@@ -380,7 +380,6 @@ export default class Engine extends View {
                             text: "Please Wait:\nAnimation in progress"
                         }
                         this._notifications.createMessageFromClick({ x: mouseX, y: mouseY }, message);
-                        // this._notifications.addMessageToBacklog(message);
                         break;
                     default:
                         console.log(`ERROR: Unknown mouse context used: ${this.mouseContext}`);
@@ -492,7 +491,27 @@ export default class Engine extends View {
             // TODO: Build this out to allow easy handling of multiple new resource types
             if (b._blockData.resource === "water") {
                 this._industry.addMiningLocation(coords, "water"); // Push the coordinates for the mining location
+            } else {
+                // Notify the player if an invalid resource type has been selected
+                const crds = { x: coords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: coords.y * constants.BLOCK_WIDTH};
+                const message: MessageData = {
+                    subject: "command-resource-invalid",
+                    smarsTime: this._gameTime,
+                    entityID: 0,
+                    text: "Must select tile\ncontaining water"
+                }
+                this._notifications.createMessageFromClick(crds, message, 16);
             }
+        } else {
+            // Notify the player in-game that they must select a tile on the surface
+            const crds = { x: coords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: coords.y * constants.BLOCK_WIDTH};
+            const message: MessageData = {
+                subject: "command-resource-no-surface",
+                smarsTime: this._gameTime,
+                entityID: 0,
+                text: "Click on surface tile\nto add/remove mining zone"
+            }
+            this._notifications.createMessageFromClick(crds, message, 16);
         }
     }
 
@@ -606,11 +625,31 @@ export default class Engine extends View {
 
     handleDemolish = (coords: Coords) => {
         const con = this._infrastructure.getConnectorFromCoords(coords);
-        const mod = this._infrastructure.getModuleFromCoords(coords)
+        const mod = this._infrastructure.getModuleFromCoords(coords);
+        // Get pixelated coordinates for success/failure message
+        const crds = { x: coords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: coords.y * constants.BLOCK_WIDTH};
         if (con) {          // First, check for Connectors
             this._infrastructure.removeConnector(con, this._population)
         } else if (mod) {      // Then, check for Modules
-            this._infrastructure.removeModule(mod, this._population, this._map);
+            // Depending on the outcome of the removal request, send a success/failure message for the player to see in-game
+            const outcome: { success: boolean, message: string } = this._infrastructure.removeModule(mod, this._population, this._map);
+            if (outcome.success) {
+                const message: MessageData = {
+                    subject: "command-demolish-success",
+                    entityID: mod._id,
+                    smarsTime: this._gameTime,
+                    text: outcome.message
+                };
+                this._notifications.createMessageFromClick(crds, message);
+            } else {
+                const message: MessageData = {
+                    subject: "command-demolish-failure",
+                    entityID: mod._id,
+                    smarsTime: this._gameTime,
+                    text: outcome.message
+                };
+                this._notifications.createMessageFromClick(crds, message);
+            }
         } else {
             this.setMouseContext("inspect");        // Revert mouse context to 'inspect' if click is not on a structure
         }
