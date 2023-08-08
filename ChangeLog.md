@@ -3431,7 +3431,7 @@ Exit Criteria:
 
 4. Add one more message, for when a module cannot be built, and validate that it enters the backlog and contains a relevant statement of the obstacle.
 
-### 5. Now it's time to develop a rudimentary message filtering/prioritization system. We'll start by having it simply root out any messages with duplicate subject lines, so that multiple clicks during wait more, or multiple failed attempts to create the same structure will not be kept in the backlog. Have the filtration method, called filterMessageBacklog, be its own method, (with a lovely unit test, of course) and have the addMessageToBacklog method call it every time it's triggered - either by a mouse-click or by a routine update (of which, more to come soon).
+5. Now it's time to develop a rudimentary message filtering/prioritization system. We'll start by having it simply root out any messages with duplicate subject lines, so that multiple clicks during a wait period, or multiple failed attempts to create the same structure will not be kept in the backlog. Start by adding an updated unit test to the addMessageToBacklog method, and then update it to only allow a single instance of a message (comparing subject and text values only) in the backlog at a time.
 
 ### 6. Create the Popup class, with fields in its constructor for text, colour, duration and (optionally) coordinates. Also program in the default values for all of these attributes, plus other factors like text size, etc. Give it a basic render function and then of course also add a simple unit test to get things started in that direction.
 

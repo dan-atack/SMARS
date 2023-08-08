@@ -1,11 +1,12 @@
 // The Notifications class is the Engine's secretary in charge of handling in-game messages shown to the player
 import P5 from "p5";
+import Message from "./message";
 import { Coords } from "./connector";
 import { GameTime } from "./saveGame";
 import { compareGameTimes } from "./engineHelpers";
 
-// Message template definition
-export type Message = {
+// Message data template definition
+export type MessageData = {
     subject: string;        // Subject tags will be fed into a switch case block to determine what type of popup is produced
     smarsTime: GameTime     // To keep track of when a message was created / how old it is
     entityID: number        // To keep track of the subject of a message, when relevant
@@ -14,10 +15,10 @@ export type Message = {
 
 export default class Notifications {
     // Notifications class types
-    _backlog: Message[];                    // Long list used for general message accumulation
-    _queue: Message[];                      // Prioritized short-list of messages to be displayed next
-    _currentDisplayPopup: Message | null;   // The current banner-style message being shown, if any
-    _currentClickResponse: Message | null;  // The current mouse-click message being shown, if any
+    _backlog: MessageData[];                    // Long list used for general message accumulation
+    _queue: MessageData[];                      // Prioritized short-list of messages to be displayed next
+    _currentDisplayPopup: Message | null;       // The current banner-style message being shown, if any
+    _currentClickResponse: Message | null;      // The current mouse-click message being shown, if any
 
     constructor() {
         this._backlog = [];
@@ -27,7 +28,7 @@ export default class Notifications {
     }
 
     // Adds a new message to the backlog and ensures the list is in good order (no duplicate messages, etc)
-    addMessageToBacklog = (message: Message) => {
+    addMessageToBacklog = (message: MessageData) => {
         if (message && typeof message.subject === "string" && message.text.length > 0) {
             // Check for duplicates (same subject and text) and filter them out
             if (this._backlog.find((msg) => msg.subject === message.subject && msg.text === msg.text)) {

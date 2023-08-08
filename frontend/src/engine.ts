@@ -9,7 +9,7 @@ import Industry from "./industry";
 import Economy from "./economy";
 import Population from "./population";
 import Modal, { EventData } from "./modal";
-import Notifications, { Message } from "./notifications";
+import Notifications, { MessageData } from "./notifications";
 import Lander from "./lander";
 import DropPod from "./dropPod";
 import MouseShadow from "./mouseShadow";
@@ -373,7 +373,7 @@ export default class Engine extends View {
                         break;
                     case "wait":
                         // Send message to Notifications system indicating that the player can't click during 'wait' mode
-                        const message: Message = {
+                        const message: MessageData = {
                             subject: "command-must-wait",
                             smarsTime: this._gameTime,
                             entityID: 0,
@@ -638,7 +638,7 @@ export default class Engine extends View {
                     this._economy._data.subtractMoney(this.selectedBuilding.buildCosts[0][1]);
                 } else {
                     // Notify the player, via in-game popup message, that their placement is no good (or that they cannot afford the new module)
-                    const message: Message = {
+                    const message: MessageData = {
                         subject: "command-structure-fail",
                         smarsTime: this._gameTime,
                         entityID: 0,

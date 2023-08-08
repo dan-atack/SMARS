@@ -1,4 +1,4 @@
-import Notifications, { Message } from "../src/notifications";
+import Notifications, { MessageData } from "../src/notifications";
 import { GameTime } from "../src/saveGame";
 
 describe("Notifications", () => {
@@ -10,7 +10,7 @@ describe("Notifications", () => {
     })
 
     test("addMessageToBacklog validates a new message and adds it to the backlog if it is correctly formatted", () => {
-        const goodMessage: Message = {
+        const goodMessage: MessageData = {
             subject: "Module-placement-rejection",
             entityID: 1002,
             text: "Module cannot be placed there",
@@ -22,7 +22,7 @@ describe("Notifications", () => {
                 year: 0
             }
         }
-        const badMessage: Message = {
+        const badMessage: MessageData = {
             subject: "Module-placement-rejection",
             entityID: 1002,
             text: "",       // Good messages have at least some text
@@ -40,7 +40,7 @@ describe("Notifications", () => {
 
     test("addMessageToBacklog eliminates duplicates of messages with the same subject line, keeping the one with the most recent Smars-time stamp", () => {
         notifications.clearMessageBacklog();    // Reset test conditions
-        const oldMessage: Message = {
+        const oldMessage: MessageData = {
             subject: "command-must-wait",
             entityID: 1002,
             text: "Please hold.",
@@ -52,7 +52,7 @@ describe("Notifications", () => {
                 year: 0
             }
         }
-        const newMessage: Message = {
+        const newMessage: MessageData = {
             subject: "command-must-wait",
             entityID: 1002,
             text: "Please hold.",
@@ -64,7 +64,7 @@ describe("Notifications", () => {
                 year: 0
             }
         }
-        const diffMessage: Message = {
+        const diffMessage: MessageData = {
             subject: "module-placement-success",    // Different subject line = should not be eliminated
             entityID: 1002,
             text: "Module can TOTALLY be placed there",
