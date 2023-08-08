@@ -4,6 +4,7 @@ import Message from "./message";
 import { Coords } from "./connector";
 import { GameTime } from "./saveGame";
 import { compareGameTimes } from "./engineHelpers";
+import { constants } from "./constants";
 
 // Message data template definition
 export type MessageData = {
@@ -27,6 +28,8 @@ export default class Notifications {
         this._currentClickResponse = null;
     }
 
+    // SECTION 1 - BACKLOG MANAGEMENT
+
     // Adds a new message to the backlog and ensures the list is in good order (no duplicate messages, etc)
     addMessageToBacklog = (message: MessageData) => {
         if (message && typeof message.subject === "string" && message.text.length > 0) {
@@ -45,6 +48,63 @@ export default class Notifications {
 
     clearMessageBacklog = () => {
         this._backlog = [];
+    }
+
+    // SECTION 2 - CLICK MESSAGE CREATION AND MANAGEMENT
+
+    // Called directly by the Engine when a mouse click results in a message being created
+    createMessageFromClick = (coords: Coords, data: MessageData, textSize?: number) => {
+        if (this._currentClickResponse === null) {
+            const colour = constants.RED_BG;
+            let duration = 150; // Default duration is 150 frames (~3 seconds)
+            switch (data.subject) {
+                case "command-must-wait":
+                    duration = 50;     // Short duration for animation interruption clicks
+                    break;
+                case "command-structure-fail":
+                    duration = 100;
+                    break;
+                default:
+                    duration = 200;
+            }
+            this._currentClickResponse = new Message(data.text, colour, duration, coords, textSize);
+        }
+    }
+
+    expireCurrentClickResponse = () => {
+        if (this._currentClickResponse) {
+            this._currentClickResponse._timeRemaining = 0;
+        }
+    }
+
+    // SECTION 3 - DISPLAY BANNER CREATION AND MANAGEMENT
+
+    expireCurrentDisplayPopup = () => {
+        if (this._currentDisplayPopup) {
+            this._currentDisplayPopup._timeRemaining = 0;
+        }
+    }
+
+    // Checks each frame for messages with no more display time remaining and cleans them up
+    cleanupExpiredMessages = () => {
+        if (this._currentClickResponse && this._currentClickResponse._timeRemaining <= 0) {
+            this._currentClickResponse = null;
+        }
+        if (this._currentDisplayPopup && this._currentDisplayPopup._timeRemaining <= 0) {
+            this._currentDisplayPopup = null;
+        }
+    }
+
+    // RENDER ZONE
+
+    render = (p5: P5) => {
+        if (this._currentClickResponse) {
+            this._currentClickResponse.render(p5);
+        }
+        if (this._currentDisplayPopup) {
+            this._currentDisplayPopup.render(p5);
+        }
+        this.cleanupExpiredMessages();
     }
 
 }

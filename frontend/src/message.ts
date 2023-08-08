@@ -9,11 +9,38 @@ export default class Message {
     _colour: string;
     _duration: number;      // Number of frames
     _coords: Coords;        // Either the Notification class's banner default, or the mouse position of a click event
+    _width: number;         // Given in terms of pixels; will be determined by the constructor based on the length and position of the message
+    _height: number;        // Given in terms of pixels too
+    _fontSize: number;      // Determined by text length and position
+    _timeRemaining: number; // Initially the same as duration; counts down when the message is rendered
 
-    constructor (text: string, colour: string, duration: number, coords: Coords) {
+    constructor (text: string, colour: string, duration: number, coords: Coords, textSize?: number) {
         this._text = text;
         this._colour = colour;
         this._duration = duration;
         this._coords = coords;
+        // Ensure coords are not too far to the side in case of mouse click responses
+        if (this._coords.x < constants.BLOCK_WIDTH * 5) this._coords.x = constants.BLOCK_WIDTH * 5;
+        if (this._coords.x > (constants.SCREEN_WIDTH - constants.SIDEBAR_WIDTH - constants.BLOCK_WIDTH * 5)) this._coords.x = constants.SCREEN_WIDTH - constants.SIDEBAR_WIDTH - constants.BLOCK_WIDTH * 5;
+        if (this._coords.y < 64) this._coords.y = 64;
+        this._fontSize = textSize || 20;                // Default value for basic messages is 20 if no other value is provided
+        this._width = text.length * (this._fontSize / 3) + 24;
+        this._height = 40 + this._fontSize;
+        this._timeRemaining = duration;     // Time remaining will begin counting down when the message is rendered
     }
+
+    render = (p5: P5) => {
+        const x = this._coords.x - this._width / 2;
+        const y = this._coords.y - this._height / 2;       // For convenience
+        p5.fill(this._colour);
+        p5.rect(x, y, this._width, this._height, 16, 16, 16, 16);
+        p5.fill(constants.EGGSHELL);
+        p5.textSize(this._fontSize);
+        p5.text(this._text, this._coords.x, this._coords.y);
+        // Advance countdown for message removal with every frame rendered
+        if (this._timeRemaining > 0) {
+            this._timeRemaining--;
+        }
+    }
+
 }

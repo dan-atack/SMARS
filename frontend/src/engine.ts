@@ -377,9 +377,10 @@ export default class Engine extends View {
                             subject: "command-must-wait",
                             smarsTime: this._gameTime,
                             entityID: 0,
-                            text: "One moment please - mouse clicks are disabled during animations"
+                            text: "Please Wait:\nAnimation in progress"
                         }
-                        this._notifications.addMessageToBacklog(message);
+                        this._notifications.createMessageFromClick({ x: mouseX, y: mouseY }, message);
+                        // this._notifications.addMessageToBacklog(message);
                         break;
                     default:
                         console.log(`ERROR: Unknown mouse context used: ${this.mouseContext}`);
@@ -637,14 +638,15 @@ export default class Engine extends View {
                     this._infrastructure.addModule(x, y, this.selectedBuilding,  this._map._topography, this._map._zones,);
                     this._economy._data.subtractMoney(this.selectedBuilding.buildCosts[0][1]);
                 } else {
-                    // Notify the player, via in-game popup message, that their placement is no good (or that they cannot afford the new module)
+                    // Notify the player in-game that their placement is no good (or that they cannot afford the new module)
+                    const coords = { x: x * constants.BLOCK_WIDTH - this._horizontalOffset, y: y * constants.BLOCK_WIDTH};
                     const message: MessageData = {
                         subject: "command-structure-fail",
                         smarsTime: this._gameTime,
                         entityID: 0,
-                        text: `Unable to place new module:\n${clear ? "Insufficient funds" : "Location blocked"}`
+                        text: `Unable to place new module:\n${clear ? "Insufficient funds" : "Location invalid"}`
                     }
-                    this._notifications.addMessageToBacklog(message);
+                    this._notifications.createMessageFromClick(coords, message);
                 }
             }
         }
@@ -717,6 +719,8 @@ export default class Engine extends View {
         this._map.setExpanded(false);
         this._hasLanded = true;
         this.placeInitialStructures();
+        this._notifications.expireCurrentClickResponse();
+        this._notifications.expireCurrentDisplayPopup();
         this.createModal(modalData.find((modal) => modal.id === "landing-touchdown"));
         // Add three new colonists, spread across the landing zone (Y value is -2 since it is the Colonist's head level)
         this._population.addColonist(this._landingSiteCoords[0], this._landingSiteCoords[1] - 2);
@@ -817,7 +821,7 @@ export default class Engine extends View {
         
     }
 
-    // Resolves whatever the current event is, and terminates any animation that might have been shown
+    // Resolves whatever the current event is, and terminates any animation/notification that might have been shown
     resolveCurrentEvent = () => {
         this._currentEvent = { 
             type: "",
@@ -825,6 +829,8 @@ export default class Engine extends View {
             value: 0
         };
         this._animation = null;
+        this._notifications.expireCurrentClickResponse();
+        this._notifications.expireCurrentDisplayPopup();
         this.setMouseContext("inspect");
     }
 
@@ -1274,6 +1280,7 @@ export default class Engine extends View {
         if (this._map._highlightedBlock) {
             this.renderBlockHighlighting(p5);
         }
+        this._notifications.render(p5);
         // p5.text(`Sunlight: ${this._sunlight}`, 120, 300);
         // p5.text(this._mouseShadow?._context || "NONE", 200, 200);
     }
