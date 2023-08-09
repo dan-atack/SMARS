@@ -3397,21 +3397,21 @@ A highly anticipated and long-overdue feature that is critical to the game's UX 
 
 Exit Criteria:
 
-- If the player clicks to do an action that is not permitted, a popup appears near where the click occurred with a message about why the action was not permitted:
+- [DONE] If the player clicks to do an action that is not permitted, an explanatory popup appears near where the click occurred:
 - [DONE] When a structure cannot be demolished
 - - [DONE] Module
 - - [DONE] Connector
 - [DONE] When a module cannot be placed
 - - [DONE] Due to invalid location
 - - [DONE] Due to insufficient funds
-- When a connector cannot be placed
-- - Due to invalid start location
-- - Due to invalid finish location
-- - Due to insufficient funds
+- [DONE] When a connector cannot be placed
+- - [DONE] Due to invalid start location
+- - [DONE] Due to invalid finish location
+- - [DONE] Due to insufficient funds
 - [DONE] When a mining zone cannot be assigned
 - [DONE] When the game is in 'wait' mode
 - If the player clicks to do an action that succeeds, a small success message should be shown near the mouse click:
-- When a mining zone is established / removed
+- [DONE] When a mining zone is established / removed
 - When a structure is successfully placed
 - When a structure is successfully demolished and a soft check/warning would be issued
 - If there is a more general type of issue within the base, the player is notified by a short-lived display banner which pops up near the top of the screen:

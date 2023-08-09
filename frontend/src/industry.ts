@@ -129,7 +129,7 @@ export default class Industry {
     // SECTION 2: MINING FUNCTIONS
 
     // Adds/removes a block's location to the mining locations list for a given resource type
-    addMiningLocation = (coords: Coords, resource: string) => {
+    toggleMiningLocation = (coords: Coords, resource: string) => {
         // Find the resource type
         let locs = this._miningLocations[resource as keyof MiningLocations]
         if (locs !== undefined) {

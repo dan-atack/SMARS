@@ -482,19 +482,25 @@ export default class Engine extends View {
     // Mouse Context Handler for 'resource'
     handleResourceZoneSelect = (coords: Coords) => {
         const b = this._map.getBlockForCoords(coords);
+        const crds = { x: coords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: coords.y * constants.BLOCK_WIDTH};  // For notifications
         if (b && this._map.isBlockOnSurface(b)) {   // Ensure block is on the surface
             // TODO: Build this out to allow easy handling of multiple new resource types
             if (b._blockData.resource === "water") {
-                this._industry.addMiningLocation(coords, "water"); // Push the coordinates for the mining location
+                const added = this._industry.toggleMiningLocation(coords, "water"); // Push the coordinates for the mining location
+                if (added) {
+                    const message = this.createMessage("command-resource-success", 0, "New mining zone\nestablished");
+                this._notifications.createMessageFromClick(crds, message, 16);
+                } else {
+                    const message = this.createMessage("command-resource-success", 0, "Mining zone\ncancelled");
+                    this._notifications.createMessageFromClick(crds, message, 16);
+                }
             } else {
                 // Notify the player if an invalid resource type has been selected
-                const crds = { x: coords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: coords.y * constants.BLOCK_WIDTH};
-                const message = this.createMessage("command-resource-invalid", 0, "Must select tile\ncontaining water");
+                const message = this.createMessage("command-resource-invalid", 0, "Can only mine tiles\ncontaining water");
                 this._notifications.createMessageFromClick(crds, message, 16);
             }
         } else {
             // Notify the player in-game that they must select a tile on the surface
-            const crds = { x: coords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: coords.y * constants.BLOCK_WIDTH};
             const message = this.createMessage("command-resource-no-surface", 0, "Click on surface tile\nto add/remove mining zone");
             this._notifications.createMessageFromClick(crds, message, 16);
         }

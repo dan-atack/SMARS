@@ -75,10 +75,12 @@ export default class Notifications {
                 duration = 100;
                 break;
             case "command-resource-invalid":
-                colour = "red";
             case "command-resource-no-surface":
+                colour = "red";
+            case "command-resource-success":
                 coords.y -= 80;     // Move the message up to avoid obscuring the cursor for followup click attempts
                 duration = 125;
+                break;
             default:
                 duration = 200;
         }

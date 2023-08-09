@@ -135,15 +135,15 @@ describe("Industry class", () => {
         const coords1 = { x: 10, y: 30 };
         const coords2 = { x: 11, y: 30 };
         expect(industry._miningLocations.water.length).toBe(0);     // Validate initial test conditions
-        expect(industry.addMiningLocation(coords1, "water")).toBe(true);    // Return true if coords are added
+        expect(industry.toggleMiningLocation(coords1, "water")).toBe(true);    // Return true if coords are added
         expect(industry._miningLocations.water.length).toBe(1);
-        expect(industry.addMiningLocation(coords2, "water")).toBe(true);
+        expect(industry.toggleMiningLocation(coords2, "water")).toBe(true);
         expect(industry._miningLocations.water.length).toBe(2);
-        expect(industry.addMiningLocation(coords1, "watah")).toBe(false);   // Return false if resource name not recognized
+        expect(industry.toggleMiningLocation(coords1, "watah")).toBe(false);   // Return false if resource name not recognized
         expect(industry._miningLocations.water.length).toBe(2);
-        expect(industry.addMiningLocation(coords2, "water")).toBe(false);   // Return false if removing existing coords
+        expect(industry.toggleMiningLocation(coords2, "water")).toBe(false);   // Return false if removing existing coords
         expect(industry._miningLocations.water.length).toBe(1);
-        expect(industry.addMiningLocation(coords2, "water")).toBe(true);    // Re-add second coords pair just to be REALLY sure
+        expect(industry.toggleMiningLocation(coords2, "water")).toBe(true);    // Re-add second coords pair just to be REALLY sure
         expect(industry._miningLocations.water.length).toBe(2);
     })
 
