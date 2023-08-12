@@ -98,7 +98,7 @@ export default class Infrastructure {
             this.updateFloorsForRemovedModule(mod, map);                             // Update floors
             this._modules = this._modules.filter((m) => m._id !== mod._id);     // Filter out the module by its ID
             population.resolveGoalsWhenStructureRemoved(mod._id);               // Tell colonists to forget about it
-            outcome.message = `Successfully removed\n${mod._moduleInfo.name}`;        // Update outcome message if removal is successful
+            outcome.message = `Demolished\n${mod._moduleInfo.name}`;        // Update outcome message if removal is successful
             return outcome;
         } else {
             outcome.success = false;
@@ -122,11 +122,11 @@ export default class Infrastructure {
             this._data._elevators = this._data._elevators.filter((elev) => elev.id !== connector._id);
             // Notify population class of the removal
             population.resolveGoalsWhenStructureRemoved(connector._id);
-            outcome.message = `Successfully removed\n${connector._connectorInfo.name}`;
+            outcome.message = `Demolished\n${connector._connectorInfo.name}`;
             return outcome;    // Return the outcome of the removal request
         } else {
             // TODO: Upgrade this to a visible in-game notification
-            outcome.message = `Cannot remove connector # ${connector._id}:\nWait for colonists to disembark`;
+            outcome.message = `Cannot demolish connector # ${connector._id}:\nWait for colonists to disembark`;
             outcome.success = false;
             return outcome;    // Return the putcome of the removal request
         }
@@ -155,7 +155,7 @@ export default class Infrastructure {
             return true;    // If all of the checks are passed, give the go-ahead to the top-level removal function
         } else {
             // If any checks fail, tell the top-level removal function not to proceed (and prepare a notification to show to the player)
-            return `Unable to remove module ${mod._id}:${notLoadBearing === false ? "\n- Module supports other structures" : ""}${nonEssential === false ? "\n- Module is Essential structure" : ""}${notOccupied === false ? "\n- Module is occupied" : ""}`;
+            return `Unable to demolish module ${mod._id}:${notLoadBearing === false ? "\n- Module supports other structures" : ""}${nonEssential === false ? "\n- Module is Essential structure" : ""}${notOccupied === false ? "\n- Module is occupied" : ""}`;
         }
     }
 

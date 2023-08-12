@@ -3412,8 +3412,10 @@ Exit Criteria:
 - [DONE] When the game is in 'wait' mode
 - If the player clicks to do an action that succeeds, a small success message should be shown near the mouse click:
 - [DONE] When a mining zone is established / removed
-- When a structure is successfully placed
-- When a structure is successfully demolished and a soft check/warning would be issued
+- [DONE] When a module is successfully placed
+- [DONE] When a module is successfully demolished
+- When a connector is successfully placed
+- [DONE] When a connector is succesfully removed
 - If there is a more general type of issue within the base, the player is notified by a short-lived display banner which pops up near the top of the screen:
 - When a colonist is unable to enter a module
 - When a colonist loses morale due to not eating, drinking or sleeping

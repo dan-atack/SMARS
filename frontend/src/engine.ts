@@ -623,7 +623,7 @@ export default class Engine extends View {
             const outcome = this._infrastructure.removeConnector(con, this._population);
             if (outcome.success) {
                 const message = this.createMessage("command-demolish-success", con._id, outcome.message);
-                this._notifications.createMessageFromClick(crds, message);
+                this._notifications.createMessageFromClick(crds, message, 18);
             } else {
                 const message = this.createMessage("command-demolish-failure", con._id, outcome.message);
                 this._notifications.createMessageFromClick(crds, message);
@@ -655,6 +655,7 @@ export default class Engine extends View {
 
     // X and Y are already gridified
     handleModulePlacement = (x: number, y: number) => {
+        const crds = { x: x * constants.BLOCK_WIDTH - this._horizontalOffset, y: y * constants.BLOCK_WIDTH}; // For notifications
         if (this.selectedBuilding != null) {
             // MODULES
             if (this._infrastructure._data.isModule(this.selectedBuilding)) {
@@ -664,11 +665,12 @@ export default class Engine extends View {
                 if (clear && affordable) {
                     this._infrastructure.addModule(x, y, this.selectedBuilding,  this._map._topography, this._map._zones,);
                     this._economy._data.subtractMoney(this.selectedBuilding.buildCosts[0][1]);
+                    const message = this.createMessage("command-module-success", 0, `${this.selectedBuilding.name}\nhas been built`);
+                    this._notifications.createMessageFromClick(crds, message);
                 } else {
                     // Notify the player in-game that their placement is no good (or that they cannot afford the new module)
-                    const coords = { x: x * constants.BLOCK_WIDTH - this._horizontalOffset, y: y * constants.BLOCK_WIDTH};
                     const message = this.createMessage("command-module-fail", 0, `Unable to place new module:\n${clear ? "Insufficient funds" : "Location invalid"}`);
-                    this._notifications.createMessageFromClick(coords, message);
+                    this._notifications.createMessageFromClick(crds, message);
                 }
             }
         }
