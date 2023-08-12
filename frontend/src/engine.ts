@@ -665,7 +665,7 @@ export default class Engine extends View {
                 if (clear && affordable) {
                     this._infrastructure.addModule(x, y, this.selectedBuilding,  this._map._topography, this._map._zones,);
                     this._economy._data.subtractMoney(this.selectedBuilding.buildCosts[0][1]);
-                    const message = this.createMessage("command-module-success", 0, `${this.selectedBuilding.name}\nhas been built`);
+                    const message = this.createMessage("command-module-success", 0, `New ${this.selectedBuilding.name}\ninstalled`);
                     this._notifications.createMessageFromClick(crds, message);
                 } else {
                     // Notify the player in-game that their placement is no good (or that they cannot afford the new module)
@@ -693,6 +693,7 @@ export default class Engine extends View {
     handleConnectorStopPlacement = () => {
         // Ensure there is a building selected, and that it's not a module
         if (this.selectedBuilding != null && !this._infrastructure._data.isModule(this.selectedBuilding) && this._mouseShadow?._connectorStopCoords != null && this._mouseShadow._connectorStartCoords) {
+            const crds = { x: this._mouseShadow._connectorStopCoords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: this._mouseShadow._connectorStopCoords.y * constants.BLOCK_WIDTH}   // Prepare coordinates for notification popup
             const baseCost = this.selectedBuilding.buildCosts[0][1];    // Get just the number
             const len = Math.max(this._mouseShadow._deltaX, this._mouseShadow._deltaY) + 1;
             const cost = baseCost * len;  // Multiply cost by units of length
@@ -701,10 +702,11 @@ export default class Engine extends View {
             const stop = this._mouseShadow._connectorStopCoords;
             const clear = this._infrastructure._data.checkConnectorEndpointPlacement(stop.x, stop.y, this._map._mapData);
             if (affordable && clear) {
+                const message = this.createMessage("command-connector-success", 0, `New ${this.selectedBuilding.name}\ninstalled`);
+                this._notifications.createMessageFromClick(crds, message);
                 this._infrastructure.addConnector(start, stop, this.selectedBuilding, this._map);
                 this._economy._data.subtractMoney(cost);
             } else {
-                const crds = { x: this._mouseShadow._connectorStopCoords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: this._mouseShadow._connectorStopCoords.y * constants.BLOCK_WIDTH}
                 const message = this.createMessage("command-connector-fail", 0, `Cannot place connector:\n${clear ? "Insufficient funds" : "Invalid location"}`);
                 this._notifications.createMessageFromClick(crds, message);
                 // TODO: Display this info to the player with an in-game message of some kind

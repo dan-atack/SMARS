@@ -59,6 +59,8 @@ export default class Notifications {
         let duration = 150; // Default duration is 150 frames (~3 seconds)
         switch (data.subject) {     // Determine message duration and colouring based on the subject line
             case "command-demolish-success":
+            case "command-module-success":
+            case "command-connector-success":
                 duration = 100;
                 break;
             case "command-demolish-failure":
