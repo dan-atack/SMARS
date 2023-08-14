@@ -9,11 +9,12 @@ import TechTree from "./science";
 import Earth from "./earth";
 import IndustryView from "./industryView";
 import Logbook from "./logbook";
-// Game constants:
-import { constants } from "./constants";
+// Other components/data types:
 import { ModuleSaveInfo, ConnectorSaveInfo, SaveInfo } from "./saveGame";
 import { GameData } from "./newGameSetup";
-
+import { MessageData } from "./notifications";
+// Game constants:
+import { constants } from "./constants";
 
 export default class Game extends Screen {
     // Types for the Game class: The sub-screens it alternates between
@@ -107,11 +108,27 @@ export default class Game extends Screen {
 
     updateEarthData = () => {
         const colonists = this._engine._population.determineColonistsForNextLaunch();
-        // Update the Earth calendar for every hour that passes on SMARS (in game time) and check if a landing has taken place
-        const colonistsLanding = this._earth.handleWeeklyUpdates(colonists);
-        if (colonistsLanding) {
-            this._engine.startNewColonistsLanding(colonistsLanding);
-        }
+        // Update the Earth calendar for every hour that passes on SMARS (in game time) and check if a landing or a launch has taken place
+        const ev = this._earth.handleWeeklyUpdates(colonists);
+        // If a launch or landing has taken place, display an in-game notification
+        if (ev && ev.launch) {
+            const message: MessageData = {
+                subject: "earth-launch",
+                smarsTime: this._engine._gameTime,
+                entityID: 0,
+                text: `A ship, with ${ev.colonists} new colonists onboard has just been launched from Earth!`
+            };
+            this._engine._notifications.addMessageToBacklog(message);
+        } else if (ev && ev.landing) {
+            this._engine.startNewColonistsLanding(ev.colonists);
+            const message: MessageData = {
+                subject: "earth-landing",
+                smarsTime: this._engine._gameTime,
+                entityID: 0,
+                text: `A landing pod with ${ev.colonists} new colonists has arrived from Earth!`
+            };
+            this._engine._notifications.addMessageToBacklog(message);
+        }     
     }
 
     // Pass data from the pre-game setup screen and username from the App itself, to the game with this method:

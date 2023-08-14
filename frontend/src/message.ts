@@ -14,7 +14,7 @@ export default class Message {
     _fontSize: number;      // Determined by text length and position
     _timeRemaining: number; // Initially the same as duration; counts down when the message is rendered
 
-    constructor (text: string, colour: string, duration: number, coords: Coords, textSize?: number) {
+    constructor (text: string, colour: string, duration: number, coords: Coords, banner: boolean, textSize?: number) {
         this._text = text;
         const textlines = this._text.split("\n").length;
         this._colour = this.convertColourStringToRGB(colour);
@@ -25,9 +25,8 @@ export default class Message {
         if (this._coords.x > (constants.SCREEN_WIDTH - constants.SIDEBAR_WIDTH - constants.BLOCK_WIDTH * 5)) this._coords.x = constants.SCREEN_WIDTH - constants.SIDEBAR_WIDTH - constants.BLOCK_WIDTH * 5;
         if (this._coords.y < 64) this._coords.y = 64;
         this._fontSize = textSize || 20;                // Default value for basic messages is 20 if no other value is provided
-        this._width = Math.min(text.length * (this._fontSize / 3) + 24, 360);
+        this._width = banner ? text.length * (this._fontSize / 2) + 24 : Math.min(text.length * (this._fontSize / 3) + 24, 360);
         this._height = this._fontSize * textlines + 16;
-        console.log(this._height);
         this._timeRemaining = duration;     // Time remaining will begin counting down when the message is rendered
     }
 

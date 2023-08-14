@@ -8,7 +8,7 @@ describe("Message", () => {
     const coords = { x: 0, y: 0 };
 
     test("Defines render", () => {
-        const message = new Message(text, colour, duration, coords);
+        const message = new Message(text, colour, duration, coords, true);
         expect(typeof message.render).toBe("function");
     })
 

@@ -37,10 +37,10 @@ describe("Earth View Tests", () => {
         expect(earth._earthDate.toISOString().slice(0, 10)).toBe("2031-05-21");     // Validate test conditions
         earth.updateEarthDate();
         expect(earth._earthDate.toISOString().slice(0, 10)).toBe("2031-05-28");     // One week (7.15 days) after loaded date
-        expect(earth.checkEventDatesForUpdate()).toStrictEqual({ launch: false, landing: false });                   
+        expect(earth.checkEventDatesForUpdate()).toStrictEqual({ launch: false, landing: false, colonists: 2 });                   
         earth.updateEarthDate();
         expect(earth._earthDate.toISOString().slice(0, 10)).toBe("2031-06-04");     // Two weeks later = after launch date
-        expect(earth.checkEventDatesForUpdate()).toStrictEqual({ launch: true, landing: false });
+        expect(earth.checkEventDatesForUpdate()).toStrictEqual({ launch: true, landing: false, colonists: 2 });
     })
 
     test("Weekly updater updates next launch / landing date when either event occurs, via the setNextEventDate method", () => {
@@ -67,10 +67,10 @@ describe("Earth View Tests", () => {
         const preLanding = new Date("February 22, 2032");
         earth._earthDate = preLanding;
         earth._flightEnRoute = true;    // Lock in default value of 2 colonists being sent
-        // Update should return a null whenever there is not a landing taking place
-        expect(earth.handleWeeklyUpdates(3)).toBe(null);
+        // Update should return information about the event taking place, be it a launch of a landing
+        expect(earth.handleWeeklyUpdates(3)).toStrictEqual({ landing: false, launch: true, colonists: 2 });
         // When a landing does take place, the update should return the number of colonists about to land
-        expect(earth.handleWeeklyUpdates(3)).toBe(2);
+        expect(earth.handleWeeklyUpdates(3)?.colonists).toBe(2);
     })
 
 })

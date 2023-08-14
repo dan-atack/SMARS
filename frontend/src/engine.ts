@@ -703,15 +703,12 @@ export default class Engine extends View {
             const clear = this._infrastructure._data.checkConnectorEndpointPlacement(stop.x, stop.y, this._map._mapData);
             if (affordable && clear) {
                 const message = this.createMessage("command-connector-success", 0, `New ${this.selectedBuilding.name}\ninstalled`);
-                this._notifications.createMessageFromClick(crds, message);
+                this._notifications.createMessageFromClick(crds, message);  // Notify the player of the successful placement
                 this._infrastructure.addConnector(start, stop, this.selectedBuilding, this._map);
                 this._economy._data.subtractMoney(cost);
             } else {
-                const message = this.createMessage("command-connector-fail", 0, `Cannot place connector:\n${clear ? "Insufficient funds" : "Invalid location"}`);
+                const message = this.createMessage("command-connector-fail", 0, `Cannot place connector:\n${clear ? "Insufficient funds" : "Invalid location"}`);       // Notify the player of placement failure via in-game message
                 this._notifications.createMessageFromClick(crds, message);
-                // TODO: Display this info to the player with an in-game message of some kind
-                console.log(`Clear: ${clear}`);
-                console.log(`Affordable: ${affordable}`);
             }
             // Reset mouse context to connector start so another connector can be placed
             this.destroyMouseShadow();
@@ -962,7 +959,15 @@ export default class Engine extends View {
         this._gameTime = gameTime;
     }
 
-    // Calls scheduled update events
+    // HOURLY AND MINUTELY UPDATES
+
+    // Calls scheduled update events that occur on a minutely basis
+    handleMinutelyUpdates = () => {
+        this._population.updateColonists(this._gameTime.minute === 0, this._infrastructure, this._map, this._industry);
+        this._notifications.handleMinutelyUpdates();
+    }
+
+    // Calls scheduled update events that occur on an hourly basis
     handleHourlyUpdates = () => {
         this.updateEarthData();
         this._infrastructure.handleHourlyUpdates(this._sunlight);   // Sunlight level is passed to power generation methods
@@ -1017,8 +1022,8 @@ export default class Engine extends View {
             this._tick++;
             if (this._tick >= this.ticksPerMinute) {
                 this._tick = 0;     // Advance minutes
-                // Update colonists' locations each 'minute', and all of their other stats every hour
-                this._population.updateColonists(this._gameTime.minute === 0, this._infrastructure, this._map, this._industry);
+                // Everything on a minutely schedule goes HERE
+                this.handleMinutelyUpdates();
                 if (this._gameTime.minute < this._minutesPerHour - 1) {  // Minus one tells the minutes counter to reset to zero after 59
                     this._gameTime.minute ++;
                 } else {
