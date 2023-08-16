@@ -128,8 +128,18 @@ export default class Notifications {
             switch (message.subject) {
                 case "earth-launch":
                 case "earth-landing":
+                case "landing-sequence":
                     duration = 750;
                     break;
+                case "event-add-resource-success":
+                    duration = 500;
+                    break;
+                case "event-add-resource-fail":
+                case "event-subtract-resource-success":
+                case "event-subtract-resource-fail":
+                    duration = 500;
+                    colour = "red";
+                break;
             }
             this._currentDisplayPopup = new Message(message.text, colour, duration, coords, true);
         } else {

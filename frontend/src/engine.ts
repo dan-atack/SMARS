@@ -741,6 +741,9 @@ export default class Engine extends View {
         this.setWaitTime(wait);
         // Setup landing animation with 
         this._animation = new Lander(x, -120, destination, wait - 120);
+        // Create notification message
+        const message = this.createMessage("landing-sequence", 0, "Landing Sequence initiated!");
+        this._notifications.addMessageToBacklog(message);
     }
 
     // This method sets up the UI after the landing animation has finished
@@ -1154,12 +1157,14 @@ export default class Engine extends View {
                             const resource: Resource = [outcome[2], outcome[1]];
                             const mod = this._infrastructure.findStorageModule(resource);   // Choose a module
                             if (mod) {
-                                console.log(`ADDING ${resource[1]} ${resource[0]} to module ${mod._id}`);
+                                const msg = this.createMessage("event-add-resource-success", mod._id, `Event Information: Added ${resource[1] / 100} ${resource[0]} to module ${mod._id}`)
+                                this._notifications.addMessageToBacklog(msg);
                                 // Keep track of resource delta to pass to economy display
                                 const r = this._infrastructure.addResourcesToModule(mod._id, resource);
                                 this._economy._data.updateOneResource([resource[0], r]);
                             } else {
-                                console.log(`Warning: No module found to contain ${resource[0]}`);
+                                const msg = this.createMessage("event-add-resource-fail", 0, `Event Information: No module found to contain ${resource[0]} surplus!`)
+                                this._notifications.addMessageToBacklog(msg);
                             }
                         } else {
                             console.log("ERROR: Incorrect outcome data format for 'add-resource' event resolution.")
@@ -1176,12 +1181,14 @@ export default class Engine extends View {
                             const mods = this._infrastructure.findModulesWithResource(resource);
                             if (mods.length > 0) {
                                 const mod = mods[0];
-                                console.log(`SUBTRACTING ${resource[1]} ${resource[0]} from module ${mod._id}`);
+                                const msg = this.createMessage("event-subtract-resource-success", mod._id, `Event Information: Module ${mod._id} has lost ${resource[1] / 100} ${resource[0]}!`)
+                                this._notifications.addMessageToBacklog(msg);
                                 const r = this._infrastructure.subtractResourceFromModule(mod._id, resource);
                                 // Update economy display for the affected resource by SUBTRACTING the resource delta
                                 this._economy._data.updateOneResource([resource[0], -r]);
                             } else {
-                                console.log(`Warning: No module found to contain ${resource[0]}`);
+                                const msg = this.createMessage("event-subtract-resource-fail", 0, `Event Information: No modules found containing ${resource[0]}!`)
+                                this._notifications.addMessageToBacklog(msg);
                             }
                         } else {
                             console.log("ERROR: Incorrect outcome data format for 'subtract-resource' event resolution.")

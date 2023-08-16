@@ -3428,6 +3428,7 @@ Exit Criteria:
 - If a non-random event occurs, the player is notified by a short-lived display banner which pops up near the top of the screen:
 - [DONE] When a new ship is launched from Earth
 - [DONE] When new colonists arrive from Earth
+- When the colony's initial landing begins
 - Banners are displayed according to their urgency, and are routinely filtered and updated by the Notifications manager class
 - [DONE] Popups and banners have a life expectancy that can be set individually by the Notifications manager class
 - Unit tests are created for the Notification and Popup classes
@@ -3455,11 +3456,17 @@ Exit Criteria:
 
 11. Now that we have some messages to display, develop the Notifications system's minutely update cycle: first, have it check the backlog for messages to add to the queue, by first seeing if the queue is empty, and then seeing if the backlog contains anything that can be shifted into the queue (we'll develop a more elaborate prioritization scheme presently). Once a message is placed in the queue, simply create a new popup display using the message in the queue each time the current display is empty.
 
-### 12. Add notifications for the random event outcomes for "add-resource" and "subtract-resource", as well as for the "landing" event at the start of the game. Verify each in-game.
+12. Add notifications for the random event outcomes for "add-resource" and "subtract-resource", as well as for the "landing" event at the start of the game. Verify each in-game.
 
 ### 13. Add a message-collection system to the Infrastructure class: First, add a message field to the Module class, which maps to the MessageData type. Then, when a module has a console log message, such as the warning for when no more resources can be added to it, it should update its current message. Implement this by adding two new Module class methods, setMessage and clearMessage - the latter of which will be called by the Infrastructure class when it collects the message into its own messages array. Create basic unit tests for setMessage and clearMessage methods before proceeding to the Infrastructure class's updates.
 
 ### 14. Now, to the Infrastructure's updates section, add a minutely update method, and have the Engine call it, along with the Population class's minutely updater, every game minute.
+
+### 15. Add yet another Infrastructure class method, called checkForMessages, which checks each module for a message; if it finds one, the message is pushed to the Infra class's messages array, and wiped from the module.
+
+### 16. Integrate the checkForMessages method into the Infra class's minutely updater method, and then update it so that the Engine receives the message/s in the Infra class's queue as the return when it calls the minutely updater method. The Infra class's messages list should be cleared whenever it passes its contents to the Engine, just as the individual modules' message field is reset when they pass to the Infra class.
+
+### 17. Now for the prioritization of the backlog: if the backlog contains multiple messages (more than 1) add a filter method that checks the subject lines of the various messages for certain key phrases that should be prioritized (such as 'warning' or 'urgent' ...?)
 
 ### 99. Clean up unconverted console logs from previous chapter
 
