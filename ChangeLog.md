@@ -3416,19 +3416,19 @@ Exit Criteria:
 - [DONE] When a module is successfully demolished
 - [DONE] When a connector is successfully placed
 - [DONE] When a connector is succesfully removed
-- If there is a more general type of issue within the base, the player is notified by a short-lived display banner which pops up near the top of the screen:
+- If there is an issue in the base, the player is notified by a short-lived display banner which pops up near the top of the screen:
 - When a colonist is unable to enter a module
 - When a colonist loses morale due to not eating, drinking or sleeping
 - When a colonist is not able to reach a floor / module
-- When a module cannot be found to store a resource
-- When a module has an insufficient amount of a resource
+- [DONE] When a module cannot be found to store a resource
+- [DONE] When a module has an insufficient amount of a resource
 - When there are no food production modules (and food / air is below a certain threshold)
 - When there are no water mining zones (and water is below a certain threshold)
 - When there are no solar panels (and power is below a certain threshold)
-- If a non-random event occurs, the player is notified by a short-lived display banner which pops up near the top of the screen:
+- [DONE] If a non-random event occurs, the player is notified by a short-lived display banner which pops up near the top of the screen:
 - [DONE] When a new ship is launched from Earth
 - [DONE] When new colonists arrive from Earth
-- When the colony's initial landing begins
+- [DONE] When the colony's initial landing begins
 - Banners are displayed according to their urgency, and are routinely filtered and updated by the Notifications manager class
 - [DONE] Popups and banners have a life expectancy that can be set individually by the Notifications manager class
 - Unit tests are created for the Notification and Popup classes
@@ -3458,17 +3458,21 @@ Exit Criteria:
 
 12. Add notifications for the random event outcomes for "add-resource" and "subtract-resource", as well as for the "landing" event at the start of the game. Verify each in-game.
 
-### 13. Add a message-collection system to the Infrastructure class: First, add a message field to the Module class, which maps to the MessageData type. Then, when a module has a console log message, such as the warning for when no more resources can be added to it, it should update its current message. Implement this by adding two new Module class methods, setMessage and clearMessage - the latter of which will be called by the Infrastructure class when it collects the message into its own messages array. Create basic unit tests for setMessage and clearMessage methods before proceeding to the Infrastructure class's updates.
+13. Add a message-collection system to the Infrastructure class: First, add a message field to the Module class, which maps to the MessageData type. Then, when a module has a console log message, such as the warning for when no more resources can be added to it, it should update its current message. Implement this by adding two new Module class methods, setMessage and clearMessage - the latter of which will be called by the Infrastructure class when it collects the message into its own messages array.
 
-### 14. Now, to the Infrastructure's updates section, add a minutely update method, and have the Engine call it, along with the Population class's minutely updater, every game minute.
+14. Use the Module's new setMessage method to create messages whenever:
 
-### 15. Add yet another Infrastructure class method, called checkForMessages, which checks each module for a message; if it finds one, the message is pushed to the Infra class's messages array, and wiped from the module.
+- The module cannot store the full amount of an added resource
+- The module tries to deduct a quantity of a resource but has 0 in stock
+- The module fails to produce power due to missing resources (not yet applicable but for future nuclear modules)
 
-### 16. Integrate the checkForMessages method into the Infra class's minutely updater method, and then update it so that the Engine receives the message/s in the Infra class's queue as the return when it calls the minutely updater method. The Infra class's messages list should be cleared whenever it passes its contents to the Engine, just as the individual modules' message field is reset when they pass to the Infra class.
+15. Now, to the Infrastructure's updates section, add a minutely update method, and have the Engine call it, along with the Population class's minutely updater, every game minute.
 
-### 17. Now for the prioritization of the backlog: if the backlog contains multiple messages (more than 1) add a filter method that checks the subject lines of the various messages for certain key phrases that should be prioritized (such as 'warning' or 'urgent' ...?)
+16. Improve the Infrastructure class's resource push system, to attempt to push resources to storage modules with capacity for the entire amount being pushed, before resorting to pushing to a storage module with any capacity at all, or finally, to any module with any capacity.
 
-### 99. Clean up unconverted console logs from previous chapter
+### 98. BUGFIX: Keep track of the amount of structures that have been demolished, or otherwise drop the imported structure ID's for loaded buildings, as the current system is leading to the creation of duplicate module/floor/connector serial numbers, assigned since the Infra class's internal serial number counter is behind some of the serials for loaded structures if they are from a file in which some modules have been demolished. Good sleuthing there to identify the cause of the problem, at least!
+
+### 99. Clean up unconverted console logs from previous chapter.
 
 ### 100. Update the version and date information in the frontend's constants file.
 

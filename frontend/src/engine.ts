@@ -967,6 +967,18 @@ export default class Engine extends View {
     // Calls scheduled update events that occur on a minutely basis
     handleMinutelyUpdates = () => {
         this._population.updateColonists(this._gameTime.minute === 0, this._infrastructure, this._map, this._industry);
+        const infraMessages = this._infrastructure.handleMinutelyUpdates();
+        if (infraMessages.length > 0) {
+            infraMessages.forEach((msg) => {
+                const message: MessageData = {
+                    subject: msg.subject,
+                    smarsTime: this._gameTime,
+                    entityID: msg.id,
+                    text: msg.text
+                };
+                this._notifications.addMessageToBacklog(message);
+            });
+        }
         this._notifications.handleMinutelyUpdates();
     }
 

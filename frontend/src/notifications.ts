@@ -48,7 +48,7 @@ export default class Notifications {
                 this._backlog = this._backlog.filter((msg) => msg.subject !== message.subject || msg.text !== message.text);
             }
             this._backlog.push(message);
-            console.log(this._backlog);
+            console.log(`New message added: ${message.subject}. Current backlog length: ${this._backlog.length}`);
             return true;        // Return whether the message was succesfully added or not
         } else {
             console.log(`Error: was unable to add new message with subject ${message.subject} to notifications backlog`);
@@ -61,8 +61,8 @@ export default class Notifications {
         // BASIC ARRANGEMENT: Add the earliest message from the backlog to the queue if the queue contains 1 message or less
         if (this._queue.length < 2 && this._backlog.length > 0) {
             const msg = this._backlog.shift();
-            if (msg) {
-                console.log(`New message added to queue: ${msg.subject}`);
+            // BASIC FILTERING: Only add a new message to the queue if it's not the same as the current one
+            if (msg && (msg.subject !== this._queue[0].subject || msg.text !== this._queue[0].text)) {
                 this._queue.push(msg);
             }
         }
@@ -123,20 +123,26 @@ export default class Notifications {
         const message = this._queue.shift();
         if (message) {
             let colour = "green";
-            let duration = 150;
+            let duration = 300;     // Display banners have longer default duration
             const coords: Coords = { x: (constants.SCREEN_WIDTH - constants.SIDEBAR_WIDTH) / 2, y: 108 };
             switch (message.subject) {
+                case "event-add-resource-success":
+                    duration = 500;
+                    break;
                 case "earth-launch":
                 case "earth-landing":
                 case "landing-sequence":
                     duration = 750;
                     break;
-                case "event-add-resource-success":
+                case "module-add-resource-partial":
                     duration = 500;
+                    colour = "yellow";
                     break;
                 case "event-add-resource-fail":
                 case "event-subtract-resource-success":
                 case "event-subtract-resource-fail":
+                case "module-resource-missing":
+                case "module-add-resource-fail":
                     duration = 500;
                     colour = "red";
                 break;

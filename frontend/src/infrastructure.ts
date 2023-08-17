@@ -20,6 +20,7 @@ export default class Infrastructure {
     _highlightedModule: Module | null;
     _highlightedConnector: Connector | null;    // Infra class controls structure highlighting
     _essentialStructures: string[];             // Essential structures is a list of names of modules that cannot be removed by the player
+    _messages: { subject: string, id: number, text: string }[]; // Keep track of messages from individual modules, to pass to the Engine
 
     // Map width is passed to the data class at construction to help with base volume calculations
     constructor() {
@@ -31,7 +32,8 @@ export default class Infrastructure {
         this._highlightedConnector = null;
         this._essentialStructures = [
             "Comms Antenna"
-        ]
+        ];
+        this._messages = [];
     }
 
     setup = (mapWidth: number) => {
@@ -403,6 +405,21 @@ export default class Infrastructure {
         this.handleModuleMaintenance();
     }
 
+    // This method will return an array of messages from individual modules, if there are any
+    handleMinutelyUpdates = () => {
+        this._modules.forEach((mod) => {
+            if (mod._message) {
+                const msg = { subject: mod._message.subject, id: mod._id, text: mod._message.text };
+                this._messages.push(msg);
+                mod.clearMessage();
+            }
+        })
+        // Reset messages list and return any messages it contained to the Engine
+        const messages = this._messages;
+        this._messages = [];
+        return messages;
+    }
+
     handleModuleMaintenance = () => {
         this._modules.forEach((mod) => {
             mod.handleMaintenance();
@@ -544,7 +561,6 @@ export default class Infrastructure {
                     const available = mod.deductResource(req.resource);
                     // Transfer the available amount to the requesting module
                     this.addResourcesToModule(req.modId, [req.resource[0], available]);
-                    // console.log(`Transferred ${req.resource[1]} ${req.resource[0]} from ${mod._id} to ${req.modId}`);
                     fulfilled = true;   // Prevent other providers from trying to also answer the call
                 }
             })
@@ -557,8 +573,16 @@ export default class Infrastructure {
         const pushers = this._modules.filter((mod) => mod._moduleInfo.productionOutputs !== undefined);
         // For each one, for each output, find a Storage class module that can hold its output/s
         pushers.forEach((mod) => {
+            // GLASS ONION
             mod._moduleInfo.productionOutputs?.forEach((resource) => {
-                const storage = this.findStorageModule([resource[0], 1], true);   // Find Storage modules only; at least 1 capacity
+                // Storage: First try to find a storage module for the entire quantity; then look for storage module for any quantity
+                let storage = this.findStorageModule([resource[0], resource[1]], true);     // Find Storage modules with room for full quantity
+                if (storage === null) {
+                    storage = this.findStorageModule([resource[0], 1], true);     // If full quantity not possible, get any storage space left
+                }
+                // if (storage === null) {
+                //     storage = this.findStorageModule([resource[0], 1]);     // As a last resort, use a non-storage module
+                // }
                 if (storage) {
                     let outputQty = 0;
                     // Only push oxygen if sending module has more than its par (to avoid depressurizing oxygen producers)

@@ -42,6 +42,9 @@ export default class Message {
             case "blue":
                 const blue: RGB = [0, 0, 200];
                 return blue;
+            case "yellow":
+                const yellow: RGB = [160, 140, 10];
+                return yellow;
             default:
                 const white: RGB = [255, 255, 255];
                 return white;
