@@ -1,7 +1,6 @@
 // In-game view for displaying the tech tree
 import P5 from "p5";
 import View from "./view";
-import Button from "./button";
 import { constants } from "./constants";
 
 export default class Earth extends View {
@@ -58,9 +57,9 @@ export default class Earth extends View {
         this.updateEarthDate();
         const ev = this.checkEventDatesForUpdate();
         this.setNextEventDate(ev);  // If either a launch or a landing has occurred, schedule the next one
-        // Lastly, if a landing has taken place, inform the Game component how many colonists have just landed
-        if (ev.landing) {
-            return this._colonistsEnRoute
+        // Lastly, if a launch / landing has taken place, inform the Game component how many colonists have just taken off / landed
+        if (ev.launch || ev.landing) {
+            return ev;
         } else {
             return null;    // If no landing has taken place return a null to the Game component
         }
@@ -117,7 +116,8 @@ export default class Earth extends View {
     checkEventDatesForUpdate = () => {
         let ev = {
             launch: false,
-            landing: false
+            landing: false,
+            colonists: this._colonistsEnRoute   // If a launch/landing takes place, use this value to notify the player how many people were sent
         }
         // Check if launch date has arrived and set flight to true if so
         if (this._earthDate > this._nextLaunchDate) {

@@ -50,6 +50,7 @@ export default class Colonist {
         this._toolPosition = 0;
         this._toolOutward = false;
         this._highlighted = false;      // By default, colonists are not highlighted
+        
     }
 
     // Controls whether or not this colonist is highlighted

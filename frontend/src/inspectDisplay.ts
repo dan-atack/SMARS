@@ -45,7 +45,9 @@ export default class InspectDisplay {
     updateSelection = (data: Block | Colonist | Connector | Module | null) => {
         this._currentSelection = data;
         if (data) {
-            console.log(this._currentSelection);
+            if (process.env.ENVIRONMENT === "dev" || process.env.ENVIRONMENT === "local_dev") {
+                console.log(this._currentSelection);    // Only print out detailed info to the console in local/dev mode
+            }
             if (this.isBlock(data)) this._selectionName = "block";
             if (this.isColonist(data)) this._selectionName = "colonist";
             if (this.isConnector(data)) this._selectionName = "connector";

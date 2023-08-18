@@ -9,6 +9,7 @@ import Industry from "./industry";
 import Economy from "./economy";
 import Population from "./population";
 import Modal, { EventData } from "./modal";
+import Notifications, { MessageData } from "./notifications";
 import Lander from "./lander";
 import DropPod from "./dropPod";
 import MouseShadow from "./mouseShadow";
@@ -27,6 +28,7 @@ import { GameData } from "./newGameSetup";
 import { Coords } from "./connector";
 import { Resource } from "./economyData";
 
+
 export default class Engine extends View {
     // Engine types
     _p5: P5;                    // Although the View class no longer uses it in the constructor, the Engine still does
@@ -42,10 +44,11 @@ export default class Engine extends View {
     _industry: Industry;
     _economy: Economy;
     _population: Population;
-    _modal: Modal | null;
-    _animation: Lander | DropPod | null; // This field holds the current entity being used to control animations, if there is one
-    _mouseShadow: MouseShadow | null;    // This field will hold a mouse shadow entity if a building is being placed
-    _sky: Sky;                  // The animations component for the sky, including sunlight levels and atmospheric effects
+    _notifications: Notifications;          // Notifications class manages all of the in-game messages that are displayed on-screen to the player
+    _modal: Modal | null;                   // Start with no modal
+    _animation: Lander | DropPod | null;    // This field holds the current entity being used to control animations, if there is one
+    _mouseShadow: MouseShadow | null;       // This field will hold a mouse shadow entity if a building is being placed
+    _sky: Sky;                              // The animations component for the sky, including sunlight levels and atmospheric effects
     // Map scrolling control
     _horizontalOffset: number;  // This will be used to offset all elements in the game's world, starting with the map
     _scrollDistance: number;    // Pixels from the edge of the world area in which scrolling occurs
@@ -112,6 +115,7 @@ export default class Engine extends View {
         this._industry = new Industry();
         this._economy = new Economy(p5);
         this._population = new Population();
+        this._notifications = new Notifications();
         this._modal = null;
         this._animation = null;
         this._mouseShadow = null;
@@ -336,14 +340,12 @@ export default class Engine extends View {
     handleClicks = (mouseX: number, mouseY: number) => {
         // Click is in sidebar (unless modal is open or the player has not chosen a landing site, or mouse context is wait):
         if (mouseX > constants.SCREEN_WIDTH - this._sidebar._width && !this._modal && this._hasLanded && this.mouseContext != "wait") {
-            // console.log("Click in sidebar");
             this._sidebar.handleClicks(mouseX, mouseY);
         } else {
             // Click is over the map
             if (mouseX > 0 && mouseX < constants.SCREEN_WIDTH && mouseY > 0 && mouseY < constants.SCREEN_HEIGHT) {
                 const [gridX, gridY] = this.getMouseGridPosition(mouseX, mouseY);
                 const coords = { x: gridX, y: gridY }   // For convenience
-                // console.log(`(${gridX}, ${gridY})`);
                 switch (this.mouseContext) {
                     case "connectorStart":
                         this.handleConnectorStartPlacement(gridX, gridY)
@@ -370,11 +372,12 @@ export default class Engine extends View {
                         this.handleResourceZoneSelect(coords);
                         break;
                     case "wait":
-                        // TODO: Add UI explanation (or sound effect!) indicating that the player can't click during 'wait' mode
-                        // console.log("Mouse click response suppressed. Reason: 'In wait mode'");
+                        // Send message to Notifications system indicating that the player can't click during 'wait' mode
+                        const message = this.createMessage("command-must-wait", 0, "Please Wait:\nAnimation in progress");
+                        this._notifications.createMessageFromClick({ x: mouseX, y: mouseY }, message);
                         break;
                     default:
-                        console.log(`Unknown mouse context used: ${this.mouseContext}`);
+                        console.log(`ERROR: Unknown mouse context used: ${this.mouseContext}`);
                 }
                 this.getMouseGridPosition(mouseX, mouseY);
             } 
@@ -479,11 +482,27 @@ export default class Engine extends View {
     // Mouse Context Handler for 'resource'
     handleResourceZoneSelect = (coords: Coords) => {
         const b = this._map.getBlockForCoords(coords);
+        const crds = { x: coords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: coords.y * constants.BLOCK_WIDTH};  // For notifications
         if (b && this._map.isBlockOnSurface(b)) {   // Ensure block is on the surface
             // TODO: Build this out to allow easy handling of multiple new resource types
             if (b._blockData.resource === "water") {
-                this._industry.addMiningLocation(coords, "water"); // Push the coordinates for the mining location
+                const added = this._industry.toggleMiningLocation(coords, "water"); // Push the coordinates for the mining location
+                if (added) {
+                    const message = this.createMessage("command-resource-success", 0, "New mining zone\nestablished");
+                this._notifications.createMessageFromClick(crds, message, 16);
+                } else {
+                    const message = this.createMessage("command-resource-success", 0, "Mining zone\ncancelled");
+                    this._notifications.createMessageFromClick(crds, message, 16);
+                }
+            } else {
+                // Notify the player if an invalid resource type has been selected
+                const message = this.createMessage("command-resource-invalid", 0, "Can only mine tiles\ncontaining water");
+                this._notifications.createMessageFromClick(crds, message, 16);
             }
+        } else {
+            // Notify the player in-game that they must select a tile on the surface
+            const message = this.createMessage("command-resource-no-surface", 0, "Click on surface tile\nto add/remove mining zone");
+            this._notifications.createMessageFromClick(crds, message, 16);
         }
     }
 
@@ -597,11 +616,28 @@ export default class Engine extends View {
 
     handleDemolish = (coords: Coords) => {
         const con = this._infrastructure.getConnectorFromCoords(coords);
-        const mod = this._infrastructure.getModuleFromCoords(coords)
+        const mod = this._infrastructure.getModuleFromCoords(coords);
+        // Get pixelated coordinates for success/failure message
+        const crds = { x: coords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: coords.y * constants.BLOCK_WIDTH};
         if (con) {          // First, check for Connectors
-            this._infrastructure.removeConnector(con, this._population)
+            const outcome = this._infrastructure.removeConnector(con, this._population);
+            if (outcome.success) {
+                const message = this.createMessage("command-demolish-success", con._id, outcome.message);
+                this._notifications.createMessageFromClick(crds, message, 18);
+            } else {
+                const message = this.createMessage("command-demolish-failure", con._id, outcome.message);
+                this._notifications.createMessageFromClick(crds, message);
+            }
         } else if (mod) {      // Then, check for Modules
-            this._infrastructure.removeModule(mod, this._population, this._map);
+            // Depending on the outcome of the removal request, send a success/failure message for the player to see in-game
+            const outcome: { success: boolean, message: string } = this._infrastructure.removeModule(mod, this._population, this._map);
+            if (outcome.success) {
+                const message = this.createMessage("command-demolish-success", mod._id, outcome.message);
+                this._notifications.createMessageFromClick(crds, message);
+            } else {
+                const message = this.createMessage("command-demolish-failure", mod._id, outcome.message);
+                this._notifications.createMessageFromClick(crds, message);
+            }
         } else {
             this.setMouseContext("inspect");        // Revert mouse context to 'inspect' if click is not on a structure
         }
@@ -619,6 +655,7 @@ export default class Engine extends View {
 
     // X and Y are already gridified
     handleModulePlacement = (x: number, y: number) => {
+        const crds = { x: x * constants.BLOCK_WIDTH - this._horizontalOffset, y: y * constants.BLOCK_WIDTH}; // For notifications
         if (this.selectedBuilding != null) {
             // MODULES
             if (this._infrastructure._data.isModule(this.selectedBuilding)) {
@@ -628,10 +665,12 @@ export default class Engine extends View {
                 if (clear && affordable) {
                     this._infrastructure.addModule(x, y, this.selectedBuilding,  this._map._topography, this._map._zones,);
                     this._economy._data.subtractMoney(this.selectedBuilding.buildCosts[0][1]);
+                    const message = this.createMessage("command-module-success", 0, `New ${this.selectedBuilding.name}\ninstalled`);
+                    this._notifications.createMessageFromClick(crds, message);
                 } else {
-                    // TODO: Display this info to the player with an in-game message of some kind
-                    console.log(`Clear: ${clear}`);
-                    console.log(`Affordable: ${affordable}`);
+                    // Notify the player in-game that their placement is no good (or that they cannot afford the new module)
+                    const message = this.createMessage("command-module-fail", 0, `Unable to place new module:\n${clear ? "Insufficient funds" : "Location invalid"}`);
+                    this._notifications.createMessageFromClick(crds, message);
                 }
             }
         }
@@ -643,6 +682,10 @@ export default class Engine extends View {
         if (this._infrastructure._data.checkConnectorEndpointPlacement(x, y, this._map._mapData)) {
             this._mouseShadow?.setLocked(true, {x: x, y: y});   // Lock the shadow's position when start location is chosen
             this.setMouseContext("connectorStop");
+        } else {    // If the start location is invalid show a popup
+            const crds = { x: x * constants.BLOCK_WIDTH - this._horizontalOffset, y: y * constants.BLOCK_WIDTH};
+            const message = this.createMessage("command-connector-fail", 0, "Cannot start connector\nat this location");
+            this._notifications.createMessageFromClick(crds, message);
         }
     }
 
@@ -650,6 +693,7 @@ export default class Engine extends View {
     handleConnectorStopPlacement = () => {
         // Ensure there is a building selected, and that it's not a module
         if (this.selectedBuilding != null && !this._infrastructure._data.isModule(this.selectedBuilding) && this._mouseShadow?._connectorStopCoords != null && this._mouseShadow._connectorStartCoords) {
+            const crds = { x: this._mouseShadow._connectorStopCoords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: this._mouseShadow._connectorStopCoords.y * constants.BLOCK_WIDTH}   // Prepare coordinates for notification popup
             const baseCost = this.selectedBuilding.buildCosts[0][1];    // Get just the number
             const len = Math.max(this._mouseShadow._deltaX, this._mouseShadow._deltaY) + 1;
             const cost = baseCost * len;  // Multiply cost by units of length
@@ -658,12 +702,13 @@ export default class Engine extends View {
             const stop = this._mouseShadow._connectorStopCoords;
             const clear = this._infrastructure._data.checkConnectorEndpointPlacement(stop.x, stop.y, this._map._mapData);
             if (affordable && clear) {
+                const message = this.createMessage("command-connector-success", 0, `New ${this.selectedBuilding.name}\ninstalled`);
+                this._notifications.createMessageFromClick(crds, message);  // Notify the player of the successful placement
                 this._infrastructure.addConnector(start, stop, this.selectedBuilding, this._map);
                 this._economy._data.subtractMoney(cost);
             } else {
-                // TODO: Display this info to the player with an in-game message of some kind
-                console.log(`Clear: ${clear}`);
-                console.log(`Affordable: ${affordable}`);
+                const message = this.createMessage("command-connector-fail", 0, `Cannot place connector:\n${clear ? "Insufficient funds" : "Invalid location"}`);       // Notify the player of placement failure via in-game message
+                this._notifications.createMessageFromClick(crds, message);
             }
             // Reset mouse context to connector start so another connector can be placed
             this.destroyMouseShadow();
@@ -696,6 +741,9 @@ export default class Engine extends View {
         this.setWaitTime(wait);
         // Setup landing animation with 
         this._animation = new Lander(x, -120, destination, wait - 120);
+        // Create notification message
+        const message = this.createMessage("landing-sequence", 0, "Landing Sequence initiated!");
+        this._notifications.addMessageToBacklog(message);
     }
 
     // This method sets up the UI after the landing animation has finished
@@ -704,6 +752,8 @@ export default class Engine extends View {
         this._map.setExpanded(false);
         this._hasLanded = true;
         this.placeInitialStructures();
+        this._notifications.expireCurrentClickResponse();
+        this._notifications.expireCurrentDisplayPopup();
         this.createModal(modalData.find((modal) => modal.id === "landing-touchdown"));
         // Add three new colonists, spread across the landing zone (Y value is -2 since it is the Colonist's head level)
         this._population.addColonist(this._landingSiteCoords[0], this._landingSiteCoords[1] - 2);
@@ -804,7 +854,7 @@ export default class Engine extends View {
         
     }
 
-    // Resolves whatever the current event is, and terminates any animation that might have been shown
+    // Resolves whatever the current event is, and terminates any animation/notification that might have been shown
     resolveCurrentEvent = () => {
         this._currentEvent = { 
             type: "",
@@ -812,6 +862,8 @@ export default class Engine extends View {
             value: 0
         };
         this._animation = null;
+        this._notifications.expireCurrentClickResponse();
+        this._notifications.expireCurrentDisplayPopup();
         this.setMouseContext("inspect");
     }
 
@@ -910,13 +962,32 @@ export default class Engine extends View {
         this._gameTime = gameTime;
     }
 
-    // Calls scheduled update events
+    // HOURLY AND MINUTELY UPDATES
+
+    // Calls scheduled update events that occur on a minutely basis, and collects messages from the population and infra classes
+    handleMinutelyUpdates = () => {
+        const popMessages = this._population.updateColonists(this._gameTime.minute === 0, this._infrastructure, this._map, this._industry);
+        popMessages.forEach((msg) => {
+            const message: MessageData = this.createMessage(msg.subject, msg.id, msg.text);
+            this._notifications.addMessageToBacklog(message);
+        })
+        const infraMessages = this._infrastructure.handleMinutelyUpdates();
+        infraMessages.forEach((msg) => {
+            const message: MessageData = this.createMessage(msg.subject, msg.id, msg.text);
+            this._notifications.addMessageToBacklog(message);
+        });
+        this._notifications.handleMinutelyUpdates();
+    }
+
+    // Calls scheduled update events that occur on an hourly basis
     handleHourlyUpdates = () => {
         this.updateEarthData();
         this._infrastructure.handleHourlyUpdates(this._sunlight);   // Sunlight level is passed to power generation methods
         this._industry.updateJobs(this._infrastructure);
         this.updateEconomyDisplay();
         this.updateDayNightCycle();
+        this.checkForGeneralWarnings();
+        this._notifications.handleHourlyUpdates(this._gameTime);
         // Re-activate the 2 lines below to periodically gauge how much, if any, the game's time keeping is slipping as it grows
         // const time = new Date();
         // console.log(time);
@@ -965,8 +1036,8 @@ export default class Engine extends View {
             this._tick++;
             if (this._tick >= this.ticksPerMinute) {
                 this._tick = 0;     // Advance minutes
-                // Update colonists' locations each 'minute', and all of their other stats every hour
-                this._population.updateColonists(this._gameTime.minute === 0, this._infrastructure, this._map, this._industry);
+                // Everything on a minutely schedule goes HERE
+                this.handleMinutelyUpdates();
                 if (this._gameTime.minute < this._minutesPerHour - 1) {  // Minus one tells the minutes counter to reset to zero after 59
                     this._gameTime.minute ++;
                 } else {
@@ -1074,7 +1145,7 @@ export default class Engine extends View {
     // Resolution parameter tells the Engine, by index position, which resolution to enact
     closeModal = (resolution: number) => {
         if (this._modal) {
-            // Carry out each outcome instruction for the modal's resolution. TODO: Allow user to choose among up to 3 options
+            // Carry out each outcome instruction for the modal's resolution. TODO: Allow user to choose among 3 or more options
             this._modal._resolutions[resolution].outcomes.forEach((outcome) => {
                 switch (outcome[0]) {
                     case "start-landing-sequence":
@@ -1097,12 +1168,14 @@ export default class Engine extends View {
                             const resource: Resource = [outcome[2], outcome[1]];
                             const mod = this._infrastructure.findStorageModule(resource);   // Choose a module
                             if (mod) {
-                                console.log(`ADDING ${resource[1]} ${resource[0]} to module ${mod._id}`);
+                                const msg = this.createMessage("event-add-resource-success", mod._id, `Event Information: Added ${resource[1] / 100} ${resource[0]} to module ${mod._id}`)
+                                this._notifications.addMessageToBacklog(msg);
                                 // Keep track of resource delta to pass to economy display
                                 const r = this._infrastructure.addResourcesToModule(mod._id, resource);
                                 this._economy._data.updateOneResource([resource[0], r]);
                             } else {
-                                console.log(`Warning: No module found to contain ${resource[0]}`);
+                                const msg = this.createMessage("event-add-resource-fail", 0, `Event Information: No module found to contain ${resource[0]} surplus!`)
+                                this._notifications.addMessageToBacklog(msg);
                             }
                         } else {
                             console.log("ERROR: Incorrect outcome data format for 'add-resource' event resolution.")
@@ -1119,12 +1192,14 @@ export default class Engine extends View {
                             const mods = this._infrastructure.findModulesWithResource(resource);
                             if (mods.length > 0) {
                                 const mod = mods[0];
-                                console.log(`SUBTRACTING ${resource[1]} ${resource[0]} from module ${mod._id}`);
+                                const msg = this.createMessage("event-subtract-resource-success", mod._id, `Event Information: Module ${mod._id} has lost ${resource[1] / 100} ${resource[0]}!`)
+                                this._notifications.addMessageToBacklog(msg);
                                 const r = this._infrastructure.subtractResourceFromModule(mod._id, resource);
                                 // Update economy display for the affected resource by SUBTRACTING the resource delta
                                 this._economy._data.updateOneResource([resource[0], -r]);
                             } else {
-                                console.log(`Warning: No module found to contain ${resource[0]}`);
+                                const msg = this.createMessage("event-subtract-resource-fail", 0, `Event Information: No modules found containing ${resource[0]}!`)
+                                this._notifications.addMessageToBacklog(msg);
                             }
                         } else {
                             console.log("ERROR: Incorrect outcome data format for 'subtract-resource' event resolution.")
@@ -1145,6 +1220,53 @@ export default class Engine extends View {
         // Clear modal data (and random event data?) and resume the game
         this._modal = null;
         this.setGameOn(true);
+    }
+
+    // Creates a messageData object to feed to the Notifications system
+    createMessage = (subject: string, entityId: number, text: string) => {
+        const time = this.createSmartianTimestamp(this._gameTime.year, this._gameTime.sol, this._gameTime.cycle, this._gameTime.hour, this._gameTime.minute);
+        const message: MessageData = {
+            subject: subject,
+            smarsTime: time,
+            entityID: entityId,
+            text: text
+        };
+        return message;
+    }
+
+    createSmartianTimestamp = (year: number, sol: number, cycle: string, hour: number, minute: number) => {
+        const time = {
+            year: year,
+            sol: sol,
+            cycle: cycle,
+            hour: hour,
+            minute: minute
+        };
+        return time;
+    }
+
+    // Called by the hourly updater, to issue basic general advice to the player if they look like they need it
+    checkForGeneralWarnings = () => {
+        if (this._economy._data._resources[1][1] < 10000 && this._infrastructure._modules.filter((mod) => mod.getProductionOutputResourceNames().includes("oxygen")).length === 0) {
+            const message = this.createMessage("general-advice-tip", 0, "Your colony's oxygen reserves are running low; build some hydroponics modules!");
+            this._notifications.addMessageToBacklog(message);
+        };
+        if (this._economy._data._resources[2][1] < 5000 && this._industry._miningLocations.water.length === 0) {
+            const message = this.createMessage("general-advice-tip", 0, "Your water reserves are running low; use the resource tool to set water mining zones!");
+            this._notifications.addMessageToBacklog(message);
+        };
+        if (this._economy._data._resources[2][1] < 5000 && this._population._colonists.filter((col) => col._data._role[0] === "miner").length === 0) {
+            const message = this.createMessage("general-advice-tip", 0, "Your colony's water reserves are running low; assign some colonists to mine water!");
+            this._notifications.addMessageToBacklog(message);
+        };
+        if (this._economy._data._resources[3][1] < 5000) {
+            const message = this.createMessage("general-advice-tip", 0, "Your colony's food reserves are running low; build some hydroponics modules!");
+            this._notifications.addMessageToBacklog(message);
+        };
+        if (this._economy._data._resources[4][1] < 10000) {
+            const message = this.createMessage("general-advice-tip", 0, "Your colony's power reserves are running low; build some solar panels!");
+            this._notifications.addMessageToBacklog(message);
+        }
     }
 
     //// RENDER METHODS ////
@@ -1261,6 +1383,7 @@ export default class Engine extends View {
         if (this._map._highlightedBlock) {
             this.renderBlockHighlighting(p5);
         }
+        this._notifications.render(p5);
         // p5.text(`Sunlight: ${this._sunlight}`, 120, 300);
         // p5.text(this._mouseShadow?._context || "NONE", 200, 200);
     }

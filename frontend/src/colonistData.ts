@@ -43,6 +43,7 @@ export default class ColonistData {
     _movementDest: Coords;          // The coordinates of the current destination for the colonist's movement
     _facing: string;                // Either "right" or "left"... until SMARS 3D is released, that is!
     _animationTick: number;         // Governs the progression of movement/activity animations
+    _message: { subject: string, text: string } | null; // For the notifications system
 
     constructor(id: number, name: string, x: number, y: number, saveData?: ColonistSaveData) {
         this._id = id;
@@ -84,7 +85,10 @@ export default class ColonistData {
         this._movementDest = saveData ? saveData.movementDest : { x: this._x + 1, y: this._y }; // Load destination or go right
         this._facing = saveData ? saveData.facing : "right";        // Let's not make this a political issue, Terry.
         this._animationTick = 0;                                    // By default, no animation is playing
+        this._message = null;                                       // By default, the colonist has no messages
     }
+
+    // SECTION 1: HOURLY AND MINUTELY UPDATERS
 
     // Handles hourly updates to the colonist's needs and priorities (goals) and morale
     handleHourlyUpdates = (infra: Infrastructure, map: Map, industry: Industry) => {
@@ -101,7 +105,7 @@ export default class ColonistData {
         this.handleMovement(map, infra, adjacentColumns);  // Finally, take care of movement last
     }
 
-    // NEEDS, ROLE AND GOAL-ORIENTED METHODS
+    // SECTION 2: NEEDS, ROLE AND GOAL-ORIENTED METHODS
 
     // Increases colonist needs, but only up to the need threshold if they are asleep
     updateNeeds = () => {
@@ -157,7 +161,7 @@ export default class ColonistData {
                     needSet = true;     // Tell the forEach loop to stop looking once a need is set
                     this.setGoal(`get-${need}`, infra, map, industry);
                 } else {
-                    console.log(`Colonist ${this._id} is climbing - delaying new action start.`);
+                    // console.log(`Colonist ${this._id} is climbing - delaying new action start.`);
                 }
             }
         })
@@ -210,7 +214,7 @@ export default class ColonistData {
         this.setGoal("");
     }
 
-    // ACTION-ORIENTED METHODS
+    // SECTION 3: ACTION-ORIENTED METHODS
     // (Actions are individual tasks, such as 'move to x', or 'consume a resource' which collectively form a single GOAL)
 
     // Top Level Action Creation Method: determines the individual actions to be performed to achieve the current goal
@@ -238,8 +242,8 @@ export default class ColonistData {
                         this.addAction("climb", { x: elevator.x, y: elevator.bottom - 1 }, 0, elevator.id);
                         // If found, add order to move to nearest ladder (stack is created in reverse order)
                         this.addAction("move", { x: elevator.x, y: this._y });
-                    } else {
-                        console.log(`Colonist ${this._id} is trapped on floor ${this._standingOnId}!`);
+                    } else {    // If the colonist cannot find an elevator/ladder, notify the player that they are stuck!
+                        this.setMessage("colonist-trapped", `${this._name} is trapped on floor ${this._standingOnId}!`);
                     }
                 }
                 break;
@@ -247,17 +251,20 @@ export default class ColonistData {
                 this._actionStack = createConsumeActionStack(currentPosition, this._standingOnId, ["water", this._needs.water], infra);
                 // If no action stack was returned, assume that water is temporarily unavailable
                 if (this._actionStack.length === 0) {
-                    // TODO: Add a warning here.... I'm thinking, set a new Colonist property and have the Engine read it via the Population class (which can update an hourly tally of Colonist warning messages)
+                    // TODO: Enable this message only if player selects 'verbose' messaging option
+                    // this.setMessage("colonist-needs-fail", `Warning: ${this._name} cannot find a source of water to drink.`);
                     this._needsAvailable.water = 0;
                 }
                 break;
             case "get-food":    // Parallels the get-water case almost closely enough to be the same... but not quite!
                 this._actionStack = createConsumeActionStack(currentPosition, this._standingOnId, ["food", this._needs.food], infra);
                 // If no action stack was returned, assume that food is temporarily unavailable
+                // this.setMessage("colonist-needs-fail", `Warning: ${this._name} cannot find a source of food to eat.`);
                 if (this._actionStack.length === 0) this._needsAvailable.food = 0;
                 break;
             case "get-rest":
                 this._actionStack = createRestActionStack(currentPosition, this._standingOnId, infra);
+                // this.setMessage("colonist-needs-fail", `Warning: ${this._name} cannot find a crew quarters to sleep in.`);
                 if (this._actionStack.length === 0) this._needsAvailable.rest = 0;
                 break;
             case "farm":
@@ -324,8 +331,8 @@ export default class ColonistData {
                         if (depot) {
                             depot.addResource(output);      // Add new resources
                         } else {
-                            // Ideally this would be the kind of thing to warn the user about with an in-game notification
-                            console.log(`Warning: No storage location found for ${this._name}'s mining output!`);
+                            // Warn the user about any failures to store the mined output with an in-game notification
+                            this.setMessage("module-add-resource-fail", `Warning: No storage location found for ${this._name}'s mining output!`);
                         }
                         industry.updateMiningLocationStatus("water", this._currentAction.coords, false);    // Punch out
                         industry.updateJobsForRole(infra, this._currentAction.type);                // Renew miner jobs
@@ -388,7 +395,7 @@ export default class ColonistData {
                         const started = industry.updateMiningLocationStatus("water", action.coords, true);
                         if (!(started)) this.resolveAction();   // If the spot is already taken, end the action immediately
                     } else {
-                        console.log("Error: Industry class missing for mining action start.");
+                        console.log("Error: Industry class data missing for mining action start.");
                     }
                     // Declare to the industry class that a mining action has started
                     break;
@@ -422,7 +429,7 @@ export default class ColonistData {
         this._actionStack = [];
     }
 
-    // MOVEMENT/POSITIONING METHODS
+    // SECTION 4: MOVEMENT/POSITIONING METHODS
 
     updateMapZone = (map: Map) => {
         this._standingOnId = map.getZoneIdForCoordinates({ x: this._x, y: this._y + 1 });    // Plus one to Y for foot level
@@ -433,8 +440,8 @@ export default class ColonistData {
         if (floor) {
             this._standingOnId = floor._id;
         } else {
-            console.log(`Error: Colonist ${this._name} at (${this._x}, ${this._y}) is not standing on anything!`);
-            // Drop the colonist down one level if they are not standing on anything ??
+            this.setMessage("colonist-falling", `Warning: ${this._name} has fallen from a high place!`);
+            // Drop the colonist down one level if they are not standing on anything!
             this._y++;
         }
     }
@@ -581,7 +588,7 @@ export default class ColonistData {
         }
     }
 
-    // OTHER (NON-MOVEMENT) ACTIVITIES
+    // SECTION 5: OTHER (NON-MOVEMENT) ACTIVITIES
 
     // Generic resource-consumption method (can be used for eating and drinking... and who knows what else, eh? ;)
     consume = (resourceName: string, infra: Infrastructure) => {
@@ -603,7 +610,7 @@ export default class ColonistData {
                             this._currentAction.duration = consumed;
                         }
                     } else {
-                        console.log(`${this._name} was unable to enter module ${mod._id}!`);
+                        this.setMessage("colonist-entry-blocked", `${this._name} was unable to enter module ${mod._id}!`);
                         this.resolveAction();
                     }
                 } else {
@@ -633,7 +640,7 @@ export default class ColonistData {
                 console.log(`Error: ${this._name} unable to enter Module ${this._currentAction.buildingId}. Reason: Module data not found.`);
             }
         } else {
-            console.log(`Warning: Colonist ${this._id} is in wrong position to enter ${this._currentAction?.type} module ${this._currentAction?.buildingId}.`);
+            // console.log(`Error: Colonist ${this._id} is in wrong position to enter ${this._currentAction?.type} module ${this._currentAction?.buildingId}.`);
             this.resolveAction();
         }
     }
@@ -651,7 +658,7 @@ export default class ColonistData {
         }
     }
 
-    // MORALE METHODS (Not to be confused with 'moral methods')
+    // SECTION 6: MORALE METHODS (Not to be confused with 'moral methods')
 
     // Takes a number (positive or negative) and modifies the colonist's current morale
     updateMorale = (delta: number) => {
@@ -669,10 +676,27 @@ export default class ColonistData {
             //@ts-ignore
             const deprivation = this._needs[need] - this._needThresholds[need] > this._tolerance;
             if (deprivation) {
-                // console.log(`${this._name} is suffering from a lack of ${need}`);
                 this.updateMorale(-1);
+                // TODO: Make this notification toggleable based on player preferences (to avoid excessive noise)
+                //@ts-ignore
+                // if (this._morale < 50 || this._needs[need] - this._needThresholds[need] > this._tolerance * 2) {
+                //     this.setMessage("colonist-morale-loss", `${this._name} is suffering from a lack of ${need}!`);
+                // }
             }
         })
+    }
+
+    // SECTION 7: MESSAGE/NOTIFICATION METHODS
+
+    setMessage = (subject: string, text: string) => {
+        this._message = {
+            subject: subject,
+            text: text
+        };
+    }
+
+    clearMessage = () => {
+        this._message = null;
     }
 
 }

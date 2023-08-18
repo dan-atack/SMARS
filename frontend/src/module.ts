@@ -24,8 +24,8 @@ export default class Module {
     _height: number;
     _xOffset: number;           // The offset value will be in terms of PIXELS, to allow for smoother scrolling
     _yOffset: number;
-    _color: string;
     _isRendered: boolean;
+    _message: { subject: string, text: string } | null;   // Infra class will pick up message data and let the Engine fill in the details
 
     constructor(id: number, x: number, y: number, moduleInfo: ModuleInfo) {
         this._id = id;
@@ -65,9 +65,8 @@ export default class Module {
         this._height = this._moduleInfo.height;
         this._xOffset = 0;
         this._yOffset = 0;
-        // Determined by matching block type to entry in the blocktionary:
-        this._color = constants.ALMOST_BLACK    // Default value for now; in the future modules will be of no specific color
         this._isRendered = false;
+        this._message = null;
     }
 
     // SECTION 1: RESOURCE INFO GETTERS
@@ -132,6 +131,14 @@ export default class Module {
         return needs;
     }
 
+    getProductionOutputResourceNames = () => {
+        let outputs: string[] = [];
+        this._moduleInfo.productionOutputs?.forEach((res) => {
+            outputs.push(res[0]);
+        });
+        return outputs;
+    }
+
     // SECTION 2: RESOURCE SHIPPING/RECEIVING METHODS
 
     // Called by the Infra class every hour, returns a list of the resource requests for this Module
@@ -189,13 +196,13 @@ export default class Module {
                 } else {           // If capacity does not match amount to be added, set to max capacity and return the difference
                     // @ts-ignore
                     this._resources.find(res => res[0] === resource[0])[1] = capacity;
-                    console.log(`Warning: Was only able to add ${spaceAvail} ${resource[0]} to module ${this._id}.`);
+                    this.setMessage("module-add-resource-partial", `Warning: storage capacity for ${resource[0]} is nearly full.`);      // Notify the user of the shortage of storage space, in general terms
                     return spaceAvail;  // Return the amount added (in this case, the total amount of space available)
                 }
             }
         } else {
-            // console.log(`Cannot add resource ${resource[0]} to module ${this._moduleInfo.name} ${this._id}`);
-            return 0;   // Always return the quantity added
+            this.setMessage("module-add-resource-fail", `Warning: storage capacity for ${resource[0]} is full!`);   // Notify the user that the resource push was unsuccessful
+            return 0;       // Always return the quantity added
         }
         return 0;       // If all else fails, return 0
     }
@@ -221,7 +228,7 @@ export default class Module {
             }
         }
         else {
-            // console.log(`Cannot find resource ${resource[0]} in module ${this._moduleInfo.name} ${this._id}`);
+            this.setMessage("module-resource-missing", `Warning: Cannot find resource ${resource[0]} in module ${this._moduleInfo.name} ${this._id}`);  // Notify the user that no resource was found for an attempted resource removal
             return 0;
         }
     }
@@ -266,7 +273,7 @@ export default class Module {
         }
     }
 
-    // SECTION 4: WORK-RELATED METHODS (FOR PRODUCTION MODULES ONLY)
+    // SECTION 4: WORK-RELATED METHODS (FOR PRODUCTION / POWER MODULES ONLY)
 
     // Allows a Colonist to enter the module if it isn't already at max capacity, and it is maintained
     punchIn = (colonistId: number) => {
@@ -317,6 +324,7 @@ export default class Module {
                 this.addResource(["power", this._moduleInfo.productionOutputs[0][1]]);
                 return this._moduleInfo.productionOutputs[0][1] // Return the amount of power that was produced
             } else {
+                this.setMessage("module-power-fail", `Warning: Module ${this._id} cannot produce power due to supply shortage.`)
                 console.log(`Module ${this._id} cannot produce power due to supply shortage.`);
                 return 0;
             }
@@ -326,6 +334,23 @@ export default class Module {
         }
     }
 
+    // SECTION 5: MESSAGE-HANDLING METHODS
+
+    // Creates a message, to be collected by the Infra class
+    setMessage = (subject: string, text: string) =>  {
+        this._message = {
+            subject: subject,
+            text: text
+        };
+    }
+
+    // Sends a clear message: that the current message is no more!
+    clearMessage = () => {
+        this._message = null;
+    }
+
+    // RENDER ZONE
+
     render = (p5: P5, xOffset: number) => {    // TODO: Block gets y offset values as arguments to renderer
         this._xOffset = xOffset;    // Offset is in terms of pixels
         // HERE IS WHERE X AND Y COORDINATES AND WIDTH AND HEIGHT ARE CONVERTED TO PIXEL VALUES:
@@ -333,7 +358,6 @@ export default class Module {
         const y = this._y * constants.BLOCK_WIDTH - this._yOffset;
         const w = this._width * constants.BLOCK_WIDTH;
         const h = this._height * constants.BLOCK_WIDTH;
-        p5.fill(this._color);
         p5.strokeWeight(2);
         p5.stroke(constants.ALMOST_BLACK);
         if (this._moduleInfo.shapes != undefined) {

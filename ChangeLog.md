@@ -3385,17 +3385,109 @@ Exit Criteria:
 - - [DONE] If the module was in the middle of a floor with another module to either side, remove it, and all the modules to its right from the original floor and adjust that floor's edge; then, place all of the other modules that were removed (those to the right of the removed module) into a NEW floor.
 - - [DONE] Update the connector ID lists of any floors that are affected by any modules' removal
 
-### 14. Fix the issue where distant floors can be merged wrongly (it's maybe picking the first floor whose elevation matches?)
+14. Fix the issue where distant floors can be merged wrongly (it's maybe picking the first floor whose elevation matches?)
 
-## Chapter X: In-Game Notifications
+## Chapter Three: In-Game Notifications
 
-### Difficulty Estimate: 3 (for developing a message collection system for Engine subclass components, and message prioritization and rendering for the Engine class)
+### Difficulty Estimate: 5 (for developing a new Engine subclass component, Messages, which will collect, prioritize, and render messages collected by the Engine) Addendum: This was a low estimate - a notifications system is a helluva thing to implement, it turns out!
 
-### Date: TBD
+### Date: August 1, 2023
 
-The final, FINAL thing to do before the game's first release is to implement a simple in-game notification system that does not interrupt the player like the modal dialogues, but which displays helpful prompts to the player without pausing the game. These should be simple messages displayed by the Engine whenever a console log warning would pop up, to indicate that there is a problem in the base that requires the player's attention, such as a lack of a resource needed for production, or colonists going hungry/thirsty/etc.
+A highly anticipated and long-overdue feature that is critical to the game's UX is to implement a simple in-game notification system that does not interrupt the player like the modal dialogues, but which displays helpful prompts to the player without pausing the game. These should be simple messages displayed by the Engine whenever a console log warning would pop up, to indicate that a command was not successful, or that there is a problem in the base that requires the player's attention such as a lack of a resource needed for production, or colonists going hungry/thirsty/etc.
 
-Exit Criteria: TBD
+Exit Criteria:
+
+- [DONE] If the player clicks to do an action that is not permitted, an explanatory popup appears near where the click occurred:
+- [DONE] When a structure cannot be demolished
+- - [DONE] Module
+- - [DONE] Connector
+- [DONE] When a module cannot be placed
+- - [DONE] Due to invalid location
+- - [DONE] Due to insufficient funds
+- [DONE] When a connector cannot be placed
+- - [DONE] Due to invalid start location
+- - [DONE] Due to invalid finish location
+- - [DONE] Due to insufficient funds
+- [DONE] When a mining zone cannot be assigned
+- [DONE] When the game is in 'wait' mode
+- [DONE] If the player clicks to do an action that succeeds, a small success message should be shown near the mouse click:
+- [DONE] When a mining zone is established / removed
+- [DONE] When a module is successfully placed
+- [DONE] When a module is successfully demolished
+- [DONE] When a connector is successfully placed
+- [DONE] When a connector is succesfully removed
+- [DONE] If there is an issue in the base, the player is notified by a short-lived display banner which pops up near the top of the screen:
+- [DONE] When a colonist is unable to enter a module
+- [DONE] When a colonist loses morale due to not eating, drinking or sleeping
+- [DONE] When a colonist is not able to reach a floor / module
+- [DONE] When a module cannot be found to store a resource
+- [DONE] When a module has an insufficient amount of a resource
+- [DONE] When there are no food production modules (and food / air is below a certain threshold)
+- [DONE] When there are no water mining zones (and water is below a certain threshold)
+- [DONE] When there are no solar panels (and power is below a certain threshold)
+- [DONE] If a non-random event occurs, the player is notified by a short-lived display banner which pops up near the top of the screen:
+- [DONE] When a new ship is launched from Earth
+- [DONE] When new colonists arrive from Earth
+- [DONE] When the colony's initial landing begins
+- [DONE] Banners are displayed according to their urgency, and are routinely filtered and updated by the Notifications manager class
+- [DONE] Popups and banners have a life expectancy that can be set individually by the Notifications manager class
+- [DONE] Unit tests are created for the Notification and Popup classes and Smartian time conversion helper functions
+- [DONE] At the chapter's end there are no more console log notifications of any kind that the player can see (there will still be error messages, but we'll deal with that matter later)
+
+1. Create a new Class, Notifications, that will be the gatherer of all the messages from the various components in the game. Give it its basic fields, backlog, queue, currentDisplay and currentClickResponse, and set their default values for the constructor function.
+
+2. Create the type definition for Message, which contains a subject (string/switch case code), a smarsTime (to keep track of when the message was created), entityID (number) and finally of course, the actual text of the message to be shown.
+
+3. Bring the Notifications class into the Engine and import the Message type as well, and have the Engine feed some preliminary messages to the Notifications manager via its addNewMessageToBacklog method. Develop this method, and a unit test as well, before doing the integration with the Engine. Start with a mouse click during wait mode as the first message the Engine will pass to the Notifications class, and have the Notifications class print the message to the console when it receives it.
+
+4. Add one more message, for when a module cannot be built, and validate that it enters the backlog and contains a relevant statement of the obstacle.
+
+5. Now it's time to develop a rudimentary message filtering/prioritization system. We'll start by having it simply root out any messages with duplicate subject lines, so that multiple clicks during a wait period, or multiple failed attempts to create the same structure will not be kept in the backlog. Start by adding an updated unit test to the addMessageToBacklog method, and then update it to only allow a single instance of a message (comparing subject and text values only) in the backlog at a time.
+
+6. Create the Popup class, with fields in its constructor for text, colour, duration and (optionally) coordinates. Also program in the default values for all of these attributes, plus other factors like text size, etc. Give it a basic render function and then of course also add a simple unit test to get things started in that direction.
+
+7. Import the Popup class into Notifications, and create a new method for that class called createPopupFromClick, which will produce a new Popup object and save it as the currentClickResponse. Have the Engine use this instead of the backlog method when adding click-response notifications; ensure that the untreated mouse coordinates (just the pixels, ma'am) are used instead of grid location/offset values. Add the render method for Notifications to the Engine, as the final thing (i.e. top layer) to be rendered.
+
+8. Add the rest of the click response messages and tweak their creation parameters to ensure each one appears in the correct colour, font size, etc. and also has a reasonable duration before disappearing.
+
+9. Update the Inspec display functionality to only print the detailed readout to the console in the local / Dev environment.
+
+10. Start to develop the mechanism for displaying non-click messages from the backlog; start by adding a new message to the backlog when new colonists are launched from Earth, or when they arrive from Earth, and verifying that those messages are in the backlog.
+
+11. Now that we have some messages to display, develop the Notifications system's minutely update cycle: first, have it check the backlog for messages to add to the queue, by first seeing if the queue is empty, and then seeing if the backlog contains anything that can be shifted into the queue (we'll develop a more elaborate prioritization scheme presently). Once a message is placed in the queue, simply create a new popup display using the message in the queue each time the current display is empty.
+
+12. Add notifications for the random event outcomes for "add-resource" and "subtract-resource", as well as for the "landing" event at the start of the game. Verify each in-game.
+
+13. Add a message-collection system to the Infrastructure class: First, add a message field to the Module class, which maps to the MessageData type. Then, when a module has a console log message, such as the warning for when no more resources can be added to it, it should update its current message. Implement this by adding two new Module class methods, setMessage and clearMessage - the latter of which will be called by the Infrastructure class when it collects the message into its own messages array.
+
+14. Use the Module's new setMessage method to create messages whenever:
+
+- The module cannot store the full amount of an added resource
+- The module tries to deduct a quantity of a resource but has 0 in stock
+- The module fails to produce power due to missing resources (not yet applicable but for future nuclear modules)
+
+15. Now, to the Infrastructure's updates section, add a minutely update method, and have the Engine call it, along with the Population class's minutely updater, every game minute.
+
+16. Improve the Infrastructure class's resource push system, to attempt to push resources to storage modules with capacity for the entire amount being pushed, before resorting to pushing to a storage module with any capacity at all, or finally, to any module with any capacity.
+
+17. Following the same pattern as the Modules/Infra class message system, implement messages for the colonist class to pass to the Population class. Add messages, and update the notification class to recognize messages for:
+
+- A colonist is unable to enter a module
+- A colonist loses morale
+- A colonist is unable to reach a floor/module, or is stuck on their current floor
+- A colonist's mining output cannot be stored due to a lack of space
+
+18. For certain messages related to colonists becoming trapped and/or falling, make the Notifications system prioritize adding such messages to the queue first so they're shown ahead of lower-priority messages.
+
+19. Create an Engine method, to be called as part of the hourly updates process, that checks for various factors in the base and issues general-purpose advice, such as to build solar panels or hydroponics modules, or to set up mining zones when the relevant resource/s grow scarce.
+
+20. BUGFIX: Keep track of the amount of structures that have been demolished, or otherwise drop the imported structure ID's for loaded buildings, as the current system is leading to the creation of duplicate module/floor/connector serial numbers, assigned since the Infra class's internal serial number counter is behind some of the serials for loaded structures if they are from a file in which some modules have been demolished. Good sleuthing there to identify the cause of the problem, at least!
+
+21. Clean up unconverted console logs from previous chapter.
+
+22. Mute the colonist morale-related warnings for now, to avoid cluttering up the screen and creating an ADHD effect.
+
+23. Update the version and date information in the frontend's constants file.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

@@ -13,12 +13,14 @@ export default class Population {
     _colonistsCurrentSerial: number;    // Needed to individually tag colonists when they are created (starts at zero)
     _colonistSerialBase: number;        // Serial base = the large number added to the current serial index (Which starts at zero)
     _averageMorale: number;             // Calculate the average morale level of the colonists
+    _messages: { subject: string, id: number, text: string }[]  // Collection of all colonist messages, to pass to the Engine
 
     constructor() {
         this._colonists = [];                   // Default population is zero.
         this._colonistsCurrentSerial = 0;       // Current serial always starts at zero
         this._colonistSerialBase = 9000;        // Colonists are from the 9000 series!
         this._averageMorale = 50;               // Default value is 50, which is what new colonists start with
+        this._messages = [];
     }
 
     // SECTION 1: ADDING POPULATION (COLONISTS)
@@ -50,6 +52,7 @@ export default class Population {
         this.handleColonistMinutelyUpdates(infra, map, industry);              // Should happen once every minute
         // Every hour:
         if (needs) this.handleColonistHourlyUpdates(infra, map, industry);      // Should happen once every hour
+        return this.collectColonistMessages();  // Collect colonist messages, reset the list, and pass it to the Engine
     }
 
     // Passes terrain info to each colonist and then checks if they have achieved their current goal
@@ -68,6 +71,21 @@ export default class Population {
             // Pass all info to the colonist's minutely update handler
             colonist._data.handleMinutelyUpdates(cols, infra, map, industry);
         })
+    }
+
+    // Subroutine of the minutely updater for message collection from the individual colonists
+    collectColonistMessages = () => {
+        this._colonists.forEach((colonist) => {
+            if (colonist._data._message) {
+                const msg = { subject: colonist._data._message.subject, id: colonist._data._id, text: colonist._data._message.text };
+                this._messages.push(msg);
+                colonist._data.clearMessage();
+            }
+        })
+        // Reset messages list and return any messages it contained to the Engine
+        const messages = this._messages;
+        this._messages = [];
+        return messages;
     }
 
     // Calls each colonist's hourly updates routine, then gets the average morale each hour
