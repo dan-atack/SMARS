@@ -1251,12 +1251,20 @@ export default class Engine extends View {
             const message = this.createMessage("general-advice-tip", 0, "Your colony's oxygen reserves are running low; build some hydroponics modules!");
             this._notifications.addMessageToBacklog(message);
         };
-        if (this._economy._data._resources[2][1] < 10000 && this._industry._miningLocations.water.length === 0) {
+        if (this._economy._data._resources[2][1] < 5000 && this._industry._miningLocations.water.length === 0) {
             const message = this.createMessage("general-advice-tip", 0, "Your water reserves are running low; use the resource tool to set water mining zones!");
             this._notifications.addMessageToBacklog(message);
         };
-        if (this._economy._data._resources[2][1] < 10000 && this._population._colonists.filter((col) => col._data._role[0] === "miner").length === 0) {
+        if (this._economy._data._resources[2][1] < 5000 && this._population._colonists.filter((col) => col._data._role[0] === "miner").length === 0) {
             const message = this.createMessage("general-advice-tip", 0, "Your colony's water reserves are running low; assign some colonists to mine water!");
+            this._notifications.addMessageToBacklog(message);
+        };
+        if (this._economy._data._resources[3][1] < 5000) {
+            const message = this.createMessage("general-advice-tip", 0, "Your colony's food reserves are running low; build some hydroponics modules!");
+            this._notifications.addMessageToBacklog(message);
+        };
+        if (this._economy._data._resources[4][1] < 10000) {
+            const message = this.createMessage("general-advice-tip", 0, "Your colony's power reserves are running low; build some solar panels!");
             this._notifications.addMessageToBacklog(message);
         }
     }

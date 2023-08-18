@@ -55,7 +55,6 @@ export default class Notifications {
                 this._backlog = this._backlog.filter((msg) => msg.subject !== message.subject || msg.text !== message.text);
             }
             this._backlog.push(message);
-            console.log(`New message added: ${message.subject}. Current backlog length: ${this._backlog.length}`);
             return true;        // Return whether the message was succesfully added or not
         } else {
             console.log(`Error: was unable to add new message with subject ${message.subject} to notifications backlog`);

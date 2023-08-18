@@ -3416,7 +3416,7 @@ Exit Criteria:
 - [DONE] When a module is successfully demolished
 - [DONE] When a connector is successfully placed
 - [DONE] When a connector is succesfully removed
-- If there is an issue in the base, the player is notified by a short-lived display banner which pops up near the top of the screen:
+- [DONE] If there is an issue in the base, the player is notified by a short-lived display banner which pops up near the top of the screen:
 - [DONE] When a colonist is unable to enter a module
 - [DONE] When a colonist loses morale due to not eating, drinking or sleeping
 - [DONE] When a colonist is not able to reach a floor / module
@@ -3424,15 +3424,15 @@ Exit Criteria:
 - [DONE] When a module has an insufficient amount of a resource
 - [DONE] When there are no food production modules (and food / air is below a certain threshold)
 - [DONE] When there are no water mining zones (and water is below a certain threshold)
-- When there are no solar panels (and power is below a certain threshold)
+- [DONE] When there are no solar panels (and power is below a certain threshold)
 - [DONE] If a non-random event occurs, the player is notified by a short-lived display banner which pops up near the top of the screen:
 - [DONE] When a new ship is launched from Earth
 - [DONE] When new colonists arrive from Earth
 - [DONE] When the colony's initial landing begins
-- Banners are displayed according to their urgency, and are routinely filtered and updated by the Notifications manager class
+- [DONE] Banners are displayed according to their urgency, and are routinely filtered and updated by the Notifications manager class
 - [DONE] Popups and banners have a life expectancy that can be set individually by the Notifications manager class
-- Unit tests are created for the Notification and Popup classes
-- At the chapter's end there are no more console log notifications of any kind that the player can see (there will still be error messages, but we'll deal with that matter later)
+- [DONE] Unit tests are created for the Notification and Popup classes and Smartian time conversion helper functions
+- [DONE] At the chapter's end there are no more console log notifications of any kind that the player can see (there will still be error messages, but we'll deal with that matter later)
 
 1. Create a new Class, Notifications, that will be the gatherer of all the messages from the various components in the game. Give it its basic fields, backlog, queue, currentDisplay and currentClickResponse, and set their default values for the constructor function.
 
@@ -3479,11 +3479,11 @@ Exit Criteria:
 
 18. For certain messages related to colonists becoming trapped and/or falling, make the Notifications system prioritize adding such messages to the queue first so they're shown ahead of lower-priority messages.
 
-### 18. Create an Engine method, to be called as part of the hourly updates process, that checks for various factors in the base and issues general-purpose advice, such as to build solar panels or hydroponics modules, or to set up mining zones when the relevant resource/s grow scarce.
+19. Create an Engine method, to be called as part of the hourly updates process, that checks for various factors in the base and issues general-purpose advice, such as to build solar panels or hydroponics modules, or to set up mining zones when the relevant resource/s grow scarce.
 
 ### 98. BUGFIX: Keep track of the amount of structures that have been demolished, or otherwise drop the imported structure ID's for loaded buildings, as the current system is leading to the creation of duplicate module/floor/connector serial numbers, assigned since the Infra class's internal serial number counter is behind some of the serials for loaded structures if they are from a file in which some modules have been demolished. Good sleuthing there to identify the cause of the problem, at least!
 
-### 99. Clean up unconverted console logs from previous chapter.
+99. Clean up unconverted console logs from previous chapter.
 
 ### 100. Update the version and date information in the frontend's constants file.
 

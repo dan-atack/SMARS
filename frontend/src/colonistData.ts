@@ -639,7 +639,7 @@ export default class ColonistData {
                 console.log(`Error: ${this._name} unable to enter Module ${this._currentAction.buildingId}. Reason: Module data not found.`);
             }
         } else {
-            console.log(`Error: Colonist ${this._id} is in wrong position to enter ${this._currentAction?.type} module ${this._currentAction?.buildingId}.`);
+            // console.log(`Error: Colonist ${this._id} is in wrong position to enter ${this._currentAction?.type} module ${this._currentAction?.buildingId}.`);
             this.resolveAction();
         }
     }
