@@ -407,6 +407,7 @@ export default class Infrastructure {
 
     // This method will return an array of messages from individual modules, if there are any
     handleMinutelyUpdates = () => {
+        // TODO: If there are other minutely updates added later, make the message collection system into its own method
         this._modules.forEach((mod) => {
             if (mod._message) {
                 const msg = { subject: mod._message.subject, id: mod._id, text: mod._message.text };

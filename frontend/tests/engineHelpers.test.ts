@@ -1,4 +1,4 @@
-import { compareGameTimes } from "../src/engineHelpers";
+import { compareGameTimes, getSmartianTimeDelta } from "../src/engineHelpers";
 import { GameTime } from "../src/saveGame";
 
 describe("Engine Helper functions", () => {
@@ -68,5 +68,63 @@ describe("Engine Helper functions", () => {
         expect(compareGameTimes(timeG, timeH)).toStrictEqual(timeH);    // 11 AM is later than 12 AM? What a country!
     })
     
+    test("getSmartianTimeDelta returns the Smartian time difference, in minutes, between two Game Time objects", () => {
+        const current: GameTime = {
+            year: 1,
+            sol: 1,
+            cycle: "AM",
+            hour: 12,
+            minute: 30
+        };
+        const olderOneMinute: GameTime = {
+            year: 1,
+            sol: 1,
+            cycle: "AM",
+            hour: 12,
+            minute: 29
+        };
+        const olderOneHour: GameTime = {
+            year: 0,
+            sol: 4,
+            cycle: "PM",
+            hour: 11,
+            minute: 30
+        };
+        const olderOneCycle: GameTime = {
+            year: 0,
+            sol: 4,
+            cycle: "PM",
+            hour: 12,
+            minute: 30
+        };
+        const olderOneDay: GameTime = {
+            year: 0,
+            sol: 4,
+            cycle: "AM",
+            hour: 12,
+            minute: 30
+        };
+        const olderOneYear: GameTime = {
+            year: 0,
+            sol: 1,
+            cycle: "AM",
+            hour: 12,
+            minute: 30
+        };
+        const olderFourteenHours: GameTime = {
+            year: 0,
+            sol: 4,
+            cycle: "AM",
+            hour: 10,
+            minute: 30
+        };
+        // Check that the time delta is calculated correctly for each example:
+        expect(getSmartianTimeDelta(current, olderOneMinute)).toBe(1);
+        expect(getSmartianTimeDelta(current, olderOneHour)).toBe(60);
+        expect(getSmartianTimeDelta(current, olderOneCycle)).toBe(720);
+        expect(getSmartianTimeDelta(current, olderOneDay)).toBe(1440);
+        expect(getSmartianTimeDelta(current, olderOneYear)).toBe(5760);
+        expect(getSmartianTimeDelta(current, olderFourteenHours)).toBe(840);
+    })
 
 })

@@ -3,7 +3,7 @@ import P5 from "p5";
 import Message from "./message";
 import { Coords } from "./connector";
 import { GameTime } from "./saveGame";
-import { compareGameTimes } from "./engineHelpers";
+import { compareGameTimes, getSmartianTimeDelta } from "./engineHelpers";
 import { constants } from "./constants";
 
 // Message data template definition
@@ -40,6 +40,11 @@ export default class Notifications {
         }
     }
 
+    // Called once per hour, to clean up the backlog if it gets too long
+    handleHourlyUpdates = (gameTime: GameTime) => {
+        this.pruneOlderMessagesFromBacklog(gameTime);
+    }
+
     // Adds a new message to the backlog and ensures the list is in good order (no duplicate messages, etc)
     addMessageToBacklog = (message: MessageData) => {
         if (message && typeof message.subject === "string" && message.text.length > 0) {
@@ -60,12 +65,26 @@ export default class Notifications {
     updateMessageQueue = () => {
         // BASIC ARRANGEMENT: Add the earliest message from the backlog to the queue if the queue contains 1 message or less
         if (this._queue.length < 2 && this._backlog.length > 0) {
-            const msg = this._backlog.shift();
-            // BASIC FILTERING: Only add a new message to the queue if it's not the same as the current one
-            if (msg && (msg.subject !== this._queue[0].subject || msg.text !== this._queue[0].text)) {
-                this._queue.push(msg);
+            // PRIORITIZATION: Check for urgent messages first, and add them instead of the next one in line if there is one
+            const priority = this._backlog.find((msg) => msg.subject === "colonist-falling" || msg.subject === "colonist-trapped");
+            if (priority) {
+                this._queue.unshift(priority); // Push the priority message to the front of the queue, and then filter it out of the backlog
+                this._backlog = this._backlog.filter((msg) => msg.subject !== priority.subject || msg.text !== priority.text);
+            } else {
+                const msg = this._backlog.shift();
+                // BASIC FILTERING: Only add a new message to the queue if it's not the same as the current one
+                if (msg && (msg.subject !== this._queue[0]?.subject || msg.text !== this._queue[0]?.text)) {
+                    this._queue.push(msg);
+                }
             }
         }
+    }
+
+    // Called once per hour to remove messages that have been there for, say, more than 2 hours since their creation
+    pruneOlderMessagesFromBacklog = (currentTime: GameTime) => {
+        this._backlog.forEach((msg) => {
+            const delta = getSmartianTimeDelta(currentTime, msg.smarsTime);
+        })
     }
 
     clearMessageBacklog = () => {
@@ -138,12 +157,17 @@ export default class Notifications {
                     duration = 500;
                     colour = "yellow";
                     break;
+                case "colonist-trapped":
                 case "event-add-resource-fail":
                 case "event-subtract-resource-success":
                 case "event-subtract-resource-fail":
                 case "module-resource-missing":
                 case "module-add-resource-fail":
                     duration = 500;
+                case "colonist-falling":
+                case "colonist-entry-blocked":
+                case "colonist-morale-loss":
+                case "colonist-needs-fail":
                     colour = "red";
                 break;
             }

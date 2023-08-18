@@ -62,3 +62,18 @@ export const compareGameTimes = (timeA: GameTime, timeB: GameTime) => {
         }
     }
 }
+
+// Compares two different Smartian times; the assumption is that it will be the 'current' time vs. another, older time stamp
+export const getSmartianTimeDelta = (currentTime: GameTime, otherTime: GameTime) => {
+    // Start by comparing each component of the two times to check for deltas
+    const year = currentTime.year - otherTime.year;
+    const sol = currentTime.sol - otherTime.sol;
+    // Convert AM/PM cycle to integers: 1 = current PM vs other AM; 0 = both are the same; -1 = Current AM vs Other PM
+    const currentCycle = currentTime.cycle === "PM" ? 1 : 0;
+    const otherCycle = otherTime.cycle === "PM" ? 1 : 0;
+    const cycle = currentCycle - otherCycle;
+    const hour = (currentTime.hour === 12 ? 0 : currentTime.hour) - (otherTime.hour === 12 ? 0 : otherTime.hour);
+    const minute = currentTime.minute - otherTime.minute;
+    const delta = minute + (hour * 60 ) + (cycle * 720) + (sol * 1440) + (year * 5760)
+    return delta;
+}

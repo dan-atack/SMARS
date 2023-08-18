@@ -3470,6 +3470,17 @@ Exit Criteria:
 
 16. Improve the Infrastructure class's resource push system, to attempt to push resources to storage modules with capacity for the entire amount being pushed, before resorting to pushing to a storage module with any capacity at all, or finally, to any module with any capacity.
 
+17. Following the same pattern as the Modules/Infra class message system, implement messages for the colonist class to pass to the Population class. Add messages, and update the notification class to recognize messages for:
+
+- A colonist is unable to enter a module
+- A colonist loses morale
+- A colonist is unable to reach a floor/module, or is stuck on their current floor
+- A colonist's mining output cannot be stored due to a lack of space
+
+### 18. For certain messages related to colonists becoming trapped and/or falling, make the Notifications system prioritize adding such messages to the queue first so they're shown ahead of lower-priority messages.
+
+### 18. Create an Engine method, to be called as part of the hourly updates process, that checks for various factors in the base and issues general-purpose advice, such as to build solar panels or hydroponics modules, or to set up mining zones when the relevant resource/s grow scarce.
+
 ### 98. BUGFIX: Keep track of the amount of structures that have been demolished, or otherwise drop the imported structure ID's for loaded buildings, as the current system is leading to the creation of duplicate module/floor/connector serial numbers, assigned since the Infra class's internal serial number counter is behind some of the serials for loaded structures if they are from a file in which some modules have been demolished. Good sleuthing there to identify the cause of the problem, at least!
 
 ### 99. Clean up unconverted console logs from previous chapter.

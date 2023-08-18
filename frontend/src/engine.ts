@@ -964,21 +964,18 @@ export default class Engine extends View {
 
     // HOURLY AND MINUTELY UPDATES
 
-    // Calls scheduled update events that occur on a minutely basis
+    // Calls scheduled update events that occur on a minutely basis, and collects messages from the population and infra classes
     handleMinutelyUpdates = () => {
-        this._population.updateColonists(this._gameTime.minute === 0, this._infrastructure, this._map, this._industry);
+        const popMessages = this._population.updateColonists(this._gameTime.minute === 0, this._infrastructure, this._map, this._industry);
+        popMessages.forEach((msg) => {
+            const message: MessageData = this.createMessage(msg.subject, msg.id, msg.text);
+            this._notifications.addMessageToBacklog(message);
+        })
         const infraMessages = this._infrastructure.handleMinutelyUpdates();
-        if (infraMessages.length > 0) {
-            infraMessages.forEach((msg) => {
-                const message: MessageData = {
-                    subject: msg.subject,
-                    smarsTime: this._gameTime,
-                    entityID: msg.id,
-                    text: msg.text
-                };
-                this._notifications.addMessageToBacklog(message);
-            });
-        }
+        infraMessages.forEach((msg) => {
+            const message: MessageData = this.createMessage(msg.subject, msg.id, msg.text);
+            this._notifications.addMessageToBacklog(message);
+        });
         this._notifications.handleMinutelyUpdates();
     }
 
@@ -989,6 +986,7 @@ export default class Engine extends View {
         this._industry.updateJobs(this._infrastructure);
         this.updateEconomyDisplay();
         this.updateDayNightCycle();
+        this._notifications.handleHourlyUpdates(this._gameTime);
         // Re-activate the 2 lines below to periodically gauge how much, if any, the game's time keeping is slipping as it grows
         // const time = new Date();
         // console.log(time);
@@ -1225,13 +1223,25 @@ export default class Engine extends View {
 
     // Creates a messageData object to feed to the Notifications system
     createMessage = (subject: string, entityId: number, text: string) => {
+        const time = this.createSmartianTimestamp(this._gameTime.year, this._gameTime.sol, this._gameTime.cycle, this._gameTime.hour, this._gameTime.minute);
         const message: MessageData = {
             subject: subject,
-            smarsTime: this._gameTime,
+            smarsTime: time,
             entityID: entityId,
             text: text
         };
         return message;
+    }
+
+    createSmartianTimestamp = (year: number, sol: number, cycle: string, hour: number, minute: number) => {
+        const time = {
+            year: year,
+            sol: sol,
+            cycle: cycle,
+            hour: hour,
+            minute: minute
+        };
+        return time;
     }
 
     //// RENDER METHODS ////
