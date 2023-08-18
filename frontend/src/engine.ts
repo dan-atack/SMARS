@@ -986,6 +986,7 @@ export default class Engine extends View {
         this._industry.updateJobs(this._infrastructure);
         this.updateEconomyDisplay();
         this.updateDayNightCycle();
+        this.checkForGeneralWarnings();
         this._notifications.handleHourlyUpdates(this._gameTime);
         // Re-activate the 2 lines below to periodically gauge how much, if any, the game's time keeping is slipping as it grows
         // const time = new Date();
@@ -1242,6 +1243,22 @@ export default class Engine extends View {
             minute: minute
         };
         return time;
+    }
+
+    // Called by the hourly updater, to issue basic general advice to the player if they look like they need it
+    checkForGeneralWarnings = () => {
+        if (this._economy._data._resources[1][1] < 10000 && this._infrastructure._modules.filter((mod) => mod.getProductionOutputResourceNames().includes("oxygen")).length === 0) {
+            const message = this.createMessage("general-advice-tip", 0, "Your colony's oxygen reserves are running low; build some hydroponics modules!");
+            this._notifications.addMessageToBacklog(message);
+        };
+        if (this._economy._data._resources[2][1] < 10000 && this._industry._miningLocations.water.length === 0) {
+            const message = this.createMessage("general-advice-tip", 0, "Your water reserves are running low; use the resource tool to set water mining zones!");
+            this._notifications.addMessageToBacklog(message);
+        };
+        if (this._economy._data._resources[2][1] < 10000 && this._population._colonists.filter((col) => col._data._role[0] === "miner").length === 0) {
+            const message = this.createMessage("general-advice-tip", 0, "Your colony's water reserves are running low; assign some colonists to mine water!");
+            this._notifications.addMessageToBacklog(message);
+        }
     }
 
     //// RENDER METHODS ////

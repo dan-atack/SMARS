@@ -3389,7 +3389,7 @@ Exit Criteria:
 
 ## Chapter Three: In-Game Notifications
 
-### Difficulty Estimate: 5 (for developing a new Engine subclass component, Messages, which will collect, prioritize, and render messages collected by the Engine)
+### Difficulty Estimate: 5 (for developing a new Engine subclass component, Messages, which will collect, prioritize, and render messages collected by the Engine) Addendum: This was a low estimate - a notifications system is a helluva thing to implement, it turns out!
 
 ### Date: August 1, 2023
 
@@ -3417,13 +3417,13 @@ Exit Criteria:
 - [DONE] When a connector is successfully placed
 - [DONE] When a connector is succesfully removed
 - If there is an issue in the base, the player is notified by a short-lived display banner which pops up near the top of the screen:
-- When a colonist is unable to enter a module
-- When a colonist loses morale due to not eating, drinking or sleeping
-- When a colonist is not able to reach a floor / module
+- [DONE] When a colonist is unable to enter a module
+- [DONE] When a colonist loses morale due to not eating, drinking or sleeping
+- [DONE] When a colonist is not able to reach a floor / module
 - [DONE] When a module cannot be found to store a resource
 - [DONE] When a module has an insufficient amount of a resource
-- When there are no food production modules (and food / air is below a certain threshold)
-- When there are no water mining zones (and water is below a certain threshold)
+- [DONE] When there are no food production modules (and food / air is below a certain threshold)
+- [DONE] When there are no water mining zones (and water is below a certain threshold)
 - When there are no solar panels (and power is below a certain threshold)
 - [DONE] If a non-random event occurs, the player is notified by a short-lived display banner which pops up near the top of the screen:
 - [DONE] When a new ship is launched from Earth

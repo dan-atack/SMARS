@@ -169,6 +169,8 @@ export default class Notifications {
                 case "module-resource-missing":
                 case "module-add-resource-fail":
                     duration = 500;
+                case "general-advice-tip":
+                    duration = 900;
                 case "colonist-falling":
                 case "colonist-entry-blocked":
                 case "colonist-morale-loss":

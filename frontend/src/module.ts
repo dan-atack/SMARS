@@ -131,6 +131,14 @@ export default class Module {
         return needs;
     }
 
+    getProductionOutputResourceNames = () => {
+        let outputs: string[] = [];
+        this._moduleInfo.productionOutputs?.forEach((res) => {
+            outputs.push(res[0]);
+        });
+        return outputs;
+    }
+
     // SECTION 2: RESOURCE SHIPPING/RECEIVING METHODS
 
     // Called by the Infra class every hour, returns a list of the resource requests for this Module
