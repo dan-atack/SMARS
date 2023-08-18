@@ -602,7 +602,7 @@ describe("Infrastructure base class", () => {
         pop.addColonist(1, 23);
         pop._colonists[0]._data.detectTerrainBeneath(mockMap, infra);
         // Validate test conditions: Colonist is on the second floor
-        expect(pop._colonists[0]._data._standingOnId).toBe(1005);
+        expect(pop._colonists[0]._data._standingOnId).toBe(2005);
         // TEST ONE: Validate that removing the leftmost module (upon which the colonist is not standing, but which is essential for their departure) gives a warning
         expect(infra.checkModuleRemovalWillNotStrand(infra._modules[2], pop)).toBe(false);
         // TEST TWO: Validate that, after adding a second ladder that does not overlap the leftmost module, the warning is no longer needed (as the removal would not strand the colonist)

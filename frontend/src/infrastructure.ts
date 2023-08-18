@@ -54,6 +54,10 @@ export default class Infrastructure {
         // Update base floor data
         const footprint = this._data.calculateModuleFootprint(area);
         this._data.addModuleToFloors(m._id, footprint, topography, mapZones);
+        // Update Serial number generator if its current serial is lower than the serial being loaded
+        if (serial && serial > this._data._currentSerial) {
+            this._data.setSerialNumber(serial + 1);     // This results in some gaps in the serial number system, but it's better to have gaps than overlaps!
+        }
     }
 
     // Args: start and stop coords, and the connectorInfo. Serial is optional for loading connectors from a save file

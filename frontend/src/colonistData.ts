@@ -251,6 +251,7 @@ export default class ColonistData {
                 this._actionStack = createConsumeActionStack(currentPosition, this._standingOnId, ["water", this._needs.water], infra);
                 // If no action stack was returned, assume that water is temporarily unavailable
                 if (this._actionStack.length === 0) {
+                    // TODO: Enable this message only if player selects 'verbose' messaging option
                     // this.setMessage("colonist-needs-fail", `Warning: ${this._name} cannot find a source of water to drink.`);
                     this._needsAvailable.water = 0;
                 }
@@ -676,10 +677,11 @@ export default class ColonistData {
             const deprivation = this._needs[need] - this._needThresholds[need] > this._tolerance;
             if (deprivation) {
                 this.updateMorale(-1);
-                //@ts-ignore    // Add notification only for extreme cases of deprivation, to avoid the boy-who-cried-wolf syndrome
-                if (this._morale < 50 || this._needs[need] - this._needThresholds[need] > this._tolerance * 2) {
-                    this.setMessage("colonist-morale-loss", `${this._name} is suffering from a lack of ${need}!`);
-                }
+                // TODO: Make this notification toggleable based on player preferences (to avoid excessive noise)
+                //@ts-ignore
+                // if (this._morale < 50 || this._needs[need] - this._needThresholds[need] > this._tolerance * 2) {
+                //     this.setMessage("colonist-morale-loss", `${this._name} is suffering from a lack of ${need}!`);
+                // }
             }
         })
     }

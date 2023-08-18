@@ -3481,11 +3481,13 @@ Exit Criteria:
 
 19. Create an Engine method, to be called as part of the hourly updates process, that checks for various factors in the base and issues general-purpose advice, such as to build solar panels or hydroponics modules, or to set up mining zones when the relevant resource/s grow scarce.
 
-### 98. BUGFIX: Keep track of the amount of structures that have been demolished, or otherwise drop the imported structure ID's for loaded buildings, as the current system is leading to the creation of duplicate module/floor/connector serial numbers, assigned since the Infra class's internal serial number counter is behind some of the serials for loaded structures if they are from a file in which some modules have been demolished. Good sleuthing there to identify the cause of the problem, at least!
+20. BUGFIX: Keep track of the amount of structures that have been demolished, or otherwise drop the imported structure ID's for loaded buildings, as the current system is leading to the creation of duplicate module/floor/connector serial numbers, assigned since the Infra class's internal serial number counter is behind some of the serials for loaded structures if they are from a file in which some modules have been demolished. Good sleuthing there to identify the cause of the problem, at least!
 
-99. Clean up unconverted console logs from previous chapter.
+21. Clean up unconverted console logs from previous chapter.
 
-### 100. Update the version and date information in the frontend's constants file.
+22. Mute the colonist morale-related warnings for now, to avoid cluttering up the screen and creating an ADHD effect.
+
+23. Update the version and date information in the frontend's constants file.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
