@@ -20,12 +20,14 @@ export default class Notifications {
     _queue: MessageData[];                      // Prioritized short-list of messages to be displayed next
     _currentDisplayPopup: Message | null;       // The current banner-style message being shown, if any
     _currentClickResponse: Message | null;      // The current mouse-click message being shown, if any
+    _maxMessageAge: number;                     // The max amount of game minutes to keep a message in the backlog before it expires
 
     constructor() {
         this._backlog = [];
         this._queue = [];
         this._currentDisplayPopup = null;
         this._currentClickResponse = null;
+        this._maxMessageAge = 180;              // Keep messages in the backlog for up to 3 hours before deleting
     }
 
     // SECTION 1 - UPDATER METHOD AND BACKLOG MANAGEMENT
@@ -80,10 +82,13 @@ export default class Notifications {
         }
     }
 
-    // Called once per hour to remove messages that have been there for, say, more than 2 hours since their creation
+    // Called once per hour to remove messages that have been there for longer than the maximum message age
     pruneOlderMessagesFromBacklog = (currentTime: GameTime) => {
         this._backlog.forEach((msg) => {
             const delta = getSmartianTimeDelta(currentTime, msg.smarsTime);
+            if (delta >= this._maxMessageAge) {
+                this._backlog = this._backlog.filter((m) => m.subject !== msg.subject || m.text !== msg.text);
+            }
         })
     }
 

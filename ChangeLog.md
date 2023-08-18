@@ -3477,7 +3477,7 @@ Exit Criteria:
 - A colonist is unable to reach a floor/module, or is stuck on their current floor
 - A colonist's mining output cannot be stored due to a lack of space
 
-### 18. For certain messages related to colonists becoming trapped and/or falling, make the Notifications system prioritize adding such messages to the queue first so they're shown ahead of lower-priority messages.
+18. For certain messages related to colonists becoming trapped and/or falling, make the Notifications system prioritize adding such messages to the queue first so they're shown ahead of lower-priority messages.
 
 ### 18. Create an Engine method, to be called as part of the hourly updates process, that checks for various factors in the base and issues general-purpose advice, such as to build solar panels or hydroponics modules, or to set up mining zones when the relevant resource/s grow scarce.
 
