@@ -132,7 +132,7 @@ export default class SaveGame extends Screen {
         if (!this._saveWasSuccessful) {     // Only allow save to proceed if there hasn't already been a successful save
             const game_name = this._gameNameInput?.value() as string;
             if (this._saveInfo != null && game_name.length > 2) {
-                console.log("Saving game - please wait");
+                // console.log("Saving game - please wait");
                 let finalData = this._saveInfo;
                 finalData.game_name = game_name;
                 this.sendSaveGame(finalData, this.setHttpStatus);

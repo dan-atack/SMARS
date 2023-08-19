@@ -111,7 +111,7 @@ resource "aws_iam_instance_profile" "s3_access_profile" {
 # Create the server computer (docker host machine)
 resource "aws_instance" "smars_server_instance" {
   ami           = "ami-0a695f0d95cefc163"
-  instance_type = "t2.small"
+  instance_type = "t2.micro"
   vpc_security_group_ids = ["${aws_security_group.smars_server_sg.id}"]
   key_name      = "SMARS_Prod_EC2"
   iam_instance_profile = aws_iam_instance_profile.s3_access_profile.name

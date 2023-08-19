@@ -3489,6 +3489,29 @@ Exit Criteria:
 
 23. Update the version and date information in the frontend's constants file.
 
+## Chapter Four: Testing a Cheaper Deployment Strategy with EC2 Micro
+
+### Difficulty Estimate: 1 (theoretically, a simple test build should be sufficient to tell if it will work)
+
+### Date: August 18, 2023
+
+Given that money doesn't grow on dependency trees, it is worth investigating the possibility of using a less powerful EC2 machine to act as the game's server . Having a cheaper machine that is nonetheless capable of serving up the game would allow us to be more cost-efficient, while still keeping the lights on permanently in production.
+
+If successful, it will be an added incentive to build out and improve the development pipeline, to enable a faster upgrade process for the game's images. Currently, since they are built on the server machine itself, using a less powerful machine for this server will result in a significantly longer build/update time, and a correspondingly longer "down-time" for the server - not that we're really keeping track of such things just yet!
+
+Exit Criteria:
+
+- [DONE?!] [IDEAL] The game runs at a tolerable (normal) level of performance when served by an EC2 Micro machine
+- [LESS-IDEAL] The game definitively does not run, or does not run "to spec" on the lesser machine; the experiment is terminated... for now
+
+1. Log into the EC2's management console, and manually create a new EC2 micro machine, to see what the options are, its costs, specs, etc.
+
+2. Update the Terraform main file's specifications for the server machine, and do a test deployment in the development environment. Be patient before you go to check on it! Depending on the outcome of this step, that may or (more likely) will not be the end of it!
+
+3. At the risk of hastily rushing an inferior product to production, it appears the EC2 micro is adequate for our purposes, and took no more than 20 minutes to load in the development environment. The lights are going on in Smars-town tonight!
+
+### 99. Update the constants file's version and/or year for the new release.
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
@@ -3512,6 +3535,8 @@ Exit Criteria:
 - ...
 
 ### 1. Step One...
+
+### 99. Update the constants file's version and/or year for the new release.
 
 ## Bug List (Severity in square brackets):
 
