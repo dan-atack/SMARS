@@ -3501,12 +3501,14 @@ If successful, it will be an added incentive to build out and improve the develo
 
 Exit Criteria:
 
-- [IDEAL] The game runs at a tolerable (normal) level of performance when served by an EC2 Micro machine
+- [DONE?!] [IDEAL] The game runs at a tolerable (normal) level of performance when served by an EC2 Micro machine
 - [LESS-IDEAL] The game definitively does not run, or does not run "to spec" on the lesser machine; the experiment is terminated... for now
 
 1. Log into the EC2's management console, and manually create a new EC2 micro machine, to see what the options are, its costs, specs, etc.
 
-### 2. Update the Terraform main file's specifications for the server machine, and do a test deployment in the development environment. Be patient before you go to check on it! Depending on the outcome of this step, that may or (more likely) will not be the end of it!
+2. Update the Terraform main file's specifications for the server machine, and do a test deployment in the development environment. Be patient before you go to check on it! Depending on the outcome of this step, that may or (more likely) will not be the end of it!
+
+3. At the risk of hastily rushing an inferior product to production, it appears the EC2 micro is adequate for our purposes, and took no more than 20 minutes to load in the development environment. The lights are going on in Smars-town tonight!
 
 ### 99. Update the constants file's version and/or year for the new release.
 
