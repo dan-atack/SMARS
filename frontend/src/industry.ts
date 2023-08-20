@@ -96,7 +96,7 @@ export default class Industry {
                         const job: ColonistAction = {
                             type: role.action,
                             coords: { x: mod._x + (i * 2) + 1, y: mod._y + mod._height - 1},
-                            duration: 30,   // TODO: Make this depend on some other quantity?
+                            duration: 30,   // BY DEFAULT all jobs last 30 minutes, but the colonists can modify that value (with morale, e.g.)
                             buildingId: mod._id
                         };
                         this._jobs[role.name].push(job);

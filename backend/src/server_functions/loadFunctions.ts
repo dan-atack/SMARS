@@ -5,7 +5,7 @@ import { SaveInfo } from "./saveFunctions"
 import { constants } from "../constants";
 
 // Standardize name of the database:
-const dbName = 'smars';
+const dbName: string = process.env.DB_NAME as string || "smars";    // Use DB called 'smars' by default
 const collectionName = 'saves';
 
 const loadGamesForUser = async (req: Request, res: Response) => {

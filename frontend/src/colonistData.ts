@@ -107,7 +107,7 @@ export default class ColonistData {
 
     // SECTION 2: NEEDS, ROLE AND GOAL-ORIENTED METHODS
 
-    // Increases colonist needs, but only up to the need threshold if they are asleep
+    // Increases colonist needs, but only up to the need threshold if they are asleep (so they wake up ready for breakfast!)
     updateNeeds = () => {
         if (this._currentAction?.type !== "rest") {
             this._needs.food += 1;
@@ -133,19 +133,24 @@ export default class ColonistData {
 
     // Checks whether any needs have exceeded their threshold and assigns a new goal if so; otherwise sets goal to 'explore'
     updateGoal = (infra: Infrastructure, map: Map, industry: Industry) => {
-        // 1 - Determine needs-based (first priority) goals
-        // If the colonist has no current goal, or is set to exploring, check if any needs have reached their thresholds
-        if (this._currentGoal === "explore" || this._currentGoal === "") {
-            this.checkForNeeds(infra, map, industry);
-        };
-        // 2 - Determine job-related (second priority) goal ONLY IF no needs-based goal has been set
-        if (this._currentGoal === "explore" || this._currentGoal === "") {
-            this.checkForJobs(infra, map, industry);
+        // Never allow goal to be updated when the colonist is climbing a ladder
+        if (this._currentAction?.type !== "climb") {
+            // 1 - Determine needs-based (first priority) goals
+            // If the colonist has no current goal, or is set to exploring, check if any needs have reached their thresholds
+            if (this._currentGoal === "explore" || this._currentGoal === "") {
+                this.checkForNeeds(infra, map, industry);
+            };
+            // 2 - Determine job-related (second priority) goal ONLY IF no needs-based goal has been set
+            if (this._currentGoal === "explore" || this._currentGoal === "") {
+                this.checkForJobs(infra, map, industry);
+            }
+            // 3 - If no goal has been set, tell them to go exploring; otherwise use the goal determined above
+            if (this._currentGoal === "") {
+                this.setGoal("explore", infra, map, industry);
+            };
+        } else {
+            // console.log(`Colonist ${this._name} is climbing - delaying new action start.`);
         }
-        // 3 - If no goal has been set, tell them to go exploring; otherwise use the goal determined above
-        if (this._currentGoal === "") {
-            this.setGoal("explore", infra, map, industry);
-        };
     }
 
     // Sub-routine 1 for updateGoal method: Checks if any needs have reached their threshold
@@ -155,14 +160,10 @@ export default class ColonistData {
             // Check each need to see if it has A) crossed its threshold and B) is still believed to be available
             // @ts-ignore
             if (this._needs[need] >= this._needThresholds[need] && this._needsAvailable[need] && !(needSet)) {
-                // When setting new goal, clear out the current action - UNLESS it's a 'climb' action, in which case wait
-                if (this._currentAction?.type !== "climb") {
-                    this.resolveAction();
-                    needSet = true;     // Tell the forEach loop to stop looking once a need is set
-                    this.setGoal(`get-${need}`, infra, map, industry);
-                } else {
-                    // console.log(`Colonist ${this._id} is climbing - delaying new action start.`);
-                }
+                // When setting new goal, clear out the current action
+                this.resolveAction();
+                needSet = true;     // Tell the forEach loop to stop looking once a need is set
+                this.setGoal(`get-${need}`, infra, map, industry);
             }
         })
     }
@@ -171,6 +172,9 @@ export default class ColonistData {
     checkForJobs = (infra: Infrastructure, map: Map, industry: Industry) => {
         const job = industry.getJob(this._role[0], { x: this._x, y: this._y });
         if (job) {  // Set the Job type as the new goal if a job is found; otherwise this will fall through to the default case
+            // Update the job's duration value based on the colonist's current morale rating ( by up to +/- 5 )
+            const moraleBonus = Math.floor(this._morale / 10) - 5;
+            job.duration -= moraleBonus;    // A positive morale bonus means the job takes LESS long!
             this.addAction(job.type, job.coords, job.duration, job.buildingId); // Make the job the first item in the action stack
             this.setGoal(job.type, infra, map, industry, job);     // Then determine how to get to the job site
         } else {
@@ -262,8 +266,8 @@ export default class ColonistData {
                 // this.setMessage("colonist-needs-fail", `Warning: ${this._name} cannot find a source of food to eat.`);
                 if (this._actionStack.length === 0) this._needsAvailable.food = 0;
                 break;
-            case "get-rest":
-                this._actionStack = createRestActionStack(currentPosition, this._standingOnId, infra);
+            case "get-rest":    // Takes an additional argument for the colonist's morale, to make sad colonist sleep longer
+                this._actionStack = createRestActionStack(currentPosition, this._standingOnId, infra, this._morale);
                 // this.setMessage("colonist-needs-fail", `Warning: ${this._name} cannot find a crew quarters to sleep in.`);
                 if (this._actionStack.length === 0) this._needsAvailable.rest = 0;
                 break;
