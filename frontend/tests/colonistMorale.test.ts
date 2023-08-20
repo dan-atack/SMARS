@@ -1,11 +1,83 @@
 // New file for testing methods specifically related to the Colonist's morale functions
-import ColonistData from "../src/colonistData";
+import ColonistData, { ColonistAction } from "../src/colonistData";
+import Infrastructure from "../src/infrastructure";
+import Map from "../src/map";
+import Industry from "../src/industry";
+import { ModuleInfo } from "../src/server_functions";
 
 describe("ColonistData", () => {
 
     // Create test colonist (data class)
 
     const colonist = new ColonistData(9000, "Bob Jones", 0, 30);
+
+    // Create supplementary test assets
+    const infra = new Infrastructure();
+    const industry = new Industry();
+    const map = new Map();
+    // Dummy map data
+    const flatTerrain = [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]];
+    // Dummy structure asset data:
+    const prodModInfo: ModuleInfo = {
+        name: "Hydroponics Pod",
+        width: 3,
+        height: 3,
+        type: "Production",
+        pressurized: true,
+        columnStrength: 1,
+        durability: 100,
+        buildCosts: [
+            ["money", 100000],
+        ],
+        maintenanceCosts: [
+            ["power", 10]
+        ],
+        productionInputs: [     // Plant life needs: water, CO2 and light (in this case electric light)
+            ["water", 5],
+            ["carbon", 5],
+            ["power", 100]
+        ],
+        productionOutputs: [
+            ["food", 10],
+            ["air", 10],
+        ],
+        storageCapacity: [
+            ["air", 9000],
+            ["water", 2500],
+            ["carbon", 2500],
+            ["food", 1000],
+            ["power", 1000]     // Limited internal batteries
+        ],
+        crewCapacity: 1,
+        shapes: []
+    }
+    
+    const crewModuleData: ModuleInfo = {
+        name: "Crew Quarters",
+        width: 4,
+        height: 3,
+        type: "Life Support",
+        pressurized: true,
+        columnStrength: 10,
+        durability: 100,
+        buildCosts:[
+            ["money", 100000],  // money
+        ],
+        maintenanceCosts: [
+            ["power", 1]
+        ],
+        storageCapacity: [
+            ["oxygen", 1000]    // oxygen, water, food
+        ],
+        crewCapacity: 2,
+        shapes: []
+    }
+    // Setup test assets
+    map._mapData = flatTerrain;
+    map.updateTopographyAndZones();
+    infra.setup(map._mapData.length);
+    infra.addModule(0, 30, prodModInfo, map._topography, map._zones);       // Farm
+    infra.addModule(4, 30, crewModuleData, map._topography, map._zones);    // Sleeping quarters
 
     // For convenience
     const resetColonist = (colonist: ColonistData) => {
@@ -15,6 +87,9 @@ describe("ColonistData", () => {
             rest: 0
         };
         colonist._morale = 50;
+        colonist._x = 0;
+        colonist._y = 31;
+        colonist.detectTerrainBeneath(map, infra);
     }
 
     test("updateMorale increases/decreases morale and respects upper and lower limits", () => {
@@ -57,6 +132,125 @@ describe("ColonistData", () => {
         colonist._needs.water = 7;
         colonist.determineMoraleChangeForNeeds();
         expect(colonist._morale).toBe(44);
+    })
+
+    test("Colonist morale affects duration for work actions", () => {
+        resetColonist(colonist);
+        colonist._role = ["farmer", 0];
+        const jobs: ColonistAction[] = [{
+            type: "farm",
+            coords: { x: 1, y: 32 },
+            duration: 30,
+            buildingId: 1001
+        }];
+        industry._jobs.farmer = jobs;
+        colonist._x = 1;
+        colonist.checkForJobs(infra, map, industry);
+        expect(colonist._currentAction).toStrictEqual({
+            type: "farm",
+            coords: { x: 1, y: 32 },
+            duration: 30,
+            buildingId: 1001
+        }); // Expect normal duration when morale is 50
+        // Reset test conditions and do again for different morale values, starting with 99
+        colonist.resolveGoal();
+        infra._modules[0]._crewPresent = [];
+        jobs[0].duration = 30;
+        industry._jobs.farmer = jobs;
+        colonist._morale = 99;                                  // Morale 99 = -4 duration
+        colonist.checkForJobs(infra, map, industry);
+        expect(colonist._currentAction).toStrictEqual({
+            type: "farm",
+            coords: { x: 1, y: 32 },
+            duration: 26,
+            buildingId: 1001
+        });
+        // Reset test and redo with 100 morale
+        colonist.resolveGoal();
+        infra._modules[0]._crewPresent = [];
+        jobs[0].duration = 30;
+        industry._jobs.farmer = jobs;
+        colonist._morale = 100;                                  // Morale 100 = -5 duration
+        colonist.checkForJobs(infra, map, industry);
+        expect(colonist._currentAction).toStrictEqual({
+            type: "farm",
+            coords: { x: 1, y: 32 },
+            duration: 25,
+            buildingId: 1001
+        });
+        // Reset test and redo with 59 morale
+        colonist.resolveGoal();
+        infra._modules[0]._crewPresent = [];
+        jobs[0].duration = 30;
+        industry._jobs.farmer = jobs;
+        colonist._morale = 59;                                  // Morale 59 = NO CHANGE
+        colonist.checkForJobs(infra, map, industry);
+        expect(colonist._currentAction).toStrictEqual({
+            type: "farm",
+            coords: { x: 1, y: 32 },
+            duration: 30,
+            buildingId: 1001
+        });
+        // Reset test and redo with 60 morale
+        colonist.resolveGoal();
+        infra._modules[0]._crewPresent = [];
+        jobs[0].duration = 30;
+        industry._jobs.farmer = jobs;
+        colonist._morale = 60;                                  // Morale 60 = -1
+        colonist.checkForJobs(infra, map, industry);
+        expect(colonist._currentAction).toStrictEqual({
+            type: "farm",
+            coords: { x: 1, y: 32 },
+            duration: 29,
+            buildingId: 1001
+        });
+        // Reset test and redo with 0 morale
+        colonist.resolveGoal();
+        infra._modules[0]._crewPresent = [];
+        jobs[0].duration = 30;
+        industry._jobs.farmer = jobs;
+        colonist._morale = 0;                                  // Morale 0 = +5
+        colonist.checkForJobs(infra, map, industry);
+        expect(colonist._currentAction).toStrictEqual({
+            type: "farm",
+            coords: { x: 1, y: 32 },
+            duration: 35,
+            buildingId: 1001
+        });
+        // Reset test and redo with 9 morale
+        colonist.resolveGoal();
+        infra._modules[0]._crewPresent = [];
+        jobs[0].duration = 30;
+        industry._jobs.farmer = jobs;
+        colonist._morale = 9;                                  // Morale 9 = +5
+        colonist.checkForJobs(infra, map, industry);
+        expect(colonist._currentAction).toStrictEqual({
+            type: "farm",
+            coords: { x: 1, y: 32 },
+            duration: 35,
+            buildingId: 1001
+        });
+        // Reset test and redo with 10 morale
+        colonist.resolveGoal();
+        infra._modules[0]._crewPresent = [];
+        jobs[0].duration = 30;
+        industry._jobs.farmer = jobs;
+        colonist._morale = 10;                                  // Morale 10 = +4
+        colonist.checkForJobs(infra, map, industry);
+        expect(colonist._currentAction).toStrictEqual({
+            type: "farm",
+            coords: { x: 1, y: 32 },
+            duration: 34,
+            buildingId: 1001
+        });
+    })
+
+    test("Colonist morale affects duration for sleep action", () => {
+        resetColonist(colonist);
+        colonist._needs.rest = 16;
+        // Test 1: Normal morale - normal sleep required
+        // Test 2: Excelent morale - normal sleep required
+        // Test 3: Bad morale - more sleep required
     })
 
 })

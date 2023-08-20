@@ -3508,7 +3508,33 @@ Exit Criteria:
 
 2. Update the Terraform main file's specifications for the server machine, and do a test deployment in the development environment. Be patient before you go to check on it! Depending on the outcome of this step, that may or (more likely) will not be the end of it!
 
-3. At the risk of hastily rushing an inferior product to production, it appears the EC2 micro is adequate for our purposes, and took no more than 20 minutes to load in the development environment. The lights are going on in Smars-town tonight!
+3. At the risk of hastily rushing an inferior product to production, it appears the EC2 micro is adequate for our purposes, and took no more than 20 minutes to load in the development environment. The lights are going to be on in Smars-town tonight!
+
+4. Update the constants file's version and/or year for the new release.
+
+5. Re-launch the production server, and restore its database contents now that we can afford to keep the lights on again. And update the documentation for using that new database restore script - I didn't code that thing just to be told to do the manual S3 copy and Mongo container restore commands by hand, dammit!
+
+## Chapter Five: Morale Matters
+
+### Difficulty Estimate: 2 (for some hopefully fairly simple changes to an existing system, plus tests to ensure everything is correct)
+
+### Date: August 18, 2023
+
+What follows is the first in a series of four small, relatively simple (hopefully!) changes to be made to the game's mechanics, in order to make things just a little bit more interesting. The first of these efforts concerns implementing some effects for the morale system, as it is currently a feature of the game that is almost entirely cosmetic. Whatever value a colonist's morale is, it has very little influence on the game's events, except for a vague influence on the amount of new colonists sent from Earth every time there's a launch - which is not very often.
+
+The importance of morale could be greatly increased by implementing a few small changes to the colonist's action/goals code, to make colonists work slower/faster depending on their morale, and to make sad colonists sleep longer. This will increase the game's realism, and make it more important to build a base that keeps those colonists content!
+
+Exit Criteria:
+
+- Colonists with low morale would take longer to finish work actions
+- Colonists with low morale would require a longer period of sleep and/or have a lower rest need threshold
+- Colonists with high morale would take less time to accomplish some actions (namely work actions - mining and farming)
+
+1. When a colonist gets a job from the Industry class via their checkForJobs method, calculate the value of their morale over ten minus five, such that a high morale score of 100 will yield a value of 5, and 0 morale yields -5. SUBTRACT that value from the job's duration before passing it to the action stack determinator. Verify in-game, or with a unit test.
+
+### 2. For morale to affect the duration for the 'rest' action we'll need to pass it to the ColonistActionLogic's createRestActionStack function. Then, when the initial 'rest' action is created it can calculate a longer duration if the morale value is lower than a certain threshold (but unlike with work, there is no time reduction for being happy - a good night's sleep is the very cornerstone of good morale!) Add a nice juicy unit test and verify in-game, and with that I think we're good here.
+
+### 3. There seems to be a bug with the 'so-and-so fell from a high place' notification, so just de-activate that message before the next push to production... Actually, unfortunately it is not the notification that is at fault - it appears that under some circumstances colonists can fall through the ground! It looks like it happens when a colonist is climbing a ladder but is interrupted somehow - which is not supposed to happen! Luckily, the production server has a save file called 'Low Power Mode' which contains a colonist, Zade Borman, at the far left edge of the map, who is about 15 seconds away from having this happen to him. So we can download that save file to the development/debug environment, use it file as a test case, and implement the bugfix that will SAVE ZADE BORMAN!
 
 ### 99. Update the constants file's version and/or year for the new release.
 

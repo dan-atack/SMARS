@@ -107,7 +107,7 @@ export default class ColonistData {
 
     // SECTION 2: NEEDS, ROLE AND GOAL-ORIENTED METHODS
 
-    // Increases colonist needs, but only up to the need threshold if they are asleep
+    // Increases colonist needs, but only up to the need threshold if they are asleep (so they wake up ready for breakfast!)
     updateNeeds = () => {
         if (this._currentAction?.type !== "rest") {
             this._needs.food += 1;
@@ -171,6 +171,9 @@ export default class ColonistData {
     checkForJobs = (infra: Infrastructure, map: Map, industry: Industry) => {
         const job = industry.getJob(this._role[0], { x: this._x, y: this._y });
         if (job) {  // Set the Job type as the new goal if a job is found; otherwise this will fall through to the default case
+            // Update the job's duration value based on the colonist's current morale rating ( by up to +/- 5 )
+            const moraleBonus = Math.floor(this._morale / 10) - 5;
+            job.duration -= moraleBonus;    // A positive morale bonus means the job takes LESS long!
             this.addAction(job.type, job.coords, job.duration, job.buildingId); // Make the job the first item in the action stack
             this.setGoal(job.type, infra, map, industry, job);     // Then determine how to get to the job site
         } else {
