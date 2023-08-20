@@ -133,19 +133,24 @@ export default class ColonistData {
 
     // Checks whether any needs have exceeded their threshold and assigns a new goal if so; otherwise sets goal to 'explore'
     updateGoal = (infra: Infrastructure, map: Map, industry: Industry) => {
-        // 1 - Determine needs-based (first priority) goals
-        // If the colonist has no current goal, or is set to exploring, check if any needs have reached their thresholds
-        if (this._currentGoal === "explore" || this._currentGoal === "") {
-            this.checkForNeeds(infra, map, industry);
-        };
-        // 2 - Determine job-related (second priority) goal ONLY IF no needs-based goal has been set
-        if (this._currentGoal === "explore" || this._currentGoal === "") {
-            this.checkForJobs(infra, map, industry);
+        // Never allow goal to be updated when the colonist is climbing a ladder
+        if (this._currentAction?.type !== "climb") {
+            // 1 - Determine needs-based (first priority) goals
+            // If the colonist has no current goal, or is set to exploring, check if any needs have reached their thresholds
+            if (this._currentGoal === "explore" || this._currentGoal === "") {
+                this.checkForNeeds(infra, map, industry);
+            };
+            // 2 - Determine job-related (second priority) goal ONLY IF no needs-based goal has been set
+            if (this._currentGoal === "explore" || this._currentGoal === "") {
+                this.checkForJobs(infra, map, industry);
+            }
+            // 3 - If no goal has been set, tell them to go exploring; otherwise use the goal determined above
+            if (this._currentGoal === "") {
+                this.setGoal("explore", infra, map, industry);
+            };
+        } else {
+            // console.log(`Colonist ${this._name} is climbing - delaying new action start.`);
         }
-        // 3 - If no goal has been set, tell them to go exploring; otherwise use the goal determined above
-        if (this._currentGoal === "") {
-            this.setGoal("explore", infra, map, industry);
-        };
     }
 
     // Sub-routine 1 for updateGoal method: Checks if any needs have reached their threshold
@@ -155,14 +160,10 @@ export default class ColonistData {
             // Check each need to see if it has A) crossed its threshold and B) is still believed to be available
             // @ts-ignore
             if (this._needs[need] >= this._needThresholds[need] && this._needsAvailable[need] && !(needSet)) {
-                // When setting new goal, clear out the current action - UNLESS it's a 'climb' action, in which case wait
-                if (this._currentAction?.type !== "climb") {
-                    this.resolveAction();
-                    needSet = true;     // Tell the forEach loop to stop looking once a need is set
-                    this.setGoal(`get-${need}`, infra, map, industry);
-                } else {
-                    // console.log(`Colonist ${this._id} is climbing - delaying new action start.`);
-                }
+                // When setting new goal, clear out the current action
+                this.resolveAction();
+                needSet = true;     // Tell the forEach loop to stop looking once a need is set
+                this.setGoal(`get-${need}`, infra, map, industry);
             }
         })
     }
