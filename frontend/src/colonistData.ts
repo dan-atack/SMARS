@@ -265,8 +265,8 @@ export default class ColonistData {
                 // this.setMessage("colonist-needs-fail", `Warning: ${this._name} cannot find a source of food to eat.`);
                 if (this._actionStack.length === 0) this._needsAvailable.food = 0;
                 break;
-            case "get-rest":
-                this._actionStack = createRestActionStack(currentPosition, this._standingOnId, infra);
+            case "get-rest":    // Takes an additional argument for the colonist's morale, to make sad colonist sleep longer
+                this._actionStack = createRestActionStack(currentPosition, this._standingOnId, infra, this._morale);
                 // this.setMessage("colonist-needs-fail", `Warning: ${this._name} cannot find a crew quarters to sleep in.`);
                 if (this._actionStack.length === 0) this._needsAvailable.rest = 0;
                 break;

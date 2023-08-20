@@ -3526,13 +3526,13 @@ The importance of morale could be greatly increased by implementing a few small 
 
 Exit Criteria:
 
-- Colonists with low morale would take longer to finish work actions
+- [DONE] Colonists with low morale would take longer to finish work actions
 - Colonists with low morale would require a longer period of sleep and/or have a lower rest need threshold
-- Colonists with high morale would take less time to accomplish some actions (namely work actions - mining and farming)
+- [DONE] Colonists with high morale would take less time to accomplish some actions (namely work actions - mining and farming)
 
-1. When a colonist gets a job from the Industry class via their checkForJobs method, calculate the value of their morale over ten minus five, such that a high morale score of 100 will yield a value of 5, and 0 morale yields -5. SUBTRACT that value from the job's duration before passing it to the action stack determinator. Verify in-game, or with a unit test.
+1. When a colonist gets a job from the Industry class via their checkForJobs method, calculate the value of their morale over ten minus five, such that a high morale score of 100 will yield a value of 5, and 0 morale yields -5. SUBTRACT that value from the job's duration before passing it to the action stack determinator. Verify in-game, and with a unit test.
 
-### 2. For morale to affect the duration for the 'rest' action we'll need to pass it to the ColonistActionLogic's createRestActionStack function. Then, when the initial 'rest' action is created it can calculate a longer duration if the morale value is lower than a certain threshold (but unlike with work, there is no time reduction for being happy - a good night's sleep is the very cornerstone of good morale!) Add a nice juicy unit test and verify in-game, and with that I think we're good here.
+### 2. For morale to affect the duration for the 'rest' action we'll need to pass it to the ColonistActionLogic's createRestActionStack function. Then, when the initial 'rest' action is created it can calculate a longer duration if the morale value is lower than a certain threshold (but unlike with work, there is no time reduction for being happy - a good night's sleep is the very cornerstone of good morale!) Add a nice juicy unit test and verify in-game, and with that I think we're good here...
 
 ### 3. There seems to be a bug with the 'so-and-so fell from a high place' notification, so just de-activate that message before the next push to production... Actually, unfortunately it is not the notification that is at fault - it appears that under some circumstances colonists can fall through the ground! It looks like it happens when a colonist is climbing a ladder but is interrupted somehow - which is not supposed to happen! Luckily, the production server has a save file called 'Low Power Mode' which contains a colonist, Zade Borman, at the far left edge of the map, who is about 15 seconds away from having this happen to him. So we can download that save file to the development/debug environment, use it file as a test case, and implement the bugfix that will SAVE ZADE BORMAN!
 

@@ -86,6 +86,7 @@ describe("ColonistData", () => {
             water: 0,
             rest: 0
         };
+        colonist.resolveGoal();
         colonist._morale = 50;
         colonist._x = 0;
         colonist._y = 31;
@@ -153,7 +154,6 @@ describe("ColonistData", () => {
             buildingId: 1001
         }); // Expect normal duration when morale is 50
         // Reset test conditions and do again for different morale values, starting with 99
-        colonist.resolveGoal();
         infra._modules[0]._crewPresent = [];
         jobs[0].duration = 30;
         industry._jobs.farmer = jobs;
@@ -166,7 +166,6 @@ describe("ColonistData", () => {
             buildingId: 1001
         });
         // Reset test and redo with 100 morale
-        colonist.resolveGoal();
         infra._modules[0]._crewPresent = [];
         jobs[0].duration = 30;
         industry._jobs.farmer = jobs;
@@ -179,7 +178,6 @@ describe("ColonistData", () => {
             buildingId: 1001
         });
         // Reset test and redo with 59 morale
-        colonist.resolveGoal();
         infra._modules[0]._crewPresent = [];
         jobs[0].duration = 30;
         industry._jobs.farmer = jobs;
@@ -192,7 +190,6 @@ describe("ColonistData", () => {
             buildingId: 1001
         });
         // Reset test and redo with 60 morale
-        colonist.resolveGoal();
         infra._modules[0]._crewPresent = [];
         jobs[0].duration = 30;
         industry._jobs.farmer = jobs;
@@ -205,7 +202,6 @@ describe("ColonistData", () => {
             buildingId: 1001
         });
         // Reset test and redo with 0 morale
-        colonist.resolveGoal();
         infra._modules[0]._crewPresent = [];
         jobs[0].duration = 30;
         industry._jobs.farmer = jobs;
@@ -218,7 +214,6 @@ describe("ColonistData", () => {
             buildingId: 1001
         });
         // Reset test and redo with 9 morale
-        colonist.resolveGoal();
         infra._modules[0]._crewPresent = [];
         jobs[0].duration = 30;
         industry._jobs.farmer = jobs;
@@ -231,7 +226,6 @@ describe("ColonistData", () => {
             buildingId: 1001
         });
         // Reset test and redo with 10 morale
-        colonist.resolveGoal();
         infra._modules[0]._crewPresent = [];
         jobs[0].duration = 30;
         industry._jobs.farmer = jobs;
@@ -247,10 +241,55 @@ describe("ColonistData", () => {
 
     test("Colonist morale affects duration for sleep action", () => {
         resetColonist(colonist);
-        colonist._needs.rest = 16;
+        colonist._needs.rest = 16;  // Make the colonist tired after resetting
+        colonist._x = 5;            // Move into position to drop right into bed
         // Test 1: Normal morale - normal sleep required
+        colonist.setGoal("get-rest", infra, map, industry);
+        expect(colonist._currentAction).toStrictEqual({
+            type: "rest",
+            coords: { x: 5, y: 32 },
+            duration: 480,
+            buildingId: 1003
+        });
         // Test 2: Excelent morale - normal sleep required
+        resetColonist(colonist);
+        infra._modules[1]._crewPresent = [];
+        colonist._needs.rest = 16;  // Make the colonist tired after resetting
+        colonist._morale = 100;     // Maximize morale (should have no effect)
+        colonist._x = 5;            // Move into position to drop right into bed
+        colonist.setGoal("get-rest", infra, map, industry);
+        expect(colonist._currentAction).toStrictEqual({
+            type: "rest",
+            coords: { x: 5, y: 32 },
+            duration: 480,
+            buildingId: 1003
+        });
         // Test 3: Bad morale - more sleep required
+        resetColonist(colonist);
+        infra._modules[1]._crewPresent = [];
+        colonist._needs.rest = 16;  // Make the colonist tired after resetting
+        colonist._morale = 25;      // For every 25 morale under 50, colonist loses an hour's sleep
+        colonist._x = 5;            // Move into position to drop right into bed
+        colonist.setGoal("get-rest", infra, map, industry);
+        expect(colonist._currentAction).toStrictEqual({
+            type: "rest",
+            coords: { x: 5, y: 32 },
+            duration: 540,
+            buildingId: 1003
+        });
+        // Test 4: Horrible morale - maximum sleep required
+        resetColonist(colonist);
+        infra._modules[1]._crewPresent = [];
+        colonist._needs.rest = 16;  // Make the colonist tired after resetting
+        colonist._morale = 0;       // At 0 morale, add 2 hours's sleep
+        colonist._x = 5;            // Move into position to drop right into bed
+        colonist.setGoal("get-rest", infra, map, industry);
+        expect(colonist._currentAction).toStrictEqual({
+            type: "rest",
+            coords: { x: 5, y: 32 },
+            duration: 600,
+            buildingId: 1003
+        });
     })
 
 })

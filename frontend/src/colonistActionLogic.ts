@@ -56,7 +56,8 @@ export const createConsumeActionStack = (colonistCoords: Coords, colonistStandin
 }
 
 // Creates the action stack to fulfill the 'get-rest' goal which, unlike 'eat' or 'drink', does not consume any resources
-export const createRestActionStack = (colonistCoords: Coords, standingOnId: string | number, infra: Infrastructure) => {
+// Also unlike the consume actions, rest is affected by morale, in that lower morale = longer rest time required
+export const createRestActionStack = (colonistCoords: Coords, standingOnId: string | number, infra: Infrastructure, morale: number) => {
     let stack: ColonistAction[] = [];
     let stackComplete = false;
     let dist = 10000;   // Allow for proximity comparisons even if the stack is completed (to find the optimal location)
@@ -72,7 +73,9 @@ export const createRestActionStack = (colonistCoords: Coords, standingOnId: stri
                 // Have colonists enter at different ends of the module if it is partially occupied when they get there
                 const coords = { x: mod._x + (mod._crewPresent.length * 2) + 1, y: mod._y + mod._height - 1}
                 // Add rest action to the bottom of the stack
-                stack.push(addAction("rest", coords, 480, mod._id));    // Duration = 480 minutes = 8 hours' sleep
+                // Calculate if the colonist's morale causes them to require extra  (zero morale = +2 hours)
+                const moraleAdjustment = morale >= 50 ? 0 : Math.floor((50 - morale) * 2.4);
+                stack.push(addAction("rest", coords, 480 + moraleAdjustment, mod._id));    // Default duration = 480 minutes = 8 hours' sleep
                 // 4 - Then, find out if it is on the same surface as the colonist
                 stack = stack.concat(getPathToModule(infra, mod._id, coords, standingOnId, colonistCoords));
                 // 5 - If stack has only 'rest' action at this point and zones do not match, the module is inaccessible
