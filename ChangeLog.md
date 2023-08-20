@@ -3538,6 +3538,25 @@ Exit Criteria:
 
 4. Update the constants file's version and/or year for the new release.
 
+## Chapter Six: Mining Tile Types Matter
+
+### Difficulty Estimate: 3 (for integration of new data into colonist work action sequence, and coordination with the map/industry class, plus complex unit tests)
+
+### Date: August 20, 2023
+
+The next relatively rapid change to be made will concern mining. As it stands, whenever a colonist performs a mining action they get a fixed amount of resources from it, regardless of what the type of block being mined actually is. This should be improved, so that the type of block being mined determines the resource output of a mining action (e.g., an ice block would be more worthwhile to mine than a frozen mud block). To assist with the validation of this feature, a few new block types will be added to the game's blocktionary, and the content team (me) will produce several new, larger maps to go with them. These new maps should also be a bit 'deeper,' (i.e. at least 6 blocks deep in the shallowest places) given certain plans to allow terrain deformation in the very near future...
+
+Exit Criteria:
+
+- Colonist mining action yield is determined by block type, rather than a fixed value
+- New block types are added to the blocktionary: brine mud (good water content), regolith (poor mineral value), dirty ice (medium water content) and salt flats (poor water value)
+- Blocktionary water values for existing water blocks (ice and frozen mud) are adjusted to fit in with the new paradigm, and 'Ice' is renamed to 'Clear Ice'
+- [CONTENT] Current maps are replaced with new ones which incorporate these new block types, and which are all at least 6 tiles deep at all locations and 256 columns wide(!)
+
+### 1. Step One...
+
+### 99. Update the constants file's version and/or year for the new release.
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
