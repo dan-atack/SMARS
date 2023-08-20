@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { MongoClient } from "mongodb";
 import { constants } from "../constants";
 
-const dbName = "smars";
+const dbName: string = process.env.DB_NAME as string || "smars";    // Use DB called 'smars' by default
 
 // This function's job will be to fetch all of the modules/connectors of a requested type (e.g. test, transport, habitation, etc.)
 const getStructures = async (req: Request, res: Response) => {

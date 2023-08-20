@@ -3536,7 +3536,7 @@ Exit Criteria:
 
 ### 3. There seems to be a bug with the 'so-and-so fell from a high place' notification, so just de-activate that message before the next push to production... Actually, unfortunately it is not the notification that is at fault - it appears that under some circumstances colonists can fall through the ground! It looks like it happens when a colonist is climbing a ladder but is interrupted somehow - which is not supposed to happen! Luckily, the production server has a save file called 'Low Power Mode' which contains a colonist, Zade Borman, at the far left edge of the map, who is about 15 seconds away from having this happen to him. So we can download that save file to the development/debug environment, use it file as a test case, and implement the bugfix that will SAVE ZADE BORMAN!
 
-### 99. Update the constants file's version and/or year for the new release.
+### 4. Update the constants file's version and/or year for the new release.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

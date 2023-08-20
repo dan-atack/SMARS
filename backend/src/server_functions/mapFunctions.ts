@@ -3,7 +3,7 @@ import { MongoClient } from "mongodb";
 import { constants } from "../constants";
 
 // Standardize name of the database (and collection):
-const dbName = 'smars'
+const dbName: string = process.env.DB_NAME as string || "smars";    // Use DB called 'smars' by default
 const collectionName = 'maps'
 
 // Template for new map (terrain) info:
