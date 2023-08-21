@@ -3549,17 +3549,17 @@ The next relatively rapid change to be made will concern mining. As it stands, w
 Exit Criteria:
 
 - [DONE] Colonist mining action yield is determined by block type, rather than a fixed value
-- New block types are added to the blocktionary: brine mud (good water content), regolith (poor mineral value), dirty ice (medium water content) and salt flats (poor water value)
+- New block types are added to the blocktionary: brine mud (good water content), regolith (tiny water content), dirty ice (medium water content) and salt flats (zero water value)
 - Blocktionary water values for existing water blocks (ice and frozen mud) are adjusted to fit in with the new paradigm, and 'Ice' is renamed to 'Clear Ice'
 - [CONTENT] Current maps are replaced with new ones which incorporate these new block types, and which are all at least 6 tiles deep at all locations and 256 columns wide(!)
 
 1. In the Colonist data class's checkActionStatus method, for the "mine" action case, use the map class to get the data for the block being mined; from there get the block's resource value and use that to determine the amount of resources generated.
 
-### 2. Add a unit test for this / update existing unit tests to make sure nothing is broken by this change.
+2. Add a unit test for this / update existing unit tests to make sure nothing is broken by this change.
 
-### 3. Add new block types to the blocktionary: brine mud, regolith, dirty ice, salt flats.
+3. Add new block types to the blocktionary: brine mud, regolith, dirty ice, salt flats.
 
-### 4. Adjust the resource yields for frozen mud and ice, and rename ice to 'clear ice.'
+4. Adjust the resource yields for frozen mud and ice, and rename ice to 'clear ice.'
 
 ### 5. Create new maps that use these blocks, and which measure 256 wide by >6 deep at all points. Technically this is content, but it's all the same project, right?
 

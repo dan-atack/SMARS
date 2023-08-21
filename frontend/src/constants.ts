@@ -37,12 +37,14 @@ export const constants = {
     GRAY_DARKEST: "#262626",
     GRAY_METEOR: "#353837",
     GRAY_IRON_ORE: "#2E1409",
+    GRAY_WHITE: "E5E6E1",
     EGGSHELL: "#F6F7E9",
     RED_ERROR: "#D10000",
     RED_CONTRAST: "#FF4230",
     RED_BG: "#450701",
     RED_ROCK: "#882000",
     BROWN_SAND: "#B8A27D",
+    BROWN_BRINE: "#59502E",
     BROWN_MUD: "#3B1E05",
     ORANGE_JUMPSUIT: "#C77E00",
     ORANGE_COPPER: "#8C5827",
@@ -50,6 +52,7 @@ export const constants = {
     YELLOW_TEXT: "#FFD412",
     YELLOW_SKY: "#C9A551",
     BLUE_ICE: "#A0EBE3",
+    BLUE_DIRTY: "#2E4A59",
     BLUE_SUNSET: "#050094",
     GREEN_LEAVES: "#049426",
     GREEN_TERMINAL: "#0FFF13",
@@ -196,7 +199,7 @@ export const blocks: BlockData[] = [
         color: constants.BROWN_MUD,
         resource: "water",
         hp: 250,
-        yield: 2
+        yield: 4
      },
      {
          type: 8,
@@ -205,5 +208,37 @@ export const blocks: BlockData[] = [
          resource: "minerals",
          hp: 1000,
          yield: 10
-     }
+     },
+     {
+      type: 9,
+      name: "Regolith",
+      color: constants.GRAY_DARK,
+      resource: "water",
+      hp: 100,
+      yield: 1
+     },
+     {
+      type: 10,
+      name: "Brine Mud",
+      color: constants.BROWN_BRINE,
+      resource: "water",
+      hp: 100,
+      yield: 6
+     },
+     {
+      type: 11,
+      name: "Dirty Ice",
+      color: constants.BLUE_DIRTY,
+      resource: "water",
+      hp: 150,
+      yield: 5
+     },
+     {
+      type: 12,
+      name: "Salt Flats",
+      color: constants.GRAY_WHITE,
+      resource: "water",
+      hp: 250,
+      yield: 0
+     },
 ];
