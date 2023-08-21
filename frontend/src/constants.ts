@@ -160,11 +160,11 @@ export const blocks: BlockData[] = [
      },
      {
         type: 3,
-        name: "Ice",
+        name: "Clear Ice",
         color: constants.BLUE_ICE,
         resource: "water",
         hp: 200,
-        yield: 5
+        yield: 10
      },
      {
         type: 4,
