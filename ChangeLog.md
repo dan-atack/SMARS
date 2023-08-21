@@ -3565,6 +3565,12 @@ Exit Criteria:
 
 ### 6. Once the new maps have been validated in a test environment, use them to replace the current ones in the database seed file, and then drop the maps collection in the dev environments to complete the update.
 
+6. Update the Engine to not fire random events, or give its "friendly advice" notifications, if a landing hasn't taken place.
+
+7. Increase the engine's scroll speed when it kicks into "accelerated mode" to accommodate navigation on wider maps.
+
+### 9. Make the mouse cursor shadow for the landing path planner semi-translucent, like the notifications are.
+
 ### 7. Update the constants file's version and/or year for the new release.
 
 ### 8. Once the merge to master is complete, run terraform destroy / terraform apply to update the production environment, and then restore the latest database archive file on the updated machine. We can't go on like this, by the way. We need a DevOps solution.
