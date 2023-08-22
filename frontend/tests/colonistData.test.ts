@@ -1229,7 +1229,7 @@ describe("ColonistData", () => {
         colonistData._actionTimeElapsed = 25;
         colonistData.checkActionStatus(inf, indy, waterMap);
         expect(inf._modules[0]._resources[2][1]).toBe(10);
-        // Test 2: Mining frozen mud yields 2 water
+        // Test 2: Mining frozen mud yields 4 water
         colonistData._currentAction = {
             type: "mine",
             duration: 25,
@@ -1238,7 +1238,7 @@ describe("ColonistData", () => {
         };
         colonistData._actionTimeElapsed = 25;
         colonistData.checkActionStatus(inf, indy, waterMap);
-        expect(inf._modules[0]._resources[2][1]).toBe(12);  // 2 + 10 from the first time (I'm too lazy to clean it up)
+        expect(inf._modules[0]._resources[2][1]).toBe(14);  // 4 + 10 from the first time (I'm too lazy to clean it up)
         // Test 3: Mining rock yields zero water!
         colonistData._currentAction = {
             type: "mine",
@@ -1248,7 +1248,7 @@ describe("ColonistData", () => {
         };
         colonistData._actionTimeElapsed = 25;
         colonistData.checkActionStatus(inf, indy, waterMap);
-        expect(inf._modules[0]._resources[2][1]).toBe(12);  // Unchanged since the previous test)
+        expect(inf._modules[0]._resources[2][1]).toBe(14);  // Unchanged since the previous test)
     })
     
 });

@@ -11,7 +11,7 @@ const httpsPort = process.env.HTTPS_PORT as string || "443";
 export const constants = {
     // Game copyright and version info for display on login screen
     RELEASE_YEAR: "2023",
-    RELEASE_VERSION: "1.0.4",
+    RELEASE_VERSION: "1.0.5",
     // Backend connection: HTTP in dev environment, or HTTPS in staging/production??
     URL_PREFIX: environment === "local_dev" ? `http://${serverName}:${serverPort}/api` : `https://${serverName}:${httpsPort}/api`,
     // Units of measurement, in pixels
@@ -31,6 +31,7 @@ export const constants = {
     SIDEBAR_BG: "#4B4446",
     GRAY_DRY_ICE: "#BCC4C1",
     GRAY_LIGHT: "#7D7D7D",
+    GRAY_LIGHTISH: "#7C7D99",
     GRAY_MEDIUM: "#626378",
     GRAY_DARK: "#595A6B",
     GRAY_DARKER: "#595A6B",
@@ -241,4 +242,12 @@ export const blocks: BlockData[] = [
       hp: 250,
       yield: 0
      },
+     {
+      type: 13,
+      name: "Frozen Rock",
+      color: constants.GRAY_LIGHTISH,
+      resource: "minerals",
+      hp: 300,
+      yield: 0
+     }
 ];

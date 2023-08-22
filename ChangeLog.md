@@ -3549,9 +3549,9 @@ The next relatively rapid change to be made will concern mining. As it stands, w
 Exit Criteria:
 
 - [DONE] Colonist mining action yield is determined by block type, rather than a fixed value
-- New block types are added to the blocktionary: brine mud (good water content), regolith (tiny water content), dirty ice (medium water content) and salt flats (zero water value)
-- Blocktionary water values for existing water blocks (ice and frozen mud) are adjusted to fit in with the new paradigm, and 'Ice' is renamed to 'Clear Ice'
-- [CONTENT] Current maps are replaced with new ones which incorporate these new block types, and which are all at least 6 tiles deep at all locations and 256 columns wide(!)
+- [DONE] New block types are added to the blocktionary: brine mud (good water content), regolith (tiny water content), dirty ice (medium water content) and salt flats (zero water value)
+- [DONE] Blocktionary water values for existing water blocks (ice and frozen mud) are adjusted to fit in with the new paradigm
+- [DONE] [CONTENT] Current maps are replaced with new ones which incorporate these new block types, and which are all at least 6 tiles deep at all locations and 256 columns wide(!)
 
 1. In the Colonist data class's checkActionStatus method, for the "mine" action case, use the map class to get the data for the block being mined; from there get the block's resource value and use that to determine the amount of resources generated.
 
@@ -3561,19 +3561,17 @@ Exit Criteria:
 
 4. Adjust the resource yields for frozen mud and ice, and rename ice to 'clear ice.'
 
-### 5. Create new maps that use these blocks, and which measure 256 wide by >6 deep at all points. Technically this is content, but it's all the same project, right?
+5. Create new maps that use these blocks, and which measure 256 wide by >6 deep at all points. Technically this is content, but it's all the same project, right?
 
-### 6. Once the new maps have been validated in a test environment, use them to replace the current ones in the database seed file, and then drop the maps collection in the dev environments to complete the update.
+6. Once the new maps have been validated in a test environment, use them to replace the current ones in the database seed file, and then drop the maps collection in the dev environments to complete the update.
 
-6. Update the Engine to not fire random events, or give its "friendly advice" notifications, if a landing hasn't taken place.
+7. Update the Engine to not fire random events, or give its "friendly advice" notifications, if a landing hasn't taken place.
 
-7. Increase the engine's scroll speed when it kicks into "accelerated mode" to accommodate navigation on wider maps.
+8. Increase the engine's scroll speed when it kicks into "accelerated mode" to accommodate navigation on wider maps.
 
-### 9. Make the mouse cursor shadow for the landing path planner semi-translucent, like the notifications are.
+9. Update the constants file's version and/or year for the new release.
 
-### 7. Update the constants file's version and/or year for the new release.
-
-### 8. Once the merge to master is complete, run terraform destroy / terraform apply to update the production environment, and then restore the latest database archive file on the updated machine. We can't go on like this, by the way. We need a DevOps solution.
+### 8. Once the merge to master is complete, run terraform destroy / terraform apply to update the production environment, and then restore the latest database archive file on the updated machine. Then, drop the maps collection from that database, and restart the server to load the new maps from the database seed file. Crikey, what a process - is there a DevOps guy in the house?!
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
@@ -3716,6 +3714,10 @@ Exit Criteria:
 ## Section C.1: Logos and Cover Art
 
 ### 1. Design a logo for SMARS! - a small PNG file that can be used for repos, profile pictures, etc.
+
+## Section C.2: Game Interface Improvements
+
+### 1. Make the Mouse Shadow for the landing zone selection semi-transparent, like the background for messages looks. In fact, the messages probably should have a solid background since they need to be readable, so you should switch the two shadow types for these situations. Also add translucency for module/connector placement as well, as that would look cool and not affect any readability calculations.
 
 ## Section X.1: World Editor Suite Improvements
 
