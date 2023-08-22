@@ -11,7 +11,7 @@ const httpsPort = process.env.HTTPS_PORT as string || "443";
 export const constants = {
     // Game copyright and version info for display on login screen
     RELEASE_YEAR: "2023",
-    RELEASE_VERSION: "1.0.4",
+    RELEASE_VERSION: "1.0.5",
     // Backend connection: HTTP in dev environment, or HTTPS in staging/production??
     URL_PREFIX: environment === "local_dev" ? `http://${serverName}:${serverPort}/api` : `https://${serverName}:${httpsPort}/api`,
     // Units of measurement, in pixels
@@ -31,18 +31,21 @@ export const constants = {
     SIDEBAR_BG: "#4B4446",
     GRAY_DRY_ICE: "#BCC4C1",
     GRAY_LIGHT: "#7D7D7D",
+    GRAY_LIGHTISH: "#7C7D99",
     GRAY_MEDIUM: "#626378",
     GRAY_DARK: "#595A6B",
     GRAY_DARKER: "#595A6B",
     GRAY_DARKEST: "#262626",
     GRAY_METEOR: "#353837",
     GRAY_IRON_ORE: "#2E1409",
+    GRAY_WHITE: "E5E6E1",
     EGGSHELL: "#F6F7E9",
     RED_ERROR: "#D10000",
     RED_CONTRAST: "#FF4230",
     RED_BG: "#450701",
     RED_ROCK: "#882000",
     BROWN_SAND: "#B8A27D",
+    BROWN_BRINE: "#59502E",
     BROWN_MUD: "#3B1E05",
     ORANGE_JUMPSUIT: "#C77E00",
     ORANGE_COPPER: "#8C5827",
@@ -50,6 +53,7 @@ export const constants = {
     YELLOW_TEXT: "#FFD412",
     YELLOW_SKY: "#C9A551",
     BLUE_ICE: "#A0EBE3",
+    BLUE_DIRTY: "#2E4A59",
     BLUE_SUNSET: "#050094",
     GREEN_LEAVES: "#049426",
     GREEN_TERMINAL: "#0FFF13",
@@ -160,11 +164,11 @@ export const blocks: BlockData[] = [
      },
      {
         type: 3,
-        name: "Ice",
+        name: "Clear Ice",
         color: constants.BLUE_ICE,
         resource: "water",
         hp: 200,
-        yield: 5
+        yield: 10
      },
      {
         type: 4,
@@ -196,7 +200,7 @@ export const blocks: BlockData[] = [
         color: constants.BROWN_MUD,
         resource: "water",
         hp: 250,
-        yield: 2
+        yield: 4
      },
      {
          type: 8,
@@ -205,5 +209,45 @@ export const blocks: BlockData[] = [
          resource: "minerals",
          hp: 1000,
          yield: 10
+     },
+     {
+      type: 9,
+      name: "Regolith",
+      color: constants.GRAY_DARK,
+      resource: "water",
+      hp: 100,
+      yield: 1
+     },
+     {
+      type: 10,
+      name: "Brine Mud",
+      color: constants.BROWN_BRINE,
+      resource: "water",
+      hp: 100,
+      yield: 6
+     },
+     {
+      type: 11,
+      name: "Dirty Ice",
+      color: constants.BLUE_DIRTY,
+      resource: "water",
+      hp: 150,
+      yield: 5
+     },
+     {
+      type: 12,
+      name: "Salt Flats",
+      color: constants.GRAY_WHITE,
+      resource: "water",
+      hp: 250,
+      yield: 0
+     },
+     {
+      type: 13,
+      name: "Frozen Rock",
+      color: constants.GRAY_LIGHTISH,
+      resource: "minerals",
+      hp: 300,
+      yield: 0
      }
 ];

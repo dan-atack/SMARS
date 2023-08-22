@@ -3538,6 +3538,41 @@ Exit Criteria:
 
 4. Update the constants file's version and/or year for the new release.
 
+## Chapter Six: Mining Tile Types Matter
+
+### Difficulty Estimate: 3 (for integration of new data into colonist work action sequence, and coordination with the map/industry class, plus complex unit tests)
+
+### Date: August 20, 2023
+
+The next relatively rapid change to be made will concern mining. As it stands, whenever a colonist performs a mining action they get a fixed amount of resources from it, regardless of what the type of block being mined actually is. This should be improved, so that the type of block being mined determines the resource output of a mining action (e.g., an ice block would be more worthwhile to mine than a frozen mud block). To assist with the validation of this feature, a few new block types will be added to the game's blocktionary, and the content team (me) will produce several new, larger maps to go with them. These new maps should also be a bit 'deeper,' (i.e. at least 6 blocks deep in the shallowest places) given certain plans to allow terrain deformation in the very near future...
+
+Exit Criteria:
+
+- [DONE] Colonist mining action yield is determined by block type, rather than a fixed value
+- [DONE] New block types are added to the blocktionary: brine mud (good water content), regolith (tiny water content), dirty ice (medium water content) and salt flats (zero water value)
+- [DONE] Blocktionary water values for existing water blocks (ice and frozen mud) are adjusted to fit in with the new paradigm
+- [DONE] [CONTENT] Current maps are replaced with new ones which incorporate these new block types, and which are all at least 6 tiles deep at all locations and 256 columns wide(!)
+
+1. In the Colonist data class's checkActionStatus method, for the "mine" action case, use the map class to get the data for the block being mined; from there get the block's resource value and use that to determine the amount of resources generated.
+
+2. Add a unit test for this / update existing unit tests to make sure nothing is broken by this change.
+
+3. Add new block types to the blocktionary: brine mud, regolith, dirty ice, salt flats.
+
+4. Adjust the resource yields for frozen mud and ice, and rename ice to 'clear ice.'
+
+5. Create new maps that use these blocks, and which measure 256 wide by >6 deep at all points. Technically this is content, but it's all the same project, right?
+
+6. Once the new maps have been validated in a test environment, use them to replace the current ones in the database seed file, and then drop the maps collection in the dev environments to complete the update.
+
+7. Update the Engine to not fire random events, or give its "friendly advice" notifications, if a landing hasn't taken place.
+
+8. Increase the engine's scroll speed when it kicks into "accelerated mode" to accommodate navigation on wider maps.
+
+9. Update the constants file's version and/or year for the new release.
+
+### 8. Once the merge to master is complete, run terraform destroy / terraform apply to update the production environment, and then restore the latest database archive file on the updated machine. Then, drop the maps collection from that database, and restart the server to load the new maps from the database seed file. Crikey, what a process - is there a DevOps guy in the house?!
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
@@ -3679,6 +3714,10 @@ Exit Criteria:
 ## Section C.1: Logos and Cover Art
 
 ### 1. Design a logo for SMARS! - a small PNG file that can be used for repos, profile pictures, etc.
+
+## Section C.2: Game Interface Improvements
+
+### 1. Make the Mouse Shadow for the landing zone selection semi-transparent, like the background for messages looks. In fact, the messages probably should have a solid background since they need to be readable, so you should switch the two shadow types for these situations. Also add translucency for module/connector placement as well, as that would look cool and not affect any readability calculations.
 
 ## Section X.1: World Editor Suite Improvements
 

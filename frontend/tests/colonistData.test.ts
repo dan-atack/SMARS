@@ -1199,5 +1199,56 @@ describe("ColonistData", () => {
         colonistData.consume("water", mockInfra);
         expect(colonistData._currentAction).toBe(null);
     })
+
+    test("When resolved, mining action produces water in quantity dictated by the mined tile's block type", () => {
+        resetColonistData();
+        colonistData._x = 0;
+        colonistData._y = 31;
+        colonistData.detectTerrainBeneath(mockMap, mockInfra);
+        // Reset map with new terrain, consisting of various block types at the surface
+        const waterMap = new Map();
+        // Dummy map data
+        const variedTerrain = [[1, 1, 1], [1, 1, 3], [1, 1, 7], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]];
+        waterMap.setup(variedTerrain);
+        expect(waterMap._columns[0][2]._blockData.name).toBe("Rock");
+        expect(waterMap._columns[1][2]._blockData.name).toBe("Clear Ice");
+        expect(waterMap._columns[2][2]._blockData.name).toBe("Frozen Mud");    // Validate test setup
+        // Dummy storage module
+        const inf = new Infrastructure();
+        inf.setup(waterMap._mapData.length);
+        inf.addModule(4, 30, storageModuleInfo, waterMap._topography, waterMap._zones);
+        expect(inf._modules[0]._resources[2][0]).toBe("water");
+        expect(inf._modules[0]._resources[2][1]).toBe(0);
+        // Test 1: Mining ice yields 10 water
+        colonistData._currentAction = {
+            type: "mine",
+            duration: 25,
+            buildingId: 0,
+            coords: { x: 1, y: 33 }
+        };
+        colonistData._actionTimeElapsed = 25;
+        colonistData.checkActionStatus(inf, indy, waterMap);
+        expect(inf._modules[0]._resources[2][1]).toBe(10);
+        // Test 2: Mining frozen mud yields 4 water
+        colonistData._currentAction = {
+            type: "mine",
+            duration: 25,
+            buildingId: 0,
+            coords: { x: 2, y: 33 }
+        };
+        colonistData._actionTimeElapsed = 25;
+        colonistData.checkActionStatus(inf, indy, waterMap);
+        expect(inf._modules[0]._resources[2][1]).toBe(14);  // 4 + 10 from the first time (I'm too lazy to clean it up)
+        // Test 3: Mining rock yields zero water!
+        colonistData._currentAction = {
+            type: "mine",
+            duration: 25,
+            buildingId: 0,
+            coords: { x: 3, y: 33 }
+        };
+        colonistData._actionTimeElapsed = 25;
+        colonistData.checkActionStatus(inf, indy, waterMap);
+        expect(inf._modules[0]._resources[2][1]).toBe(14);  // Unchanged since the previous test)
+    })
     
 });

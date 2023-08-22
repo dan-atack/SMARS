@@ -330,10 +330,18 @@ export default class ColonistData {
                 case "mine":
                     if (this._actionTimeElapsed >= this._currentAction.duration) {
                         // TODO: Make this pivot based on what type of resource is being mined
-                        const output: Resource = ["water", 10];
+                        const block = map.getBlockForCoords(this._currentAction.coords);    // Get block data to determine resource output (yield)
+                        let output: Resource = ["water", 10];    // Set default value in case of an exception
+                        if (block) {
+                            output[0] = block._blockData.resource;
+                            output[1] = block._blockData.yield;
+                        } else {
+                            console.log(`Error: Block data not found for mining action at (${this._currentAction.coords.x}, ${this._currentAction.coords.y}`);
+                        }
                         const depot = infra.findStorageModule(output);
                         if (depot) {
-                            depot.addResource(output);      // Add new resources
+                            const added = depot.addResource(output);      // Add new resources
+                            console.log(`Mining ${block?._blockData.name} added ${added} ${output[0]}`);
                         } else {
                             // Warn the user about any failures to store the mined output with an in-game notification
                             this.setMessage("module-add-resource-fail", `Warning: No storage location found for ${this._name}'s mining output!`);

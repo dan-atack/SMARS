@@ -124,7 +124,7 @@ export default class Engine extends View {
         this._scrollDistance = 50;
         this._scrollingLeft = false;
         this._scrollingRight = false;
-        this._mouseInScrollRange = 0;    // Counts how many frames have passed with the mouse within scroll distance of the edge
+        this._mouseInScrollRange = 0;       // Counts how many frames have passed with the mouse within scroll distance of the edge
         this._scrollThreshold = 10;         // Controls the number of frames that must pass before the map starts to scroll
         this._fastScrollThreshold = 60;     // Number of frames to pass before fast scroll begins
         this.mouseContext = "inspect"       // Default mouse context allows user to select ('inspect') whatever they click on
@@ -432,12 +432,12 @@ export default class Engine extends View {
         } else {
             this.stopScrolling();               // Stop scrolling if a modal is open
         }
-        // Increase scoll speed if player has been hovering in the scroll zone for longer than one second
+        // Increase scroll speed if player has been hovering in the scroll zone for longer than one second
         if (this._scrollingLeft && this._horizontalOffset > 0) {
-            this._mouseInScrollRange > this._fastScrollThreshold ? this._horizontalOffset -= 2 : this._horizontalOffset--;
+            this._mouseInScrollRange > this._fastScrollThreshold ? this._horizontalOffset -= 4 : this._horizontalOffset--;
             this._horizontalOffset = Math.max(this._horizontalOffset, 0);   // Ensure scroll does not go too far left
         } else if (this._scrollingRight && this._horizontalOffset < this._map._maxOffset){
-            this._mouseInScrollRange > this._fastScrollThreshold ? this._horizontalOffset += 2 : this._horizontalOffset++;
+            this._mouseInScrollRange > this._fastScrollThreshold ? this._horizontalOffset += 4 : this._horizontalOffset++;
             this._horizontalOffset = Math.min(this._horizontalOffset, this._map._maxOffset);   // Ensure scroll does not go too far right
         }
     }
@@ -1093,9 +1093,9 @@ export default class Engine extends View {
 
     // In-game event generator: produces scheduled and/or random events which will create modal popups
     generateEvent = (probability?: number) => {             // Probability is given optionally as a percent value
-        if (probability && this._randomEventsEnabled) {     // Only produce a random event if the player has enabled them
+        if (probability && this._randomEventsEnabled && this._hasLanded) {  // Only produce random event if enabled, and landing has occurred
             const rand = Math.floor(Math.random() * 100);                   // Generate random value and express as a percent
-            // Fire random event if it exceeds probability threshold and if no wait has already been initiated by another event (e.g. landing pod arrival)
+            // Fire random event if it exceeds probability threshold and if no wait has already been initiated by another event
             if (rand < probability && this.mouseContext !== "wait") {
                 // If a random event occurs, determine its magnitude and karma with the difficulty level and previous event data
                 const r = Math.floor(Math.random() * 100);
@@ -1247,26 +1247,28 @@ export default class Engine extends View {
 
     // Called by the hourly updater, to issue basic general advice to the player if they look like they need it
     checkForGeneralWarnings = () => {
-        if (this._economy._data._resources[1][1] < 10000 && this._infrastructure._modules.filter((mod) => mod.getProductionOutputResourceNames().includes("oxygen")).length === 0) {
-            const message = this.createMessage("general-advice-tip", 0, "Your colony's oxygen reserves are running low; build some hydroponics modules!");
-            this._notifications.addMessageToBacklog(message);
-        };
-        if (this._economy._data._resources[2][1] < 5000 && this._industry._miningLocations.water.length === 0) {
-            const message = this.createMessage("general-advice-tip", 0, "Your water reserves are running low; use the resource tool to set water mining zones!");
-            this._notifications.addMessageToBacklog(message);
-        };
-        if (this._economy._data._resources[2][1] < 5000 && this._population._colonists.filter((col) => col._data._role[0] === "miner").length === 0) {
-            const message = this.createMessage("general-advice-tip", 0, "Your colony's water reserves are running low; assign some colonists to mine water!");
-            this._notifications.addMessageToBacklog(message);
-        };
-        if (this._economy._data._resources[3][1] < 5000) {
-            const message = this.createMessage("general-advice-tip", 0, "Your colony's food reserves are running low; build some hydroponics modules!");
-            this._notifications.addMessageToBacklog(message);
-        };
-        if (this._economy._data._resources[4][1] < 10000) {
-            const message = this.createMessage("general-advice-tip", 0, "Your colony's power reserves are running low; build some solar panels!");
-            this._notifications.addMessageToBacklog(message);
-        }
+        if (this._hasLanded) {      // Only issue helpful warnings once the colony's initial landing has taken place
+            if (this._economy._data._resources[1][1] < 10000 && this._infrastructure._modules.filter((mod) => mod.getProductionOutputResourceNames().includes("oxygen")).length === 0) {
+                const message = this.createMessage("general-advice-tip", 0, "Your colony's oxygen reserves are running low; build some hydroponics modules!");
+                this._notifications.addMessageToBacklog(message);
+            };
+            if (this._economy._data._resources[2][1] < 5000 && this._industry._miningLocations.water.length === 0) {
+                const message = this.createMessage("general-advice-tip", 0, "Your water reserves are running low; use the resource tool to set water mining zones!");
+                this._notifications.addMessageToBacklog(message);
+            };
+            if (this._economy._data._resources[2][1] < 5000 && this._population._colonists.filter((col) => col._data._role[0] === "miner").length === 0) {
+                const message = this.createMessage("general-advice-tip", 0, "Your colony's water reserves are running low; assign some colonists to mine water!");
+                this._notifications.addMessageToBacklog(message);
+            };
+            if (this._economy._data._resources[3][1] < 5000) {
+                const message = this.createMessage("general-advice-tip", 0, "Your colony's food reserves are running low; build some hydroponics modules!");
+                this._notifications.addMessageToBacklog(message);
+            };
+            if (this._economy._data._resources[4][1] < 10000) {
+                const message = this.createMessage("general-advice-tip", 0, "Your colony's power reserves are running low; build some solar panels!");
+                this._notifications.addMessageToBacklog(message);
+            }
+        }  
     }
 
     //// RENDER METHODS ////
