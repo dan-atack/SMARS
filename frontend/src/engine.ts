@@ -103,7 +103,7 @@ export default class Engine extends View {
         this.getModuleInfo = getOneModule;
         this.getConnectorInfo = getOneConnector;
         this.getRandomEvent = getRandomEvent;
-        this._sidebar = new Sidebar(p5, this.switchScreen, this.changeView, this.setMouseContext, this.setGameSpeed);
+        this._sidebar = new Sidebar(this.switchScreen, this.changeView, this.setMouseContext, this.setGameSpeed);
         this._sidebarExtended = true;   // Side bar can be partially hidden to expand map view - should this be here or in the SB itself??
         this._gameData = null;
         this._saveInfo = null;  // Saved game info is loaded from the Game module when it calls the setupSavedGame method
@@ -1372,7 +1372,7 @@ export default class Engine extends View {
         this.handleMouseScroll();   // Every frame, check for mouse scrolling
         // Don't render sidebar until the player has chosen a landing site
         if (this._hasLanded) {
-            this._sidebar.render(this._gameTime.minute, this._gameTime.hour, this._gameTime.cycle);
+            this._sidebar.render(this._p5, this._gameTime.minute, this._gameTime.hour, this._gameTime.cycle);
         }
         // If rendering a special mouse cursor, do it after rendering everything else
         if (this.mouseContext === "inspect" || this.mouseContext === "resource" || this.mouseContext === "demolish") {

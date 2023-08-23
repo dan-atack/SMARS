@@ -59,7 +59,7 @@ export default class NewGameSetup extends Screen {
         this._randomWidth = 192;
         this._randomHeight = 64;
         this._mapTerrain = [];       // Fills in with return from a fetch in the setup method
-        this.minimap = new Minimap(p5, 800, 420, this._mapTerrain);
+        this.minimap = new Minimap(800, 420, this._mapTerrain);
         this.gameData = {   // To export to the Game once data has been selected
             difficulty: "",
             mapType: "",
@@ -381,7 +381,7 @@ export default class NewGameSetup extends Screen {
             }
         })
         // Minimap
-        this.minimap.render();
+        this.minimap.render(p5);
         // Game details:
         this.renderDescription();
     }
