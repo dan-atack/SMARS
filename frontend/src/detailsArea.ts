@@ -73,7 +73,7 @@ export default class DetailsArea {
         this._optionButtons = [];
         this._backButton = new Button("BACK", this._x, this._buttonY + 4 * this._buttonMargin, this.handleBack, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG);
         this._inspectDisplay = new InspectDisplay(this._x, this._y);
-        this._minimap = new Minimap(p5, this._x + 24, this._y + 256, []);
+        this._minimap = new Minimap(this._x + 24, this._y + 256, []);
         this._inspectData = false;      // By default there is no inspect data to display
         this.setOpen = setOpen;
         this.setMouseContext = setMouseContext;
@@ -265,7 +265,7 @@ export default class DetailsArea {
         p5.fill(constants.GREEN_TERMINAL);
         p5.textAlign(p5.CENTER, p5.CENTER);
         p5.text("Minimap", this._x + (this._width / 2), this._y + 64);
-        this._minimap.render();
+        this._minimap.render(p5);
     }
 
     renderInspectDisplay = (p5: P5) => {

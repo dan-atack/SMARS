@@ -3587,7 +3587,17 @@ Exit Criteria:
 - The Minimap should show a box, representing the current screen, superimposed over the map to let the player know where they are
 - The player can click on the minimap to adjust their current screen's location without scrolling
 
-### 1. Step One...
+1. Start by refactoring the Minimap class to not require P5 in its constructor, to be in sync with the game's modernized architecture, and to allow for the possibility of creating unit test cases for this component. Make a simple unit test file once this is completed.
+
+### 2. While we're at it, pull P5 out of the constructor for the detailsArea, and then the Sidebar, and make two more little unit test files for these components too. They don't need to do much just yet, but it would be nice to validate them, and to take one more step towards modernizing the game's architecture before we go any further.
+
+### 1. Now for the actual feature development: start by bringing all of the Minimap container's render info into the Minimap component itself, so it's fully self-contained and not sharing anything with the DetailsArea component. Then proceed to make it 25% smaller, and move the 'Minimap' label downwards, to free up some more real estate in the Sidebar.
+
+### 2. Make a new Minimap method, called loadTerrain, to import the topography value from the Map class. Update the 'terrain' field to be a simple list of numbers, each of which represents the height (in blocks) of one column of terrain on the Map (this is the same as the topography field, I believe). Call this method instead of updateTerrain (which we will keep, and repurpose in a moment) during the Engine's setup routine.
+
+### 3. Update the Minimap's render method to make a series of lines instead of rectangles to depict the map's terrain, and ensure that the terrain stretches across the entire width of the minimap display area.
+
+### 99. Update the constants file's version and/or year for the new release.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
