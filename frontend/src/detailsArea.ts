@@ -15,7 +15,6 @@ import { constants } from "./constants";
 
 export default class DetailsArea {
     // Details Area types:
-    _p5: P5;
     _x: number;
     _y: number;
     _yExtended: number;
@@ -48,8 +47,7 @@ export default class DetailsArea {
     getStructureTypes: (setter: (options: string[]) => void, category: string) => void;   // Server function to fetch lists for building types
     getStructures: (setter: (options: ModuleInfo[] | ConnectorInfo[]) => void, category: string, type: string) => void
 
-    constructor(p5: P5, setOpen: (status: boolean) => void, setMouseContext: (value: string) => void) {
-        this._p5 = p5;
+    constructor(setOpen: (status: boolean) => void, setMouseContext: (value: string) => void) {
         this._x = constants.SCREEN_WIDTH - constants.SIDEBAR_WIDTH + 4;
         this._y = 432;
         this._yExtended = 124;
