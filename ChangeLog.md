@@ -3571,7 +3571,23 @@ Exit Criteria:
 
 9. Update the constants file's version and/or year for the new release.
 
-### 8. Once the merge to master is complete, run terraform destroy / terraform apply to update the production environment, and then restore the latest database archive file on the updated machine. Then, drop the maps collection from that database, and restart the server to load the new maps from the database seed file. Crikey, what a process - is there a DevOps guy in the house?!
+10. Once the merge to master is complete, attempt to update the production environment's Docker image by simply stopping the container stack, deleting the current backend image, and rerunning Docker compose without first doing any image/builder pruning. If (ADDENDUM: WHEN) this fails, then run terraform destroy / terraform apply to update the production environment, and then restore the latest database archive file on the updated machine. Then, drop the maps collection from that database, and restart the server to load the new maps from the database seed file. Crikey, what a process - is there a DevOps guy in the house?!
+
+## Chapter Seven: Minimap, you Complete Me (Fixing the Minimap)
+
+### Difficulty Estimate: 3 (For integration with Engine screen scroll functionality, and minimap update sequence)
+
+### Date: August 22, 2023
+
+Rapid change number three involves making the Minimap functional. Currently, the game's Minimap takes up lots of space and is effectively broken; it doesn't move around to show the current view, and it doesn't show the entire map either. The time has come to fix it, and let it become the feature it was born to be! It should be shrunken slightly, to make room for more buttons for and made to function properly: namely, it should show the whole map, and let the player click on it to instantly adjust the screen's position.
+
+Exit Criteria:
+
+- The Minimap should show the entire map's topography
+- The Minimap should show a box, representing the current screen, superimposed over the map to let the player know where they are
+- The player can click on the minimap to adjust their current screen's location without scrolling
+
+### 1. Step One...
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
