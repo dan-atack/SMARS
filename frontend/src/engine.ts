@@ -169,7 +169,7 @@ export default class Engine extends View {
         this.selectedBuilding = null;
         this.updateSidebarGamespeedButtons();   // Ensure sidebar gamespeed buttons always show the right value
         this.setSidebarSelectedButton();   // Ensure sidebar mouse context buttons are correct
-        this._sidebar._detailsArea._minimap.updateTerrain(this._map._mapData);
+        this._sidebar._detailsArea._minimap.setup(this._map._mapData);
         // Sidebar minimap display - does it only need it during 'setup' or does it also need occasional updates?
     }
 
@@ -179,6 +179,7 @@ export default class Engine extends View {
         this._randomEventsEnabled = gameData.randomEvents;
         this._mapType = gameData.mapType;
         this._map.setup(this._gameData.mapTerrain);
+        this._sidebar._detailsArea._minimap.setup(this._map._mapData);
         this._economy._data.addMoney(this._gameData.startingResources[0][1]);
         this._horizontalOffset = this._map._maxOffset / 2;   // Put player in the middle of the map to start out
         this._infrastructure.setup(this._map._mapData.length);
@@ -196,6 +197,7 @@ export default class Engine extends View {
         this._randomEventsEnabled = saveInfo.random_events;
         this._mapType = saveInfo.map_type;
         this._map.setup(this._saveInfo.terrain);
+        this._sidebar._detailsArea._minimap.setup(this._map._mapData);
         // TODO: Extract the map expansion/sidebar pop-up (and the reverse) into a separate method
         this._map.setExpanded(false);   // Map starts in 'expanded' mode by default, so it must tell it the sidebar is open
         this._economy._data.addMoney(saveInfo.resources[0][1]); // Reload money from save data

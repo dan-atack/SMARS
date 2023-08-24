@@ -113,6 +113,7 @@ export const getMap = (mapType: string, setter: (terrain: number[][]) => void) =
     })
     .then((response) => {
         setter(response.mapInfo.terrain);
+        console.log(response.mapInfo.name);
     })
 }
 

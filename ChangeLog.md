@@ -3589,13 +3589,19 @@ Exit Criteria:
 
 1. Start by refactoring the Minimap class to not require P5 in its constructor, to be in sync with the game's modernized architecture, and to allow for the possibility of creating unit test cases for this component. Make a simple unit test file once this is completed.
 
-### 2. While we're at it, pull P5 out of the constructor for the detailsArea, and then the Sidebar, and make two more little unit test files for these components too. They don't need to do much just yet, but it would be nice to validate them, and to take one more step towards modernizing the game's architecture before we go any further.
+2. While we're at it, pull P5 out of the constructor for the detailsArea, and then the Sidebar, and make two more little unit test files for these components too. They don't need to do much just yet, but it would be nice to validate them, and to take one more step towards modernizing the game's architecture before we go any further.
 
-### 1. Now for the actual feature development: start by bringing all of the Minimap container's render info into the Minimap component itself, so it's fully self-contained and not sharing anything with the DetailsArea component. Then proceed to make it 25% smaller, and move the 'Minimap' label downwards, to free up some more real estate in the Sidebar.
+3. Now for the actual feature development: start by bringing all of the Minimap container's render info into the Minimap component itself, so it's fully self-contained and not sharing anything with the DetailsArea component or the NewGameSetup screen. Then proceed to make it 25% smaller, and move the 'Minimap' label downwards, to free up some more real estate in the Sidebar. Make sure that this also integrates with the Map preview in the NewGameSetup screen; add a new parameter to the Minimap's constructor for 'label' so it can be called 'Map Preview' in the newGame screen, and 'Minimap' for the Sidebar version.
 
-### 2. Make a new Minimap method, called loadTerrain, to import the topography value from the Map class. Update the 'terrain' field to be a simple list of numbers, each of which represents the height (in blocks) of one column of terrain on the Map (this is the same as the topography field, I believe). Call this method instead of updateTerrain (which we will keep, and repurpose in a moment) during the Engine's setup routine.
+4. Make a new Minimap method, called setup, to import the map terrain and convert it to a list of numbers, representing each column's height. Update the 'terrain' field to be a simple list of numbers, each of which represents the height (in blocks) of one column of terrain on the Map. Call this method instead of updateTerrain (which we will keep, and repurpose in a moment) during the Engine's setup routine.
 
-### 3. Update the Minimap's render method to make a series of lines instead of rectangles to depict the map's terrain, and ensure that the terrain stretches across the entire width of the minimap display area.
+5. Update the Minimap's render method to make a series of lines instead of rectangles to depict the map's terrain, and ensure that the terrain stretches across the entire width of the minimap display area.
+
+### 6. Consider how to render maps of different widths; we want the minimap to always stretch across its entire display area, and to always show the entire map, regardless of its width. Add a simple but extremely wide map (512 columns) to the Dev environment to test this functionality, and load some legacy saves too to see that it works for smaller maps as well (not that we'll be making any more of those, but it's still important to support our legacy data, and to allow the possibility of making new maps of any size in the future).
+
+### 7. Add a new Minimap method, called updateScreenPosition, which will be called by the Engine's scroll handler whenever the player scrolls past a column. Start by having it print the numbers of the grid reference for both edges of the screen (rounded down to the nearest integer if the screen's edge is not exactly flush with the terrain grid).
+
+### 8. Render an empty rectangle over the minimap, whose width compared to the minimap display is proportional to the screen's width relative to the entire map.
 
 ### 99. Update the constants file's version and/or year for the new release.
 
