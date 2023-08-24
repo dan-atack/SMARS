@@ -6,11 +6,13 @@ export default class Minimap {
     // Minimap class types
     _x: number;
     _y: number;
-    _w: number;             // Use default value of 256 width for now
-    _h: number;             // Use default value of 128 height for now
-    _label: string;         // Either 'Map Preview' or 'Minimap' depending on whether it's part of the New Game screen or the Sidebar
+    _w: number;                     // Use default value of 256 width for now
+    _h: number;                     // Use default value of 128 height for now
+    _label: string;                 // Either 'Map Preview' or 'Minimap' depending on whether it's part of the New Game screen or the Sidebar
     _terrain: number[];
-    _columnsPerPixel: number; // Width in pixels to display for each map column
+    _columnsPerPixel: number;       // Width in pixels to display for each map column
+    _currentScreenWidth: number;    // Width in pixels of the box representing the current slice of the map being shown in the world area
+    _currentScreenPosition: number; // Left edge of the current screen box (only for in-game display; not needed for pre-game map preview)
 
     constructor(x: number, y: number, label: string) {
         this._x = x;
@@ -18,8 +20,10 @@ export default class Minimap {
         this._w = 256;
         this._h = 128;
         this._label = label;
-        this._terrain = [];         // Wait for terrain data to be loaded by the setup method
-        this._columnsPerPixel = 1;    // Default value of 1 pixel per map column
+        this._terrain = [];                 // Wait for terrain data to be loaded by the setup method
+        this._columnsPerPixel = 1;          // Default value of 1 pixel per map column
+        this._currentScreenWidth = 16;      // Default placeholder value
+        this._currentScreenPosition = 0;    // Default to right edge of the map
     }
 
     // Takes the map terrain data from the NewGameSetup / Map component and converts it to a topography-like list of elevation numbers
@@ -31,10 +35,13 @@ export default class Minimap {
         this.determineDisplayWidth();
     }
 
-    // Determines how many lines to render (or skip) based on the map's width
+    // Determines how many lines to render (or skip) based on the map's width, and how wide the 'current screen' box shall be
     determineDisplayWidth = () => {
         this._columnsPerPixel = this._terrain.length / this._w;
-        console.log(`Map display ratio: ${this._columnsPerPixel}`)
+        const screenWidthInColumns = (constants.SCREEN_WIDTH - constants.SIDEBAR_WIDTH) / constants.BLOCK_WIDTH;
+        this._currentScreenWidth = Math.floor(screenWidthInColumns * (1 / this._columnsPerPixel));  // Needs to be an integer
+        console.log(this._columnsPerPixel);
+        console.log(this._currentScreenWidth);
     }
 
     // Used to update terrain / infra displays after the game has started

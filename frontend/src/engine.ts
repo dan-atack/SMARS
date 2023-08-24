@@ -169,8 +169,7 @@ export default class Engine extends View {
         this.selectedBuilding = null;
         this.updateSidebarGamespeedButtons();   // Ensure sidebar gamespeed buttons always show the right value
         this.setSidebarSelectedButton();   // Ensure sidebar mouse context buttons are correct
-        this._sidebar._detailsArea._minimap.setup(this._map._mapData);
-        // Sidebar minimap display - does it only need it during 'setup' or does it also need occasional updates?
+        // Sidebar minimap display is set up by both the new game and saved game setup functions once the map data is loaded... not very dry!
     }
 
     setupNewGame = (gameData: GameData) => {

@@ -3583,7 +3583,7 @@ Rapid change number three involves making the Minimap functional. Currently, the
 
 Exit Criteria:
 
-- The Minimap should show the entire map's topography
+- [DONE] The Minimap should show the entire map's topography
 - The Minimap should show a box, representing the current screen, superimposed over the map to let the player know where they are
 - The player can click on the minimap to adjust their current screen's location without scrolling
 
@@ -3597,13 +3597,25 @@ Exit Criteria:
 
 5. Update the Minimap's render method to make a series of lines instead of rectangles to depict the map's terrain, and ensure that the terrain stretches across the entire width of the minimap display area.
 
-### 6. Consider how to render maps of different widths; we want the minimap to always stretch across its entire display area, and to always show the entire map, regardless of its width. Add a simple but extremely wide map (512 columns) to the Dev environment to test this functionality, and load some legacy saves too to see that it works for smaller maps as well (not that we'll be making any more of those, but it's still important to support our legacy data, and to allow the possibility of making new maps of any size in the future).
+6. Consider how to render maps of different widths; we want the minimap to always stretch across its entire display area, and to always show the entire map, regardless of its width. Add a simple but extremely wide map (512 columns) to the Dev environment to test this functionality, and load some legacy saves too to see that it works for smaller maps as well (not that we'll be making any more of those, but it's still important to support our legacy data, and to allow the possibility of making new maps of any size in the future).
+
+### 7. Using the columnsPerPixel value, render an empty rectangle over the minimap, whose width compared to the minimap display is proportional to the screen's width relative to the entire map.
+
+### 8. Add logic to the minimap's render method to prevent it from showing the 'current screen' box if it's on the SetupNewGame screen.
 
 ### 7. Add a new Minimap method, called updateScreenPosition, which will be called by the Engine's scroll handler whenever the player scrolls past a column. Start by having it print the numbers of the grid reference for both edges of the screen (rounded down to the nearest integer if the screen's edge is not exactly flush with the terrain grid).
 
-### 8. Render an empty rectangle over the minimap, whose width compared to the minimap display is proportional to the screen's width relative to the entire map.
+### 8. Add a new field to the Minimap class called screenPosition, which will have as its value the index number of the leftmost map column that is fully visible on the main screen. Use this value to determine the position of the 'current screen' rectangle, and link it to the updateScreenPosition method to allow Engine scrolling to move it around. The result of this work should be an accurate location indicator for the Minimap.
 
-### 99. Update the constants file's version and/or year for the new release.
+### 9. Now for the fun bit: Add new logic to the Engine's mouse-click handler to detect clicks on the Minimap, and to determine, from the click's location on the Minimap terrain, what the new horizontal offset value for the Engine should be. Create a new Minimap function to work this out, and for goodness' sake add a unit test before doing the full implementation!
+
+### 10. Once that's all done, and the feature is validated both by unit tests and in-game, spend a few more moments to tweak the aesthetics of this new system, and also play around with it extensively to try and "break" the new feature by using it in unexpected ways.
+
+### 11. Remove all the console logs associated with this chapter, as well as the previous chapter (the mining system improvements) since they are currently showing in the production environment! D'oh!
+
+### 12. Final thing, and this has nothing to do with the current issue but we're sticking it in here anyway, update the docker-compose file to use a fixed version of MongoDB instead of always taking the latest image. This will help with the game's long-term stability, even if the effects are not felt immediately.
+
+### 99. Update the constants file's version and/or year for the new release, and then go through the (now rather cumbersome) tasks associated with updating the game's production environment. This time, skip straight to the delete/replace strategy instead of attempting to perform the update in-situ on the current machine. How many more chapters before we get to the DevOps revival stuff??
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
