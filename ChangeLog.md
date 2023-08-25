@@ -3654,7 +3654,15 @@ Exit Criteria:
 
 5. Add a new MouseShadow cursor for the new mouse context, which will be a little image of a bulldozer to represent terrain being removed.
 
-### 6. Add a new click response handler to the Engine, to be called when a click is registered while in removeTerrain mode.
+6. Add a new click response handler to the Engine, to be called when a click is registered while in removeTerrain mode.
+
+### 7. Now start adding the validation checks for a block's removal, starting with the Map class. The Engine will call the Map's checkForBlockRemoval method, which will check for the existence of a Block at the given coordinates, check if its altitude is permissible, and finally, check if the block's removal would create a height gap of more than 2 blocks with either of the adjacent columns. Needless to say, create a unit test for this method before implementing. Also, add the 'bedrock height' as a Map property so it can be adjusted easily, should the need arise. Also make this check call the isBlockOnSurface method, since only blocks at the map's surface can be removed.
+
+### 8. Next, create the block removal check for the Infrastructure class; basically just ensure that there is no structure at the block's X coordinate by checking it against the Map data class's baseVolume column to see if there is anything there. Since structures cannot be placed below ground, the presence of any module at that coordinate implies that there is a module ABOVE the block being targeted, and thus the excavation should not be allowed to proceed. Add a quick unit test for this method to ensure there are no surprises when everything is put together.
+
+### 9. The last check will be with the Population class, and it will be simply to see that there are no colonists within, say, 2 columns of the block being removed. This ensures that removing a block can never be removed from under a colonist's feet, or from a column that a colonist is just about to walk into. Unit test this method as well.
+
+### 10. Put all of the sub-components' checks together in the Engine's handleExcavate method, and test it out as a whole in-game since we are not presently able to unit-test the Engine's methods directly. Once satisfied, move on to the implementation of the removal process.
 
 ### 98. Add a restriction to the creation of a mining zone so that blocks with a resource value of 0 are not permitted. Create a notification if the player tries to mine a useless tile.
 

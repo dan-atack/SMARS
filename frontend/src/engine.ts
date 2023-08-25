@@ -370,6 +370,7 @@ export default class Engine extends View {
                         this.handleDemolish(coords);
                         break;
                     case "excavate":
+                        this.handleExcavate(coords);
                         break;
                     case "inspect":
                         this.handleInspect(coords);
@@ -419,12 +420,26 @@ export default class Engine extends View {
         if (this._mouseShadowContextOptions.includes(this.mouseContext)) {
             this.createCustomMouseShadow(this.mouseContext);
         }
+        this.setSidebarSelectedButton();
     }
 
     // Handler for when the mouse button is being held down (not currently in use)
     handleMouseDown = (mouseX: number, mouseY: number) => {
         // TODO: Add rules for something that starts the minute the mouse is pressed
         // Add rules for what to do when the mouse is released to handleClicks (the method right above this one)
+    }
+
+    // Used for placing buildings and anything else that needs to 'snap to' the grid (returns values in grid locations)
+    getMouseGridPosition = (mouseX: number, mouseY: number) => {
+        // Calculate X position with the offset included to prevent wonkiness
+        const mouseGridX = Math.floor((mouseX + this._horizontalOffset) / constants.BLOCK_WIDTH)
+        const mouseGridY = Math.floor(mouseY / constants.BLOCK_WIDTH)
+        // const horizontalOffGridValue = Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH);
+        const gridX = mouseGridX;
+        const gridY = mouseGridY;
+        // TODO: ADD vertical offset calculation
+        // Return coordinates as a tuple:
+        return [gridX, gridY];
     }
 
     handleMouseScroll = () => {
@@ -538,30 +553,6 @@ export default class Engine extends View {
         }
     }
 
-    // MOUSE SHADOW CREATION
-
-    // Creates the mouse shadows for modules/connectors
-    createMouseShadow = () => {
-        const w = this.selectedBuilding?.width || constants.BLOCK_WIDTH;
-        let h = this.selectedBuilding?.width || constants.BLOCK_WIDTH;
-        // If structure is a module, find its height parameter; otherwise just use its width twice
-        if (this.selectedBuilding != null && this._infrastructure._data.isModule(this.selectedBuilding)) {
-            h = this.selectedBuilding.height;
-        }
-        this._mouseShadow = new MouseShadow(w, h);
-    }
-
-    // Create the mouse shadows for the various other mouse contexts
-    createCustomMouseShadow = (type: string) => {
-        this._mouseShadow = new MouseShadow(1, 1, type);
-    }
-
-    // NOTE: When adding a new type of mouse shadow/context, be sure to also add it to the Engine's render block AND renderMouseShadow method
-
-    destroyMouseShadow = () => {
-        this._mouseShadow = null;
-    }
-
     // Ensures that the sidebar buttons for 'inspect' or 'resource' are always highlighted appropriately
     setSidebarSelectedButton = () => {
         switch (this.mouseContext) {
@@ -578,19 +569,6 @@ export default class Engine extends View {
                 this._sidebar.setSelectedButton(8);
                 break;
         }
-    }
-
-    // Used for placing buildings and anything else that needs to 'snap to' the grid (returns values in grid locations)
-    getMouseGridPosition = (mouseX: number, mouseY: number) => {
-        // Calculate X position with the offset included to prevent wonkiness
-        const mouseGridX = Math.floor((mouseX + this._horizontalOffset) / constants.BLOCK_WIDTH)
-        const mouseGridY = Math.floor(mouseY / constants.BLOCK_WIDTH)
-        // const horizontalOffGridValue = Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH);
-        const gridX = mouseGridX;
-        const gridY = mouseGridY;
-        // TODO: ADD vertical offset calculation
-        // Return coordinates as a tuple:
-        return [gridX, gridY];
     }
 
     // Takes the mouse coordinates and looks for an in-game entity at that location
@@ -654,6 +632,30 @@ export default class Engine extends View {
 
     handleExcavate = (coords: Coords) => {
         console.log(`Removing block at (${coords.x}, ${coords.y})`);
+    }
+
+    // MOUSE SHADOW CREATION
+
+    // Creates the mouse shadows for modules/connectors
+    createMouseShadow = () => {
+        const w = this.selectedBuilding?.width || constants.BLOCK_WIDTH;
+        let h = this.selectedBuilding?.width || constants.BLOCK_WIDTH;
+        // If structure is a module, find its height parameter; otherwise just use its width twice
+        if (this.selectedBuilding != null && this._infrastructure._data.isModule(this.selectedBuilding)) {
+            h = this.selectedBuilding.height;
+        }
+        this._mouseShadow = new MouseShadow(w, h);
+    }
+
+    // Create the mouse shadows for the various other mouse contexts
+    createCustomMouseShadow = (type: string) => {
+        this._mouseShadow = new MouseShadow(1, 1, type);
+    }
+
+    // NOTE: When adding a new type of mouse shadow/context, be sure to also add it to the Engine's render block AND renderMouseShadow method
+
+    destroyMouseShadow = () => {
+        this._mouseShadow = null;
     }
 
     //// STRUCTURE PLACEMENT METHODS ////

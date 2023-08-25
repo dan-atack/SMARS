@@ -175,7 +175,6 @@ export default class MouseShadow {
         p5.quad(x + 20, y + 4, x + 28, y - 12, x + 44, y - 12, x + 52, y + 4);  // Body
         p5.fill(0);
         p5.rect(x + 16, y, 40, 12, 4, 4, 4, 4);                                 // Treads
-        p5.stroke(constants.GRAY_LIGHTISH);
         p5.fill(constants.GRAY_LIGHT);
         p5.line(x + 6, y - 4, x + 24, y - 6);                                      // Arm
         p5.ellipse(x + 24, y + 6, 6);                                           // Wheels
