@@ -632,6 +632,18 @@ export default class Engine extends View {
 
     handleExcavate = (coords: Coords) => {
         console.log(`Removing block at (${coords.x}, ${coords.y})`);
+        console.log(this._map.isBlockRemovable(coords));
+        // Check map first to see if there is a block, and its removal is acceptable - return the block's data from the map check method
+        // If a block is returned, use its hp to see if the player has enough money
+        // Then check infra
+        // Then check population
+        // If any conditions fail, cancel excavation and notify the player
+        // If all good, proceed with the removal:
+        // Subtract money
+        // Remove block from map
+        // Update Industry class mining zones
+        // Tell colonists to change their plans
+        // Notify of success
     }
 
     // MOUSE SHADOW CREATION

@@ -3664,6 +3664,10 @@ Exit Criteria:
 
 ### 10. Put all of the sub-components' checks together in the Engine's handleExcavate method, and test it out as a whole in-game since we are not presently able to unit-test the Engine's methods directly. Once satisfied, move on to the implementation of the removal process.
 
+### 96. Add a notification for when the excavate action fails.
+
+### 97. Add a notification for when the excavate action succeeds.
+
 ### 98. Add a restriction to the creation of a mining zone so that blocks with a resource value of 0 are not permitted. Create a notification if the player tries to mine a useless tile.
 
 ### 99. Update the constants file's version and/or year for the new release.

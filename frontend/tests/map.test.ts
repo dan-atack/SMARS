@@ -110,4 +110,10 @@ describe("Map", () => {
         }
     })
 
+    test("Constructor determines bedrock depth", () => {
+        expect(mapTest._bedrock).toBe(35);
+    })
+
+    
+
 })

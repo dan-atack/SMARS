@@ -16,6 +16,7 @@ export default class Map {
     _mapData: number[][];
     _horizontalOffset: number;  // Value is in pixels
     _maxOffset: number;         // Farthest scroll distance, in pixels
+    _bedrock: number;           // The highest Y value (Which we must recall is inverted) at which blocks cannot be removed (e.g. by excavating)
     _columns: Block[][];
     _topography: number[];      // A list of the y-value at the surface elevation for every column.
     _zones: MapZone[];          // List of the edge points of the various zones on the map (if there are more than 1)
@@ -26,6 +27,7 @@ export default class Map {
         this._mapData = [];     // Map data is recieved by setup function
         this._horizontalOffset = 0;
         this._maxOffset = 0;    // Determined during setup routine
+        this._bedrock = constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH - 1;    // The y altitude of the BOTTOM block level (cannot be removed)
         this._columns = [];
         this._topography = [];  // Gets filled in when the map data is loaded
         this._zones = [];       // Filled in after the topography analysis
@@ -180,6 +182,18 @@ export default class Map {
         } else {
             console.log(`Error: Provided start location (${startX}, ${startY}) is not on surface level.`);
             return false;
+        }
+    }
+
+    // Takes a set of coordinates for an attempted excavation action and checks if the block at that location can be removed - returning it if so
+    isBlockRemovable = (coords: Coords) => {
+        let msg = "";   // Prepare a notification to return if the block cannot be removed
+        const b = this.getBlockForCoords(coords);
+        if (b) {
+            return b;
+        } else {
+            msg = "Click on a block to remove it.";
+            return msg;
         }
     }
 
