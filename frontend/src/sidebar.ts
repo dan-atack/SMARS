@@ -6,7 +6,6 @@ import { constants } from "./constants";
 
 export default class Sidebar {
     // Sidebar types:
-    _p5: P5;
     _width: number;
     _height: number;
     _viewButtonWidth: number;
@@ -33,11 +32,10 @@ export default class Sidebar {
     changeView: (newView: string) => void;      // Game-level VIEW switcher (passed down from the game module)
     setMouseContext: (value: string) => void    // Changes the mouse click handler response in the Engine
     setGameSpeed: (value: string) => void;      // Changes the game speed (ticks per game minute) in Engine (string goes in switch block)
-    menuButton: Button;                 // The Main Menu button stands apart from the regular buttons list to ensure it's always rendered.
+    menuButton: Button;                         // The Main Menu button stands apart from the regular buttons list to ensure it's always rendered
     _detailsArea: DetailsArea;
 
-    constructor(p5:P5, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, setMouseContext: (value: string) => void, setGameSpeed: (value: string) => void) {
-        this._p5 = p5;
+    constructor(switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, setMouseContext: (value: string) => void, setGameSpeed: (value: string) => void, setHorizontalOffset: (x: number) => void) {
         this._width = constants.SIDEBAR_WIDTH // Just over one quarter of the screen is given to the sidebar
         this._height = constants.SCREEN_HEIGHT
         this._position = constants.SCREEN_WIDTH - this._width;
@@ -65,7 +63,7 @@ export default class Sidebar {
         this.setMouseContext = setMouseContext;
         this.setGameSpeed = setGameSpeed;
         this.menuButton = new Button("Menu", constants.SCREEN_WIDTH - 88, 16, this.handleMenuButton, 76, 64, constants.GREEN_TERMINAL, constants.ALMOST_BLACK, 24);
-        this._detailsArea = new DetailsArea(p5, this.setBuildOptionsOpen, setMouseContext);  // OR ThIS.SetMouseContex?
+        this._detailsArea = new DetailsArea(this.setBuildOptionsOpen, setMouseContext, setHorizontalOffset);  // OR ThIS.SetMouseContex?
     }
 
     setup = () => {
@@ -216,8 +214,7 @@ export default class Sidebar {
         this._martianDate = [date, year];
     }
 
-    renderClock = (minute: number, hour: number, clockCycle: string) => {
-        const p5 = this._p5;
+    renderClock = (p5: P5, minute: number, hour: number, clockCycle: string) => {
         // Martian Clock: Show hands of the clock at different angle as the day progresses
         p5.fill(constants.BLUE_BG);
         p5.circle(this._clockX, this._clockY, 64);
@@ -238,13 +235,12 @@ export default class Sidebar {
         p5.line(this._clockX, this._clockY, hv.x + this._clockX, hv.y + this._clockY);
     }
 
-    render = (minute: number, hour: number, clockCycle: string) => {
-        const p5 = this._p5;
+    render = (p5: P5, minute: number, hour: number, clockCycle: string) => {
         p5.strokeWeight(4);
         p5.stroke(constants.ALMOST_BLACK);
         p5.fill(constants.SIDEBAR_BG);
         p5.rect(this._position, 0, this._width, this._height);
-        this.renderClock(minute, hour, clockCycle);
+        this.renderClock(p5, minute, hour, clockCycle);
         // Weather gauge
         p5.stroke(constants.ALMOST_BLACK);
         p5.fill(constants.RED_BG);

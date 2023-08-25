@@ -15,9 +15,9 @@ import { constants } from "./constants";
 
 export default class DetailsArea {
     // Details Area types:
-    _p5: P5;
     _x: number;
     _y: number;
+    _minimapY: number;
     _yExtended: number;
     _buttonY: number;
     _width: number;
@@ -48,10 +48,10 @@ export default class DetailsArea {
     getStructureTypes: (setter: (options: string[]) => void, category: string) => void;   // Server function to fetch lists for building types
     getStructures: (setter: (options: ModuleInfo[] | ConnectorInfo[]) => void, category: string, type: string) => void
 
-    constructor(p5: P5, setOpen: (status: boolean) => void, setMouseContext: (value: string) => void) {
-        this._p5 = p5;
+    constructor(setOpen: (status: boolean) => void, setMouseContext: (value: string) => void, setHorizontalOffset: (x: number) => void) {
         this._x = constants.SCREEN_WIDTH - constants.SIDEBAR_WIDTH + 4;
         this._y = 432;
+        this._minimapY = this._y + 256;
         this._yExtended = 124;
         this._buttonY = 240;
         this._width = constants.SIDEBAR_WIDTH - 8;
@@ -73,7 +73,7 @@ export default class DetailsArea {
         this._optionButtons = [];
         this._backButton = new Button("BACK", this._x, this._buttonY + 4 * this._buttonMargin, this.handleBack, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG);
         this._inspectDisplay = new InspectDisplay(this._x, this._y);
-        this._minimap = new Minimap(p5, this._x + 24, this._y + 256, []);
+        this._minimap = new Minimap(this._x + 8, this._minimapY, "Minimap", setHorizontalOffset);
         this._inspectData = false;      // By default there is no inspect data to display
         this.setOpen = setOpen;
         this.setMouseContext = setMouseContext;
@@ -101,6 +101,8 @@ export default class DetailsArea {
             }
         } else if (this._inspectData) {     // Alternately, if the Inspect Display is open, activate its click handler
             this._inspectDisplay.handleClicks(mouseX, mouseY);
+        } else if (mouseY >= this._minimapY - 128) {                            // Otherwise, check if it's a click on the Minimap
+            this._minimap.handleClick(mouseX);          // Currently, only the horizontal value is required by the Minimap
         }
     }
 
@@ -262,10 +264,7 @@ export default class DetailsArea {
     // RENDERING ZONE
 
     renderMinimap = (p5: P5) => {
-        p5.fill(constants.GREEN_TERMINAL);
-        p5.textAlign(p5.CENTER, p5.CENTER);
-        p5.text("Minimap", this._x + (this._width / 2), this._y + 64);
-        this._minimap.render();
+        this._minimap.render(p5);
     }
 
     renderInspectDisplay = (p5: P5) => {

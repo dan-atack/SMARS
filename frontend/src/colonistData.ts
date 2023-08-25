@@ -341,10 +341,9 @@ export default class ColonistData {
                         const depot = infra.findStorageModule(output);
                         if (depot) {
                             const added = depot.addResource(output);      // Add new resources
-                            console.log(`Mining ${block?._blockData.name} added ${added} ${output[0]}`);
                         } else {
                             // Warn the user about any failures to store the mined output with an in-game notification
-                            this.setMessage("module-add-resource-fail", `Warning: No storage location found for ${this._name}'s mining output!`);
+                            this.setMessage("module-add-resource-fail", `Warning: not enough storage space to contain mining output!`);
                         }
                         industry.updateMiningLocationStatus("water", this._currentAction.coords, false);    // Punch out
                         industry.updateJobsForRole(infra, this._currentAction.type);                // Renew miner jobs

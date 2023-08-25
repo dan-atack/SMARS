@@ -103,7 +103,7 @@ export default class Engine extends View {
         this.getModuleInfo = getOneModule;
         this.getConnectorInfo = getOneConnector;
         this.getRandomEvent = getRandomEvent;
-        this._sidebar = new Sidebar(p5, this.switchScreen, this.changeView, this.setMouseContext, this.setGameSpeed);
+        this._sidebar = new Sidebar(this.switchScreen, this.changeView, this.setMouseContext, this.setGameSpeed, this.setHorizontalOffset);
         this._sidebarExtended = true;   // Side bar can be partially hidden to expand map view - should this be here or in the SB itself??
         this._gameData = null;
         this._saveInfo = null;  // Saved game info is loaded from the Game module when it calls the setupSavedGame method
@@ -169,8 +169,7 @@ export default class Engine extends View {
         this.selectedBuilding = null;
         this.updateSidebarGamespeedButtons();   // Ensure sidebar gamespeed buttons always show the right value
         this.setSidebarSelectedButton();   // Ensure sidebar mouse context buttons are correct
-        this._sidebar._detailsArea._minimap.updateTerrain(this._map._mapData);
-        // Sidebar minimap display - does it only need it during 'setup' or does it also need occasional updates?
+        // Sidebar minimap display is set up by both the new game and saved game setup functions once the map data is loaded... not very dry!
     }
 
     setupNewGame = (gameData: GameData) => {
@@ -179,6 +178,7 @@ export default class Engine extends View {
         this._randomEventsEnabled = gameData.randomEvents;
         this._mapType = gameData.mapType;
         this._map.setup(this._gameData.mapTerrain);
+        this._sidebar._detailsArea._minimap.setup(this._map._mapData);
         this._economy._data.addMoney(this._gameData.startingResources[0][1]);
         this._horizontalOffset = this._map._maxOffset / 2;   // Put player in the middle of the map to start out
         this._infrastructure.setup(this._map._mapData.length);
@@ -196,6 +196,16 @@ export default class Engine extends View {
         this._randomEventsEnabled = saveInfo.random_events;
         this._mapType = saveInfo.map_type;
         this._map.setup(this._saveInfo.terrain);
+        // Get coordinates of the landing site for the Minimap to display
+        const landingSite = saveInfo.modules.find((mod) => mod.name === "Comms Antenna");
+        let lzCoords: Coords = { x: 0, y: 0 };
+        if (landingSite) {
+            lzCoords.x = landingSite.x + 4;     // Use the coordinate point for the middle of the structure
+            lzCoords.y = landingSite.y;
+        } else {
+            console.log(`ERROR: Landing site data not found for save file ${saveInfo.game_name}`);
+        }
+        this._sidebar._detailsArea._minimap.setup(this._map._mapData, lzCoords);
         // TODO: Extract the map expansion/sidebar pop-up (and the reverse) into a separate method
         this._map.setExpanded(false);   // Map starts in 'expanded' mode by default, so it must tell it the sidebar is open
         this._economy._data.addMoney(saveInfo.resources[0][1]); // Reload money from save data
@@ -440,12 +450,18 @@ export default class Engine extends View {
             this._mouseInScrollRange > this._fastScrollThreshold ? this._horizontalOffset += 4 : this._horizontalOffset++;
             this._horizontalOffset = Math.min(this._horizontalOffset, this._map._maxOffset);   // Ensure scroll does not go too far right
         }
+        this._sidebar._detailsArea._minimap.updateScreenPosition(this._horizontalOffset); // Finally, update the minimap's current screen position
     }
 
     stopScrolling = () => {
         this._mouseInScrollRange = 0;
         this._scrollingLeft = false;
         this._scrollingRight = false;
+    }
+
+    // Used by the Minimap to set a new value so the user can view any map location without having to scroll
+    setHorizontalOffset = (x: number) => {
+        this._horizontalOffset = x;
     }
 
     // MOUSE SHADOW CREATION
@@ -751,6 +767,7 @@ export default class Engine extends View {
         this._animation = null;         // Delete the animation when it's finished
         this._map.setExpanded(false);
         this._hasLanded = true;
+        this._sidebar._detailsArea._minimap.setLandingSite({ x: this._landingSiteCoords[0] + 4, y: this._landingSiteCoords[1] - 12 });   // Take coords for the middle of the structure
         this.placeInitialStructures();
         this._notifications.expireCurrentClickResponse();
         this._notifications.expireCurrentDisplayPopup();
@@ -1372,7 +1389,7 @@ export default class Engine extends View {
         this.handleMouseScroll();   // Every frame, check for mouse scrolling
         // Don't render sidebar until the player has chosen a landing site
         if (this._hasLanded) {
-            this._sidebar.render(this._gameTime.minute, this._gameTime.hour, this._gameTime.cycle);
+            this._sidebar.render(this._p5, this._gameTime.minute, this._gameTime.hour, this._gameTime.cycle);
         }
         // If rendering a special mouse cursor, do it after rendering everything else
         if (this.mouseContext === "inspect" || this.mouseContext === "resource" || this.mouseContext === "demolish") {

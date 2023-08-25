@@ -59,7 +59,7 @@ export default class NewGameSetup extends Screen {
         this._randomWidth = 192;
         this._randomHeight = 64;
         this._mapTerrain = [];       // Fills in with return from a fetch in the setup method
-        this.minimap = new Minimap(p5, 800, 420, this._mapTerrain);
+        this.minimap = new Minimap(800, 420, "Map Preview");
         this.gameData = {   // To export to the Game once data has been selected
             difficulty: "",
             mapType: "",
@@ -295,7 +295,7 @@ export default class NewGameSetup extends Screen {
 
     setTerrain = (terrain: number[][]) => {
         this._mapTerrain = terrain;
-        this.minimap.updateTerrain(terrain);
+        this.minimap.setup(terrain);
     }
 
     // Set up the description bullet points separately so as to not totally clutter the render method
@@ -368,7 +368,6 @@ export default class NewGameSetup extends Screen {
         p5.text("Game Details:", this._mapTypePositionX + 368, this._mapTypePositionY - 24);
         // Green (Descriptive) text:
         p5.fill(constants.GREEN_TERMINAL);
-        p5.text("Map Preview", 924, 240);
         // Render unselected buttons FIRST, so that the selected ones' glowing borders are always fully visible:
         this._buttons.forEach((button) => {
             if (!button._selected) {
@@ -380,10 +379,10 @@ export default class NewGameSetup extends Screen {
                 button.render(p5);
             }
         })
-        // Minimap
-        this.minimap.render();
         // Game details:
         this.renderDescription();
+        // Minimap
+        this.minimap.render(p5);
     }
 
     cleanup = () => {

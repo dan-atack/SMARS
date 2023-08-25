@@ -27,7 +27,7 @@ export default class Notifications {
         this._queue = [];
         this._currentDisplayPopup = null;
         this._currentClickResponse = null;
-        this._maxMessageAge = 180;              // Keep messages in the backlog for up to 3 hours before deleting
+        this._maxMessageAge = 120;              // Keep messages in the backlog for up to 2 hours before deleting
     }
 
     // SECTION 1 - UPDATER METHOD AND BACKLOG MANAGEMENT
@@ -167,7 +167,7 @@ export default class Notifications {
                 case "event-subtract-resource-fail":
                 case "module-resource-missing":
                 case "module-add-resource-fail":
-                    duration = 500;
+                    duration = 400;
                 case "general-advice-tip":
                     duration = 900;
                 case "colonist-falling":

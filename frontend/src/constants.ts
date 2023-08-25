@@ -11,7 +11,7 @@ const httpsPort = process.env.HTTPS_PORT as string || "443";
 export const constants = {
     // Game copyright and version info for display on login screen
     RELEASE_YEAR: "2023",
-    RELEASE_VERSION: "1.0.5",
+    RELEASE_VERSION: "1.0.6",
     // Backend connection: HTTP in dev environment, or HTTPS in staging/production??
     URL_PREFIX: environment === "local_dev" ? `http://${serverName}:${serverPort}/api` : `https://${serverName}:${httpsPort}/api`,
     // Units of measurement, in pixels
@@ -57,6 +57,7 @@ export const constants = {
     BLUE_SUNSET: "#050094",
     GREEN_LEAVES: "#049426",
     GREEN_TERMINAL: "#0FFF13",
+    GREEN_MINIMAP: "#20BD23",
     GREEN_MODULE: "#22B14C",
     GREEN_DARKISH: "#054F07",
     GREEN_DARK: "#023803",
