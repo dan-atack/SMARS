@@ -196,7 +196,16 @@ export default class Engine extends View {
         this._randomEventsEnabled = saveInfo.random_events;
         this._mapType = saveInfo.map_type;
         this._map.setup(this._saveInfo.terrain);
-        this._sidebar._detailsArea._minimap.setup(this._map._mapData);
+        // Get coordinates of the landing site for the Minimap to display
+        const landingSite = saveInfo.modules.find((mod) => mod.name === "Comms Antenna");
+        let lzCoords: Coords = { x: 0, y: 0 };
+        if (landingSite) {
+            lzCoords.x = landingSite.x + 4;     // Use the coordinate point for the middle of the structure
+            lzCoords.y = landingSite.y;
+        } else {
+            console.log(`ERROR: Landing site data not found for save file ${saveInfo.game_name}`);
+        }
+        this._sidebar._detailsArea._minimap.setup(this._map._mapData, lzCoords);
         // TODO: Extract the map expansion/sidebar pop-up (and the reverse) into a separate method
         this._map.setExpanded(false);   // Map starts in 'expanded' mode by default, so it must tell it the sidebar is open
         this._economy._data.addMoney(saveInfo.resources[0][1]); // Reload money from save data
@@ -758,6 +767,7 @@ export default class Engine extends View {
         this._animation = null;         // Delete the animation when it's finished
         this._map.setExpanded(false);
         this._hasLanded = true;
+        this._sidebar._detailsArea._minimap.setLandingSite({ x: this._landingSiteCoords[0] + 4, y: this._landingSiteCoords[1] - 12 });   // Take coords for the middle of the structure
         this.placeInitialStructures();
         this._notifications.expireCurrentClickResponse();
         this._notifications.expireCurrentDisplayPopup();

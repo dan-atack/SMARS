@@ -3609,11 +3609,11 @@ Exit Criteria:
 
 11. Now for the fun bit: Add new logic to the Engine's mouse-click handler to detect clicks on the Minimap, and to determine, from the click's location on the Minimap terrain, what the new horizontal offset value for the Engine should be. Create a new Minimap function to work this out, and for goodness' sake add a unit test before doing the full implementation!
 
-### 10. Once that's all done, and the feature is validated both by unit tests and in-game, spend a few more moments to tweak the aesthetics of this new system, and also play around with it extensively to try and "break" the new feature by using it in unexpected ways.
+12. Once that's all done, and the feature is validated both by unit tests and in-game, spend a few more moments to tweak the aesthetics of this new system, and also play around with it extensively to try and "break" the new feature by using it in unexpected ways.
 
-### 11. Lastly, add a small blue circle, of a fixed size, to represent the location of the base's landing site to the in-game version of the map (this can be stored by the Minimap component as a Coordinates pair or a null value, and then rendered at the coordinates if they exist). Make sure it appears 'under' the current screen box in the render order.
+13. Lastly, add a small yellow circle, of a fixed size, to represent the location of the base's landing site (this can be stored by the Minimap component as a Coordinates pair or a null value, and then rendered at the coordinates if they exist). Make sure it appears 'under' the current screen box in the render order.
 
-### 11. Remove all the console logs associated with this chapter, as well as the previous chapter (the mining system improvements) since they are currently showing in the production environment! D'oh!
+14. Remove all the console logs associated with this chapter, as well as the previous chapter (the mining system improvements) since they are currently showing in the production environment! D'oh!
 
 ### 12. Final thing, and this has nothing to do with the current issue but we're sticking it in here anyway, update the docker-compose file to use a fixed version of MongoDB instead of always taking the latest image. This will help with the game's long-term stability, even if the effects are not felt immediately.
 
