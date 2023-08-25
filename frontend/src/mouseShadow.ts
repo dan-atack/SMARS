@@ -166,6 +166,26 @@ export default class MouseShadow {
         p5.line(x2, y1, x1, y2);
     }
 
+    renderBulldozer = (p5: P5) => {
+        // Have the front of the dozer's scoop coincide with the mouse cursor
+        const x = this._x - this._xOffset + 12;
+        const y = this._y + 8;
+        p5.stroke(constants.YELLOW_BG);
+        p5.fill(constants.YELLOW_TEXT);
+        p5.quad(x + 20, y + 4, x + 28, y - 12, x + 44, y - 12, x + 52, y + 4);  // Body
+        p5.fill(0);
+        p5.rect(x + 16, y, 40, 12, 4, 4, 4, 4);                                 // Treads
+        p5.stroke(constants.GRAY_LIGHTISH);
+        p5.fill(constants.GRAY_LIGHT);
+        p5.line(x + 6, y - 4, x + 24, y - 6);                                      // Arm
+        p5.ellipse(x + 24, y + 6, 6);                                           // Wheels
+        p5.ellipse(x + 36, y + 6, 6);
+        p5.ellipse(x + 48, y + 6, 6);
+        p5.fill(constants.GRAY_MEDIUM);
+        
+        p5.arc(x, y, 36, 24, 7 * 3.14 / 4, 3 * 3.14 / 4, "chord");              // Scoop
+    }
+
     render = (p5: P5, x: number, y: number, xOffset: number) => {
         this._xOffset = xOffset;
         p5.fill(this._color);
@@ -196,6 +216,9 @@ export default class MouseShadow {
                 break;
             case "demolish":
                 this.renderDemolitionMode(p5);
+                break;
+            case "excavate": 
+                this.renderBulldozer(p5);
                 break;
             default:
                 p5.rect(this._x - this._xOffset, this._y, this._w, this._h);        // Show a rectangle if no context is given

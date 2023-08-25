@@ -49,7 +49,7 @@ export default class Engine extends View {
     _animation: Lander | DropPod | null;    // This field holds the current entity being used to control animations, if there is one
     _mouseShadow: MouseShadow | null;       // This field will hold a mouse shadow entity if a building is being placed
     _sky: Sky;                              // The animations component for the sky, including sunlight levels and atmospheric effects
-    // Map scrolling control
+    // Map scrolling control / mouse shadow options
     _horizontalOffset: number;  // This will be used to offset all elements in the game's world, starting with the map
     _scrollDistance: number;    // Pixels from the edge of the world area in which scrolling occurs
     _scrollingLeft: boolean;    // Flags for whether the user is currently engaged in scrolling one way or the other
@@ -57,11 +57,13 @@ export default class Engine extends View {
     _mouseInScrollRange: number // Counts how long the mouse has been within scroll range of the edge
     _scrollThreshold: number    // Determines the number of frames that must elapse before scrolling begins
     _fastScrollThreshold: number    // How many frames before fast scrolling occurs
+    _mouseShadowContextOptions: string[];        // List of the string codenames for custom mouse shadows
     // Mouse click control
     mouseContext: string;       // Mouse context tells the Engine's click handler what to do when the mouse is pressed.
     selectedBuilding: ModuleInfo | ConnectorInfo | null;    // Data storage for when the user is about to place a new structure
     selectedBuildingCategory: string    // String name of the selected building category (if any)
     inspecting: Colonist | Connector | Module | Block | null;   // Pointer to the current item being inspected, if any
+    
     // Event control
     _currentEvent: {
         type: string,       // Type aka name (e.g. colonist-landing, meteor, etc)
@@ -127,6 +129,7 @@ export default class Engine extends View {
         this._mouseInScrollRange = 0;       // Counts how many frames have passed with the mouse within scroll distance of the edge
         this._scrollThreshold = 10;         // Controls the number of frames that must pass before the map starts to scroll
         this._fastScrollThreshold = 60;     // Number of frames to pass before fast scroll begins
+        this._mouseShadowContextOptions = ["inspect", "resource", "demolish", "excavate"];  // ADD NEW CUSTOM MOUSE SHADOW NAMES HERE
         this.mouseContext = "inspect"       // Default mouse context allows user to select ('inspect') whatever they click on
         this.selectedBuilding = null;       // There is no building info selected by default.
         this.selectedBuildingCategory = ""; // Keep track of whether the selected building is a module or connector
@@ -396,6 +399,28 @@ export default class Engine extends View {
         }
     }
 
+    // Given to various sub-components, this dictates how the mouse will behave when clicked in different situations
+    setMouseContext = (value: string) => {
+        // TODO: Reorganize into a switch case block??
+        this.clearInspectSelection();     // Reset inspect data
+        this.mouseContext = value;
+        // Only update the selected building if the mouse context is 'placeModule' or 'connectorStart'
+        if (this.mouseContext === "placeModule" || this.mouseContext === "connectorStart") {
+            this.setSelectedBuilding(this._sidebar._detailsArea._buildingSelection);
+        } else if (this.mouseContext !== "connectorStop") {
+            // If mouse context is neither placeModule nor connectorStart nor connectorStop, no building should be selected
+            this.setSelectedBuilding(null);
+        }
+        // Ensure there is no mouse shadow if no structure is selected
+        if (this.selectedBuilding === null) {
+            this.destroyMouseShadow();
+        }
+        // Next, check if mouse context requires a custom mouse shadow, and if so create it
+        if (this._mouseShadowContextOptions.includes(this.mouseContext)) {
+            this.createCustomMouseShadow(this.mouseContext);
+        }
+    }
+
     // Handler for when the mouse button is being held down (not currently in use)
     handleMouseDown = (mouseX: number, mouseY: number) => {
         // TODO: Add rules for something that starts the minute the mouse is pressed
@@ -466,30 +491,6 @@ export default class Engine extends View {
         this._horizontalOffset = x;
     }
 
-    // MOUSE SHADOW CREATION
-
-    // Creates the mouse shadows for modules/connectors
-    createMouseShadow = () => {
-        const w = this.selectedBuilding?.width || constants.BLOCK_WIDTH;
-        let h = this.selectedBuilding?.width || constants.BLOCK_WIDTH;
-        // If structure is a module, find its height parameter; otherwise just use its width twice
-        if (this.selectedBuilding != null && this._infrastructure._data.isModule(this.selectedBuilding)) {
-            h = this.selectedBuilding.height;
-        }
-        this._mouseShadow = new MouseShadow(w, h);
-    }
-
-    // Create the mouse shadows for the various other mouse contexts
-    createCustomMouseShadow = (type: string) => {
-        this._mouseShadow = new MouseShadow(1, 1, type);
-    }
-
-    // NOTE: When adding a new type of mouse shadow/context, be sure to also add it to the Engine's render block AND renderMouseShadow method
-
-    destroyMouseShadow = () => {
-        this._mouseShadow = null;
-    }
-
     // Mouse Context Handler for 'resource'
     handleResourceZoneSelect = (coords: Coords) => {
         const b = this._map.getBlockForCoords(coords);
@@ -537,41 +538,28 @@ export default class Engine extends View {
         }
     }
 
-    // Given to various sub-components, this dictates how the mouse will behave when clicked in different situations
-    setMouseContext = (value: string) => {
-        // TODO: Reorganize into a switch case block??
-        this.clearInspectSelection();     // Reset inspect data
-        this.mouseContext = value;
-        // Only update the selected building if the mouse context is 'placeModule' or 'connectorStart'
-        if (this.mouseContext === "placeModule" || this.mouseContext === "connectorStart") {
-            this.setSelectedBuilding(this._sidebar._detailsArea._buildingSelection);
-        } else if (this.mouseContext !== "connectorStop") {
-            // If mouse context is neither placeModule nor connectorStart nor connectorStop, no building should be selected
-            this.setSelectedBuilding(null);
+    // MOUSE SHADOW CREATION
+
+    // Creates the mouse shadows for modules/connectors
+    createMouseShadow = () => {
+        const w = this.selectedBuilding?.width || constants.BLOCK_WIDTH;
+        let h = this.selectedBuilding?.width || constants.BLOCK_WIDTH;
+        // If structure is a module, find its height parameter; otherwise just use its width twice
+        if (this.selectedBuilding != null && this._infrastructure._data.isModule(this.selectedBuilding)) {
+            h = this.selectedBuilding.height;
         }
-        // Ensure there is no mouse shadow if no structure is selected
-        if (this.selectedBuilding === null) {
-            this.destroyMouseShadow();
-        }
-        // Next, check if mouse context has been set to 'resource' and show a little jackhammer if so
-        if (this.mouseContext === "resource") {
-            this.setSidebarSelectedButton();
-            this.createCustomMouseShadow("resource");
-        }
-        // Then check for demolition mode
-        if (this.mouseContext === "demolish") {
-            this.setSidebarSelectedButton();
-            this.createCustomMouseShadow("demolish");
-        }
-        // Last, check if the mouse context has been set to 'inspect' and tell it to do the magnifying glass image if so
-        if (this.mouseContext === "inspect") {
-            this.setSidebarSelectedButton();
-            this.createCustomMouseShadow("inspect");
-        }
-        if  (this.mouseContext === "excavate") {
-            this.setSidebarSelectedButton();
-            this.createCustomMouseShadow("excavate");
-        }
+        this._mouseShadow = new MouseShadow(w, h);
+    }
+
+    // Create the mouse shadows for the various other mouse contexts
+    createCustomMouseShadow = (type: string) => {
+        this._mouseShadow = new MouseShadow(1, 1, type);
+    }
+
+    // NOTE: When adding a new type of mouse shadow/context, be sure to also add it to the Engine's render block AND renderMouseShadow method
+
+    destroyMouseShadow = () => {
+        this._mouseShadow = null;
     }
 
     // Ensures that the sidebar buttons for 'inspect' or 'resource' are always highlighted appropriately
@@ -582,6 +570,12 @@ export default class Engine extends View {
                 break;
             case "inspect":
                 this._sidebar.setSelectedButton(6);
+                break;
+            case "demolish":
+                this._sidebar.setSelectedButton(7);
+                break;
+            case "excavate":
+                this._sidebar.setSelectedButton(8);
                 break;
         }
     }
@@ -656,6 +650,10 @@ export default class Engine extends View {
         } else {
             this.setMouseContext("inspect");        // Revert mouse context to 'inspect' if click is not on a structure
         }
+    }
+
+    handleExcavate = (coords: Coords) => {
+        console.log(`Removing block at (${coords.x}, ${coords.y})`);
     }
 
     //// STRUCTURE PLACEMENT METHODS ////
@@ -1295,7 +1293,7 @@ export default class Engine extends View {
             this.renderBuildingShadow();
         } else if (this.mouseContext === "landing") {
             this.renderLandingPath();
-        } else if (this.mouseContext === "inspect" || this.mouseContext === "resource" || this.mouseContext === "demolish") {
+        } else if (this._mouseShadowContextOptions.includes(this.mouseContext)) {
             this.renderCustomMouseShadow();
         }
     }
@@ -1343,7 +1341,7 @@ export default class Engine extends View {
 
     // For rendering the inspect tool OR the resource tool
     renderCustomMouseShadow = () => {
-        // Only render the Inspect Tool if mouse is over the map area (not the sidebar) and there is no modal
+        // Only render mouse shadow if mouse is over the map area (not the sidebar) and there is no modal
         if (this._p5.mouseX < constants.SCREEN_WIDTH - this._sidebar._width && !this._modal && this._mouseShadow) {
             let [x, y] = this.getMouseGridPosition(this._p5.mouseX, this._p5.mouseY);
             x = x * constants.BLOCK_WIDTH;
@@ -1391,7 +1389,7 @@ export default class Engine extends View {
             this._sidebar.render(this._p5, this._gameTime.minute, this._gameTime.hour, this._gameTime.cycle);
         }
         // If rendering a special mouse cursor, do it after rendering everything else
-        if (this.mouseContext === "inspect" || this.mouseContext === "resource" || this.mouseContext === "demolish") {
+        if (this._mouseShadowContextOptions.includes(this.mouseContext)) {
             this.renderMouseShadow();
         }
         if (this._modal) {

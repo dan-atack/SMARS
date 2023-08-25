@@ -3648,11 +3648,11 @@ Exit Criteria:
 
 2. Add a new button to the Sidebar, called 'EXCAVATE' and give it a simple click handler with a console log. Also add a dummy button called 'ADD GROUND' and make it greyed out to indicate that it is not yet available.
 
-### 3. Refactor the Engine's various mouse shadow creation methods that pass a string argument to the constructor to create a custom image (like the jackhammer or the magnifying glass) into a single function that just takes a single argument - namely, that string. Call this method createCustomerMouseShadow to avoid confusing it with the regular createMouseShadow method used for construction placements. Validate in-game before proceeding.
+3. Refactor the Engine's various mouse shadow creation methods that pass a string argument to the constructor to create a custom image (like the jackhammer or the magnifying glass) into a single function that just takes a single argument - namely, that string. Call this method createCustomerMouseShadow to avoid confusing it with the regular createMouseShadow method used for construction placements. Validate in-game before proceeding.
 
 4. Add the SetMouseContext method to the RemoveTerrain button's handler, and have it set the Engine's mouse context to 'excavate'.
 
-### 5. Add a new MouseShadow cursor for the new mouse context, which will be a little image of a bulldozer to represent terrain being removed.
+5. Add a new MouseShadow cursor for the new mouse context, which will be a little image of a bulldozer to represent terrain being removed.
 
 ### 6. Add a new click response handler to the Engine, to be called when a click is registered while in removeTerrain mode.
 
