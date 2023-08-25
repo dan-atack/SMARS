@@ -104,11 +104,14 @@ export default class Notifications {
         let duration = 150; // Default duration is 150 frames (~3 seconds)
         switch (data.subject) {     // Determine message duration and colouring based on the subject line
             case "command-demolish-success":
-            case "command-module-success":
             case "command-connector-success":
-                duration = 100;
+                coords.y -= 60;
+                break;
+            case "command-module-success":
+                coords.y -= 40;
                 break;
             case "command-demolish-failure":
+                coords.y -= 60;
                 colour = "red";
                 duration = 150;
                 break;
@@ -123,10 +126,12 @@ export default class Notifications {
                 break;
             case "command-resource-invalid":
             case "command-resource-no-surface":
+            case "command-excavate-fail":
                 colour = "red";
             case "command-resource-success":
+            case "command-excavate-success":
                 coords.y -= 80;     // Move the message up to avoid obscuring the cursor for followup click attempts
-                duration = 125;
+                duration = 150;
                 break;
             default:
                 duration = 200;

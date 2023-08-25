@@ -192,7 +192,7 @@ export default class Map {
         if (b) {
             return b;
         } else {
-            msg = "Click on a block to remove it.";
+            msg = "Click on a block\nto remove it.";
             return msg;
         }
     }

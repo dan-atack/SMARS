@@ -632,7 +632,12 @@ export default class Engine extends View {
 
     handleExcavate = (coords: Coords) => {
         console.log(`Removing block at (${coords.x}, ${coords.y})`);
-        console.log(this._map.isBlockRemovable(coords));
+        const crds = { x: coords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: coords.y * constants.BLOCK_WIDTH};
+        const mapcheck = this._map.isBlockRemovable(coords);    // If check succeeds this will be a block; if not it will be a string (message)
+        if (typeof mapcheck === "string") {
+            const msg = this.createMessage("command-excavate-fail", 0, mapcheck);
+            this._notifications.createMessageFromClick(crds, msg);
+        }
         // Check map first to see if there is a block, and its removal is acceptable - return the block's data from the map check method
         // If a block is returned, use its hp to see if the player has enough money
         // Then check infra
@@ -690,6 +695,7 @@ export default class Engine extends View {
                 const affordable = this._economy._data.checkResources(this.selectedBuilding.buildCosts[0][1]);
                 const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._mapData);
                 if (clear && affordable) {
+                    crds.x += this.selectedBuilding.width * constants.BLOCK_WIDTH / 2;  // Center the message coordinates
                     this._infrastructure.addModule(x, y, this.selectedBuilding,  this._map._topography, this._map._zones,);
                     this._economy._data.subtractMoney(this.selectedBuilding.buildCosts[0][1]);
                     const message = this.createMessage("command-module-success", 0, `New ${this.selectedBuilding.name}\ninstalled`);
