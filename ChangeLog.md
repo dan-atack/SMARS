@@ -3615,9 +3615,9 @@ Exit Criteria:
 
 14. Remove all the console logs associated with this chapter, as well as the previous chapter (the mining system improvements) since they are currently showing in the production environment! D'oh!
 
-### 12. Final thing, and this has nothing to do with the current issue but we're sticking it in here anyway, update the docker-compose file to use a fixed version of MongoDB instead of always taking the latest image. This will help with the game's long-term stability, even if the effects are not felt immediately.
+15. Final thing, and this has nothing to do with the current issue but we're sticking it in here anyway, update the docker-compose file to use a fixed version of MongoDB instead of always taking the latest image. This will help with the game's long-term stability, even if the effects are not felt immediately.
 
-### 99. Update the constants file's version and/or year for the new release, and then go through the (now rather cumbersome) tasks associated with updating the game's production environment. This time, skip straight to the delete/replace strategy instead of attempting to perform the update in-situ on the current machine. How many more chapters before we get to the DevOps revival stuff??
+16. Update the constants file's version and/or year for the new release, and then go through the (now rather cumbersome) tasks associated with updating the game's production environment. This time, skip straight to the delete/replace strategy instead of attempting to perform the update in-situ on the current machine. How many more chapters before we get to the DevOps revival stuff??
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
