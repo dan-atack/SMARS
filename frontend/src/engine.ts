@@ -366,6 +366,8 @@ export default class Engine extends View {
                     case "demolish":
                         this.handleDemolish(coords);
                         break;
+                    case "excavate":
+                        break;
                     case "inspect":
                         this.handleInspect(coords);
                         break;
@@ -477,16 +479,9 @@ export default class Engine extends View {
         this._mouseShadow = new MouseShadow(w, h);
     }
 
-    createInspectToolMouseShadow = () => {
-        this._mouseShadow = new MouseShadow(1, 1, "inspect");
-    }
-
-    createDemolitionMouseShadow = () => {
-        this._mouseShadow = new MouseShadow(1, 1, "demolish");
-    }
-
-    createJackhammerMouseShadow = () => {
-        this._mouseShadow = new MouseShadow(1, 1, "resource");
+    // Create the mouse shadows for the various other mouse contexts
+    createCustomMouseShadow = (type: string) => {
+        this._mouseShadow = new MouseShadow(1, 1, type);
     }
 
     // NOTE: When adding a new type of mouse shadow/context, be sure to also add it to the Engine's render block AND renderMouseShadow method
@@ -561,17 +556,21 @@ export default class Engine extends View {
         // Next, check if mouse context has been set to 'resource' and show a little jackhammer if so
         if (this.mouseContext === "resource") {
             this.setSidebarSelectedButton();
-            this.createJackhammerMouseShadow();
+            this.createCustomMouseShadow("resource");
         }
         // Then check for demolition mode
         if (this.mouseContext === "demolish") {
             this.setSidebarSelectedButton();
-            this.createDemolitionMouseShadow();
+            this.createCustomMouseShadow("demolish");
         }
         // Last, check if the mouse context has been set to 'inspect' and tell it to do the magnifying glass image if so
         if (this.mouseContext === "inspect") {
-            this.createInspectToolMouseShadow();
             this.setSidebarSelectedButton();
+            this.createCustomMouseShadow("inspect");
+        }
+        if  (this.mouseContext === "excavate") {
+            this.setSidebarSelectedButton();
+            this.createCustomMouseShadow("excavate");
         }
     }
 

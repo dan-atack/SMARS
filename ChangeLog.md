@@ -3584,8 +3584,9 @@ Rapid change number three involves making the Minimap functional. Currently, the
 Exit Criteria:
 
 - [DONE] The Minimap should show the entire map's topography
-- The Minimap should show a box, representing the current screen, superimposed over the map to let the player know where they are
-- The player can click on the minimap to adjust their current screen's location without scrolling
+- [DONE] The Minimap should show a box, representing the current screen, superimposed over the map to let the player know where they are
+- [DONE] The player can click on the minimap to adjust their current screen's location without scrolling
+- [DONE] The Minimap will display a bright yellow dot, representing the base's initial landing site, to facilitate not getting lost
 
 1. Start by refactoring the Minimap class to not require P5 in its constructor, to be in sync with the game's modernized architecture, and to allow for the possibility of creating unit test cases for this component. Make a simple unit test file once this is completed.
 
@@ -3618,6 +3619,46 @@ Exit Criteria:
 15. Final thing, and this has nothing to do with the current issue but we're sticking it in here anyway, update the docker-compose file to use a fixed version of MongoDB instead of always taking the latest image. This will help with the game's long-term stability, even if the effects are not felt immediately.
 
 16. Update the constants file's version and/or year for the new release, and then go through the (now rather cumbersome) tasks associated with updating the game's production environment. This time, skip straight to the delete/replace strategy instead of attempting to perform the update in-situ on the current machine. How many more chapters before we get to the DevOps revival stuff??
+
+## Chapter Eight: Removing Terrain
+
+### Difficulty Estimate: 3 (For new mouse context, complete pre-removal checks and post-removal implementation plus heavy unit testing)
+
+### Date: August 24, 2023
+
+The fourth, and final mini-feature in the rapid-fire-feature-addition series, is basic terrain modification - specifically, the ability to remove individual blocks from the map. This will enhance the terraforming experience, and allow the player to start transforming their world - bending it to their will. Removing terrain will come at a financial cost, and be subject to certain limitations - namely, no undermining of any base structures, no removing a tile upon which colonist is currently standing, no creating cliffs more than 2 blocks high, and no mining below a certain depth (bedrock). Whenever a block is removed, the Industry class will check if it was being used for mining, and the Minimap's terrain model will be updated. Implementing this feature will require some adjustment to the Sidebar's layout, and the creation of a new button/click response handler to set the mouse context to terrain removal mode. We should also always consider the aesthetics, and make a nice mouse shadow of a little bulldozer to accompany the new mouse context.
+
+Exit Criteria:
+
+- Player can select 'remove terrain' mouse mode by clicking on a new button in the Sidebar
+- The 'remove terrain' mouse cursor has a little bulldozer as its mouse shadow
+- When a player clicks on a block in 'remove terrain' mouse context, the block is removed:
+- - The Block is removed
+- - The Minimap is updated
+- - The Industry class's mining zones are updated
+- - Colonists intending to mine the removed tile cancel their plans
+- - The tile's HP is converted to a dollar cost, which is subtracted from the player's budget
+- Terrain can only be removed if:
+- - Block is above a certain elevation
+- - Removal does not undermine any base structures
+- - Removal does not create a cliff (i.e. a column height difference of more than 2 blocks) that the colonists cannot climb
+- - Removal cannot be too close to any colonists
+
+1. Start by reducing the size of the Sidebar's main buttons to free up space above the Minimap/Inspect display zone for new buttons (adjusting the Details Area is too cumbersome as it affects the Inspect Display area which is very crowded already... maybe when we replace the Inspect Display with a tooltip we can rethink this policy).
+
+2. Add a new button to the Sidebar, called 'EXCAVATE' and give it a simple click handler with a console log. Also add a dummy button called 'ADD GROUND' and make it greyed out to indicate that it is not yet available.
+
+### 3. Refactor the Engine's various mouse shadow creation methods that pass a string argument to the constructor to create a custom image (like the jackhammer or the magnifying glass) into a single function that just takes a single argument - namely, that string. Call this method createCustomerMouseShadow to avoid confusing it with the regular createMouseShadow method used for construction placements. Validate in-game before proceeding.
+
+4. Add the SetMouseContext method to the RemoveTerrain button's handler, and have it set the Engine's mouse context to 'excavate'.
+
+### 5. Add a new MouseShadow cursor for the new mouse context, which will be a little image of a bulldozer to represent terrain being removed.
+
+### 6. Add a new click response handler to the Engine, to be called when a click is registered while in removeTerrain mode.
+
+### 98. Add a restriction to the creation of a mining zone so that blocks with a resource value of 0 are not permitted. Create a notification if the player tries to mine a useless tile.
+
+### 99. Update the constants file's version and/or year for the new release.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
