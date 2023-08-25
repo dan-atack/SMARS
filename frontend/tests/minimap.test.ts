@@ -30,7 +30,7 @@ describe("Minimap", () => {
 
     test("handleClick returns the index number of the map column corresponding to the clicked minimap pixel", () => {
         minimap.setup(terrain);     // Load the terrain with the nice round numbers
-        const mouseX = 300;         // Minimap's X is 256 so this is 44 pixels into the map's 256 pixel width
+        const mouseX = 456;         // Minimap's X is 256 so this is 200 pixels (~ 80%) into the map's 256 pixel width
         const mouseLeft = 200;      // Representing a click that is 56 px left of the left edge - out of bounds, in other words
         const mouseRight = 600;     // Representing a click that is 88 px right of the right edge - also out of bounds
         minimap.handleClick(mouseX)

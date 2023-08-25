@@ -57,11 +57,14 @@ export default class Minimap {
 
     // Takes mouse click coordinates (which can be non-integers, btw) and sets Engine horizontal offset value - allowing click based navigation
     handleClick = (mouseX: number) => {
-        const midpoint = Math.floor(mouseX) - this._x;  // Ideally the click will be in the middle of the screen's new location
-        const screenWidth = (constants.SCREEN_WIDTH - constants.SIDEBAR_WIDTH) / constants.BLOCK_WIDTH;
+        // Assuming X will be the midpoint, calculate the column representing the left edge of the screen's new location
+        const column = Math.floor((mouseX - this._x) * this._columnsPerPixel);
+        const screenWidth = (constants.SCREEN_WIDTH - constants.SIDEBAR_WIDTH) / constants.BLOCK_WIDTH; // In terms of columns
+        const leftEdge = Math.max(column - screenWidth / 2, 0); // Still in columns; ensure left edge is not passed
+        // Convert to pixels
         const maxRight = this._terrain.length * constants.BLOCK_WIDTH - (screenWidth * constants.BLOCK_WIDTH);    // Calculate max offset in px
-        const x = midpoint - screenWidth + this._currentScreenWidth / 2;
-        const offset = Math.min(Math.max(Math.floor(x * this._columnsPerPixel) * constants.BLOCK_WIDTH, 0), maxRight);
+        const offset = Math.min(leftEdge * constants.BLOCK_WIDTH, maxRight);
+        console.log(offset);
         this.setHorizontalOffset(offset);
     }
 
