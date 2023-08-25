@@ -13,8 +13,9 @@ describe("Sidebar", () => {
     const changeView = (newView: string) => { return 0 };
     const setMouseContext = (value: string) => { return 0 };
     const setGameSpeed = (value: string) => { return 0 };
+    const setHorizontalOffset = (x: number) => { return 0 };
 
-    const sidebar = new Sidebar(switchScreen, changeView, setMouseContext, setGameSpeed);
+    const sidebar = new Sidebar(switchScreen, changeView, setMouseContext, setGameSpeed, setHorizontalOffset);
 
     test("Defines handleClicks", () => {
         expect(typeof sidebar.handleClicks).toBe("function");

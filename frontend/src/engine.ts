@@ -103,7 +103,7 @@ export default class Engine extends View {
         this.getModuleInfo = getOneModule;
         this.getConnectorInfo = getOneConnector;
         this.getRandomEvent = getRandomEvent;
-        this._sidebar = new Sidebar(this.switchScreen, this.changeView, this.setMouseContext, this.setGameSpeed);
+        this._sidebar = new Sidebar(this.switchScreen, this.changeView, this.setMouseContext, this.setGameSpeed, this.setHorizontalOffset);
         this._sidebarExtended = true;   // Side bar can be partially hidden to expand map view - should this be here or in the SB itself??
         this._gameData = null;
         this._saveInfo = null;  // Saved game info is loaded from the Game module when it calls the setupSavedGame method
@@ -441,12 +441,18 @@ export default class Engine extends View {
             this._mouseInScrollRange > this._fastScrollThreshold ? this._horizontalOffset += 4 : this._horizontalOffset++;
             this._horizontalOffset = Math.min(this._horizontalOffset, this._map._maxOffset);   // Ensure scroll does not go too far right
         }
+        this._sidebar._detailsArea._minimap.updateScreenPosition(this._horizontalOffset); // Finally, update the minimap's current screen position
     }
 
     stopScrolling = () => {
         this._mouseInScrollRange = 0;
         this._scrollingLeft = false;
         this._scrollingRight = false;
+    }
+
+    // Used by the Minimap to set a new value so the user can view any map location without having to scroll
+    setHorizontalOffset = (x: number) => {
+        this._horizontalOffset = x;
     }
 
     // MOUSE SHADOW CREATION

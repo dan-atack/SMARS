@@ -32,10 +32,10 @@ export default class Sidebar {
     changeView: (newView: string) => void;      // Game-level VIEW switcher (passed down from the game module)
     setMouseContext: (value: string) => void    // Changes the mouse click handler response in the Engine
     setGameSpeed: (value: string) => void;      // Changes the game speed (ticks per game minute) in Engine (string goes in switch block)
-    menuButton: Button;                 // The Main Menu button stands apart from the regular buttons list to ensure it's always rendered.
+    menuButton: Button;                         // The Main Menu button stands apart from the regular buttons list to ensure it's always rendered
     _detailsArea: DetailsArea;
 
-    constructor(switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, setMouseContext: (value: string) => void, setGameSpeed: (value: string) => void) {
+    constructor(switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, setMouseContext: (value: string) => void, setGameSpeed: (value: string) => void, setHorizontalOffset: (x: number) => void) {
         this._width = constants.SIDEBAR_WIDTH // Just over one quarter of the screen is given to the sidebar
         this._height = constants.SCREEN_HEIGHT
         this._position = constants.SCREEN_WIDTH - this._width;
@@ -63,7 +63,7 @@ export default class Sidebar {
         this.setMouseContext = setMouseContext;
         this.setGameSpeed = setGameSpeed;
         this.menuButton = new Button("Menu", constants.SCREEN_WIDTH - 88, 16, this.handleMenuButton, 76, 64, constants.GREEN_TERMINAL, constants.ALMOST_BLACK, 24);
-        this._detailsArea = new DetailsArea(this.setBuildOptionsOpen, setMouseContext);  // OR ThIS.SetMouseContex?
+        this._detailsArea = new DetailsArea(this.setBuildOptionsOpen, setMouseContext, setHorizontalOffset);  // OR ThIS.SetMouseContex?
     }
 
     setup = () => {

@@ -57,6 +57,7 @@ export const constants = {
     BLUE_SUNSET: "#050094",
     GREEN_LEAVES: "#049426",
     GREEN_TERMINAL: "#0FFF13",
+    GREEN_MINIMAP: "#20BD23",
     GREEN_MODULE: "#22B14C",
     GREEN_DARKISH: "#054F07",
     GREEN_DARK: "#023803",
