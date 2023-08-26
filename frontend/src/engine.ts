@@ -49,7 +49,7 @@ export default class Engine extends View {
     _animation: Lander | DropPod | null;    // This field holds the current entity being used to control animations, if there is one
     _mouseShadow: MouseShadow | null;       // This field will hold a mouse shadow entity if a building is being placed
     _sky: Sky;                              // The animations component for the sky, including sunlight levels and atmospheric effects
-    // Map scrolling control
+    // Map scrolling control / mouse shadow options
     _horizontalOffset: number;  // This will be used to offset all elements in the game's world, starting with the map
     _scrollDistance: number;    // Pixels from the edge of the world area in which scrolling occurs
     _scrollingLeft: boolean;    // Flags for whether the user is currently engaged in scrolling one way or the other
@@ -57,11 +57,13 @@ export default class Engine extends View {
     _mouseInScrollRange: number // Counts how long the mouse has been within scroll range of the edge
     _scrollThreshold: number    // Determines the number of frames that must elapse before scrolling begins
     _fastScrollThreshold: number    // How many frames before fast scrolling occurs
+    _mouseShadowContextOptions: string[];        // List of the string codenames for custom mouse shadows
     // Mouse click control
     mouseContext: string;       // Mouse context tells the Engine's click handler what to do when the mouse is pressed.
     selectedBuilding: ModuleInfo | ConnectorInfo | null;    // Data storage for when the user is about to place a new structure
     selectedBuildingCategory: string    // String name of the selected building category (if any)
     inspecting: Colonist | Connector | Module | Block | null;   // Pointer to the current item being inspected, if any
+    
     // Event control
     _currentEvent: {
         type: string,       // Type aka name (e.g. colonist-landing, meteor, etc)
@@ -127,6 +129,7 @@ export default class Engine extends View {
         this._mouseInScrollRange = 0;       // Counts how many frames have passed with the mouse within scroll distance of the edge
         this._scrollThreshold = 10;         // Controls the number of frames that must pass before the map starts to scroll
         this._fastScrollThreshold = 60;     // Number of frames to pass before fast scroll begins
+        this._mouseShadowContextOptions = ["inspect", "resource", "demolish", "excavate"];  // ADD NEW CUSTOM MOUSE SHADOW NAMES HERE
         this.mouseContext = "inspect"       // Default mouse context allows user to select ('inspect') whatever they click on
         this.selectedBuilding = null;       // There is no building info selected by default.
         this.selectedBuildingCategory = ""; // Keep track of whether the selected building is a module or connector
@@ -366,6 +369,9 @@ export default class Engine extends View {
                     case "demolish":
                         this.handleDemolish(coords);
                         break;
+                    case "excavate":
+                        this.handleExcavate(coords);
+                        break;
                     case "inspect":
                         this.handleInspect(coords);
                         break;
@@ -394,10 +400,46 @@ export default class Engine extends View {
         }
     }
 
+    // Given to various sub-components, this dictates how the mouse will behave when clicked in different situations
+    setMouseContext = (value: string) => {
+        // TODO: Reorganize into a switch case block??
+        this.clearInspectSelection();     // Reset inspect data
+        this.mouseContext = value;
+        // Only update the selected building if the mouse context is 'placeModule' or 'connectorStart'
+        if (this.mouseContext === "placeModule" || this.mouseContext === "connectorStart") {
+            this.setSelectedBuilding(this._sidebar._detailsArea._buildingSelection);
+        } else if (this.mouseContext !== "connectorStop") {
+            // If mouse context is neither placeModule nor connectorStart nor connectorStop, no building should be selected
+            this.setSelectedBuilding(null);
+        }
+        // Ensure there is no mouse shadow if no structure is selected
+        if (this.selectedBuilding === null) {
+            this.destroyMouseShadow();
+        }
+        // Next, check if mouse context requires a custom mouse shadow, and if so create it
+        if (this._mouseShadowContextOptions.includes(this.mouseContext)) {
+            this.createCustomMouseShadow(this.mouseContext);
+        }
+        this.setSidebarSelectedButton();
+    }
+
     // Handler for when the mouse button is being held down (not currently in use)
     handleMouseDown = (mouseX: number, mouseY: number) => {
         // TODO: Add rules for something that starts the minute the mouse is pressed
         // Add rules for what to do when the mouse is released to handleClicks (the method right above this one)
+    }
+
+    // Used for placing buildings and anything else that needs to 'snap to' the grid (returns values in grid locations)
+    getMouseGridPosition = (mouseX: number, mouseY: number) => {
+        // Calculate X position with the offset included to prevent wonkiness
+        const mouseGridX = Math.floor((mouseX + this._horizontalOffset) / constants.BLOCK_WIDTH)
+        const mouseGridY = Math.floor(mouseY / constants.BLOCK_WIDTH)
+        // const horizontalOffGridValue = Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH);
+        const gridX = mouseGridX;
+        const gridY = mouseGridY;
+        // TODO: ADD vertical offset calculation
+        // Return coordinates as a tuple:
+        return [gridX, gridY];
     }
 
     handleMouseScroll = () => {
@@ -464,42 +506,11 @@ export default class Engine extends View {
         this._horizontalOffset = x;
     }
 
-    // MOUSE SHADOW CREATION
-
-    // Creates the mouse shadows for modules/connectors
-    createMouseShadow = () => {
-        const w = this.selectedBuilding?.width || constants.BLOCK_WIDTH;
-        let h = this.selectedBuilding?.width || constants.BLOCK_WIDTH;
-        // If structure is a module, find its height parameter; otherwise just use its width twice
-        if (this.selectedBuilding != null && this._infrastructure._data.isModule(this.selectedBuilding)) {
-            h = this.selectedBuilding.height;
-        }
-        this._mouseShadow = new MouseShadow(w, h);
-    }
-
-    createInspectToolMouseShadow = () => {
-        this._mouseShadow = new MouseShadow(1, 1, "inspect");
-    }
-
-    createDemolitionMouseShadow = () => {
-        this._mouseShadow = new MouseShadow(1, 1, "demolish");
-    }
-
-    createJackhammerMouseShadow = () => {
-        this._mouseShadow = new MouseShadow(1, 1, "resource");
-    }
-
-    // NOTE: When adding a new type of mouse shadow/context, be sure to also add it to the Engine's render block AND renderMouseShadow method
-
-    destroyMouseShadow = () => {
-        this._mouseShadow = null;
-    }
-
     // Mouse Context Handler for 'resource'
     handleResourceZoneSelect = (coords: Coords) => {
         const b = this._map.getBlockForCoords(coords);
         const crds = { x: coords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: coords.y * constants.BLOCK_WIDTH};  // For notifications
-        if (b && this._map.isBlockOnSurface(b)) {   // Ensure block is on the surface
+        if (b && this._map.isBlockOnSurface(b) && b._blockData.yield > 0) {   // Ensure block is on the surface, and has at least some yield
             // TODO: Build this out to allow easy handling of multiple new resource types
             if (b._blockData.resource === "water") {
                 const added = this._industry.toggleMiningLocation(coords, "water"); // Push the coordinates for the mining location
@@ -517,7 +528,7 @@ export default class Engine extends View {
             }
         } else {
             // Notify the player in-game that they must select a tile on the surface
-            const message = this.createMessage("command-resource-no-surface", 0, "Click on surface tile\nto add/remove mining zone");
+            const message = this.createMessage("command-resource-no-surface", 0, `${b?._blockData.yield === 0 ? "Cannot mine here:\nSite has no resource yield" : "Click on surface tile\nto add/remove mining zone"}`);
             this._notifications.createMessageFromClick(crds, message, 16);
         }
     }
@@ -542,39 +553,6 @@ export default class Engine extends View {
         }
     }
 
-    // Given to various sub-components, this dictates how the mouse will behave when clicked in different situations
-    setMouseContext = (value: string) => {
-        // TODO: Reorganize into a switch case block??
-        this.clearInspectSelection();     // Reset inspect data
-        this.mouseContext = value;
-        // Only update the selected building if the mouse context is 'placeModule' or 'connectorStart'
-        if (this.mouseContext === "placeModule" || this.mouseContext === "connectorStart") {
-            this.setSelectedBuilding(this._sidebar._detailsArea._buildingSelection);
-        } else if (this.mouseContext !== "connectorStop") {
-            // If mouse context is neither placeModule nor connectorStart nor connectorStop, no building should be selected
-            this.setSelectedBuilding(null);
-        }
-        // Ensure there is no mouse shadow if no structure is selected
-        if (this.selectedBuilding === null) {
-            this.destroyMouseShadow();
-        }
-        // Next, check if mouse context has been set to 'resource' and show a little jackhammer if so
-        if (this.mouseContext === "resource") {
-            this.setSidebarSelectedButton();
-            this.createJackhammerMouseShadow();
-        }
-        // Then check for demolition mode
-        if (this.mouseContext === "demolish") {
-            this.setSidebarSelectedButton();
-            this.createDemolitionMouseShadow();
-        }
-        // Last, check if the mouse context has been set to 'inspect' and tell it to do the magnifying glass image if so
-        if (this.mouseContext === "inspect") {
-            this.createInspectToolMouseShadow();
-            this.setSidebarSelectedButton();
-        }
-    }
-
     // Ensures that the sidebar buttons for 'inspect' or 'resource' are always highlighted appropriately
     setSidebarSelectedButton = () => {
         switch (this.mouseContext) {
@@ -584,20 +562,13 @@ export default class Engine extends View {
             case "inspect":
                 this._sidebar.setSelectedButton(6);
                 break;
+            case "demolish":
+                this._sidebar.setSelectedButton(7);
+                break;
+            case "excavate":
+                this._sidebar.setSelectedButton(8);
+                break;
         }
-    }
-
-    // Used for placing buildings and anything else that needs to 'snap to' the grid (returns values in grid locations)
-    getMouseGridPosition = (mouseX: number, mouseY: number) => {
-        // Calculate X position with the offset included to prevent wonkiness
-        const mouseGridX = Math.floor((mouseX + this._horizontalOffset) / constants.BLOCK_WIDTH)
-        const mouseGridY = Math.floor(mouseY / constants.BLOCK_WIDTH)
-        // const horizontalOffGridValue = Math.floor(this._horizontalOffset / constants.BLOCK_WIDTH);
-        const gridX = mouseGridX;
-        const gridY = mouseGridY;
-        // TODO: ADD vertical offset calculation
-        // Return coordinates as a tuple:
-        return [gridX, gridY];
     }
 
     // Takes the mouse coordinates and looks for an in-game entity at that location
@@ -659,6 +630,60 @@ export default class Engine extends View {
         }
     }
 
+    handleExcavate = (coords: Coords) => {
+        const crds = { x: coords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: coords.y * constants.BLOCK_WIDTH};
+        const removal: Block | string = this._map.isBlockRemovable(coords);     // Can be either a Block, or a string with a failure message
+        if (typeof removal === "string") {
+            const msg = this.createMessage("command-excavate-fail", 0, removal);
+            this._notifications.createMessageFromClick(crds, msg);
+        } else if (removal) {  // If the map check was successful we will use the block's info to eliminate it
+            const costAdjustment = this._difficulty === "hard" ? 100 : this._difficulty === "easy" ? -50 : 0;    // COST DEPENDS ON DIFFICULTY!
+            const cost = removal._blockData.hp * 200 + costAdjustment;     
+            const affordable = this._economy._data.checkResources(cost);
+            const noUndermine = this._infrastructure._data._baseVolume[coords.x].length === 0;  // Check for buildings
+            const allClear = this._population.areColonistsNear(coords, 2);      // Check for nearby colonists
+            if (affordable && noUndermine && allClear) {                        // If all conditions are met, remove the block, and pay the man
+                this._economy._data.subtractMoney(cost);                        // Subtract money
+                this._map.removeBlock(removal)                                  // Remove block from map
+                this._sidebar._detailsArea._minimap.setup(this._map._mapData)   // Update Minimap
+                this._industry.removeMiningLocation(coords);                    // Update Industry class mining zones
+                this._population.resolvesGoalWhenBlockRemoved(coords);          // Tell colonists to change their plans
+                const moneyString = (cost / 100).toFixed(2);        // Notify of success and cost
+                const msg = this.createMessage("command-excavate-success", 0, `${removal._blockData.name} removed.\n-$${moneyString}`);
+                this._notifications.createMessageFromClick(crds, msg);
+            } else {
+                const msg = this.createMessage("command-excavate-fail", 0, `Cannot carry out excavation here:\n${affordable ? noUndermine ? "Too close to population" : "Undermines base structures" : "Insufficient funds available"}`);
+                this._notifications.createMessageFromClick(crds, msg);
+            }
+        }
+        // If all good, proceed with the removal:
+        
+    }
+
+    // MOUSE SHADOW CREATION
+
+    // Creates the mouse shadows for modules/connectors
+    createMouseShadow = () => {
+        const w = this.selectedBuilding?.width || constants.BLOCK_WIDTH;
+        let h = this.selectedBuilding?.width || constants.BLOCK_WIDTH;
+        // If structure is a module, find its height parameter; otherwise just use its width twice
+        if (this.selectedBuilding != null && this._infrastructure._data.isModule(this.selectedBuilding)) {
+            h = this.selectedBuilding.height;
+        }
+        this._mouseShadow = new MouseShadow(w, h);
+    }
+
+    // Create the mouse shadows for the various other mouse contexts
+    createCustomMouseShadow = (type: string) => {
+        this._mouseShadow = new MouseShadow(1, 1, type);
+    }
+
+    // NOTE: When adding a new type of mouse shadow/context, be sure to also add it to the Engine's render block AND renderMouseShadow method
+
+    destroyMouseShadow = () => {
+        this._mouseShadow = null;
+    }
+
     //// STRUCTURE PLACEMENT METHODS ////
 
     setSelectedBuilding = (selectedBuilding: ModuleInfo | ConnectorInfo | null) => {
@@ -679,9 +704,11 @@ export default class Engine extends View {
                 const affordable = this._economy._data.checkResources(this.selectedBuilding.buildCosts[0][1]);
                 const clear = this._infrastructure.checkModulePlacement(x, y, this.selectedBuilding, this._map._mapData);
                 if (clear && affordable) {
+                    crds.x += this.selectedBuilding.width * constants.BLOCK_WIDTH / 2;  // Center the message coordinates
                     this._infrastructure.addModule(x, y, this.selectedBuilding,  this._map._topography, this._map._zones,);
                     this._economy._data.subtractMoney(this.selectedBuilding.buildCosts[0][1]);
-                    const message = this.createMessage("command-module-success", 0, `New ${this.selectedBuilding.name}\ninstalled`);
+                    const moneyString = (this.selectedBuilding.buildCosts[0][1] / 100).toFixed(2);
+                    const message = this.createMessage("command-module-success", 0, `${this.selectedBuilding.name} installed.\n-$${moneyString}`);
                     this._notifications.createMessageFromClick(crds, message);
                 } else {
                     // Notify the player in-game that their placement is no good (or that they cannot afford the new module)
@@ -718,10 +745,11 @@ export default class Engine extends View {
             const stop = this._mouseShadow._connectorStopCoords;
             const clear = this._infrastructure._data.checkConnectorEndpointPlacement(stop.x, stop.y, this._map._mapData);
             if (affordable && clear) {
-                const message = this.createMessage("command-connector-success", 0, `New ${this.selectedBuilding.name}\ninstalled`);
-                this._notifications.createMessageFromClick(crds, message);  // Notify the player of the successful placement
                 this._infrastructure.addConnector(start, stop, this.selectedBuilding, this._map);
                 this._economy._data.subtractMoney(cost);
+                const moneyString = (cost / 100).toFixed(2);
+                const message = this.createMessage("command-connector-success", 0, `${this.selectedBuilding.name} installed\n-$${moneyString}`);
+                this._notifications.createMessageFromClick(crds, message);  // Notify the player of the successful placement
             } else {
                 const message = this.createMessage("command-connector-fail", 0, `Cannot place connector:\n${clear ? "Insufficient funds" : "Invalid location"}`);       // Notify the player of placement failure via in-game message
                 this._notifications.createMessageFromClick(crds, message);
@@ -1296,7 +1324,7 @@ export default class Engine extends View {
             this.renderBuildingShadow();
         } else if (this.mouseContext === "landing") {
             this.renderLandingPath();
-        } else if (this.mouseContext === "inspect" || this.mouseContext === "resource" || this.mouseContext === "demolish") {
+        } else if (this._mouseShadowContextOptions.includes(this.mouseContext)) {
             this.renderCustomMouseShadow();
         }
     }
@@ -1344,7 +1372,7 @@ export default class Engine extends View {
 
     // For rendering the inspect tool OR the resource tool
     renderCustomMouseShadow = () => {
-        // Only render the Inspect Tool if mouse is over the map area (not the sidebar) and there is no modal
+        // Only render mouse shadow if mouse is over the map area (not the sidebar) and there is no modal
         if (this._p5.mouseX < constants.SCREEN_WIDTH - this._sidebar._width && !this._modal && this._mouseShadow) {
             let [x, y] = this.getMouseGridPosition(this._p5.mouseX, this._p5.mouseY);
             x = x * constants.BLOCK_WIDTH;
@@ -1392,7 +1420,7 @@ export default class Engine extends View {
             this._sidebar.render(this._p5, this._gameTime.minute, this._gameTime.hour, this._gameTime.cycle);
         }
         // If rendering a special mouse cursor, do it after rendering everything else
-        if (this.mouseContext === "inspect" || this.mouseContext === "resource" || this.mouseContext === "demolish") {
+        if (this._mouseShadowContextOptions.includes(this.mouseContext)) {
             this.renderMouseShadow();
         }
         if (this._modal) {

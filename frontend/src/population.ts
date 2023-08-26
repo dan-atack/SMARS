@@ -107,6 +107,17 @@ export default class Population {
         })
     }
 
+    // Cancels the current goal of all colonists whose action stacks / current action refer to the coordinates of a block that has been removed
+    resolvesGoalWhenBlockRemoved = (coords: Coords) => {
+        this._colonists.forEach((col) => {
+            const current = col._data._currentAction?.coords.x === coords.x && col._data._currentAction?.coords.y === coords.y;
+            const stack = col._data._actionStack.filter((act) => act.coords.x === coords.x && act.coords.y === coords.y).length > 0;
+            if ( current || stack ) {
+                col._data.resolveGoal();
+            }
+        })
+    }
+
     // SECTION 3: COLONIST MORALE FUNCTIONS
 
     // Called after each hourly update, to get the average morale of all the colonists in the base
@@ -177,6 +188,12 @@ export default class Population {
         if (colonist) {
             colonist.setHighlighted(true);
         }
+    }
+
+    // Returns true or false whether there are any colonists within the given distance of the given coordinates
+    areColonistsNear = (coords: Coords, dist: number) => {
+        const allClear = this._colonists.filter((col) => Math.abs(col._data._x - coords.x) < dist).length === 0;
+        return allClear;
     }
 
     // SECTION 6: COLONIST SAVE/LOAD DATA MANAGEMENT

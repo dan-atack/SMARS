@@ -3584,8 +3584,9 @@ Rapid change number three involves making the Minimap functional. Currently, the
 Exit Criteria:
 
 - [DONE] The Minimap should show the entire map's topography
-- The Minimap should show a box, representing the current screen, superimposed over the map to let the player know where they are
-- The player can click on the minimap to adjust their current screen's location without scrolling
+- [DONE] The Minimap should show a box, representing the current screen, superimposed over the map to let the player know where they are
+- [DONE] The player can click on the minimap to adjust their current screen's location without scrolling
+- [DONE] The Minimap will display a bright yellow dot, representing the base's initial landing site, to facilitate not getting lost
 
 1. Start by refactoring the Minimap class to not require P5 in its constructor, to be in sync with the game's modernized architecture, and to allow for the possibility of creating unit test cases for this component. Make a simple unit test file once this is completed.
 
@@ -3619,6 +3620,73 @@ Exit Criteria:
 
 16. Update the constants file's version and/or year for the new release, and then go through the (now rather cumbersome) tasks associated with updating the game's production environment. This time, skip straight to the delete/replace strategy instead of attempting to perform the update in-situ on the current machine. How many more chapters before we get to the DevOps revival stuff??
 
+## Chapter Eight: Removing Terrain
+
+### Difficulty Estimate: 3 (For new mouse context, complete pre-removal checks and post-removal implementation plus heavy unit testing)
+
+### Date: August 24, 2023
+
+The fourth, and final mini-feature in the rapid-fire-feature-addition series, is basic terrain modification - specifically, the ability to remove individual blocks from the map. This will enhance the terraforming experience, and allow the player to start transforming their world - bending it to their will. Removing terrain will come at a financial cost, and be subject to certain limitations - namely, no undermining of any base structures, no removing a tile upon which colonist is currently standing, no creating cliffs more than 2 blocks high, and no mining below a certain depth (bedrock). Whenever a block is removed, the Industry class will check if it was being used for mining, and the Minimap's terrain model will be updated. Implementing this feature will require some adjustment to the Sidebar's layout, and the creation of a new button/click response handler to set the mouse context to terrain removal mode. We should also always consider the aesthetics, and make a nice mouse shadow of a little bulldozer to accompany the new mouse context.
+
+Exit Criteria:
+
+- [DONE] Player can select 'excavate' mouse mode by clicking on a new button in the Sidebar
+- [DONE] The 'excavate' mouse cursor has a little bulldozer as its mouse shadow
+- [DONE] When a player clicks on a block in 'excavate' mouse context, the block is removed:
+- - [DONE] The tile's HP is converted to a dollar cost, which is subtracted from the player's budget
+- - [DONE] [STRETCH] The excavation's monetary cost is adjusted based on the player's chosen difficulty level!
+- - [DONE] The Block is removed from the map, and its topography and mapData are update as well
+- - [DONE] The Minimap is updated
+- - [DONE] The Industry class's mining zones are updated
+- - [DONE] Colonists intending to mine the removed tile cancel their plans
+- [DONE] Terrain can only be removed if:
+- - [DONE] Block is above a certain elevation (bedrock)
+- - [DONE] Removal does not undermine any base structures
+- - [DONE] Removal does not create a cliff (i.e. a column height difference of more than 2 blocks) that the colonists cannot climb
+- - [DONE] Removal cannot be too close to any colonists
+- - [DONE] Financial cost is met
+- [DONE] When attempting to remove a block the player is notified by an in-game message of the action's success or failure
+
+1. Start by reducing the size of the Sidebar's main buttons to free up space above the Minimap/Inspect display zone for new buttons (adjusting the Details Area is too cumbersome as it affects the Inspect Display area which is very crowded already... maybe when we replace the Inspect Display with a tooltip we can rethink this policy).
+
+2. Add a new button to the Sidebar, called 'EXCAVATE' and give it a simple click handler with a console log. Also add a dummy button called 'ADD GROUND' and make it greyed out to indicate that it is not yet available.
+
+3. Refactor the Engine's various mouse shadow creation methods that pass a string argument to the constructor to create a custom image (like the jackhammer or the magnifying glass) into a single function that just takes a single argument - namely, that string. Call this method createCustomerMouseShadow to avoid confusing it with the regular createMouseShadow method used for construction placements. Validate in-game before proceeding.
+
+4. Add the SetMouseContext method to the RemoveTerrain button's handler, and have it set the Engine's mouse context to 'excavate'.
+
+5. Add a new MouseShadow cursor for the new mouse context, which will be a little image of a bulldozer to represent terrain being removed.
+
+6. Add a new click response handler to the Engine, to be called when a click is registered while in removeTerrain mode.
+
+7. Now start adding the validation checks for a block's removal, starting with the Map class. The Engine will call the Map's checkForBlockRemoval method, which will check for the existence of a Block at the given coordinates, check if its altitude is permissible, and finally, check if the block's removal would create a height gap of more than 2 blocks with either of the adjacent columns. Needless to say, create a unit test for this method before implementing. Also, add the 'bedrock height' as a Map property so it can be adjusted easily, should the need arise. Also make this check call the isBlockOnSurface method, since only blocks at the map's surface can be removed.
+
+8. Next, create the block removal check for the Infrastructure class; basically just ensure that there is no structure at the block's X coordinate by checking it against the Map data class's baseVolume column to see if there is anything there. Since structures cannot be placed below ground, the presence of any module at that coordinate implies that there is a module ABOVE the block being targeted, and thus the excavation should not be allowed to proceed. ADDENDUM: This is actually such a simple formula that the Engine can do it itself in just one line, so validate in-game in lieu of a unit test. There, I let you off the hook that time!
+
+9. The last check will be with the Population class, and it will be simply to see that there are no colonists within, say, 2 columns of the block being removed. This ensures that removing a block can never be removed from under a colonist's feet, or from a column that a colonist is just about to walk into. Unit test this method, and make it a good one to pay for the previous step's fecklessness.
+
+10. Put all of the sub-components' checks together in the Engine's handleExcavate method, and test it out as a whole in-game since we are not presently able to unit-test the Engine's methods directly. Once satisfied, move on to the implementation of the removal process.
+
+11. Start with the obvious: Have the Map class filter the removed Block from the appropriate column, and from its mapData array, and then update the map's topography and zones (zones, mercifully, cannot be affected with the excavate action's current configuration). Do a unit test for this to ensure everything works as it should.
+
+12. Next, subtract the monetary cost of the excavation from the player's money supply. For extra fun, link the cost here to the player's difficulty level, so players on hard mode pay more and players on easy street pay less!
+
+13. Add a new Industry method to remove the coordinates of the removed block from its list of water mining zones (we'll add the possibility of mining other resources later so for now this can be specific to water, which is the essence of moisture).
+
+14. Update the Minimap by simply calling its setup method and passing that the now-updated MapData from the Map class.
+
+15. Lastly, tell any colonists who were going to mine at the removed block's coordinates to make new plans. Validate this in-game, and then we're just about finished here. Whoo wee!
+
+16. Add notifications for all of the various ways that the excavate action can fail.
+
+17. Add a notification for when the excavate action succeeds, and display the cost as well. Also, update the module and connector placement success messages to display the cost of the new structure as well.
+
+18. Add a restriction to the creation of a mining zone so that blocks with a resource value of 0 are not permitted. Create a notification if the player tries to mine a useless tile.
+
+19. Clean up all console logs for this chapter's development (or if you really like them, add a flag to them to keep appearing in dev mode only).
+
+20. Update the constants file's version and/or year for the new release.
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
@@ -3642,6 +3710,8 @@ Exit Criteria:
 - ...
 
 ### 1. Step One...
+
+### 98. Clean up all console logs for this chapter's development (or if you really like them, add a flag to them to keep appearing in dev mode only).
 
 ### 99. Update the constants file's version and/or year for the new release.
 

@@ -44,11 +44,11 @@ export default class Sidebar {
         this._gameSpeedButtonX = this._position + 120;
         this._gameSpeedButtonY = 94;
         this._viewButtonWidth = this._width / 2 - 8;        // Minus eight for the padding space
-        this._viewButtonHeight = this._width / 4 - 8;
+        this._viewButtonHeight = this._width / 5 - 8;
         this._gameSpeedButtonWidth = 24;
         this._gameSpeedButtonMargin = 32;
         this._viewButtonY = 132;
-        this._mapButtonsY = 284;
+        this._mapButtonsY = 256;
         this._detailsAreaY = 432;
         this._extendedDetailsAreaY = 120;
         this._detailsAreaHeight = 284;
@@ -80,12 +80,14 @@ export default class Sidebar {
         const resource = new Button("RESOURCE", this._position + this._viewButtonWidth + 12, this._mapButtonsY, this.handleResource, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
         const inspect = new Button("INSPECT", this._position + 4, this._mapButtonsY + this._viewButtonHeight + 8, this.handleInspect, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 24);
         const demolish = new Button("DEMOLISH", this._position + this._viewButtonWidth + 12, this._mapButtonsY + this._viewButtonHeight + 8, this.handleDemolish, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
+        const excavate = new Button("EXCAVATE", this._position + 4, this._mapButtonsY + this._viewButtonHeight * 2 + 16, this.handleExcavate, this._viewButtonWidth, this._viewButtonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
+        const fillGround = new Button("ADD GROUND", this._position + this._viewButtonWidth + 12, this._mapButtonsY + this._viewButtonHeight * 2 + 16, this.handleFillGround, this._viewButtonWidth, this._viewButtonHeight, constants.GRAY_DARKER, constants.GRAY_LIGHT, 18);
         // Game speed adjustment buttons:
         const pause = new Button("||", this._gameSpeedButtonX, this._gameSpeedButtonY, this.handlePause, this._gameSpeedButtonWidth, this._gameSpeedButtonWidth, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
         const slow = new Button(">", this._gameSpeedButtonX + this._gameSpeedButtonMargin, this._gameSpeedButtonY, this.handleSlow, this._gameSpeedButtonWidth, this._gameSpeedButtonWidth, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
         const fast = new Button(">>", this._gameSpeedButtonX + 2 * this._gameSpeedButtonMargin, this._gameSpeedButtonY, this.handleFast, this._gameSpeedButtonWidth + 8, this._gameSpeedButtonWidth, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
         const blazing = new Button(">>>", this._gameSpeedButtonX + 3 * this._gameSpeedButtonMargin + 8, this._gameSpeedButtonY, this.handleBlazing, this._gameSpeedButtonWidth + 16, this._gameSpeedButtonWidth, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
-        this._buttons = [earth, industry, tech, population, build, resource, inspect, demolish];
+        this._buttons = [earth, industry, tech, population, build, resource, inspect, demolish, excavate, fillGround];
         this._gameSpeedButtons = [pause, slow, fast, blazing];
     }
 
@@ -150,6 +152,15 @@ export default class Sidebar {
 
     handleDemolish = () => {
         this.updateMouseContextButton(7, "demolish");
+    }
+
+    handleExcavate = () => {
+        this.updateMouseContextButton(8, "excavate");
+    }
+
+    handleFillGround = () => {
+        console.log("Cannot fill in terrain at this time.");
+        // this.updateMouseContextButton(9, "fillGround");
     }
 
     updateMouseContextButton = (idx: number, context: string) => {

@@ -1,8 +1,9 @@
+import Block from "../src/block";
 import Map from "../src/map";
 
 describe("Map", () => {
     const mapTest = new Map();
-    const flatTerrain = [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]];
+    const flatTerrain = [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 2]];   // Surface of column 15 is Sand
     const flatTopography = [33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33];
     const bumpyTerrain = [[1, 1, 1], [1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 4, 4], [1, 1, 1, 4], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1], [1], [1, 1], [1, 1], [1, 1, 1, 4], [1, 1, 1]];
     const bumpyTopography = [33, 33, 32, 31, 32, 33, 33, 33, 33, 33, 34, 35, 34, 34, 32, 33];
@@ -108,6 +109,46 @@ describe("Map", () => {
         if (deepBlock) {    // We know it's there, this is just to soothe typescript
             expect(mapTest.isBlockOnSurface(deepBlock)).toBe(false);
         }
+    })
+
+    test("Constructor determines bedrock depth", () => {
+        expect(mapTest._bedrock).toBe(35);
+    })
+
+    // "Cliff" in this context means a height difference of 3 or more between two adjacent map columns
+    test("isBlockRemovable checks that a block is at the surface, not at or below bedrock, and that its removal would not form a cliff", () => {
+        // Test 1: Block is at the surface, flush with its neighbors (allow removal)
+        mapTest.setup(flatTerrain);
+        const flatSurfaceCoords = { x: 3, y: 33 };
+        expect((mapTest.isBlockRemovable(flatSurfaceCoords) as Block)._blockData.name).toBe("Rock");
+        // Test 2: Coordinates are above the surface (do not allow removal)
+        const tooHighCoords = { x: 3, y: 32 };
+        expect(mapTest.isBlockRemovable(tooHighCoords)).toBe("Click on a tile\nto excavate it.");
+        // Test 3: Block is at the surface, on the slope of a steep hill (height delta 2 between it and its neighbors) (do not allow removal)
+        mapTest.setup(bumpyTerrain);
+        const steepCoords = { x: 13, y: 34 };
+        expect(mapTest.isBlockRemovable(steepCoords)).toBe("Cannot excavate Rock:\nSite is too steep");
+        // Test 4: Block is not at the surface (do not allow)
+        const deepCoords = { x: 1, y: 34 }
+        expect(mapTest.isBlockRemovable(deepCoords)).toBe("Cannot excavate Rock:\nMust be at surface level");
+        // Test 5: Block is at the surface, at bedrock level (do not allow)
+        const rockBottomCoords = { x: 11, y: 35 };
+        expect(mapTest.isBlockRemovable(rockBottomCoords)).toBe("Cannot excavate Rock:\nSite is too deep");
+    })
+
+    test("removeBlock removes a block from the mapData, columns list and resets zones/topography calculation", () => {
+        mapTest.setup(flatTerrain);
+        // Validate test conditions
+        expect(mapTest._mapData[15][2]).toBe(2);
+        expect(mapTest._columns[15].length).toBe(3);
+        expect(mapTest._columns[15][2]._blockData.name).toBe("Sand");
+        expect(mapTest._topography).toStrictEqual([33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33]);
+        // Validate block removal
+        const toRemove = mapTest._columns[15][2];   // Take out that sand block!
+        mapTest.removeBlock(toRemove);
+        expect(mapTest._mapData[15][2]).toBe(undefined);
+        expect(mapTest._columns[15].length).toBe(2);
+        expect(mapTest._topography).toStrictEqual([33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 34]);    // Digging down means surface y-coordinate goes up!
     })
 
 })

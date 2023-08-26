@@ -122,8 +122,6 @@ export default class Industry {
                 this._jobs.miner.push(job);
             }
         })
-        // console.log(`Mining jobs: ${this._jobs.miner.length}`);
-        // console.log(this._jobs.miner);
     }
 
     // SECTION 2: MINING FUNCTIONS
@@ -180,6 +178,12 @@ export default class Industry {
             console.log(`Error: Mining location at (${coords.x}, ${coords.y}) not found.`);
             return false;
         }
+    }
+
+    // Called by the Engine if a block is removed; checks if that block was a mining zone and removes it if so
+    removeMiningLocation = (coords: Coords) => {
+        // TODO: Allow this to work for resources other than water
+        this._miningLocations.water = this._miningLocations.water.filter((block) => block.x !== coords.x || block.y !== coords.y);
     }
 
     // SECTION 3: DISPENSING JOBS TO COLONISTS

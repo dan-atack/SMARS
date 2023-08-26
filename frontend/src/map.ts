@@ -16,6 +16,7 @@ export default class Map {
     _mapData: number[][];
     _horizontalOffset: number;  // Value is in pixels
     _maxOffset: number;         // Farthest scroll distance, in pixels
+    _bedrock: number;           // The highest Y value (Which we must recall is inverted) at which blocks cannot be removed (e.g. by excavating)
     _columns: Block[][];
     _topography: number[];      // A list of the y-value at the surface elevation for every column.
     _zones: MapZone[];          // List of the edge points of the various zones on the map (if there are more than 1)
@@ -26,6 +27,7 @@ export default class Map {
         this._mapData = [];     // Map data is recieved by setup function
         this._horizontalOffset = 0;
         this._maxOffset = 0;    // Determined during setup routine
+        this._bedrock = constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH - 1;    // The y altitude of the BOTTOM block level (cannot be removed)
         this._columns = [];
         this._topography = [];  // Gets filled in when the map data is loaded
         this._zones = [];       // Filled in after the topography analysis
@@ -33,7 +35,7 @@ export default class Map {
         this._highlightedBlock = null   // By default no blocks are highlighted
     }
 
-    // SECTION 1 - INITIAL SETUP & DISPLAY WIDTH SETTING MANAGEMENT
+    // SECTION 1: INITIAL SETUP & DISPLAY WIDTH SETTING MANAGEMENT
 
     setup = (mapData: number[][]) => {
         this._mapData = mapData;
@@ -42,6 +44,7 @@ export default class Map {
         } else {
             this._maxOffset = mapData.length * constants.BLOCK_WIDTH - constants.WORLD_VIEW_WIDTH;
         }
+        this._columns = []; // Ensure columns list is empty before filling it
         this._mapData.forEach((column, idx) => {
             this._columns.push([]);
             column.forEach((blockType, jdx) => {
@@ -66,7 +69,7 @@ export default class Map {
         }
     }
 
-    // SECTION 2 - TOPOGRAPHY AND ZONE BOUNDARY DETERMINATION
+    // SECTION 2: TOPOGRAPHY AND ZONE BOUNDARY DETERMINATION
 
     // Top-level terrain zone/topography determinator
     updateTopographyAndZones = () => {
@@ -83,9 +86,8 @@ export default class Map {
                 const y = constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH - col.length;
                 this._topography.push(y);
             })
-            // console.log(this._topography);
         } else {
-            console.log("Error: Could not find topography for map - map data missing.");
+            console.log("ERROR: Could not find topography for map - map data missing.");
         }
     }
 
@@ -114,9 +116,8 @@ export default class Map {
                 alt = this._topography[i];  // Set altitude to compare to next column
                 i++;
             }
-            // console.log(this._zones);
         } else {
-            console.log("Error: Could not determine map zones - topography data missing.");
+            console.log("ERROR: Could not determine map zones - topography data missing.");
         }
     }
 
@@ -130,7 +131,7 @@ export default class Map {
         return z;
     }
 
-    // SECTION 3 - TERRAIN CONSTRAINT HELPERS FOR OTHER CLASSES
+    // SECTION 3: TERRAIN CONSTRAINT HELPERS FOR OTHER CLASSES
 
     // For a given stretch of columns, do they all have the same height? Returns true for yes, false for no
     determineFlatness = (start: number, stop: number) => {
@@ -171,19 +172,49 @@ export default class Map {
             if (zStart === zFinish && destY + 1 === this._topography[destX]) {
                 return true     // Return true if start and destination are in the same zone, and destination is at ground level
             } else if (zStart === zFinish) {
-                // console.log(`Elevation ${destY} not reachable at destination ${destX}`);
                 return false;
             } else {
-                // console.log(`Column ${startX} is in different zone than column ${destX}`);
                 return false;
             }
         } else {
-            console.log(`Error: Provided start location (${startX}, ${startY}) is not on surface level.`);
+            console.log(`ERROR: Provided start location (${startX}, ${startY}) is not on surface level.`);
             return false;
         }
     }
 
-    // SECTION 4 - MAP INFO API (GETTER FUNCTIONS)
+    // Takes a set of coordinates for an attempted excavation action and checks if the block at that location can be removed - returning it if so
+    isBlockRemovable = (coords: Coords) => {
+        let msg = "";   // Prepare a notification to return if the block cannot be removed
+        const b = this.getBlockForCoords(coords);
+        if (b) {
+            const noCliffs = this._columns[b._x + 1].length - this._columns[b._x].length < 2 && this._columns[b._x - 1].length - this._columns[b._x].length < 2;
+            if (noCliffs && b._y < this._bedrock && this.isBlockOnSurface(b)) {
+                return b;
+            } else {
+                msg = `Cannot excavate ${b._blockData.name}:${noCliffs ? b._y < this._bedrock ? "\nMust be at surface level" : "\nSite is too deep" : "\nSite is too steep"}`;
+                return msg;
+            }
+            
+        } else {
+            msg = "Click on a tile\nto excavate it.";
+            return msg;
+        }
+    }
+
+    // SECTION 4: TERRAIN MODIFICATION METHODS
+
+    // Receives a block that has already been approved for removal from the Engine
+    removeBlock = (block: Block) => {
+        const b = this._columns[block._x].pop(); // Remove the top block from this column and keep it for a moment before eliminating it
+        if (b) {
+            this._mapData[block._x].pop();      // This is just a number so get rid of it
+            this.updateTopographyAndZones();    // Lastly, update the map's topography and zones data
+        } else {
+            console.log(`ERROR: Block data for block at (${block._x}, ${block._y}) not found.`);
+        }
+    }
+
+    // SECTION 5: MAP INFO API (GETTER FUNCTIONS)
 
     // Returns the zone ID for a set of coordinates on the map's surface
     getZoneIdForCoordinates = (coords: Coords) => {
@@ -194,7 +225,7 @@ export default class Map {
             if (zone !== undefined) {
                 return zone.id;
             } else {
-                console.log(`Error: No zone found for X coordinate ${coords.x}`);
+                console.log(`ERROR: No zone found for X coordinate ${coords.x}`);
                 return "";
             }
         } else {
@@ -213,7 +244,7 @@ export default class Map {
                 return null;    // No block found
             }
         } else {
-            console.log(`Error: Column ${coords.x} not located.`);  // Column not found (throw error warning)
+            console.log(`ERROR: Column ${coords.x} not located.`);  // Column not found (throw error warning)
             return null;
         };
     }
