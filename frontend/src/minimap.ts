@@ -62,11 +62,6 @@ export default class Minimap {
         this._currentScreenPosition = Math.floor(gridX / this._columnsPerPixel);
     }
 
-    // Used to update terrain / infra displays after the game has started
-    updateTerrain = (terrain: number[][]) => {
-        //
-    }
-
     // Takes mouse click coordinates (which can be non-integers, btw) and sets Engine horizontal offset value - allowing click based navigation
     handleClick = (mouseX: number) => {
         // Assuming X will be the midpoint, calculate the column representing the left edge of the screen's new location

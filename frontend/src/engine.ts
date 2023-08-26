@@ -632,22 +632,25 @@ export default class Engine extends View {
 
     handleExcavate = (coords: Coords) => {
         const crds = { x: coords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: coords.y * constants.BLOCK_WIDTH};
-        const removal = this._map.isBlockRemovable(coords);    // If check succeeds this will be a block; if not it will be a string (message)
+        const removal: Block | string = this._map.isBlockRemovable(coords);     // Can be either a Block, or a string with a failure message
         if (typeof removal === "string") {
             const msg = this.createMessage("command-excavate-fail", 0, removal);
             this._notifications.createMessageFromClick(crds, msg);
-        } else if (removal) {  // If the map check was successful it will return a block
-            const cost = removal._blockData.hp * 1000;     // Cost = $10.00 (that's a thousand cents) per block hit point
+        } else if (removal) {  // If the map check was successful we will use the block's info to eliminate it
+            const costAdjustment = this._difficulty === "hard" ? 100 : this._difficulty === "easy" ? -50 : 0;    // COST DEPENDS ON DIFFICULTY!
+            const cost = removal._blockData.hp * 200 + costAdjustment;     
             const affordable = this._economy._data.checkResources(cost);
             const noUndermine = this._infrastructure._data._baseVolume[coords.x].length === 0;  // Check for buildings
             const allClear = this._population.areColonistsNear(coords, 2);      // Check for nearby colonists
-            if (affordable && noUndermine && allClear) {
-                // Proceed to block removal procedure:
-                // Subtract money
-                this._map.removeBlock(removal) // Remove block from map
-                // Update Industry class mining zones
-                // Tell colonists to change their plans
-                // Notify of success
+            if (affordable && noUndermine && allClear) {                        // If all conditions are met, remove the block, and pay the man
+                this._economy._data.subtractMoney(cost);                        // Subtract money
+                this._map.removeBlock(removal)                                  // Remove block from map
+                this._sidebar._detailsArea._minimap.setup(this._map._mapData)   // Update Minimap
+                this._industry.removeMiningLocation(coords);                    // Update Industry class mining zones
+                this._population.resolvesGoalWhenBlockRemoved(coords);          // Tell colonists to change their plans
+                const moneyString = (cost / 100).toFixed(2);        // Notify of success and cost
+                const msg = this.createMessage("command-excavate-success", 0, `${removal._blockData.name} removed.\n-$${moneyString}`);
+                this._notifications.createMessageFromClick(crds, msg);
             } else {
                 const msg = this.createMessage("command-excavate-fail", 0, `Cannot carry out excavation here:\n${affordable ? noUndermine ? "Too close to population" : "Undermines base structures" : "Insufficient funds available"}`);
                 this._notifications.createMessageFromClick(crds, msg);
@@ -704,7 +707,8 @@ export default class Engine extends View {
                     crds.x += this.selectedBuilding.width * constants.BLOCK_WIDTH / 2;  // Center the message coordinates
                     this._infrastructure.addModule(x, y, this.selectedBuilding,  this._map._topography, this._map._zones,);
                     this._economy._data.subtractMoney(this.selectedBuilding.buildCosts[0][1]);
-                    const message = this.createMessage("command-module-success", 0, `New ${this.selectedBuilding.name}\ninstalled`);
+                    const moneyString = (this.selectedBuilding.buildCosts[0][1] / 100).toFixed(2);
+                    const message = this.createMessage("command-module-success", 0, `${this.selectedBuilding.name} installed.\n-$${moneyString}`);
                     this._notifications.createMessageFromClick(crds, message);
                 } else {
                     // Notify the player in-game that their placement is no good (or that they cannot afford the new module)
@@ -741,10 +745,11 @@ export default class Engine extends View {
             const stop = this._mouseShadow._connectorStopCoords;
             const clear = this._infrastructure._data.checkConnectorEndpointPlacement(stop.x, stop.y, this._map._mapData);
             if (affordable && clear) {
-                const message = this.createMessage("command-connector-success", 0, `New ${this.selectedBuilding.name}\ninstalled`);
-                this._notifications.createMessageFromClick(crds, message);  // Notify the player of the successful placement
                 this._infrastructure.addConnector(start, stop, this.selectedBuilding, this._map);
                 this._economy._data.subtractMoney(cost);
+                const moneyString = (cost / 100).toFixed(2);
+                const message = this.createMessage("command-connector-success", 0, `${this.selectedBuilding.name} installed\n-$${moneyString}`);
+                this._notifications.createMessageFromClick(crds, message);  // Notify the player of the successful placement
             } else {
                 const message = this.createMessage("command-connector-fail", 0, `Cannot place connector:\n${clear ? "Insufficient funds" : "Invalid location"}`);       // Notify the player of placement failure via in-game message
                 this._notifications.createMessageFromClick(crds, message);

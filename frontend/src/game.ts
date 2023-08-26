@@ -78,8 +78,6 @@ export default class Game extends Screen {
             this._engine.setupNewGame(this._gameData);
             this._gameLoaded = true;
         }
-        // Load sidebar minimap after loading map data
-        this._engine._sidebar._detailsArea._minimap.updateTerrain(this._engine._map._mapData);
     }
 
     changeView = (newView: string) => {
