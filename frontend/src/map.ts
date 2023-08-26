@@ -44,6 +44,7 @@ export default class Map {
         } else {
             this._maxOffset = mapData.length * constants.BLOCK_WIDTH - constants.WORLD_VIEW_WIDTH;
         }
+        this._columns = []; // Ensure columns list is empty before filling it
         this._mapData.forEach((column, idx) => {
             this._columns.push([]);
             column.forEach((blockType, jdx) => {
@@ -190,9 +191,16 @@ export default class Map {
         let msg = "";   // Prepare a notification to return if the block cannot be removed
         const b = this.getBlockForCoords(coords);
         if (b) {
-            return b;
+            const noCliffs = this._columns[b._x + 1].length - this._columns[b._x].length < 2 && this._columns[b._x - 1].length - this._columns[b._x].length < 2;
+            if (noCliffs && b._y < this._bedrock && this.isBlockOnSurface(b)) {
+                return b;
+            } else {
+                msg = `Cannot excavate ${b._blockData.name}:${noCliffs ? b._y < this._bedrock ? "\nMust be at surface level" : "\nSite is too deep" : "\nSite is too steep"}`;
+                return msg;
+            }
+            
         } else {
-            msg = "Click on a block\nto remove it.";
+            msg = "Click on a tile\nto excavate it.";
             return msg;
         }
     }
