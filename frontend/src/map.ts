@@ -35,7 +35,7 @@ export default class Map {
         this._highlightedBlock = null   // By default no blocks are highlighted
     }
 
-    // SECTION 1 - INITIAL SETUP & DISPLAY WIDTH SETTING MANAGEMENT
+    // SECTION 1: INITIAL SETUP & DISPLAY WIDTH SETTING MANAGEMENT
 
     setup = (mapData: number[][]) => {
         this._mapData = mapData;
@@ -69,7 +69,7 @@ export default class Map {
         }
     }
 
-    // SECTION 2 - TOPOGRAPHY AND ZONE BOUNDARY DETERMINATION
+    // SECTION 2: TOPOGRAPHY AND ZONE BOUNDARY DETERMINATION
 
     // Top-level terrain zone/topography determinator
     updateTopographyAndZones = () => {
@@ -133,7 +133,7 @@ export default class Map {
         return z;
     }
 
-    // SECTION 3 - TERRAIN CONSTRAINT HELPERS FOR OTHER CLASSES
+    // SECTION 3: TERRAIN CONSTRAINT HELPERS FOR OTHER CLASSES
 
     // For a given stretch of columns, do they all have the same height? Returns true for yes, false for no
     determineFlatness = (start: number, stop: number) => {
@@ -205,7 +205,20 @@ export default class Map {
         }
     }
 
-    // SECTION 4 - MAP INFO API (GETTER FUNCTIONS)
+    // SECTION 4: TERRAIN MODIFICATION METHODS
+
+    // Receives a block that has already been approved for removal from the Engine
+    removeBlock = (block: Block) => {
+        const b = this._columns[block._x].pop(); // Remove the top block from this column and keep it for a moment before eliminating it
+        if (b) {
+            this._mapData[block._x].pop();      // This is just a number so get rid of it
+            this.updateTopographyAndZones();    // Lastly, update the map's topography and zones data
+        } else {
+            console.log(`ERROR: Block data for block at (${block._x}, ${block._y}) not found.`);
+        }
+    }
+
+    // SECTION 5: MAP INFO API (GETTER FUNCTIONS)
 
     // Returns the zone ID for a set of coordinates on the map's surface
     getZoneIdForCoordinates = (coords: Coords) => {

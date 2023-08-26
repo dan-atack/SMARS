@@ -3630,20 +3630,21 @@ The fourth, and final mini-feature in the rapid-fire-feature-addition series, is
 
 Exit Criteria:
 
-- Player can select 'remove terrain' mouse mode by clicking on a new button in the Sidebar
-- The 'remove terrain' mouse cursor has a little bulldozer as its mouse shadow
-- When a player clicks on a block in 'remove terrain' mouse context, the block is removed:
+- [DONE] Player can select 'excavate' mouse mode by clicking on a new button in the Sidebar
+- [DONE] The 'excavate' mouse cursor has a little bulldozer as its mouse shadow
+- When a player clicks on a block in 'excavate' mouse context, the block is removed:
 - - The Block is removed
 - - The Minimap is updated
 - - The Industry class's mining zones are updated
 - - Colonists intending to mine the removed tile cancel their plans
 - - The tile's HP is converted to a dollar cost, which is subtracted from the player's budget
-- Terrain can only be removed if:
-- - Block is above a certain elevation
-- - Removal does not undermine any base structures
-- - Removal does not create a cliff (i.e. a column height difference of more than 2 blocks) that the colonists cannot climb
-- - Removal cannot be too close to any colonists
-- When attempting to remove a block the player is notified by an in-game message
+- [DONE] Terrain can only be removed if:
+- - [DONE] Block is above a certain elevation (bedrock)
+- - [DONE] Removal does not undermine any base structures
+- - [DONE] Removal does not create a cliff (i.e. a column height difference of more than 2 blocks) that the colonists cannot climb
+- - [DONE] Removal cannot be too close to any colonists
+- - [DONE] Financial cost is met
+- When attempting to remove a block the player is notified by an in-game message of the action's success or failure
 
 1. Start by reducing the size of the Sidebar's main buttons to free up space above the Minimap/Inspect display zone for new buttons (adjusting the Details Area is too cumbersome as it affects the Inspect Display area which is very crowded already... maybe when we replace the Inspect Display with a tooltip we can rethink this policy).
 
@@ -3661,11 +3662,13 @@ Exit Criteria:
 
 8. Next, create the block removal check for the Infrastructure class; basically just ensure that there is no structure at the block's X coordinate by checking it against the Map data class's baseVolume column to see if there is anything there. Since structures cannot be placed below ground, the presence of any module at that coordinate implies that there is a module ABOVE the block being targeted, and thus the excavation should not be allowed to proceed. ADDENDUM: This is actually such a simple formula that the Engine can do it itself in just one line, so validate in-game in lieu of a unit test. There, I let you off the hook that time!
 
-### 9. The last check will be with the Population class, and it will be simply to see that there are no colonists within, say, 2 columns of the block being removed. This ensures that removing a block can never be removed from under a colonist's feet, or from a column that a colonist is just about to walk into. Unit test this method, and make it a good one to pay for the previous step's heedlessness.
+9. The last check will be with the Population class, and it will be simply to see that there are no colonists within, say, 2 columns of the block being removed. This ensures that removing a block can never be removed from under a colonist's feet, or from a column that a colonist is just about to walk into. Unit test this method, and make it a good one to pay for the previous step's fecklessness.
 
-### 10. Put all of the sub-components' checks together in the Engine's handleExcavate method, and test it out as a whole in-game since we are not presently able to unit-test the Engine's methods directly. Once satisfied, move on to the implementation of the removal process.
+10. Put all of the sub-components' checks together in the Engine's handleExcavate method, and test it out as a whole in-game since we are not presently able to unit-test the Engine's methods directly. Once satisfied, move on to the implementation of the removal process.
 
-### 96. Add a notification for when the excavate action fails.
+### 11. Start with the obvious: Have the Map class filter the removed Block from the appropriate column, and from its mapData array, and then update the map's topography and zones (zones, mercifully, cannot be affected with the excavate action's current configuration). Do a unit test for this to ensure everything works as it should.
+
+11. Add notifications for all of the various ways that the excavate action can fail.
 
 ### 97. Add a notification for when the excavate action succeeds.
 

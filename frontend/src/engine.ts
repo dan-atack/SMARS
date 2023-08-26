@@ -632,27 +632,29 @@ export default class Engine extends View {
 
     handleExcavate = (coords: Coords) => {
         const crds = { x: coords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: coords.y * constants.BLOCK_WIDTH};
-        const mapcheck = this._map.isBlockRemovable(coords);    // If check succeeds this will be a block; if not it will be a string (message)
-        if (typeof mapcheck === "string") {
-            const msg = this.createMessage("command-excavate-fail", 0, mapcheck);
+        const removal = this._map.isBlockRemovable(coords);    // If check succeeds this will be a block; if not it will be a string (message)
+        if (typeof removal === "string") {
+            const msg = this.createMessage("command-excavate-fail", 0, removal);
             this._notifications.createMessageFromClick(crds, msg);
-        } else if (mapcheck) {  // If the map check was successful it will return a block
+        } else if (removal) {  // If the map check was successful it will return a block
+            const cost = removal._blockData.hp * 1000;     // Cost = $10.00 (that's a thousand cents) per block hit point
+            const affordable = this._economy._data.checkResources(cost);
             const noUndermine = this._infrastructure._data._baseVolume[coords.x].length === 0;  // Check for buildings
-            const allClear = this._population.areColonistsNear(coords, 2);
-            console.log(`${noUndermine ? "Excavation does not undermine our position." : "This undermines us."}`);
-            console.log(`${allClear ? "All clear!" : "Micro changes in air density detected."}`);
+            const allClear = this._population.areColonistsNear(coords, 2);      // Check for nearby colonists
+            if (affordable && noUndermine && allClear) {
+                // Proceed to block removal procedure:
+                // Subtract money
+                this._map.removeBlock(removal) // Remove block from map
+                // Update Industry class mining zones
+                // Tell colonists to change their plans
+                // Notify of success
+            } else {
+                const msg = this.createMessage("command-excavate-fail", 0, `Cannot carry out excavation here:\n${affordable ? noUndermine ? "Too close to population" : "Undermines base structures" : "Insufficient funds available"}`);
+                this._notifications.createMessageFromClick(crds, msg);
+            }
         }
-        // Check map first to see if there is a block, and its removal is acceptable - return the block's data from the map check method
-        // If a block is returned, use its hp to see if the player has enough money
-        // Then check infra
-        // Then check population
-        // If any conditions fail, cancel excavation and notify the player
         // If all good, proceed with the removal:
-        // Subtract money
-        // Remove block from map
-        // Update Industry class mining zones
-        // Tell colonists to change their plans
-        // Notify of success
+        
     }
 
     // MOUSE SHADOW CREATION

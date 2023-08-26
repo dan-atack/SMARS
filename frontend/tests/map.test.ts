@@ -3,7 +3,7 @@ import Map from "../src/map";
 
 describe("Map", () => {
     const mapTest = new Map();
-    const flatTerrain = [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]];
+    const flatTerrain = [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 2]];   // Surface of column 15 is Sand
     const flatTopography = [33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33];
     const bumpyTerrain = [[1, 1, 1], [1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 4, 4], [1, 1, 1, 4], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1], [1], [1, 1], [1, 1], [1, 1, 1, 4], [1, 1, 1]];
     const bumpyTopography = [33, 33, 32, 31, 32, 33, 33, 33, 33, 33, 34, 35, 34, 34, 32, 33];
@@ -134,6 +134,21 @@ describe("Map", () => {
         // Test 5: Block is at the surface, at bedrock level (do not allow)
         const rockBottomCoords = { x: 11, y: 35 };
         expect(mapTest.isBlockRemovable(rockBottomCoords)).toBe("Cannot excavate Rock:\nSite is too deep");
+    })
+
+    test("removeBlock removes a block from the mapData, columns list and resets zones/topography calculation", () => {
+        mapTest.setup(flatTerrain);
+        // Validate test conditions
+        expect(mapTest._mapData[15][2]).toBe(2);
+        expect(mapTest._columns[15].length).toBe(3);
+        expect(mapTest._columns[15][2]._blockData.name).toBe("Sand");
+        expect(mapTest._topography).toStrictEqual([33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33]);
+        // Validate block removal
+        const toRemove = mapTest._columns[15][2];   // Take out that sand block!
+        mapTest.removeBlock(toRemove);
+        expect(mapTest._mapData[15][2]).toBe(undefined);
+        expect(mapTest._columns[15].length).toBe(2);
+        expect(mapTest._topography).toStrictEqual([33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 34]);    // Digging down means surface y-coordinate goes up!
     })
 
 })
