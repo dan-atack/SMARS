@@ -86,9 +86,8 @@ export default class Map {
                 const y = constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH - col.length;
                 this._topography.push(y);
             })
-            // console.log(this._topography);
         } else {
-            console.log("Error: Could not find topography for map - map data missing.");
+            console.log("ERROR: Could not find topography for map - map data missing.");
         }
     }
 
@@ -117,9 +116,8 @@ export default class Map {
                 alt = this._topography[i];  // Set altitude to compare to next column
                 i++;
             }
-            // console.log(this._zones);
         } else {
-            console.log("Error: Could not determine map zones - topography data missing.");
+            console.log("ERROR: Could not determine map zones - topography data missing.");
         }
     }
 
@@ -174,14 +172,12 @@ export default class Map {
             if (zStart === zFinish && destY + 1 === this._topography[destX]) {
                 return true     // Return true if start and destination are in the same zone, and destination is at ground level
             } else if (zStart === zFinish) {
-                // console.log(`Elevation ${destY} not reachable at destination ${destX}`);
                 return false;
             } else {
-                // console.log(`Column ${startX} is in different zone than column ${destX}`);
                 return false;
             }
         } else {
-            console.log(`Error: Provided start location (${startX}, ${startY}) is not on surface level.`);
+            console.log(`ERROR: Provided start location (${startX}, ${startY}) is not on surface level.`);
             return false;
         }
     }
@@ -229,7 +225,7 @@ export default class Map {
             if (zone !== undefined) {
                 return zone.id;
             } else {
-                console.log(`Error: No zone found for X coordinate ${coords.x}`);
+                console.log(`ERROR: No zone found for X coordinate ${coords.x}`);
                 return "";
             }
         } else {
@@ -248,7 +244,7 @@ export default class Map {
                 return null;    // No block found
             }
         } else {
-            console.log(`Error: Column ${coords.x} not located.`);  // Column not found (throw error warning)
+            console.log(`ERROR: Column ${coords.x} not located.`);  // Column not found (throw error warning)
             return null;
         };
     }

@@ -510,7 +510,7 @@ export default class Engine extends View {
     handleResourceZoneSelect = (coords: Coords) => {
         const b = this._map.getBlockForCoords(coords);
         const crds = { x: coords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: coords.y * constants.BLOCK_WIDTH};  // For notifications
-        if (b && this._map.isBlockOnSurface(b)) {   // Ensure block is on the surface
+        if (b && this._map.isBlockOnSurface(b) && b._blockData.yield > 0) {   // Ensure block is on the surface, and has at least some yield
             // TODO: Build this out to allow easy handling of multiple new resource types
             if (b._blockData.resource === "water") {
                 const added = this._industry.toggleMiningLocation(coords, "water"); // Push the coordinates for the mining location
@@ -528,7 +528,7 @@ export default class Engine extends View {
             }
         } else {
             // Notify the player in-game that they must select a tile on the surface
-            const message = this.createMessage("command-resource-no-surface", 0, "Click on surface tile\nto add/remove mining zone");
+            const message = this.createMessage("command-resource-no-surface", 0, `${b?._blockData.yield === 0 ? "Cannot mine here:\nSite has no resource yield" : "Click on surface tile\nto add/remove mining zone"}`);
             this._notifications.createMessageFromClick(crds, message, 16);
         }
     }

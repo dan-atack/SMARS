@@ -3681,11 +3681,11 @@ Exit Criteria:
 
 17. Add a notification for when the excavate action succeeds, and display the cost as well. Also, update the module and connector placement success messages to display the cost of the new structure as well.
 
-### 98. Add a restriction to the creation of a mining zone so that blocks with a resource value of 0 are not permitted. Create a notification if the player tries to mine a useless tile.
+18. Add a restriction to the creation of a mining zone so that blocks with a resource value of 0 are not permitted. Create a notification if the player tries to mine a useless tile.
 
-### 98. Clean up all console logs for this chapter's development (or if you really like them, add a flag to them to keep appearing in dev mode only).
+19. Clean up all console logs for this chapter's development (or if you really like them, add a flag to them to keep appearing in dev mode only).
 
-### 99. Update the constants file's version and/or year for the new release.
+20. Update the constants file's version and/or year for the new release.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
