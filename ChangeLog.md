@@ -3643,6 +3643,7 @@ Exit Criteria:
 - - Removal does not undermine any base structures
 - - Removal does not create a cliff (i.e. a column height difference of more than 2 blocks) that the colonists cannot climb
 - - Removal cannot be too close to any colonists
+- When attempting to remove a block the player is notified by an in-game message
 
 1. Start by reducing the size of the Sidebar's main buttons to free up space above the Minimap/Inspect display zone for new buttons (adjusting the Details Area is too cumbersome as it affects the Inspect Display area which is very crowded already... maybe when we replace the Inspect Display with a tooltip we can rethink this policy).
 
@@ -3656,11 +3657,11 @@ Exit Criteria:
 
 6. Add a new click response handler to the Engine, to be called when a click is registered while in removeTerrain mode.
 
-### 7. Now start adding the validation checks for a block's removal, starting with the Map class. The Engine will call the Map's checkForBlockRemoval method, which will check for the existence of a Block at the given coordinates, check if its altitude is permissible, and finally, check if the block's removal would create a height gap of more than 2 blocks with either of the adjacent columns. Needless to say, create a unit test for this method before implementing. Also, add the 'bedrock height' as a Map property so it can be adjusted easily, should the need arise. Also make this check call the isBlockOnSurface method, since only blocks at the map's surface can be removed.
+7. Now start adding the validation checks for a block's removal, starting with the Map class. The Engine will call the Map's checkForBlockRemoval method, which will check for the existence of a Block at the given coordinates, check if its altitude is permissible, and finally, check if the block's removal would create a height gap of more than 2 blocks with either of the adjacent columns. Needless to say, create a unit test for this method before implementing. Also, add the 'bedrock height' as a Map property so it can be adjusted easily, should the need arise. Also make this check call the isBlockOnSurface method, since only blocks at the map's surface can be removed.
 
-### 8. Next, create the block removal check for the Infrastructure class; basically just ensure that there is no structure at the block's X coordinate by checking it against the Map data class's baseVolume column to see if there is anything there. Since structures cannot be placed below ground, the presence of any module at that coordinate implies that there is a module ABOVE the block being targeted, and thus the excavation should not be allowed to proceed. Add a quick unit test for this method to ensure there are no surprises when everything is put together.
+8. Next, create the block removal check for the Infrastructure class; basically just ensure that there is no structure at the block's X coordinate by checking it against the Map data class's baseVolume column to see if there is anything there. Since structures cannot be placed below ground, the presence of any module at that coordinate implies that there is a module ABOVE the block being targeted, and thus the excavation should not be allowed to proceed. ADDENDUM: This is actually such a simple formula that the Engine can do it itself in just one line, so validate in-game in lieu of a unit test. There, I let you off the hook that time!
 
-### 9. The last check will be with the Population class, and it will be simply to see that there are no colonists within, say, 2 columns of the block being removed. This ensures that removing a block can never be removed from under a colonist's feet, or from a column that a colonist is just about to walk into. Unit test this method as well.
+### 9. The last check will be with the Population class, and it will be simply to see that there are no colonists within, say, 2 columns of the block being removed. This ensures that removing a block can never be removed from under a colonist's feet, or from a column that a colonist is just about to walk into. Unit test this method, and make it a good one to pay for the previous step's heedlessness.
 
 ### 10. Put all of the sub-components' checks together in the Engine's handleExcavate method, and test it out as a whole in-game since we are not presently able to unit-test the Engine's methods directly. Once satisfied, move on to the implementation of the removal process.
 
@@ -3669,6 +3670,8 @@ Exit Criteria:
 ### 97. Add a notification for when the excavate action succeeds.
 
 ### 98. Add a restriction to the creation of a mining zone so that blocks with a resource value of 0 are not permitted. Create a notification if the player tries to mine a useless tile.
+
+### 98. Clean up all console logs for this chapter's development (or if you really like them, add a flag to them to keep appearing in dev mode only).
 
 ### 99. Update the constants file's version and/or year for the new release.
 
@@ -3695,6 +3698,8 @@ Exit Criteria:
 - ...
 
 ### 1. Step One...
+
+### 98. Clean up all console logs for this chapter's development (or if you really like them, add a flag to them to keep appearing in dev mode only).
 
 ### 99. Update the constants file's version and/or year for the new release.
 

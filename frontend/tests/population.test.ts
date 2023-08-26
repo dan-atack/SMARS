@@ -221,4 +221,18 @@ describe("Population", () => {
         })
     })
 
+    test("areColonistsNear can tell if there are any colonists within a given distance of a given location", () => {
+        reset();
+        population.addColonist(0, 33);
+        population.addColonist(10, 33);
+        // Test 1: No colonists are within a wide radius
+        expect(population.areColonistsNear({ x: 5, y: 33 }, 5));
+        // Test 2: Colonists are within a wide radius
+        expect(population.areColonistsNear({ x: 6, y: 33 }, 5));
+        // Test 3: Colonists are not within a small radius
+        expect(population.areColonistsNear({ x: 8, y: 33 }, 2));
+        // Test 4: Colonists are within a small radius
+        expect(population.areColonistsNear({ x: 9, y: 33 }, 2));
+    })
+
 })

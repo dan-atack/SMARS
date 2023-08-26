@@ -631,12 +631,16 @@ export default class Engine extends View {
     }
 
     handleExcavate = (coords: Coords) => {
-        console.log(`Removing block at (${coords.x}, ${coords.y})`);
         const crds = { x: coords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: coords.y * constants.BLOCK_WIDTH};
         const mapcheck = this._map.isBlockRemovable(coords);    // If check succeeds this will be a block; if not it will be a string (message)
         if (typeof mapcheck === "string") {
             const msg = this.createMessage("command-excavate-fail", 0, mapcheck);
             this._notifications.createMessageFromClick(crds, msg);
+        } else if (mapcheck) {  // If the map check was successful it will return a block
+            const noUndermine = this._infrastructure._data._baseVolume[coords.x].length === 0;  // Check for buildings
+            const allClear = this._population.areColonistsNear(coords, 2);
+            console.log(`${noUndermine ? "Excavation does not undermine our position." : "This undermines us."}`);
+            console.log(`${allClear ? "All clear!" : "Micro changes in air density detected."}`);
         }
         // Check map first to see if there is a block, and its removal is acceptable - return the block's data from the map check method
         // If a block is returned, use its hp to see if the player has enough money

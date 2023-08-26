@@ -179,6 +179,12 @@ export default class Population {
         }
     }
 
+    // Returns true or false whether there are any colonists within the given distance of the given coordinates
+    areColonistsNear = (coords: Coords, dist: number) => {
+        const allClear = this._colonists.filter((col) => Math.abs(col._data._x - coords.x) < dist).length === 0;
+        return allClear;
+    }
+
     // SECTION 6: COLONIST SAVE/LOAD DATA MANAGEMENT
 
     prepareColonistSaveData = () => {
