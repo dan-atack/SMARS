@@ -4,6 +4,7 @@ import Screen from "./screen";
 import Button from "./button";
 import { constants } from "./constants";
 import { sendLoginRequest, sendSignupRequest } from "./server_functions";
+import { playSound } from "./engineHelpers";
 
 export default class Login extends Screen {
     // Login screen types: keep track of buttons to enable click response handlers. Center value is for centering text.

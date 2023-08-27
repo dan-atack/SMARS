@@ -77,3 +77,44 @@ export const getSmartianTimeDelta = (currentTime: GameTime, otherTime: GameTime)
     const delta = minute + (hour * 60 ) + (cycle * 720) + (sol * 1440) + (year * 5760)
     return delta;
 }
+
+export const playSound = (id: string) => {
+    try {
+        const sound = document.getElementById(id);
+        // const sound: HTMLAudioElement = new Audio(`../sounds/${id}`);
+        if (sound) {
+            //@ts-ignore
+            sound.play();
+        }
+    } catch {
+        console.log(`ERROR: Sound file not found for ${id}`);
+    }
+}
+
+// Stops a sound file but keeps its playback at the current location so it can be resumed the next time it's played
+export const pauseSound = (id: string) => {
+    try {
+        const sound = document.getElementById(id);
+        if (sound) {
+            //@ts-ignore
+            sound.pause();
+        }
+    } catch {
+        console.log(`ERROR: Was unable to pause sound ${id}`);
+    }
+}
+
+// Stops a sound file and re-loads it so it will start from the beginning next time it's played
+export const stopSound = (id: string) => {
+    try {
+        const sound = document.getElementById(id);
+        if (sound) {
+            //@ts-ignore
+            sound.pause();
+            //@ts-ignore
+            sound.currentTime = 0;
+        }
+    } catch {
+        console.log(`ERROR: Was unable to stop sound ${id}`);
+    }
+}

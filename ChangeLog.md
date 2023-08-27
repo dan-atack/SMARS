@@ -3687,6 +3687,69 @@ Exit Criteria:
 
 20. Update the constants file's version and/or year for the new release.
 
+## Chapter Ninety-Nine: Sound
+
+### Difficulty Estimate: 5 (after a short but ugly debacle trying to use P5's sound library, a simpler home-made approach will be used instead)
+
+### Date: August 27, 2023
+
+Few things add more to the user experience of a game than sound. Although SMARS is definitely much more towards the disembodied, high-level strategic end of the gaming experience spectrum (as opposed to first-person or even third-person situations in which the player is put right into the game's action, or controlling a character who is in the thick of it) it will still benefit greatly from the addition of a few well-chosen audio effects. Since the P5 sound library is unfortunately not cooperating at this time, it will be necessary to develop a simpler, home-grown system for adding and managing sound effects and/or music for the game.
+
+Since we'll be committing the sin of bundling content with code for this effort (the frontend will now contain a 'sounds' directory) it will be advisable to create a simple prototype for the game's sound system, load that up with just 6-8 basic sounds, including at least 1-2 longer tracks (e.g. greater than 10 seconds) and deploy it to a cloud development environment to gauge how well the game will perform in a real-life environment.
+
+The sound system itself should be organized around a high-level component just below the App, so that all of the game's screens - not just the Engine - have the ability to play sound effects. This top-level sound control class will control all audio in the game, and a reference to it will be passed to all Application subclasses (Game, Menu, etc.) so that they can have full access to its API and not have to load specific sound control methods from it individually. Audio will mostly just be bleeps and bloops for the non-game screens, but the player will encounter those first so it's important to set the right tone from the outset, and let the player know what they're in for - a full multimedia experience!!
+
+Exit Criteria for Prototype stage:
+
+-[DONE] Game runs and can play sound in the local dev environment
+
+- Game runs and can play sounds in a cloud environment
+- Sounds start promptly when the application/game event that triggers them occurs
+- Sounds can be paused or stopped
+- [STRETCH] Sound volume can be adjusted before or during playback
+
+Exit Criteria for chapter:
+
+- Button clicks for the following events outside of the game have sound effects:
+- - Login success - Generic success noise
+- - Login failure - Generic failure noise
+- - New account creation success - Generic success noise
+- - New account creation failure - Generic failure noise
+- - New Game Screen is loaded - Generic select noise
+- - Load Game Screen is loaded - Generic select noise
+- - New Game options buttons all play generic select noise
+- - New Game difficulty options each have a unique noise
+- - On the Save Game screen, if a save is created successfully - Generic success noise
+- - On the Save Game screen, if a save is not created successfully - Generic failure noise
+- Events inside the game have sound effects:
+- - When a new game starts a custom sound effect is played
+- - When a saved game is loaded, a different custom sound effect is played
+- - When any in-game view is selected, secondary generic select noise
+- - When any mouse-context is selected, generic select noise
+- Some mouse contexts have specific sound effect when clicked:
+- - Module placement plays an airlock sound
+- - Connector placement plays a metallic tapping sound
+- - Resouce zone selection plays a faint jackhammer sound
+- - Demolish mode plays a powering-down/dismantling sound
+- - Excavate mode plays an earth-moving sound
+- - Inspect mode plays a different sound depending on what is clicked:
+- - - Colonist makes little "Aha!" sound - [STRETCH] with different pitches for different morale levels!
+- - - Modules make a faint humming sound
+- - - Connectors make a 'crawling through air vent' sound
+- - - Blocks make a crunching sound, like a foot on dirt
+- [STRETCH] The two Holst tracks, Mars and Venus, are used tastefully as an early in-game soundtrack
+- Make sure to give credit/attribution to any and all audio sources in the game's README, and throw in a big shout-out to P5 too!
+
+### 1. After giving up on the P5 approach, it will be necessary to create our own system, based in part on how it was done in Blockland (adding sound files to the index.html file directly and calling them, via their DOM element IDs, from a global function). Develop this system and load in some simple sound files, including a ting noise wav file (which is relatively short, but quite heavy), a simple ping noise mp3 file (very small) and a long but highly compact midi file for the game's tentative soundtrack. Load them all to play, via global functions, at various stages of the game, and then do a test deployment to the cloud dev server to validate performance in a realistic (non-local) environment. Don't forget to change the branch name in the local VM's version of the game files so that the EC2 instance it creates points to this development branch. Clean this deployment up once you're satisfied that the sounds should work properly in a cloud-hosted environment. ADDENDUM: Midi files are OUT, and Ogg files are IN, as they are apparently the most highly-condensed sound format that works on all major browsers.
+
+### 2. Create a new App subclass component for the frontend, called AudioControl, and recreate all of the global sound-handling functions to be methods of this class. In addition to these methods, the AudioControl class will need a few fields, to keep track of the current sound effect, current music, and so on. Do some white-paper design work before implementing this so the architecture is clear before the code is written!
+
+### 97. Are there any in-game notifications that should accompany a new feature?
+
+### 98. Clean up all console logs for this chapter's development (or if you really like them, add a flag to them to keep appearing in dev mode only).
+
+### 99. Update the constants file's version and/or year for the new release.
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
@@ -3710,6 +3773,8 @@ Exit Criteria:
 - ...
 
 ### 1. Step One...
+
+### 97. Are there any in-game notifications that should accompany a new feature?
 
 ### 98. Clean up all console logs for this chapter's development (or if you really like them, add a flag to them to keep appearing in dev mode only).
 

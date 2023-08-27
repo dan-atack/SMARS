@@ -12,6 +12,7 @@ import SaveGame from "./saveGame";
 import LoadGame from "./loadGame";
 
 import "./styles.scss";
+import { playSound } from "./engineHelpers";
 
 const sketch = (p5:P5) => {
     // Prepare to keep track of username after login is finished:
@@ -56,6 +57,8 @@ const sketch = (p5:P5) => {
                 // Reset the game and load data if arriving at the main menu from the in-game menu
                 if (game._gameLoaded) {
                     game.reset();
+                } else {
+                    playSound("smarsTheme");    // Play the soundtrack if it's the player's first time arriving at the main menu
                 }
                 menu.setup();
                 break;

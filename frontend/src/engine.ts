@@ -22,6 +22,7 @@ import Module from "./module";
 // Helper/server functions
 import { ModuleInfo, ConnectorInfo, getOneModule, getOneConnector, getRandomEvent } from "./server_functions";
 import { constants, modalData } from "./constants";
+import { pauseSound, playSound, stopSound } from "./engineHelpers";
 // Types
 import { ConnectorSaveInfo, ModuleSaveInfo, SaveInfo, GameTime } from "./saveGame";
 import { GameData } from "./newGameSetup";
@@ -190,6 +191,7 @@ export default class Engine extends View {
     }
 
     setupSavedGame = (saveInfo: SaveInfo) => {
+        playSound("loadGame");
         this._saveInfo = saveInfo;
         // Load game time
         this.setClock(saveInfo.game_time);
@@ -573,6 +575,7 @@ export default class Engine extends View {
 
     // Takes the mouse coordinates and looks for an in-game entity at that location
     handleInspect = (coords: Coords) => {
+        playSound("gatling");
         // Clear previous inspect target (if any) before determining new display data
         this.clearInspectSelection();
         if (this._population.getColonistDataFromCoords(coords)) {                   // First check for Colonists
@@ -651,9 +654,11 @@ export default class Engine extends View {
                 const moneyString = (cost / 100).toFixed(2);        // Notify of success and cost
                 const msg = this.createMessage("command-excavate-success", 0, `${removal._blockData.name} removed.\n-$${moneyString}`);
                 this._notifications.createMessageFromClick(crds, msg);
+                pauseSound("gatling");
             } else {
                 const msg = this.createMessage("command-excavate-fail", 0, `Cannot carry out excavation here:\n${affordable ? noUndermine ? "Too close to population" : "Undermines base structures" : "Insufficient funds available"}`);
                 this._notifications.createMessageFromClick(crds, msg);
+                stopSound("gatling");
             }
         }
         // If all good, proceed with the removal:
