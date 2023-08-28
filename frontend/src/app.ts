@@ -60,8 +60,9 @@ const sketch = (p5:P5) => {
                     game.reset();
                     menu._audio.adjustVolume("music", -0.25);   // Lower the music volume by 25% every time the main menu is accessed
                 } else {
-                    menu._audio.playSound("music", "smarsTheme");    // Play the soundtrack if it's the player's first time arriving at the main menu
-                    menu._audio.setMusicFadeoutTimes(2, 10);     // Start after 5 seconds and fade out over 5 seconds
+                    menu._audio.playSound("music", "smarsTheme");       // Play the soundtrack if it's the player's first time arriving at the main menu
+                    menu._audio.setMusicFadeinTime(10);                 // Fade-in gradually over the first 10 seconds
+                    menu._audio.setMusicFadeoutTimes(12, 18);           // Start fading out after 12 seconds and stop playing entirely at 30 seconds
                 }
                 menu.setup();
                 break;
