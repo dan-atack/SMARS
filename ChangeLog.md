@@ -3752,7 +3752,13 @@ Exit Criteria for chapter:
 
 6. Add a 'channel' argument to the play, pause and stop methods so they can be used to start/stop/pause different elements of the game's soundscape. Remember to always include a 'master' option, which will set all three channels (music, menu and effect) at once.
 
-### 8. Next consider fade-outs: Does the Audio Controller need a check/update method that can be placed in a P5 render block, to update it on a continuous basis? Are there other asynchronous methods that might be used instead of this approach?
+7. Next consider fade-outs: Does the Audio Controller need a check/update method that can be placed in a P5 render block, to update it on a continuous basis? Assuming it does, add an update method to the Audio Controller class that assumes it will be placed in a P5 block (and therefore to be updating roughly 40 - 50 times per second), and another method called updateFadeout, which will assume it's operating on the current music channel file, and which will reduce the music channel's volume by a given amount... Add a new field called fadeoutDuration, and have it be a number representing the amount of seconds after the fadeout start time at which point the channel's volume should be zero. Have the updater method check if the music channel has gone past its fadeout start time, and begin calling the fadeout updater if it has - and if it's not already stopped playing.
+
+### 8. Add a fade-in effect as well, which can just be the inverse of the fade-out. Decide how to apply it - maybe have the fade-in duration be used automatically as the time after which a music track should be at 100% volume?
+
+### 9. Once fade-ins and fade-outs have been figured out, decide when the game's intro music should cut out (maybe it can be at different times for different scenarios?) and implement that. Then, pass the AudioController down to the Engine via the Game class, and start adding some custom sound effects!
+
+### 10. Add an optional argument to the Button class for which type of ting noise it should play, and add 2-3 more options for a variety of button reaction sounds. See if you can get the elevator button from FFVII and use it somewhere!
 
 ### 97. Are there any in-game notifications that should accompany a new feature?
 

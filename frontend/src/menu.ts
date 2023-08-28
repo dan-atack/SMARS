@@ -20,7 +20,7 @@ export default class Menu extends Screen {
 
     constructor(p5: P5, audio: AudioController, color: string, switchScreen: (switchTo: string) => void) {
         super(p5);
-        this._audio = audio
+        this._audio = audio;    // The remote control!
         this._buttons = [];
         this._color = color;
         this._username = "";    // This will be set after the initial construction of this class, once login is completed.
@@ -107,6 +107,7 @@ export default class Menu extends Screen {
     }
 
     render = () => {
+        this._audio.updateFades();
         const p5 = this._p5;
         p5.background(this._color);
         p5.textSize(48);

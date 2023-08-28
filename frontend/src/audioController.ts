@@ -4,7 +4,10 @@ export class AudioController {
     // Audio Controller types
     _music: string;             // The DOM ID of the currently playing music file, if any (empty string = no file)
     _effects: string;           // DOM ID of the currently playing sound effect file, if any (empty string = no file)
-    _musicCutoff: number;       // Actual format TBD; will be used to determine when to fade-out the currently playing music, if requested ( 0 = no cutoff )
+    _musicFadein: number;       // If used, determines how many seconds of a new track to play before reaching full volume ( 0 = start at full volume right away )
+    _musicFadeout: number;      // Used to determine when in the track to start to fade-out the currently playing music, if requested ( 0 = no fadeout )
+    _musicFadeoutDuration: number;  // Determines how many seconds to take before reaching zero volume when the designated fadeout start time arrives
+    _musicFadeoutLastSecond: number;    // Keeps track of fadeout progress; fadeout progresses only once per second using this value
     _musicVolume: number;       // Value ranges from 0 - 1.0; Represents the current volume of the game's music
     _effectsVolume: number;     // Value ranges from 0 - 1.0; Volume for in-game sound effects
     _menuVolume: number;        // Value ranges from 0 - 1.0; Volume for buttons, menu events, etc
@@ -12,25 +15,64 @@ export class AudioController {
     constructor() {
         this._music = "";
         this._effects = "";
-        this._musicCutoff = 0;
-        this._musicVolume = 1;      // Start at full volume by default
+        this._musicFadein = 0;              // Zero means start at regular volume
+        this._musicFadeout = 0;             // Zero means play the whole song
+        this._musicFadeoutDuration = 0;     // Zero means stop the song immediately when the fadeout time is reached
+        this._musicFadeoutLastSecond = 0;   // 
+        this._musicVolume = 1;              // Start at full volume by default
         this._effectsVolume = 1;
         this._menuVolume = 1;
     }
+
+    // SECTION 1: UPDATER METHODS
+
+    // Checks every frame if it is time to advance the fade in/out effect for the music track
+    updateFades = () => {
+        try {
+            const sound = document.getElementById(this._music);
+            //@ts-ignore
+            if (sound && this._musicFadeout !== 0 && sound.currentTime > this._musicFadeout && sound.currentTime > this._musicFadeoutLastSecond && sound.volume > 0) {
+                //@ts-ignore
+                this._musicFadeoutLastSecond++;
+                const increment = -1 / this._musicFadeoutDuration;
+                this.adjustVolume("music", increment);
+            }   // TODO: Add fade-ins
+        } catch {
+            console.log("ERROR: Fade effect has encountered an issue.");
+        }
+    }
+
+    // Sets when a fadeout should start, and how long it should take
+    setMusicFadeoutTimes = (start: number, duration: number) => {
+        this._musicFadeout = start;
+        this._musicFadeoutDuration = duration;
+        this._musicFadeoutLastSecond = start;
+    }
+
+    // Sets how long a fade-in should take to get to max volume
+    setMusicFadeinTime = (duration: number) => {
+        this._musicFadein = duration;
+    }
+
+    // SECTION 2: BASIC PLAYBACK METHODS
 
     // Looks up a sound file by its ID and attempts to play it on the given channel (music or effects)
     playSound = (channel: string, id: string) => {
         try {
             const sound = document.getElementById(id);
             if (sound) {
-                //@ts-ignore
-                sound.play();
-                // Store the ID if the element is found and can be played
+                // Store the ID if the element is found
                 if (channel === "music") {
                     this._music = id;
+                    //@ts-ignore
+                    sound.volume = this._musicVolume;
                 } else if (channel === "effects") {
                     this._effects = id;
+                    //@ts-ignore
+                    sound.volume = this._effectsVolume;
                 }
+                //@ts-ignore
+                sound.play();
             }
         } catch {
             console.log(`ERROR: Sound file not found for ${id}`);
@@ -71,6 +113,8 @@ export class AudioController {
             console.log(`ERROR: Was unable to stop sound for channel ${channel}`);
         }
     }
+
+    // SECTION 3: VOLUME SETTINGS METHODS
 
     // Takes the name of a sound channel (music, effects, menu or master) and a value from 0 to 1 to set as that channel's volume
     setVolume = (channel: string, value: number) => {
@@ -188,5 +232,7 @@ export class AudioController {
         } catch {
             console.log(`ERROR: Something went wrong tryng to adjust volume for ${channel} sound channel.`);
         }
-}
+    }
+
+    
 }
