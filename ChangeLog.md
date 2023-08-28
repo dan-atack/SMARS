@@ -3744,13 +3744,23 @@ Exit Criteria for chapter:
 
 2. Create a new App subclass component for the frontend, called AudioControl, and recreate all of the global sound-handling functions to be methods of this class. In addition to these methods, the AudioControl class will need a few fields, to keep track of the current sound effect, current music, and so on. Do some white-paper design work before implementing this so the architecture is clear before the code is written!
 
+3. Start integrating the Audio Controller: Create an instance of it in the App file, and add it to the constructor for the Menu class. Then, through the Menu's reference to the Audio controller, have the game's intro music play when the menu is setup (you can do this by having the app call the menu class's method, the way it currently calls the global function).
 
+4. Next, do some measurements: Can we monitor the status of the current sound file? What properties does it actually have? Find out, by storing the reference to the soundtrack's DOM element, as well as its ID, in a field in the Audio Controller's class, and then logging that sucker to the console and analysing it. We already know it contains a 'currentTime' value which appears to be a number, so let's see what scale that uses, and also whether a similar value can be found for the volume. ADDENDUM: It's the number of seconds elapsed. And the volume value is totally visible, just so long as you don't tell the Typescript checker about it!
+
+5. Assuming the required fields are available, attempt to make the soundtrack get quieter by 25% when a Menu button is clicked, by adding a new setVolume method to the Audio Controller class, as well as an adjustVolume method, which takes a delta value to apply to the current volume. These methods should each accept two arguments; one for the new volume level/volume adjustment fraction, and a second one for the category of sound being adjusted ("music", "menu", "effect", or "master").
+
+6. Add a 'channel' argument to the play, pause and stop methods so they can be used to start/stop/pause different elements of the game's soundscape. Remember to always include a 'master' option, which will set all three channels (music, menu and effect) at once.
+
+### 8. Next consider fade-outs: Does the Audio Controller need a check/update method that can be placed in a P5 render block, to update it on a continuous basis? Are there other asynchronous methods that might be used instead of this approach?
 
 ### 97. Are there any in-game notifications that should accompany a new feature?
 
 ### 98. Clean up all console logs for this chapter's development (or if you really like them, add a flag to them to keep appearing in dev mode only).
 
 ### 99. Update the constants file's version and/or year for the new release.
+
+### 100. Do a torture test in your staging environment! Tweak the game's code on the local VM to start 'easy' games with $1,000,000 and spend that cash on as many structures as you can cram in! Also set the Earth immigration to add new people every week (game hour), and see how much of a population / how large of a base you can build before the game starts to get all claggy. It will be a weird exercise but the results will surely be fascinating! Next, do the same test in the local dev environment, and see if the results differ at all! Yay, science!
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

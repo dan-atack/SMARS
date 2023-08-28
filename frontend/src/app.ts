@@ -3,6 +3,7 @@ import P5 from "p5";
 // Game constants:
 import { constants } from "./constants";
 // Components:
+import { AudioController } from "./audioController";
 import Menu from "./menu";
 import Login from "./login";
 import NewGameSetup from "./newGameSetup";
@@ -57,8 +58,9 @@ const sketch = (p5:P5) => {
                 // Reset the game and load data if arriving at the main menu from the in-game menu
                 if (game._gameLoaded) {
                     game.reset();
+                    menu._audio.adjustVolume("music", -0.25);   // Lower the music volume by 25% every time the main menu is accessed
                 } else {
-                    playSound("smarsTheme");    // Play the soundtrack if it's the player's first time arriving at the main menu
+                    menu._audio.playSound("music", "smarsTheme");    // Play the soundtrack if it's the player's first time arriving at the main menu
                 }
                 menu.setup();
                 break;
@@ -76,8 +78,9 @@ const sketch = (p5:P5) => {
     }
 
     // Instantiate Screen classes:
+    const audio = new AudioController();
     const login = new Login(p5, switchScreen);
-    const menu = new Menu(p5, constants.APP_BACKGROUND, switchScreen);
+    const menu = new Menu(p5, audio, constants.APP_BACKGROUND, switchScreen);
     const newGame = new NewGameSetup(p5, switchScreen);
     const game = new Game(p5, switchScreen);
     const inGameMenu = new InGameMenu(p5, switchScreen);

@@ -1,12 +1,14 @@
 import P5 from "p5";
 import Screen from "./screen";
 import Button from "./button";
+import { AudioController } from "./audioController";
 import { constants } from "./constants";
 
 // Main Menu (Pre-game)
 export default class Menu extends Screen {
     // Define types new to Menu class:
-    _buttons: Array<Button>;
+    _audio: AudioController;                // AudioController gives a component access to audio control context
+    _buttons: Button[];
     _color: string;
     _username: string;
     _buttonWidth: number;
@@ -16,8 +18,9 @@ export default class Menu extends Screen {
     _buttonBG: string;
     switchScreen: (switchTo: string) => void;
 
-    constructor(p5: P5, color: string, switchScreen: (switchTo: string) => void) {
+    constructor(p5: P5, audio: AudioController, color: string, switchScreen: (switchTo: string) => void) {
         super(p5);
+        this._audio = audio
         this._buttons = [];
         this._color = color;
         this._username = "";    // This will be set after the initial construction of this class, once login is completed.
