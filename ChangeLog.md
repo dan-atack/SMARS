@@ -3723,9 +3723,8 @@ Exit Criteria for chapter:
 - - On the Save Game screen, if a save is created successfully - Generic success noise
 - - On the Save Game screen, if a save is not created successfully - Generic failure noise
 - Events inside the game have sound effects:
-- - New game starts - wind effect (plus intro music will still be playing)
-- - Landing start - rocket engine sound
-- - Landing touchdown - "airlock" hissing/compression sound
+- - [DONE] Landing start - rocket engine sound
+- - [DONE] Landing touchdown - "airlock" hissing/compression sound
 - - [DONE] Saved game file loaded - wind sound effect
 - - When any in-game view is selected, secondary generic select noise
 - - When any mouse-context is selected, generic select noise
@@ -3764,7 +3763,11 @@ Exit Criteria for chapter:
 
 10. Pass the Audio Controller to the game's other top-level classes - the Load Game, Save Game and New Game screens. In fact, make the Audio controller element a necessary part of the Screen class, to avoid having to add it separately to everyone's constructor. Let's keep it dry, people!
 
-### 10. Add an optional argument to the Button class for which type of ting noise it should play, and add 2-3 more options for a variety of button reaction sounds. See if you can get the elevator button from FFVII and use it somewhere!
+11. Add a quickPlay method to the Audio class, which plays a sound but doesn't store any reference to it in either channel. Have the Engine use this method to call basic sounds that do not require any fade effects, and/or are too short to bother needing to pause/stop.
+
+12. Start adding button response sounds to the game, one screen at a time. Might as well start with all of the various error noises that are possible for the Login page. ADDENDUM: It turns out that, rather than having audio click responses at the level of the individual button, it is best to include a Button's click response sound call to the button parent class's click handler method (which it passes to the button). Field test all of the sound-creating event possibilities for the Login page before proceeding to the Main Menu class.
+
+13. Now do the Menu. One sound for each button handler - it really doesn't get much simpler than that! Make sure the Preferences button plays the 'fail' sound until such time as it is upgraded to actually do something.
 
 ### 97. If you're feeling very plucky, implement the Channel type concept, to allow management of any number of sounds simultaneously.
 

@@ -224,6 +224,19 @@ export default class AudioController {
             console.log(`ERROR: Sound file not found for ${id}`);
         }
     }
+
+    // Provides the basic functionality of the play method, but doesn't store any info about the file being played
+    quickPlay = (id: string) => {
+        try {
+            const sound = document.getElementById(id);
+            if (sound) {
+                //@ts-ignore
+                sound.play();
+            }
+        } catch {
+            console.log(`ERROR: Sound file not found for ${id}`);
+        }
+    }
     
     // Stops a sound file but keeps its playback at the current location so it can be resumed the next time it's played
     pauseSound = (channel: string, id: string) => {

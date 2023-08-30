@@ -61,6 +61,7 @@ export default class Login extends Screen {
 
     // Alternate setup for signing up new user
     setupSignup = () => {
+        this._audio.quickPlay("ting01");
         this._loginMode = false;
         const p5 = this._p5;
         // Cleanup old error messages and reset buttons list to switch them around and change their captions
@@ -70,7 +71,7 @@ export default class Login extends Screen {
         this._buttons = [];
         const signUp = new Button("Sign Me Up!", this._center / 2 - 32, 512, this.handleSignup, 256, 128, constants.GREEN_TERMINAL, constants.GREEN_DARK);
         this._buttons.push(signUp);
-        const login = new Button("Back to Login", this._center + 32, 512, this.setup, 256, 128, constants.GREEN_TERMINAL, constants.GREEN_DARK)
+        const login = new Button("Back to Login", this._center + 32, 512, this.handleBackToLogin, 256, 128, constants.GREEN_TERMINAL, constants.GREEN_DARK)
         this._buttons.push(login);
         p5.text("Sign up as new user", this._center, 112);
         // Reset input fields:
@@ -106,7 +107,8 @@ export default class Login extends Screen {
             const req = { username: username, password: password }
             sendLoginRequest(req, this.setHttpStatus);
         } else {
-            // If either input field is empty, show a generic error message (and reset HTTP code):
+            // If either input field is empty, play an error sound, show a generic error message, and reset HTTP code:
+            this._audio.quickPlay("fail01");
             this.httpResponseCode = 0;
             this.setErrorMessage("Please enter valid username and password", 400);
         }
@@ -124,13 +126,23 @@ export default class Login extends Screen {
         } else if (password.length < 6) {
             this.httpResponseCode = 0;
             this.setErrorMessage("Error: Password length must be at least 6 characters", 384);
+            this._audio.quickPlay("fail01");
         } else if (!passwordsMatch) {
             this.httpResponseCode = 0;
             this.setErrorMessage("Error: Passwords do not match", 384);
+            this._audio.quickPlay("fail01");
         } else if (username.length <= 3) {
             this.httpResponseCode = 0;
             this.setErrorMessage("Please choose a username with at least 4 characters", 280);
+            this._audio.quickPlay("fail01");
+
         }
+    }
+
+    // Handles the button click to return to the login configuration
+    handleBackToLogin = () => {
+        this._audio.quickPlay("ting01");
+        this.setup();
     }
 
     resetErrorFlags = () => {
@@ -142,6 +154,7 @@ export default class Login extends Screen {
         this.httpResponseCode = status;
         // If login or signup is successful, call the post-login cleanup method:
         if (username) {
+            this._audio.quickPlay("ting01");
             this.handleClosePage(username);
         }
     }
@@ -160,18 +173,30 @@ export default class Login extends Screen {
         switch (this.httpResponseCode) {
             case 200:   // If the status is 200 or 201, remove error messages
             case 201:
-                this.setErrorMessage("", 0);
+                const msg = "";
+                if (this.loginErrorMessage !== msg) {
+                    this.setErrorMessage(msg, 0);
+                }
                 break;
             // Login errors:
             case 403:
-                this.setErrorMessage("Incorrect password. Please try again.", 400);
+                const ms = "Incorrect password. Please try again."
+                if (this.loginErrorMessage!== ms) {
+                    this.setErrorMessage(ms, 400);
+                }
                 break;
             case 404:
-                this.setErrorMessage("Username not found. Please check spelling or sign up as a new user.", 400);
+                const m = "Username not found. Please check spelling or sign up as a new user."
+                if (this.loginErrorMessage!== m) {
+                    this.setErrorMessage(m, 400);
+                }
                 break;
             // Sign-up errors:
             case 409:
-                this.setErrorMessage("Sorry, that username is already taken. Please try something else.", 280);
+                const duplicate = "Username not found. Please check spelling or sign up as a new user."
+                if (this.loginErrorMessage!== duplicate) {
+                    this.setErrorMessage(duplicate, 280);
+                }
         }
     }
 
@@ -179,6 +204,7 @@ export default class Login extends Screen {
     setErrorMessage = (msg:string, pos: number) => {
         this.loginErrorMessage = msg;
         this.loginErrorMessagePosition = pos;
+        if (msg.length > 0) this._audio.quickPlay("fail01");    // Play an error sound if a new, non-empty message is set
     }
 
     // Use render method to handle showing/unshowing error messages for the login/signup process
@@ -194,8 +220,8 @@ export default class Login extends Screen {
         p5.text("Get your ass to SMARS", this._center, 16);
         p5.textSize(28);
         p5.textStyle(p5.NORMAL);
-        p5.text("Username", this._center, 192);
-        p5.text("Password", this._center, 296);
+        p5.text(this._loginMode ? "Username" : "Username (at least 4 characters)", this._center, 192);
+        p5.text(this._loginMode ? "Password" : "Password (at least 6 characters)", this._center, 296);
         if (!this._loginMode) p5.text("Confirm Password", this._center, 400);
         if (this._loginMode) p5.text("First time on SMARS?", this._center + 32, 432, 256, 128);
         p5.textSize(12);

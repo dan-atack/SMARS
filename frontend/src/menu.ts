@@ -83,22 +83,26 @@ export default class Menu extends Screen {
     }
 
     handleNewGame = () => {
+        this._audio.quickPlay("ting01");
         this.handleCloseMenu();
         this.switchScreen("newGameSetup");
     }
 
     handleLoadGame = () => {
+        this._audio.quickPlay("ting01");
         this.handleCloseMenu();
         this.switchScreen("loadGame");
     }
 
     handlePreferences = () => {
-        console.log("The Button you have pressed is not in service. Please make a note of it.");
+        this._audio.quickPlay("fail01");
+        console.log("The Button you have pressed: \"Preferences\" is not in service. Please make a note of it.");
         // this.handleCloseMenu();
         // this.switchScreen("preferences");
     }
 
     handleLogout = () => {
+        this._audio.quickPlay("ting01");
         this._username = "";
         this.handleCloseMenu();
         this.switchScreen("login");

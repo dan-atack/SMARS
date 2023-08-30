@@ -55,7 +55,7 @@ export default class Button {
         const xMatch = mouseX >= this._x && mouseX < this._x + this._width;
         const yMatch = mouseY >= this._y && mouseY < this._y + this._height;
         if (xMatch && yMatch) {
-            playSound("ting01");
+            // playSound("ting01");
             this.handler();
         }
     }

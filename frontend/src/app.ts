@@ -49,7 +49,7 @@ const sketch = (p5:P5) => {
                 loadGame.setUsername(username);
                 loadGame.setup();
                 break;
-            case "login" :
+            case "login":
                 username = ""   // Reset username to blank if the logout button is activated
                 login.loggedIn = false; // Tell the login page that no user is currently logged in
                 login.setup();  // Call this from the menu's logout button, if you have the energy
