@@ -1,6 +1,17 @@
 // The Audio Controller component is a context-like subclass of the App, which is passed to various subcomponents to allow them to control the game's sound effects
 
-export class AudioController {
+// UPGRADE IDEA: CHANNEL CLASS - Lets you keep track of as many sounds as you like, and without the massive overhead!
+export type Channel = {
+    domElementID: string,           // Can we in fact make this a reference to the element itself?
+    volume: number,
+    fadeInDuration: number,
+    fadeinLastSecond: number,
+    fadeoutStart: number,
+    fadeoutDuration: number,
+    fadeoutLastSecond: number
+}
+
+export default class AudioController {
     // Audio Controller types
     _music: string;             // The DOM ID of the currently playing music file, if any (empty string = no file)
     _effects: string;           // DOM ID of the currently playing sound effect file, if any (empty string = no file)
@@ -9,8 +20,13 @@ export class AudioController {
     _musicFadeoutDuration: number;  // Determines how many seconds to take before reaching zero volume when the designated fadeout start time arrives
     _musicFadeoutLastSecond: number;    // Keeps track of fadeout progress; fadeout progresses only once per second using this value
     _musicFadeinLastSecond: number;     // Keeps track of fadein progress
-    _musicVolume: number;       // Value ranges from 0 - 1.0; Represents the current volume of the game's music
-    _effectsVolume: number;     // Value ranges from 0 - 1.0; Volume for in-game sound effects
+    _effectsFadein: number;
+    _effectsFadeout: number;
+    _effectsFadeoutDuration: number;
+    _effectsFadeoutLastSecond: number;
+    _effectsFadeinLastSecond: number;
+    _musicVolume: number;       // Value ranges from 0 - 1.0; Represents the current volume of the game's music. Fade-ins will rise to this level
+    _effectsVolume: number;     // Value ranges from 0 - 1.0; Volume for in-game sound effects. Sounds fading in will rise to this level
     _menuVolume: number;        // Value ranges from 0 - 1.0; Volume for buttons, menu events, etc
 
     constructor() {
@@ -21,48 +37,162 @@ export class AudioController {
         this._musicFadeoutDuration = 0;     // Zero means stop the song immediately when the fadeout time is reached
         this._musicFadeoutLastSecond = 0;   // Set to equal fadeout start time when setting a new fadeout time
         this._musicFadeinLastSecond = 0;    // Set to zero when setting new song fadein duration
+        this._effectsFadein = 0;            // Same system, for the effects channel
+        this._effectsFadeout = 0;
+        this._effectsFadeoutDuration = 0;
+        this._effectsFadeoutLastSecond = 0;
+        this._effectsFadeinLastSecond = 0;
         this._musicVolume = 1;              // Start at full volume by default
         this._effectsVolume = 1;
         this._menuVolume = 1;
     }
 
-    // SECTION 1: UPDATER METHODS
+    // SECTION 1: UPDATER METHODS AND FADE EFFECTS
 
     // Checks every frame if it is time to advance the fade in/out effect for the music track
-    updateFades = () => {
-        try {
+    handleUpdates = () => {
+        try {       // FOR MUSIC
             const sound = document.getElementById(this._music);
             //@ts-ignore
             if (this._musicFadeout !== 0 && sound && sound.currentTime > this._musicFadeout && sound.currentTime > this._musicFadeoutLastSecond && sound.volume > 0) {
-                this._musicFadeoutLastSecond++;
-                console.log("Fading out");
-                const increment = -1 / this._musicFadeoutDuration;  // Fade-out: Gradually lower volume
-                this.adjustVolume("music", increment);
+                this.handleFadeout("music");   // Fade-out: Gradually lower volume to 0
                 //@ts-ignore
             } else if (this._musicFadein !== 0 && sound && sound.volume < 1 && sound.currentTime > this._musicFadeinLastSecond && sound.currentTime < this._musicFadein) {
+                this.handleFadein("music");    // Fade-in: Gradually increase volume to the music volume level
+            }
+        } catch {
+            console.log("ERROR: Fade music has encountered an issue.");
+        }
+        try {       // FOR EFFECTS
+            const sound = document.getElementById(this._effects);
+            //@ts-ignore
+            if (this._effectsFadeout !== 0 && sound && sound.currentTime > this._effectsFadeout && sound.currentTime > this._effectsFadeoutLastSecond && sound.volume > 0) {
+                this.handleFadeout("effects");
                 //@ts-ignore
-                this._musicFadeinLastSecond ++;
-                console.log("Fading in");
-                const increment = 1 / this._musicFadein;            // Fade-in: Gradually increase volume to full
-                this.adjustVolume("music", increment);
+            } else if (this._effectsFadein !== 0 && sound && sound.volume < 1 && sound.currentTime > this._effectsFadeinLastSecond && sound.currentTime < this._effectsFadein) {
+                this.handleFadein("effects");
             }
         } catch {
             console.log("ERROR: Fade effect has encountered an issue.");
         }
     }
 
-    // Sets when a fadeout should start, and how long it should take
-    setMusicFadeoutTimes = (start: number, duration: number) => {
-        this._musicFadeout = start;
-        this._musicFadeoutDuration = duration;
-        this._musicFadeoutLastSecond = start;
+    handleFadeout = (channel: string) => {
+        if (channel === "music") {
+            this._musicFadeoutLastSecond++;
+            const increment = -1 / this._musicFadeoutDuration;
+            console.log(`Fading out ${channel} by ${increment}`);
+            this.adjustVolume(channel, increment, true);
+
+        } else if (channel === "effects") {
+            this._effectsFadeoutLastSecond++;
+            const increment = -1 / this._effectsFadeoutDuration;
+            console.log(`Fading out ${channel} by ${increment}`);
+            this.adjustVolume(channel, increment, true);
+        } else {
+            console.log("ERROR: Fadeout has encountered an issue.");
+        }
+        
     }
 
-    // Sets how long a fade-in should take to get to max volume, and sets current music volume to zero
-    setMusicFadeinTime = (duration: number) => {
-        this._musicFadein = duration;
-        this._musicFadeinLastSecond = 0;    // Reset fadein duration counter
-        this.setVolume("music", 0);
+    handleFadein = (channel: string) => {
+        if (channel === "music") {
+            this._musicFadeinLastSecond ++;
+            const increment = this._musicVolume / this._musicFadein;
+            console.log(`Fading in ${channel} by ${increment}`);
+            this.adjustVolume(channel, increment, true);
+        } else if (channel === "effects") {
+            this._effectsFadeinLastSecond ++;
+            const increment = this._effectsVolume / this._effectsFadein;
+            console.log(`Fading in ${channel} by ${increment}`);
+            this.adjustVolume(channel, increment, true);
+        } else {
+            console.log("ERROR: Fadein has encountered an issue.");
+        }
+    }
+
+    // For either the music or effects channel, sets when a fadeout should start, and how long it should take
+    setFadeoutTimes = (channel: string, start: number, duration: number) => {
+        if (channel === "music") {
+            this._musicFadeout = start;
+            this._musicFadeoutDuration = duration;
+            this._musicFadeoutLastSecond = start;
+        } else if (channel === "effects") {
+            this._effectsFadeout = start;
+            this._effectsFadeoutDuration = duration;
+            this._effectsFadeoutLastSecond = start;
+        } else {
+            console.log("ERROR: Please select either the 'effects' or 'music' channel to set a fadeout time.");
+        }
+        
+    }
+
+    // Tells the Audio Controller to immediately begin to fade out the music track, over a given duration
+    startFadeout = (channel: string, duration: number) => {
+        if (channel === "music") {
+            const sound = document.getElementById(this._music);
+            if (sound) {
+                //@ts-ignore
+                const time = sound.currentTime;
+                this._musicFadeout = time;
+                this._musicFadeoutDuration = duration;
+                this._musicFadeoutLastSecond = time;
+                // Halt any fade-in effect that is still ongoing
+                this._musicFadein = 0;
+                this._musicFadeinLastSecond = 0;
+            } else {
+                console.log("ERROR: Unable to start music fadeout.");
+            }
+        } else if (channel === "effects") {
+            const sound = document.getElementById(this._effects);
+            if (sound) {
+                //@ts-ignore
+                const time = sound.currentTime;
+                this._effectsFadeout = time;
+                this._effectsFadeoutDuration = duration;
+                this._effectsFadeoutLastSecond = time;
+                // Halt any fade-in effect that is still ongoing
+                this._effectsFadein = 0;
+                this._effectsFadeinLastSecond = 0;
+            } else {
+                console.log("ERROR: Unable to start effects fadeout.");
+            }
+        } else {
+            console.log("ERROR: Please select either the 'effects' or 'music' channel to start a fadeout effect.");
+        }
+    }
+
+    // Sets how long a fade-in should take to get to max volume (should be called immediately AFTER the play method?!)
+    setFadeinTime = (channel: string, duration: number) => {
+        if (channel === "music") {
+            this._musicFadein = duration;
+            this._musicFadeinLastSecond = 0;        // Reset fadein duration counter
+            this.adjustVolume("music", -1, true);         // Set the current audio track's volume to zero
+        } else if (channel === "effects") {
+            this._effectsFadein = duration;
+            this._effectsFadeinLastSecond = 0;      // Reset fadein duration counter
+            this.adjustVolume("effects", -1, true);
+        } else {
+            console.log("ERROR: Please select either the 'effects' or 'music' channel to set fadein time/duration.");
+        }
+    }
+
+    resetFadeEffects = (channel: string) => {
+        if (channel === "music") {
+            this._musicFadein = 0;
+            this._musicFadeout = 0;
+            this._musicFadeoutDuration = 0;
+            this._musicFadeoutLastSecond = 0;
+            this._musicFadeinLastSecond = 0;
+        } else if (channel === "effects") {
+            this._effectsFadein = 0;            // Same system, for the effects channel
+            this._effectsFadeout = 0;
+            this._effectsFadeoutDuration = 0;
+            this._effectsFadeoutLastSecond = 0;
+            this._effectsFadeinLastSecond = 0;
+        } else {
+            console.log("ERROR: Please select either the 'effects' or 'music' channel to reset fade effects");
+        }
     }
 
     // SECTION 2: BASIC PLAYBACK METHODS
@@ -71,6 +201,7 @@ export class AudioController {
     playSound = (channel: string, id: string) => {
         try {
             const sound = document.getElementById(id);
+            this.resetFadeEffects(channel);
             if (sound) {
                 // Store the ID if the element is found
                 if (channel === "music") {
@@ -186,68 +317,70 @@ export class AudioController {
                 }
     }
 
-    // Takes the name of a sound channel (music, effects, menu or master) and a value from 0 to 1 to use as the DELTA to set that channel's new volume
-    adjustVolume = (channel: string, delta: number) => {
+    // Takes the name of a sound channel (music or effects only) and a DELTA (-1 to 1) to set that channel's new volume FOR THE CURRENT TRACK ONLY (used for fade effects) ... Fadeout boolean means reset the track's time when volume hits zero
+    adjustVolume = (channel: string, delta: number, fadeout: boolean) => {
+        console.log(`${channel} delta: ${delta}`);
         try {
+            const adjustedDelta = Math.min(Math.max(delta, -1), 1);        // Ensure delta respects the limits
             switch (channel) {
                 case "music":
-                    this._musicVolume += delta;                                             // Set the value
-                    this._musicVolume = Math.min(Math.max(this._musicVolume, 0), 1);        // Ensure it respects the limits
                     if (this._music) {
                         const sound = document.getElementById(this._music);
                         if (sound) {
                             //@ts-ignore
-                            sound.volume = this._musicVolume;       // Just use the new volume number right away
+                            const vol = Math.min(Math.max(sound.volume + adjustedDelta, 0), 1);  // Ensure final value also respects the limits
                             //@ts-ignore
-                            console.log(sound.volume);
+                            sound.volume = vol;
+                            //@ts-ignore
+                            if (vol === 0 && fadeout) sound.currentTime = 0;   // Reset track to beginning if it fades all the way out
                         }
                     } else {
                         console.log("ERROR: Was unable to adjust volume for music sound channel. Current music ID not found.");
                     }
                     break;
                 case "effects":
-                    this._effectsVolume += delta;                                               // Set the value
-                    this._effectsVolume = Math.min(Math.max(this._effectsVolume, 0), 1);        // Ensure it respects the limits
                     if (this._effects) {
                         const sound = document.getElementById(this._effects);
                         if (sound) {
                             //@ts-ignore
-                            sound.volume = this._effectsVolume;
+                            const vol = Math.min(Math.max(sound.volume + adjustedDelta, 0), 1);  // Ensure final value also respects the limits
+                            //@ts-ignore
+                            sound.volume = vol;
+                            //@ts-ignore
+                            if (vol === 0 && fadeout) sound.currentTime = 0;   // Reset track to beginning if it fades all the way out
                         }
                     } else {
                         console.log("ERROR: Was unable to adjust volume for effects sound channel. Current effect ID not found.");
                     }
                     break;
-                case "menu":    // Menu case is shorter since we do not bother to record the ID of menu events (as they are too short-lived to bother with)
-                    this._menuVolume += delta;                                                  // Set the value
-                    this._menuVolume = Math.min(Math.max(this._menuVolume, 0), 1);              // Ensure it respects the limits
-                    break;
-                case "master":  // Master updates the volume for all channels
-                    const d = Math.min(Math.max(delta, 0), 1);
-                    this._effectsVolume += d;
-                    this._musicVolume += d;
-                    this._effectsVolume += d;
-                    if (this._effects) {
-                        const sound = document.getElementById(this._effects);
-                        if (sound) {
-                            //@ts-ignore
-                            sound.volume = this._effectsVolume;
-                        }
-                    }
-                    if (this._music) {
-                        const sound = document.getElementById(this._music);
-                        if (sound) {
-                            //@ts-ignore
-                            sound.volume = this._musicVolume;       // Just use the new volume number right away
-                            //@ts-ignore
-                            console.log(sound.volume);
-                        }
-                    }
             }
         } catch {
-            console.log(`ERROR: Something went wrong tryng to adjust volume for ${channel} sound channel.`);
+            console.log(`ERROR: Something went wrong trying to adjust volume for ${channel} sound channel.`);
         }
     }
 
+    // SECTION 4: SOUND AND MUSIC PRE-PACKAGED BUNDLES (Quasi-content as code, which is generally a bad practice, but whatever there...)
+
+    // Packages come with built-in but adjustable fade-in/fade-out times; played in the 'effects' channel (by default)
+    playAirlockSound = (fadeoutStart: number, fadeoutduration: number, channel?: string) => {
+        this.playSound(channel || "effects", "airlock");
+        this.setFadeoutTimes(channel || "effects", fadeoutStart || 3, fadeoutduration || 5);
+    }
+
+    // Note that effects which start at full volume don't require a fadein duration to be set
+    playRocketSound = (fadeoutStart: number, fadeoutduration: number, channel?: string) => {
+        this.playSound(channel || "effects", "rocket");
+        this.setFadeoutTimes(channel || "effects", fadeoutStart || 3, fadeoutduration || 5);
+    }
+
+    playWindSound = (fadein: number, fadeoutStart: number, fadeoutduration: number, channel?: string) => {
+        this.playSound(channel || "effects", "wind01");
+        this.setFadeinTime(channel || "effects", fadein || 19); // Use default values if custom ones are not provided
+        this.setFadeoutTimes(channel || "effects", fadeoutStart || 20, fadeoutduration || 20);
+    }
+
     
+
+    
+
 }

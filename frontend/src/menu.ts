@@ -1,13 +1,12 @@
 import P5 from "p5";
 import Screen from "./screen";
 import Button from "./button";
-import { AudioController } from "./audioController";
+import AudioController from "./audioController";
 import { constants } from "./constants";
 
 // Main Menu (Pre-game)
 export default class Menu extends Screen {
     // Define types new to Menu class:
-    _audio: AudioController;                // AudioController gives a component access to audio control context
     _buttons: Button[];
     _color: string;
     _username: string;
@@ -19,8 +18,7 @@ export default class Menu extends Screen {
     switchScreen: (switchTo: string) => void;
 
     constructor(p5: P5, audio: AudioController, color: string, switchScreen: (switchTo: string) => void) {
-        super(p5);
-        this._audio = audio;    // The remote control!
+        super(p5, audio);
         this._buttons = [];
         this._color = color;
         this._username = "";    // This will be set after the initial construction of this class, once login is completed.
@@ -107,7 +105,7 @@ export default class Menu extends Screen {
     }
 
     render = () => {
-        this._audio.updateFades();
+        this._audio.handleUpdates();
         const p5 = this._p5;
         p5.background(this._color);
         p5.textSize(48);

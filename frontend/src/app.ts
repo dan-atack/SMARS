@@ -3,7 +3,7 @@ import P5 from "p5";
 // Game constants:
 import { constants } from "./constants";
 // Components:
-import { AudioController } from "./audioController";
+import AudioController from "./audioController";
 import Menu from "./menu";
 import Login from "./login";
 import NewGameSetup from "./newGameSetup";
@@ -58,11 +58,10 @@ const sketch = (p5:P5) => {
                 // Reset the game and load data if arriving at the main menu from the in-game menu
                 if (game._gameLoaded) {
                     game.reset();
-                    menu._audio.adjustVolume("music", -0.25);   // Lower the music volume by 25% every time the main menu is accessed
                 } else {
-                    menu._audio.playSound("music", "smarsTheme");       // Play the soundtrack if it's the player's first time arriving at the main menu
-                    menu._audio.setMusicFadeinTime(10);                 // Fade-in gradually over the first 10 seconds
-                    menu._audio.setMusicFadeoutTimes(12, 18);           // Start fading out after 12 seconds and stop playing entirely at 30 seconds
+                    menu._audio.playSound("music", "smarsTheme");       // Play soundtrack if it's the player's first time seeing the main menu
+                    menu._audio.setFadeinTime("music", 20);                 // Fade-in gradually over the first 20 seconds
+                    menu._audio.setFadeoutTimes("music", 128, 10);          // Start fading out after two minutes and stop playing entirely at 2:18
                 }
                 menu.setup();
                 break;
@@ -81,13 +80,13 @@ const sketch = (p5:P5) => {
 
     // Instantiate Screen classes:
     const audio = new AudioController();
-    const login = new Login(p5, switchScreen);
+    const login = new Login(p5, audio, switchScreen);
     const menu = new Menu(p5, audio, constants.APP_BACKGROUND, switchScreen);
-    const newGame = new NewGameSetup(p5, switchScreen);
-    const game = new Game(p5, switchScreen);
-    const inGameMenu = new InGameMenu(p5, switchScreen);
-    const saveGame = new SaveGame(p5, switchScreen);
-    const loadGame = new LoadGame(p5, switchScreen);
+    const newGame = new NewGameSetup(p5, audio, switchScreen);
+    const game = new Game(p5, audio, switchScreen);
+    const inGameMenu = new InGameMenu(p5, audio, switchScreen);
+    const saveGame = new SaveGame(p5, audio, switchScreen);
+    const loadGame = new LoadGame(p5, audio, switchScreen);
 
     p5.setup = () => {
         const canvas = p5.createCanvas(constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT);

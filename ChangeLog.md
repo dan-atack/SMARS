@@ -3711,8 +3711,9 @@ Exit Criteria for Prototype stage:
 Exit Criteria for chapter:
 
 - Button clicks for the following events outside of the game have sound effects:
-- - Login success - Generic success noise
-- - Login failure - Generic failure noise
+- - [DONE] Login success - Generic success sound effect (most buttons will have this sound by default)
+- - Login failure - Generic failure sound effect
+- - Any greyed-out/non functional button: Alternate "disappointed" failure noise
 - - New account creation success - Generic success noise
 - - New account creation failure - Generic failure noise
 - - New Game Screen is loaded - Generic select noise
@@ -3722,14 +3723,16 @@ Exit Criteria for chapter:
 - - On the Save Game screen, if a save is created successfully - Generic success noise
 - - On the Save Game screen, if a save is not created successfully - Generic failure noise
 - Events inside the game have sound effects:
-- - When a new game starts a custom sound effect is played
-- - When a saved game is loaded, a different custom sound effect is played
+- - New game starts - wind effect (plus intro music will still be playing)
+- - Landing start - rocket engine sound
+- - Landing touchdown - "airlock" hissing/compression sound
+- - [DONE] Saved game file loaded - wind sound effect
 - - When any in-game view is selected, secondary generic select noise
 - - When any mouse-context is selected, generic select noise
 - Some mouse contexts have specific sound effect when clicked:
 - - Module placement plays an airlock sound
 - - Connector placement plays a metallic tapping sound
-- - Resouce zone selection plays a faint jackhammer sound
+- - Resource zone selection plays a faint jackhammer sound
 - - Demolish mode plays a powering-down/dismantling sound
 - - Excavate mode plays an earth-moving sound
 - - Inspect mode plays a different sound depending on what is clicked:
@@ -3737,7 +3740,8 @@ Exit Criteria for chapter:
 - - - Modules make a faint humming sound
 - - - Connectors make a 'crawling through air vent' sound
 - - - Blocks make a crunching sound, like a foot on dirt
-- [STRETCH] The two Holst tracks, Mars and Venus, are used tastefully as an early in-game soundtrack
+- Sound effects are paused when the player enters the main menu, or one of the in-game view screens (e.g. Earth, population, etc)
+- [DONE] [STRETCH] A low-bitrate version of Holst's Mars is used tastefully as main menu/new game soundtrack
 - Make sure to give credit/attribution to any and all audio sources in the game's README, and throw in a big shout-out to P5 too!
 
 1. After giving up on the P5 approach, it will be necessary to create our own system, based in part on how it was done in Blockland (adding sound files to the index.html file directly and calling them, via their DOM element IDs, from a global function). Develop this system and load in some simple sound files, including a ting noise wav file (which is relatively short, but quite heavy), a simple ping noise mp3 file (very small) and a long but highly compact midi file for the game's tentative soundtrack. Load them all to play, via global functions, at various stages of the game, and then do a test deployment to the cloud dev server to validate performance in a realistic (non-local) environment. Don't forget to change the branch name in the local VM's version of the game files so that the EC2 instance it creates points to this development branch. Clean this deployment up once you're satisfied that the sounds should work properly in a cloud-hosted environment. ADDENDUM: Midi files are OUT, and Ogg files are IN, as they are apparently the most highly-condensed sound format that works on all major browsers.
@@ -3756,11 +3760,13 @@ Exit Criteria for chapter:
 
 8. Add a fade-in effect as well, which can just be the inverse of the fade-out. Decide how to apply it - maybe have the fade-in duration be used automatically as the time after which a music track should be at 100% volume? ADDENDUM: Test by making our glorious theme track fade in, and then out, in the main menu.
 
-### 9. Once fade-ins and fade-outs have been figured out, decide when the game's intro music should cut out (maybe it can be at different times for different scenarios?) and implement that. Then, pass the AudioController down to the Engine via the Game class, and start adding some custom sound effects!
+9. Once fade-ins and fade-outs have been figured out, decide when the game's intro music should cut out (maybe it can be at different times for different scenarios?) and implement that. Then, pass the AudioController down to the Engine via the Game class, and start adding some custom sound effects!
+
+10. Pass the Audio Controller to the game's other top-level classes - the Load Game, Save Game and New Game screens. In fact, make the Audio controller element a necessary part of the Screen class, to avoid having to add it separately to everyone's constructor. Let's keep it dry, people!
 
 ### 10. Add an optional argument to the Button class for which type of ting noise it should play, and add 2-3 more options for a variety of button reaction sounds. See if you can get the elevator button from FFVII and use it somewhere!
 
-### 97. Are there any in-game notifications that should accompany a new feature?
+### 97. If you're feeling very plucky, implement the Channel type concept, to allow management of any number of sounds simultaneously.
 
 ### 98. Clean up all console logs for this chapter's development (or if you really like them, add a flag to them to keep appearing in dev mode only).
 

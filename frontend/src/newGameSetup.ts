@@ -1,5 +1,6 @@
 // The Pre-game settings page
 import P5 from "p5";
+import AudioController from "./audioController";
 import Screen from "./screen";
 import Button from "./button";
 import Minimap from "./minimap";
@@ -38,8 +39,8 @@ export default class NewGameSetup extends Screen {
     minimap: Minimap;
     gameData: GameData;
 
-    constructor(p5: P5, switchScreen: (switchTo: string) => void) {
-        super(p5);
+    constructor(p5: P5, audio: AudioController, switchScreen: (switchTo: string) => void) {
+        super(p5, audio);
         this.switchScreen = switchScreen;
         this._buttons = [];
         this._difficulty = "medium" // Default settings are already in place
@@ -59,7 +60,7 @@ export default class NewGameSetup extends Screen {
         this._randomWidth = 192;
         this._randomHeight = 64;
         this._mapTerrain = [];       // Fills in with return from a fetch in the setup method
-        this.minimap = new Minimap(800, 420, "Map Preview");
+        this.minimap = new Minimap(800, 420, "Map Preview", () => {});
         this.gameData = {   // To export to the Game once data has been selected
             difficulty: "",
             mapType: "",
@@ -348,6 +349,7 @@ export default class NewGameSetup extends Screen {
     }
 
     render = () => {
+        this._audio.handleUpdates();
         const p5 = this._p5;
         p5.background(constants.APP_BACKGROUND);
         // Text description backdrops:

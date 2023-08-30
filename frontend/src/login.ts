@@ -1,5 +1,6 @@
 import P5 from "p5";
 import p5 from "p5";
+import AudioController from "./audioController";
 import Screen from "./screen";
 import Button from "./button";
 import { constants } from "./constants";
@@ -21,8 +22,8 @@ export default class Login extends Screen {
     loggedIn: boolean;
     switchScreen: (switchTo: string) => void;
 
-    constructor(p5: P5, switchScreen: (switchTo: string) => void) {
-        super(p5);
+    constructor(p5: P5, audio: AudioController, switchScreen: (switchTo: string) => void) {
+        super(p5, audio);
         this._loginMode = true; // Default setting for the login page is login mode; if false this means we're in sign-up mode instead.
         this._buttons = [];
         // Input fields created are DOM elements (not part of the canvas):
@@ -182,6 +183,7 @@ export default class Login extends Screen {
 
     // Use render method to handle showing/unshowing error messages for the login/signup process
     render = () => {
+        this._audio.handleUpdates();
         const p5 = this._p5;
         p5.background(constants.APP_BACKGROUND);
         p5.fill(constants.EGGSHELL);

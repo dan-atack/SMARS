@@ -1,4 +1,4 @@
-import { AudioController } from "../src/audioController";
+import AudioController from "../src/audioController";
 
 describe("AudioController", () => {
     

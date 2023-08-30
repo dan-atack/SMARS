@@ -1,6 +1,7 @@
 // The Save Game screen is where the player goes to review and name their save file before uploading it to the game's server
 import P5 from "p5";
 import p5 from "p5";
+import AudioController from "./audioController";
 import Screen from "./screen";
 import Button from "./button";
 import { constants } from "./constants";
@@ -83,8 +84,8 @@ export default class SaveGame extends Screen {
     _messageColor: string       // The color code for the message will depend upon the manner of the server's return
     _saveWasSuccessful: boolean // If a successful save has occurred, set this to true to disable the button to prevent spamming
 
-    constructor(p5: P5, switchScreen: (switchTo: string) => void) {
-        super(p5);
+    constructor(p5: P5, audio: AudioController, switchScreen: (switchTo: string) => void) {
+        super(p5, audio);
         this.switchScreen = switchScreen;
         this.sendSaveGame = sendSaveGame;
         this._buttons = [];
@@ -174,6 +175,7 @@ export default class SaveGame extends Screen {
     }
 
     render = () => {
+        this._audio.handleUpdates();
         const p5 = this._p5;
         p5.background(this._color);
         p5.textSize(42);

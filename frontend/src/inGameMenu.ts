@@ -1,5 +1,6 @@
 // The in-game menu, accessed during a game:
 import P5 from "p5";
+import AudioController from "./audioController";
 import Screen from "./screen";
 import Button from "./button";
 import { constants } from "./constants";
@@ -19,8 +20,8 @@ export default class InGameMenu extends Screen {
     _buttonBG: string;
     switchScreen: (switchTo: string) => void;
 
-    constructor(p5: P5, switchScreen: (switchTo: string) => void) {
-        super(p5);
+    constructor(p5: P5, audio: AudioController, switchScreen: (switchTo: string) => void) {
+        super(p5, audio);
         this._buttons = [];
         this._color = constants.APP_BACKGROUND;
         this._username = "";    // This will be set after the initial construction of this class, once login is completed.
@@ -70,6 +71,7 @@ export default class InGameMenu extends Screen {
     }
 
     render = () => {
+        this._audio.handleUpdates();
         const p5 = this._p5;
         p5.background(this._color);
         p5.textSize(48);

@@ -1,5 +1,6 @@
 // The Load game screen is available from the pre-game menu, and allows the player to resume a previous play session
 import P5 from "p5";
+import AudioController from "./audioController";
 import Screen from "./screen";
 import Button from "./button";
 import LoadOption from "./loadOption";
@@ -49,8 +50,8 @@ export default class LoadGame extends Screen {
     _loadOptions: LoadOption[];
     _loadWasSuccessful: boolean;  // If a successful save has occurred, set this to true to disable the button to prevent spamming
 
-    constructor(p5: P5, switchScreen: (switchTo: string) => void) {
-        super(p5);
+    constructor(p5: P5, audio: AudioController, switchScreen: (switchTo: string) => void) {
+        super(p5, audio);
         this.switchScreen = switchScreen;
         this.getSavedGames = getSavedGames;
         this.loadGameData = loadGameData;
@@ -223,6 +224,7 @@ export default class LoadGame extends Screen {
     }
 
     render = () => {
+        this._audio.handleUpdates();
         const p5 = this._p5;
         p5.background(this._color);
         p5.textSize(48);

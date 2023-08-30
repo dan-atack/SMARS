@@ -1,6 +1,7 @@
 // Top-level component for the game environment (as opposed to game interface, which is in game.ts)
 import P5 from "p5";
 // Components
+import AudioController from "./audioController";
 import View from "./view";
 import Sidebar from "./sidebar";
 import Map from "./map";
@@ -22,7 +23,6 @@ import Module from "./module";
 // Helper/server functions
 import { ModuleInfo, ConnectorInfo, getOneModule, getOneConnector, getRandomEvent } from "./server_functions";
 import { constants, modalData } from "./constants";
-import { pauseSound, playSound, stopSound } from "./engineHelpers";
 // Types
 import { ConnectorSaveInfo, ModuleSaveInfo, SaveInfo, GameTime } from "./saveGame";
 import { GameData } from "./newGameSetup";
@@ -33,6 +33,7 @@ import { Resource } from "./economyData";
 export default class Engine extends View {
     // Engine types
     _p5: P5;                    // Although the View class no longer uses it in the constructor, the Engine still does
+    _audio: AudioController;    // Allow the Engine to have full reign over the game's sound effects
     _sidebar: Sidebar;
     _sidebarExtended: boolean;
     _gameData: GameData | null  // Data object for a new game
@@ -98,9 +99,10 @@ export default class Engine extends View {
     getConnectorInfo: (setter: (selectedConnector: ConnectorInfo, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => void, category: string, type: string, name: string, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => void;
     getRandomEvent: (event_request: [string, number], setter: (ev: {karma: string, magnitude: number, data: EventData}) => void) => void;
 
-    constructor(p5: P5, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, updateEarthData: () => void) {
+    constructor(p5: P5, audio: AudioController, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, updateEarthData: () => void) {
         super(changeView);
         this._p5 = p5;
+        this._audio = audio;
         this.switchScreen = switchScreen;
         this.updateEarthData = updateEarthData;
         this.getModuleInfo = getOneModule;
@@ -177,6 +179,7 @@ export default class Engine extends View {
     }
 
     setupNewGame = (gameData: GameData) => {
+        // this._audio.playWindSound(0, 0, 0);     // TODO: Uncomment this once multi-channel sound feature is fully developed
         this._gameData = gameData;  // gameData object only needs to be set for new games
         this._difficulty = gameData.difficulty;
         this._randomEventsEnabled = gameData.randomEvents;
@@ -191,7 +194,9 @@ export default class Engine extends View {
     }
 
     setupSavedGame = (saveInfo: SaveInfo) => {
-        playSound("loadGame");
+        this._audio.playSound("effects", "loadGame");
+        this._audio.startFadeout("music", 8);   // If a loaded file is opened, start fading the music out immediately, over a period of 8 seconds
+        this._audio.playWindSound(0, 0, 0);     // Play pre-packaged wind sound, using default values
         this._saveInfo = saveInfo;
         // Load game time
         this.setClock(saveInfo.game_time);
@@ -575,7 +580,6 @@ export default class Engine extends View {
 
     // Takes the mouse coordinates and looks for an in-game entity at that location
     handleInspect = (coords: Coords) => {
-        playSound("gatling");
         // Clear previous inspect target (if any) before determining new display data
         this.clearInspectSelection();
         if (this._population.getColonistDataFromCoords(coords)) {                   // First check for Colonists
@@ -654,11 +658,9 @@ export default class Engine extends View {
                 const moneyString = (cost / 100).toFixed(2);        // Notify of success and cost
                 const msg = this.createMessage("command-excavate-success", 0, `${removal._blockData.name} removed.\n-$${moneyString}`);
                 this._notifications.createMessageFromClick(crds, msg);
-                pauseSound("gatling");
             } else {
                 const msg = this.createMessage("command-excavate-fail", 0, `Cannot carry out excavation here:\n${affordable ? noUndermine ? "Too close to population" : "Undermines base structures" : "Insufficient funds available"}`);
                 this._notifications.createMessageFromClick(crds, msg);
-                stopSound("gatling");
             }
         }
         // If all good, proceed with the removal:
@@ -783,6 +785,7 @@ export default class Engine extends View {
 
     // If the player selects the 'proceed with landing' option, we start a wait period and play the landing animation
     startLandingSequence = () => {
+        this._audio.playRocketSound(0, 0);
         this.setMouseContext("wait");
         const wait = 480;
         const x = (this._landingSiteCoords[0] + 4) * constants.BLOCK_WIDTH;
@@ -797,7 +800,9 @@ export default class Engine extends View {
 
     // This method sets up the UI after the landing animation has finished
     completeLandingSequence = () => {
-        this._animation = null;         // Delete the animation when it's finished
+        this._audio.playAirlockSound(0, 0);
+        this._audio.startFadeout("music", 20);  // Fade out music once the landing is finished
+        this._animation = null;                 // Delete the animation when it's finished
         this._map.setExpanded(false);
         this._hasLanded = true;
         this._sidebar._detailsArea._minimap.setLandingSite({ x: this._landingSiteCoords[0] + 4, y: this._landingSiteCoords[1] - 12 });   // Take coords for the middle of the structure
