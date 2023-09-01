@@ -3777,7 +3777,7 @@ Exit Criteria for chapter:
 
 17. Quickly add and test a 'confirm' display/button for the In-Game Menu's 'Quit to Main Menu' button, to make it harder for the player to accidentally quit their game.
 
-### 17. Add sound effects to the Save Game screen, and don't forget the fail sound for if the player enters a file name that is too short. Get a new success sound for when the save file is created.
+### 17. Add sound effects to the Save Game screen, and don't forget the fail sound for if the player enters a file name that is too short. Reuse the quit sound for when the save file is created (it's suitably ambiguous in its tone and has a cool echo, so why not get some more mileage out of it?)
 
 ### 18. Do the Load Game screen: basic tings for the Load/Return to Menu buttons, ting 2 for pagination options, fail 2 (the buzzer??) for unsuccessful pagination requests, fail 1 if the player presses 'Load' before selecting a save file.
 

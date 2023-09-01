@@ -81,13 +81,13 @@ export default class AudioController {
         if (channel === "music") {
             this._musicFadeoutLastSecond++;
             const increment = -1 / this._musicFadeoutDuration;
-            console.log(`Fading out ${channel} by ${increment}`);
+            // console.log(`Fading out ${channel} by ${increment}`);
             this.adjustVolume(channel, increment, true);
 
         } else if (channel === "effects") {
             this._effectsFadeoutLastSecond++;
             const increment = -1 / this._effectsFadeoutDuration;
-            console.log(`Fading out ${channel} by ${increment}`);
+            // console.log(`Fading out ${channel} by ${increment}`);
             this.adjustVolume(channel, increment, true);
         } else {
             console.log("ERROR: Fadeout has encountered an issue.");
@@ -99,12 +99,12 @@ export default class AudioController {
         if (channel === "music") {
             this._musicFadeinLastSecond ++;
             const increment = this._musicVolume / this._musicFadein;
-            console.log(`Fading in ${channel} by ${increment}`);
+            // console.log(`Fading in ${channel} by ${increment}`);
             this.adjustVolume(channel, increment, true);
         } else if (channel === "effects") {
             this._effectsFadeinLastSecond ++;
             const increment = this._effectsVolume / this._effectsFadein;
-            console.log(`Fading in ${channel} by ${increment}`);
+            // console.log(`Fading in ${channel} by ${increment}`);
             this.adjustVolume(channel, increment, true);
         } else {
             console.log("ERROR: Fadein has encountered an issue.");
@@ -221,7 +221,7 @@ export default class AudioController {
                 console.log(sound.volume);
             }
         } catch {
-            console.log(`ERROR: Sound file not found for ${id}`);
+            console.log(`ERROR: Sound file not found for ${id}.`);
         }
     }
 
@@ -232,9 +232,11 @@ export default class AudioController {
             if (sound) {
                 //@ts-ignore
                 sound.play();
+            } else {
+                console.log(`ERROR: Sound file not found for ${id}.`);
             }
         } catch {
-            console.log(`ERROR: Sound file not found for ${id}`);
+            console.log(`ERROR: Failed to play sound ${id}.`);
         }
     }
     
@@ -269,7 +271,7 @@ export default class AudioController {
                 sound.currentTime = 0;
             }
         } catch {
-            console.log(`ERROR: Was unable to stop sound for channel ${channel}`);
+            console.log(`ERROR: Was unable to stop sound for channel ${channel}.`);
         }
     }
 
@@ -332,7 +334,6 @@ export default class AudioController {
 
     // Takes the name of a sound channel (music or effects only) and a DELTA (-1 to 1) to set that channel's new volume FOR THE CURRENT TRACK ONLY (used for fade effects) ... Fadeout boolean means reset the track's time when volume hits zero
     adjustVolume = (channel: string, delta: number, fadeout: boolean) => {
-        console.log(`${channel} delta: ${delta}`);
         try {
             const adjustedDelta = Math.min(Math.max(delta, -1), 1);        // Ensure delta respects the limits
             switch (channel) {

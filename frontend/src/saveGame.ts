@@ -132,21 +132,23 @@ export default class SaveGame extends Screen {
     handleSave = () => {
         if (!this._saveWasSuccessful) {     // Only allow save to proceed if there hasn't already been a successful save
             const game_name = this._gameNameInput?.value() as string;
-            if (this._saveInfo != null && game_name.length > 2) {
-                // console.log("Saving game - please wait");
+            if (this._saveInfo != null && game_name.length > 2) {   // Sound plays in HTTP Status method when outcome of the click is known
                 let finalData = this._saveInfo;
                 finalData.game_name = game_name;
                 this.sendSaveGame(finalData, this.setHttpStatus);
                 this.setMessage("", constants.GREEN_TERMINAL);
             } else if (this._saveInfo != null) {
+                this._audio.quickPlay("fail01");
                 this.setMessage("Please enter at least 3 characters for the game name.", constants.RED_ERROR);
             } else {
+                this._audio.quickPlay("fail01");
                 this.setMessage("Exception: No save occurred because save data was missing", constants.RED_ERROR);
             }
         }
     }
 
     handleReturnToMainMenu = () => {
+        this._audio.quickPlay("ting01");
         this.handleClose();
         this.switchScreen("inGameMenu");
     }
@@ -166,9 +168,11 @@ export default class SaveGame extends Screen {
 
     setHttpStatus = (status: boolean) => {
         if (status) {
+            this._audio.quickPlay("quit-save");     // Quit and save share the same soundbyte
             this.setMessage("Game saved successfully", constants.GREEN_TERMINAL);
             this._saveWasSuccessful = true;
         } else {
+            this._audio.quickPlay("fail01");
             this.setMessage("Sorry, there was an error sending to the server. Please try again.", constants.RED_ERROR);
             this._saveWasSuccessful = false;
         }

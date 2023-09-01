@@ -80,7 +80,7 @@ export default class InGameMenu extends Screen {
     }
 
     handleConfirmQuit = () => {
-        this._audio.quickPlay("quit");
+        this._audio.quickPlay("quit-save");
         this.handleClose();
         this.switchScreen("menu");
     }
