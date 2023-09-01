@@ -95,7 +95,7 @@ export default class Menu extends Screen {
     }
 
     handlePreferences = () => {
-        this._audio.quickPlay("fail01");
+        this._audio.quickPlay("fail02");        // Fail 2 is more of a "dud" sound than an "error" sound
         console.log("The Button you have pressed: \"Preferences\" is not in service. Please make a note of it.");
         // this.handleCloseMenu();
         // this.switchScreen("preferences");

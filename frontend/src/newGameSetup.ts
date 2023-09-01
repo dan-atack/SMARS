@@ -196,6 +196,7 @@ export default class NewGameSetup extends Screen {
 
     // Difficulty Settings handlers
     handleEasy = () => {
+        this._audio.quickPlay("ting02");
         this._difficulty = "easy";
         // Set selection status for all difficulty buttons:
         this._buttons[0].setSelected(true);
@@ -204,6 +205,7 @@ export default class NewGameSetup extends Screen {
     }
 
     handleMedium = () => {
+        this._audio.quickPlay("ting02");
         this._difficulty = "medium";
         this._buttons[0].setSelected(false);
         this._buttons[1].setSelected(true);
@@ -211,6 +213,7 @@ export default class NewGameSetup extends Screen {
     }
 
     handleHard = () => {
+        this._audio.quickPlay("ting02");
         this._difficulty = "hard";
         this._buttons[0].setSelected(false);
         this._buttons[1].setSelected(false);
@@ -219,6 +222,7 @@ export default class NewGameSetup extends Screen {
 
     // Map Type Selection handlers
     handlePolar = () => {
+        this._audio.quickPlay("ting02");
         this._mapType = "polar";
         this._buttons[3].setSelected(true);
         this._buttons[4].setSelected(false);
@@ -227,6 +231,7 @@ export default class NewGameSetup extends Screen {
     }
 
     handleHighlands = () => {
+        this._audio.quickPlay("ting02");
         this._mapType = "highlands";
         this._buttons[3].setSelected(false);
         this._buttons[4].setSelected(true);
@@ -235,6 +240,7 @@ export default class NewGameSetup extends Screen {
     }
 
     handleRiverbed = () => {
+        this._audio.quickPlay("ting02");
         this._mapType = "riverbed";
         this._buttons[3].setSelected(false);
         this._buttons[4].setSelected(false);
@@ -244,12 +250,14 @@ export default class NewGameSetup extends Screen {
 
     // Random Event handlers
     handleYesRandom = () => {
+        this._audio.quickPlay("ting02");
         this._randomEvents = true;
         this._buttons[6].setSelected(true);
         this._buttons[7].setSelected(false);
     }
 
     handleNoRandom = () => {
+        this._audio.quickPlay("ting02");
         this._randomEvents = false;
         this._buttons[6].setSelected(false);
         this._buttons[7].setSelected(true);
@@ -278,6 +286,7 @@ export default class NewGameSetup extends Screen {
     }
 
     handleStartGame = () => {
+        this._audio.quickPlay("ting01");
         this.gameData = {   // Prepare to dispatch the following info to the new game's set
             difficulty: this._difficulty,
             mapType: this._mapType,
@@ -290,6 +299,7 @@ export default class NewGameSetup extends Screen {
     }
 
     handleReturnToMenu = () => {
+        this._audio.quickPlay("ting01");
         this.cleanup();
         this.switchScreen("menu");
     }

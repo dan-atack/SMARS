@@ -3769,6 +3769,28 @@ Exit Criteria for chapter:
 
 13. Now do the Menu. One sound for each button handler - it really doesn't get much simpler than that! Make sure the Preferences button plays the 'fail' sound until such time as it is upgraded to actually do something.
 
+14. Now do the sounds for the New Game Setup page. Should be a few opportunities there to have a bit of fun - map types should definitely each have their own sound for instance. Difficulty levels too, ideally. Random events and start/back buttons can play the standard success sound. ADDENDUM: Buttons should stick to bleeps and bloops only; more customized sounds belong in the game itself. Added a second button success noise, "ting 02" to denote a button press that is successful but that doesn't change to another screen (see note below for more info about the thought process here).
+
+15. Although it's not necessary to document here how every single button should sound, it is worth keeping a chart of our sound effects library as it grows, so that buttons with similar features use the same sounds... For instance, "Ting01" is a happy sounding note which is associated with a successful change to another screen, whereas "Ting02", which is a more neutral-sounding blip noise, can be used for more of a same-page, different option success sound. Similarly, "Fail01" is a somewhat cross sounding set of tones, whereas "Fail02" is more of a buzzer for something that's out of order. The implication, if any, is that if the player hears "Fail01" it's likely something that's the player's fault, whereas "Fail02" indicates that it is something on the game's end that is at fault (hence its current use for greyed-out/disabled button handlers).
+
+16. Add the sound effects for the In-Game Menu screen (we'll save the Game/subclasses for last since they're the most interesting). Get a new "sad" tone for when the player quits to the main menu... or do something altogether cooler with the HAL-like narrator at the top of the menu.
+
+17. Quickly add and test a 'confirm' display/button for the In-Game Menu's 'Quit to Main Menu' button, to make it harder for the player to accidentally quit their game.
+
+### 17. Add sound effects to the Save Game screen, and don't forget the fail sound for if the player enters a file name that is too short. Get a new success sound for when the save file is created.
+
+### 18. Do the Load Game screen: basic tings for the Load/Return to Menu buttons, ting 2 for pagination options, fail 2 (the buzzer??) for unsuccessful pagination requests, fail 1 if the player presses 'Load' before selecting a save file.
+
+### 18. Now for the Game class: Start by adding basic ting sounds for any 'Switch View' actions (Population, Science, Earth or Industry page access), and the 'Return to Game' buttons for each of these views.
+
+### 19. For the Population page (the only view with interactive options), add ting 2 for colonist job adjustments and pagination options, and buzzer for unsuccessful pagination requests.
+
+### 20. Next fill out the other Sidebar buttons: Ting 2 for mouse-context selectors including 'Build'; Fail 2 for the disabled 'Add Ground' button; custom sounds for the various speed setting options? Also, Ting 2 for Inspect Display's "show more info" / "show basic info" buttons.
+
+### 21. Next, add the click responders for when the player clicks with various mouse contexts; any unsuccessful click should get 'Fail 1' (or do we get another, shorter, failure sound for in-game clicks?) and then for successful actions we'll need to find custom sounds for each one.
+
+### 96. Update the game's README file to cite every sound effects contributor (usernames and/or URLs), plus the sound editing sites used for trimming, volume adjustments, etc. Put comments on some of your favourite sound contributors at FreeSound.org, to thank them and acknowledge their work.
+
 ### 97. If you're feeling very plucky, implement the Channel type concept, to allow management of any number of sounds simultaneously.
 
 ### 98. Clean up all console logs for this chapter's development (or if you really like them, add a flag to them to keep appearing in dev mode only).
