@@ -394,6 +394,7 @@ export default class Engine extends View {
                         break;
                     case "wait":
                         // Send message to Notifications system indicating that the player can't click during 'wait' mode
+                        this._audio.quickPlay("ting03");
                         const message = this.createMessage("command-must-wait", 0, "Please Wait:\nAnimation in progress");
                         this._notifications.createMessageFromClick({ x: mouseX, y: mouseY }, message);
                         break;
@@ -520,19 +521,23 @@ export default class Engine extends View {
             if (b._blockData.resource === "water") {
                 const added = this._industry.toggleMiningLocation(coords, "water"); // Push the coordinates for the mining location
                 if (added) {
+                    this._audio.quickPlay("jackhammer");
                     const message = this.createMessage("command-resource-success", 0, "New mining zone\nestablished");
                 this._notifications.createMessageFromClick(crds, message, 16);
                 } else {
+                    // TODO: Sound?
                     const message = this.createMessage("command-resource-success", 0, "Mining zone\ncancelled");
                     this._notifications.createMessageFromClick(crds, message, 16);
                 }
             } else {
                 // Notify the player if an invalid resource type has been selected
+                this._audio.quickPlay("fail02");
                 const message = this.createMessage("command-resource-invalid", 0, "Can only mine tiles\ncontaining water");
                 this._notifications.createMessageFromClick(crds, message, 16);
             }
         } else {
             // Notify the player in-game that they must select a tile on the surface
+            this._audio.quickPlay("fail02");
             const message = this.createMessage("command-resource-no-surface", 0, `${b?._blockData.yield === 0 ? "Cannot mine here:\nSite has no resource yield" : "Click on surface tile\nto add/remove mining zone"}`);
             this._notifications.createMessageFromClick(crds, message, 16);
         }
@@ -617,6 +622,7 @@ export default class Engine extends View {
                 const message = this.createMessage("command-demolish-success", con._id, outcome.message);
                 this._notifications.createMessageFromClick(crds, message, 18);
             } else {
+                this._audio.quickPlay("fail02");
                 const message = this.createMessage("command-demolish-failure", con._id, outcome.message);
                 this._notifications.createMessageFromClick(crds, message);
             }
@@ -627,6 +633,7 @@ export default class Engine extends View {
                 const message = this.createMessage("command-demolish-success", mod._id, outcome.message);
                 this._notifications.createMessageFromClick(crds, message);
             } else {
+                this._audio.quickPlay("fail02");
                 const message = this.createMessage("command-demolish-failure", mod._id, outcome.message);
                 this._notifications.createMessageFromClick(crds, message);
             }
@@ -713,10 +720,14 @@ export default class Engine extends View {
                     this._infrastructure.addModule(x, y, this.selectedBuilding,  this._map._topography, this._map._zones,);
                     this._economy._data.subtractMoney(this.selectedBuilding.buildCosts[0][1]);
                     const moneyString = (this.selectedBuilding.buildCosts[0][1] / 100).toFixed(2);
+                    const rando = Math.floor(Math.random() * 3)
+                    const airlock: string = rando > 1 ? "airlock02" : rando > 0 ? "airlock03" : "airlock04";   // Pick a random airlock sound each time a module is placed
+                    this._audio.quickPlay(airlock);
                     const message = this.createMessage("command-module-success", 0, `${this.selectedBuilding.name} installed.\n-$${moneyString}`);
                     this._notifications.createMessageFromClick(crds, message);
                 } else {
                     // Notify the player in-game that their placement is no good (or that they cannot afford the new module)
+                    this._audio.quickPlay("fail01");
                     const message = this.createMessage("command-module-fail", 0, `Unable to place new module:\n${clear ? "Insufficient funds" : "Location invalid"}`);
                     this._notifications.createMessageFromClick(crds, message);
                 }
@@ -750,12 +761,14 @@ export default class Engine extends View {
             const stop = this._mouseShadow._connectorStopCoords;
             const clear = this._infrastructure._data.checkConnectorEndpointPlacement(stop.x, stop.y, this._map._mapData);
             if (affordable && clear) {
+                this._audio.quickPlay("connector");
                 this._infrastructure.addConnector(start, stop, this.selectedBuilding, this._map);
                 this._economy._data.subtractMoney(cost);
                 const moneyString = (cost / 100).toFixed(2);
                 const message = this.createMessage("command-connector-success", 0, `${this.selectedBuilding.name} installed\n-$${moneyString}`);
                 this._notifications.createMessageFromClick(crds, message);  // Notify the player of the successful placement
             } else {
+                this._audio.quickPlay("fail01");
                 const message = this.createMessage("command-connector-fail", 0, `Cannot place connector:\n${clear ? "Insufficient funds" : "Invalid location"}`);       // Notify the player of placement failure via in-game message
                 this._notifications.createMessageFromClick(crds, message);
             }

@@ -3785,19 +3785,19 @@ Exit Criteria for chapter:
 
 21. Add the Audio Controller to the Details Area component and pass it to all of the building sub-options buttons, as well as the Building Chip class, and have all of them play the 'pip' sound when clicked - except the 'Cancel' buttons: those should play ting03 instead, which will also be used for closing Modal popups. Apparently ting 3 is fast becoming the game's universal 'close' sound.
 
-### 21. Get new sounds for each of the speed buttons: Pause, slow, fast and blazing.
+22. Get new sounds for each of the speed buttons: Pause, slow, fast and blazing.
 
-19. For the Population page (the only view with interactive options), add ting 2 for colonist job adjustments and pagination options, and buzzer for unsuccessful pagination requests.
+23. For the Population page (the only view with interactive options), add ting 2 for colonist job adjustments and pagination options, and buzzer for unsuccessful pagination requests.
 
-20. Next fill out the other Sidebar buttons: Ting 2 for mouse-context selectors including 'Build'; Fail 2 for the disabled 'Add Ground' button.
+24. Next fill out the other Sidebar buttons: Ting 2 for mouse-context selectors including 'Build'; Fail 2 for the disabled 'Add Ground' button.
 
 ### 21. Next, add the click responders for when the player clicks with various mouse contexts; any unsuccessful click should get 'Fail 1' (or do we get another, shorter, failure sound for in-game clicks?) and then for successful actions we'll need to find custom sounds for each one:
 
-### 24. Add an alternate airlock sound for when a module is placed.
+24. Add an alternate airlock sound (or several!) for when a module is placed.
 
-### 25. Add a metallic tapping/scraping sound for when a connector is placed.
+25. Add a metallic tapping/scraping sound for when a connector is placed.
 
-### 26. Add a jackhammer sound when a mining zone is created.
+26. Add a jackhammer sound when a mining zone is created.
 
 ### 27. Add a depressurization sound when demolishing a module or a connector.
 
@@ -3813,9 +3813,13 @@ Exit Criteria for chapter:
 
 ### 25. Add a metallic tapping/scraping sound for when a connector is placed.
 
+### 26. Add a synth noise of some kind for landing zone selection modal when it pops up.
+
+### 95. Play the game for several minutes, clicking everything you can to see if there are any missing sound effects, or console logs that have to be eliminated.
+
 ### 96. Update the game's README file to cite every sound effects contributor (usernames and/or URLs), plus the sound editing sites used for trimming, volume adjustments, etc. Put comments on some of your favourite sound contributors at FreeSound.org, to thank them and acknowledge their work.
 
-### 97. If you're feeling very plucky, implement the Channel type concept, to allow management of any number of sounds simultaneously.
+### 97. If you're feeling very plucky, implement the Channel type concept, to allow management of any number of sounds simultaneously. Or convert this into an Application issue.
 
 ### 98. Clean up all console logs for this chapter's development (or if you really like them, add a flag to them to keep appearing in dev mode only).
 
