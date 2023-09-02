@@ -1,3 +1,4 @@
+import AudioController from "../src/audioController";
 import IndustryView from "../src/industryView";
 
 describe("Industry View Tests", () => {
@@ -7,7 +8,9 @@ describe("Industry View Tests", () => {
         // This is a dummy function
     }
 
-    const industry = new IndustryView(changeView);
+    const audio = new AudioController;
+
+    const industry = new IndustryView(audio, changeView);
 
     test("Defines setup", () => {
         expect(typeof industry.setup).toBe("function");
