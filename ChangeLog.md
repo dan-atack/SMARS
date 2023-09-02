@@ -3781,13 +3781,37 @@ Exit Criteria for chapter:
 
 19. Do the Load Game screen: basic tings for the Load/Return to Menu buttons, ting 2 for pagination options, fail 2 (aka the buzzer??) for unsuccessful pagination requests, fail 1 if the player presses 'Load' before selecting a save file.
 
-### 18. Now for the Game class: Start by adding basic ting sounds for any 'Switch View' actions (Population, Science, Earth or Industry page access), and the 'Return to Game' buttons for each of these views.
+20. Now for the Game class: Start by adding basic ting sounds (ting 1, to be precise) for any 'Switch View' actions (Population, Science, Earth or Industry page access), and the 'Return to Game' buttons for each of these views. This will require passing the Audio Controller component to the Sidebar for now (ultimately it will probably have to go even deeper, to the Details Area and/or Building Chip components as well).
 
-### 19. For the Population page (the only view with interactive options), add ting 2 for colonist job adjustments and pagination options, and buzzer for unsuccessful pagination requests.
+21. Add the Audio Controller to the Details Area component and pass it to all of the building sub-options buttons, as well as the Building Chip class, and have all of them play the 'pip' sound when clicked - except the 'Cancel' buttons: those should play ting03 instead, which will also be used for closing Modal popups. Apparently ting 3 is fast becoming the game's universal 'close' sound.
 
-### 20. Next fill out the other Sidebar buttons: Ting 2 for mouse-context selectors including 'Build'; Fail 2 for the disabled 'Add Ground' button; custom sounds for the various speed setting options? Also, Ting 2 for Inspect Display's "show more info" / "show basic info" buttons.
+### 21. Get new sounds for each of the speed buttons: Pause, slow, fast and blazing.
 
-### 21. Next, add the click responders for when the player clicks with various mouse contexts; any unsuccessful click should get 'Fail 1' (or do we get another, shorter, failure sound for in-game clicks?) and then for successful actions we'll need to find custom sounds for each one.
+19. For the Population page (the only view with interactive options), add ting 2 for colonist job adjustments and pagination options, and buzzer for unsuccessful pagination requests.
+
+20. Next fill out the other Sidebar buttons: Ting 2 for mouse-context selectors including 'Build'; Fail 2 for the disabled 'Add Ground' button.
+
+### 21. Next, add the click responders for when the player clicks with various mouse contexts; any unsuccessful click should get 'Fail 1' (or do we get another, shorter, failure sound for in-game clicks?) and then for successful actions we'll need to find custom sounds for each one:
+
+### 24. Add an alternate airlock sound for when a module is placed.
+
+### 25. Add a metallic tapping/scraping sound for when a connector is placed.
+
+### 26. Add a jackhammer sound when a mining zone is created.
+
+### 27. Add a depressurization sound when demolishing a module or a connector.
+
+### 28. Add a low, rumbling machine sound when a block is excavated.
+
+### 29. Add Inspect Display sounds depending on the type of thing being clicked:
+
+### 22. Play ting 3 whenever a modal is closed.
+
+### 23. Add a short, generic noise to play whenever a random event occurs.
+
+### 24. Add an alternate airlock sound for when a module is placed.
+
+### 25. Add a metallic tapping/scraping sound for when a connector is placed.
 
 ### 96. Update the game's README file to cite every sound effects contributor (usernames and/or URLs), plus the sound editing sites used for trimming, volume adjustments, etc. Put comments on some of your favourite sound contributors at FreeSound.org, to thank them and acknowledge their work.
 

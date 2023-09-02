@@ -1,5 +1,6 @@
 // In-game view for displaying the tech tree
 import P5 from "p5";
+import AudioController from "./audioController";
 import View from "./view";
 import Button from "./button";
 import { constants } from "./constants";
@@ -7,8 +8,8 @@ import { constants } from "./constants";
 export default class Science extends View {
     // Tech Tree Types:
 
-    constructor(changeView: (newView: string) => void) {
-        super(changeView);
+    constructor(audio: AudioController, changeView: (newView: string) => void) {
+        super(audio, changeView);
     }
 
     setup = () => {

@@ -39,10 +39,10 @@ export default class Game extends Screen {
         // Pass view and screen changer functions to the engine (For the sidebar to use)
         this.switchScreen = switchScreen;
         this._engine = new Engine(p5, audio, this.switchScreen, this.changeView, this.updateEarthData);
-        this._population = new PopulationView(this.changeView);
-        this._techTree = new TechTree(this.changeView);
-        this._earth = new Earth(this.changeView) // There IS no planet B!!!
-        this._industry = new IndustryView(this.changeView);
+        this._population = new PopulationView(audio, this.changeView);
+        this._techTree = new TechTree(audio, this.changeView);
+        this._earth = new Earth(audio, this.changeView) // There IS no planet B!!!
+        this._industry = new IndustryView(audio, this.changeView);
         // this._logbook = new Logbook(p5, this.changeView);        // On hold pending investigation into why we need it.
         this._views = [this._engine, this._population, this._techTree, this._earth, this._industry];
         this._gameData = {          // Default values will be overridden
@@ -225,10 +225,10 @@ export default class Game extends Screen {
     reset = () => {
         // Pass view and screen changer functions to the engine (For the sidebar to use)
         this._engine = new Engine(this._p5, this._audio, this.switchScreen, this.changeView, this.updateEarthData);
-        this._population = new PopulationView(this.changeView);
-        this._techTree = new TechTree(this.changeView);
-        this._earth = new Earth(this.changeView) // There IS no planet B!!!
-        this._industry = new IndustryView(this.changeView);
+        this._population = new PopulationView(this._audio, this.changeView);
+        this._techTree = new TechTree(this._audio, this.changeView);
+        this._earth = new Earth(this._audio, this.changeView) // There IS no planet B!!!
+        this._industry = new IndustryView(this._audio, this.changeView);
         // this._logbook = new Logbook(p5, this.changeView);        // On hold pending investigation into why we need it.
         this._views = [this._engine, this._population, this._techTree, this._earth, this._industry];
         this._gameData = {          // Default values will be overridden

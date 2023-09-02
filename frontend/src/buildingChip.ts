@@ -1,19 +1,22 @@
 // The Building Chip is a specialized button that displays basic information about a prospective building in the sidebar
 import P5 from "p5";
+import AudioController from "./audioController";
 import Button from "./button";
 import { ModuleInfo, ConnectorInfo } from "./server_functions";
 import { constants } from "./constants";
 
 export default class BuildingChip extends Button {
     // Building Chip types:
+    _audio: AudioController;
     buildingData: ModuleInfo | ConnectorInfo;
     _maintenanceAlign: number;  // X location for maintenance cost info bullet points
     _maintenanceHeight: number; // Y location start for maintenance cost info bullet points
     setMouseContext: (value: string) => void;
     setBuildingSelection: (value: ModuleInfo | ConnectorInfo | null) => void;
 
-    constructor(buildingData: ModuleInfo | ConnectorInfo, x: number, y: number, setMouseContext: (value: string) => void, setBuildingSelection: (value: ModuleInfo | ConnectorInfo | null) => void) {
+    constructor(audio: AudioController, buildingData: ModuleInfo | ConnectorInfo, x: number, y: number, setMouseContext: (value: string) => void, setBuildingSelection: (value: ModuleInfo | ConnectorInfo | null) => void) {
         super(buildingData.name, x + 8, y, () => console.log("Exception: build chip click handler is not working."), constants.SIDEBAR_WIDTH - 24, 88, constants.EGGSHELL, constants.ALMOST_BLACK, 20);    // Handler here is a dud since the build chip uses the set mouse context function as its handler and this requires a string argument (instead of no argument)
+        this._audio = audio;
         this.buildingData = buildingData;
         this._maintenanceAlign = this._x + this._width * 5 / 8 - 8;
         this._maintenanceHeight = this._y + this._height / 2 + 16;
@@ -32,6 +35,7 @@ export default class BuildingChip extends Button {
         const xMatch = mouseX >= this._x && mouseX < this._x + this._width;
         const yMatch = mouseY >= this._y && mouseY < this._y + this._height;
         if (xMatch && yMatch) { // TODO: When more detailed building data is available, add a case for a two-part placement label
+            this._audio.quickPlay("pip01");
             // If building is already selected, clicking its chip again deselects it:
             if (this._selected) {
                 this.setBuildingSelection(null);

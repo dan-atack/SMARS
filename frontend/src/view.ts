@@ -1,10 +1,12 @@
 // The In-game view component, to form the different 'views' of the game's interface (distinct from the App's Screens)
 import P5 from "p5";
+import AudioController from "./audioController";
 import Button from "./button";
 import { constants } from "./constants";
 
 export default class View {
     // View essential types:
+    _audio: AudioController;
     _width: number;
     _height: number;
     _header: string;    // Title field for descendent classes
@@ -12,7 +14,8 @@ export default class View {
     changeView: (newView: string) => void;
     _buttons: Button[];
 
-    constructor(changeView: (newView: string) => void) {
+    constructor(audio: AudioController, changeView: (newView: string) => void) {
+        this._audio = audio;
         this._width = constants.SCREEN_WIDTH;
         this._height = constants.SCREEN_HEIGHT;
         this._header = ""   // Display title for the view; can be set individually by inheritor classes
@@ -40,6 +43,7 @@ export default class View {
     }
 
     handleReturnToGame = () => {
+        this._audio.quickPlay("ting01");
         this.changeView("engine");
     }
 

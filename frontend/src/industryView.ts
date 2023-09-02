@@ -1,5 +1,6 @@
 // In-game view for displaying the tech tree
 import P5 from "p5";
+import AudioController from "./audioController";
 import View from "./view";
 import Infrastructure from "./infrastructure";
 import Industry from "./industry";
@@ -22,8 +23,8 @@ export default class IndustryView extends View {
     _productionModules: number;
     _moduleWorkers: number;
 
-    constructor(changeView: (newView: string) => void) {
-        super(changeView);
+    constructor(audio: AudioController, changeView: (newView: string) => void) {
+        super(audio, changeView);
         this._leftBoxEdge = 64;
         this._rightBoxEdge = constants.SCREEN_WIDTH / 2 + 64;
         this._boxTop = 128;

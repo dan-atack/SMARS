@@ -1,5 +1,6 @@
 // In-game view for displaying the tech tree
 import P5 from "p5";
+import AudioController from "./audioController";
 import View from "./view";
 import Button from "./button";
 import Population from "./population";
@@ -23,8 +24,8 @@ export default class PopulationView extends View {
     _adjectives: string[];
     _moraleIndex: number;                   // The adjectives list index to be used when describing the colony's overall morale
 
-    constructor(changeView: (newView: string) => void) {
-        super(changeView);
+    constructor(audio: AudioController, changeView: (newView: string) => void) {
+        super(audio, changeView);
         this._population = null;           // By default there is zero population (gets set by the setup routine)
         this._rows = [];
         this._rowIndent = 64;
@@ -82,14 +83,17 @@ export default class PopulationView extends View {
     // Button handlers for Role assignments: All need just the Colonist's ID as an argument
 
     setExplorer = (id: number) => {
+        this._audio.quickPlay("ting02");
         this._population?.assignColonistRole(id, ["explorer", 0]);      // No module ID is needed for exploration role...
     }
 
     setFarmer = (id: number) => {
+        this._audio.quickPlay("ting02");
         this._population?.assignColonistRole(id, ["farmer", 0]);      // ...In fact, module ID req is slated for deprecation...
     }
 
     setMiner = (id: number) => {
+        this._audio.quickPlay("ting02");
         this._population?.assignColonistRole(id, ["miner", 0]);      // ... That was fast!
     }
 
@@ -97,19 +101,23 @@ export default class PopulationView extends View {
 
     handleNext = () => {
         if (this._population && this._population._colonists.length > this._optionsShowing + this._optionsPerPage) {
+            this._audio.quickPlay("ting02");
             this._optionsShowing += this._optionsPerPage;
             this.populateRows();
         } else {
+            this._audio.quickPlay("fail02");
             this.setMessage("You are at the end of the list.", constants.RED_ERROR);
         }
     }
 
     handlePrev = () => {
         if (this._optionsShowing > 0) {
+            this._audio.quickPlay("ting02");
             this._optionsShowing -= this._optionsPerPage;
             if (this._optionsShowing < 0) this._optionsShowing = 0; // Don't go past zero
             this.populateRows();
         } else {
+            this._audio.quickPlay("fail02");
             this.setMessage("You are at the start of the list", constants.RED_ERROR);
         }
     }
@@ -149,6 +157,7 @@ export default class PopulationView extends View {
 
     // Button handler for 'Return to Game': cleans up population rows and message text, and resets pagination
     handleReturnToGame = () => {
+        this._audio.quickPlay("ting01");
         this.cleanupPopulationRows();
         this.changeView("engine");
         this.setMessage("", constants.GREEN_TERMINAL);

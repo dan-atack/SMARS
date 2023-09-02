@@ -33,7 +33,6 @@ import { Resource } from "./economyData";
 export default class Engine extends View {
     // Engine types
     _p5: P5;                    // Although the View class no longer uses it in the constructor, the Engine still does
-    _audio: AudioController;    // Allow the Engine to have full reign over the game's sound effects
     _sidebar: Sidebar;
     _sidebarExtended: boolean;
     _gameData: GameData | null  // Data object for a new game
@@ -100,15 +99,14 @@ export default class Engine extends View {
     getRandomEvent: (event_request: [string, number], setter: (ev: {karma: string, magnitude: number, data: EventData}) => void) => void;
 
     constructor(p5: P5, audio: AudioController, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, updateEarthData: () => void) {
-        super(changeView);
+        super(audio, changeView);
         this._p5 = p5;
-        this._audio = audio;
         this.switchScreen = switchScreen;
         this.updateEarthData = updateEarthData;
         this.getModuleInfo = getOneModule;
         this.getConnectorInfo = getOneConnector;
         this.getRandomEvent = getRandomEvent;
-        this._sidebar = new Sidebar(this.switchScreen, this.changeView, this.setMouseContext, this.setGameSpeed, this.setHorizontalOffset);
+        this._sidebar = new Sidebar(this._audio, this.switchScreen, this.changeView, this.setMouseContext, this.setGameSpeed, this.setHorizontalOffset);
         this._sidebarExtended = true;   // Side bar can be partially hidden to expand map view - should this be here or in the SB itself??
         this._gameData = null;
         this._saveInfo = null;  // Saved game info is loaded from the Game module when it calls the setupSavedGame method

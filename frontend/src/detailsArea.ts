@@ -1,5 +1,6 @@
 // The details area is an expandable section of the sidebar, used to display information and building options
 import P5 from "p5";
+import AudioController from "./audioController";
 import Button from "./button";
 import BuildingChip from "./buildingChip";
 import Minimap from "./minimap";
@@ -15,6 +16,7 @@ import { constants } from "./constants";
 
 export default class DetailsArea {
     // Details Area types:
+    _audio: AudioController;
     _x: number;
     _y: number;
     _minimapY: number;
@@ -48,7 +50,8 @@ export default class DetailsArea {
     getStructureTypes: (setter: (options: string[]) => void, category: string) => void;   // Server function to fetch lists for building types
     getStructures: (setter: (options: ModuleInfo[] | ConnectorInfo[]) => void, category: string, type: string) => void
 
-    constructor(setOpen: (status: boolean) => void, setMouseContext: (value: string) => void, setHorizontalOffset: (x: number) => void) {
+    constructor(audio: AudioController, setOpen: (status: boolean) => void, setMouseContext: (value: string) => void, setHorizontalOffset: (x: number) => void) {
+        this._audio = audio;
         this._x = constants.SCREEN_WIDTH - constants.SIDEBAR_WIDTH + 4;
         this._y = 432;
         this._minimapY = this._y + 256;
@@ -119,28 +122,32 @@ export default class DetailsArea {
     populateBuildingOptions = (buildings: ModuleInfo[] | ConnectorInfo[]) => {
         this._optionButtons = [];       // Clear existing options
         buildings.forEach((bld, idx) => {
-            const m = new BuildingChip(bld, this._x, this._buttonY + idx * this._buttonMargin, this.setMouseContext, this.setBuildingSelection);
+            const m = new BuildingChip(this._audio, bld, this._x, this._buttonY + idx * this._buttonMargin, this.setMouseContext, this.setBuildingSelection);
             this._optionButtons.push(m);
         })
     }
 
     handleModules = () => {
+        this._audio.quickPlay("pip01");
         this.setBuildCategorySelection("modules");
         this.getStructureTypes(this.setBuildTypeOptions, "modules");
     }
 
     handleConnectors = () => {
+        this._audio.quickPlay("pip01");
         this.setBuildCategorySelection("connectors");
         this.getStructureTypes(this.setBuildTypeOptions, "connectors");
     }
 
     handleTypeSelection = (selection: string) => {
+        this._audio.quickPlay("pip01");
         this.setBuildTypeSelection(selection);
         this.getStructures(this.setBuildingOptions, this._buildCategorySelection, this._buildTypeSelection)
     }
 
     // Close down the component (and return to top-level sidebar display)
     handleClose = () => {
+        this._audio.quickPlay("ting03");
         this.setOpen(false);                // For Sidebar
         this.setExtended(false);            // For self
         this._buildingSelection = null;     // Reset building selection if player closes build menu
@@ -148,6 +155,7 @@ export default class DetailsArea {
 
     // If the actual building is selected, keep the building options but deselect current building and change mouse context
     handleCancelBuilding = () => {
+        this._audio.quickPlay("ting03");
         this.setBuildingSelection(null);
         this.setMouseContext("inspect");
         this._optionButtons.forEach((button) => {
@@ -157,18 +165,21 @@ export default class DetailsArea {
 
     // If build type is selected, clear individual building options and remove type selection
     handleCancelType = () => {
+        this._audio.quickPlay("ting03");
         this.setBuildingOptions([]);
         this.setBuildTypeSelection("");
     }
 
     // If only the category is selected, clear the type options and remove category selection
     handleCancelCategory = () => {
+        this._audio.quickPlay("ting03");
         this.setBuildCategorySelection("");
         this.setBuildTypeOptions([]);
     }
 
     // Goes back one level of options, either from the buildings themselves, or the building types (keeping details area extended)
     handleBack = () => {
+        this._audio.quickPlay("ting03");
         if (this._buildingSelection) {
             this.handleCancelBuilding();
         } else if (this._buildTypeSelection) {
