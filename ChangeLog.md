@@ -3799,7 +3799,9 @@ Exit Criteria for chapter:
 
 26. Add a jackhammer sound when a mining zone is created.
 
-### 27. Add a depressurization sound when demolishing a module or a connector.
+27. Add a shovel scraping sound when a mining zone is removed.
+
+28. Add a smashing sound when demolishing a module or a connector.
 
 ### 28. Add a low, rumbling machine sound when a block is excavated.
 
@@ -3814,6 +3816,10 @@ Exit Criteria for chapter:
 ### 25. Add a metallic tapping/scraping sound for when a connector is placed.
 
 ### 26. Add a synth noise of some kind for landing zone selection modal when it pops up.
+
+### 97. Pause the wind sound if the game's menu is opened; resume it after the game is resumed.
+
+### 98. Randomly play wind sounds from time to time; add an Engine method for making passive background sounds that runs every hour with a small chance of generating a wind sound (say 4% chance per hour to start with).
 
 ### 95. Play the game for several minutes, clicking everything you can to see if there are any missing sound effects, or console logs that have to be eliminated.
 

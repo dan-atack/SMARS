@@ -525,7 +525,7 @@ export default class Engine extends View {
                     const message = this.createMessage("command-resource-success", 0, "New mining zone\nestablished");
                 this._notifications.createMessageFromClick(crds, message, 16);
                 } else {
-                    // TODO: Sound?
+                    this._audio.quickPlay("shovel");
                     const message = this.createMessage("command-resource-success", 0, "Mining zone\ncancelled");
                     this._notifications.createMessageFromClick(crds, message, 16);
                 }
@@ -619,6 +619,7 @@ export default class Engine extends View {
         if (con) {          // First, check for Connectors
             const outcome = this._infrastructure.removeConnector(con, this._population);
             if (outcome.success) {
+                this._audio.playQuickDemolishSound();   // Use prepackaged randomized sound package
                 const message = this.createMessage("command-demolish-success", con._id, outcome.message);
                 this._notifications.createMessageFromClick(crds, message, 18);
             } else {
@@ -630,6 +631,7 @@ export default class Engine extends View {
             // Depending on the outcome of the removal request, send a success/failure message for the player to see in-game
             const outcome: { success: boolean, message: string } = this._infrastructure.removeModule(mod, this._population, this._map);
             if (outcome.success) {
+                this._audio.playQuickDemolishSound();   // Use prepackaged randomized sound package
                 const message = this.createMessage("command-demolish-success", mod._id, outcome.message);
                 this._notifications.createMessageFromClick(crds, message);
             } else {
@@ -646,6 +648,7 @@ export default class Engine extends View {
         const crds = { x: coords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: coords.y * constants.BLOCK_WIDTH};
         const removal: Block | string = this._map.isBlockRemovable(coords);     // Can be either a Block, or a string with a failure message
         if (typeof removal === "string") {
+            this._audio.quickPlay("fail02");
             const msg = this.createMessage("command-excavate-fail", 0, removal);
             this._notifications.createMessageFromClick(crds, msg);
         } else if (removal) {  // If the map check was successful we will use the block's info to eliminate it
@@ -655,6 +658,7 @@ export default class Engine extends View {
             const noUndermine = this._infrastructure._data._baseVolume[coords.x].length === 0;  // Check for buildings
             const allClear = this._population.areColonistsNear(coords, 2);      // Check for nearby colonists
             if (affordable && noUndermine && allClear) {                        // If all conditions are met, remove the block, and pay the man
+                this._audio.quickPlay("excavate");
                 this._economy._data.subtractMoney(cost);                        // Subtract money
                 this._map.removeBlock(removal)                                  // Remove block from map
                 this._sidebar._detailsArea._minimap.setup(this._map._mapData)   // Update Minimap
@@ -664,6 +668,7 @@ export default class Engine extends View {
                 const msg = this.createMessage("command-excavate-success", 0, `${removal._blockData.name} removed.\n-$${moneyString}`);
                 this._notifications.createMessageFromClick(crds, msg);
             } else {
+                this._audio.quickPlay("fail02");
                 const msg = this.createMessage("command-excavate-fail", 0, `Cannot carry out excavation here:\n${affordable ? noUndermine ? "Too close to population" : "Undermines base structures" : "Insufficient funds available"}`);
                 this._notifications.createMessageFromClick(crds, msg);
             }
@@ -720,9 +725,7 @@ export default class Engine extends View {
                     this._infrastructure.addModule(x, y, this.selectedBuilding,  this._map._topography, this._map._zones,);
                     this._economy._data.subtractMoney(this.selectedBuilding.buildCosts[0][1]);
                     const moneyString = (this.selectedBuilding.buildCosts[0][1] / 100).toFixed(2);
-                    const rando = Math.floor(Math.random() * 3)
-                    const airlock: string = rando > 1 ? "airlock02" : rando > 0 ? "airlock03" : "airlock04";   // Pick a random airlock sound each time a module is placed
-                    this._audio.quickPlay(airlock);
+                    this._audio.playQuickAirlockSound();
                     const message = this.createMessage("command-module-success", 0, `${this.selectedBuilding.name} installed.\n-$${moneyString}`);
                     this._notifications.createMessageFromClick(crds, message);
                 } else {
@@ -739,9 +742,11 @@ export default class Engine extends View {
     handleConnectorStartPlacement = (x: number, y: number) => {
         // Ensure start location is valid
         if (this._infrastructure._data.checkConnectorEndpointPlacement(x, y, this._map._mapData)) {
+            this._audio.quickPlay("connector");
             this._mouseShadow?.setLocked(true, {x: x, y: y});   // Lock the shadow's position when start location is chosen
             this.setMouseContext("connectorStop");
         } else {    // If the start location is invalid show a popup
+            this._audio.quickPlay("fail02");
             const crds = { x: x * constants.BLOCK_WIDTH - this._horizontalOffset, y: y * constants.BLOCK_WIDTH};
             const message = this.createMessage("command-connector-fail", 0, "Cannot start connector\nat this location");
             this._notifications.createMessageFromClick(crds, message);

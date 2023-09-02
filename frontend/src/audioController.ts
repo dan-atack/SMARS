@@ -393,6 +393,20 @@ export default class AudioController {
         this.setFadeoutTimes(channel || "effects", fadeoutStart || 20, fadeoutduration || 20);
     }
 
+    // SECTION 4.B: QUICK SOUND RANDOMIZED SAMPLES
+
+    playQuickAirlockSound = () => {
+        const rando = Math.floor(Math.random() * 3)
+        const airlock: string = rando > 1 ? "airlock02" : rando > 0 ? "airlock03" : "airlock04";   // Pick a random airlock sound each time a module is placed
+        this.quickPlay(airlock);
+    }
+
+    playQuickDemolishSound = () => {
+        const rando = Math.floor(Math.random() * 3)
+        const demo: string = rando > 1 ? "demolish01" : rando > 0 ? "demolish02" : "demolish03";   // Pick a random demolition sound each time
+        this.quickPlay(demo);
+    }
+
     
 
     
