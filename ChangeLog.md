@@ -3791,27 +3791,35 @@ Exit Criteria for chapter:
 
 24. Next fill out the other Sidebar buttons: Ting 2 for mouse-context selectors including 'Build'; Fail 2 for the disabled 'Add Ground' button.
 
-### 21. Next, add the click responders for when the player clicks with various mouse contexts; any unsuccessful click should get 'Fail 1' (or do we get another, shorter, failure sound for in-game clicks?) and then for successful actions we'll need to find custom sounds for each one:
+25. Next, add the click responders for when the player clicks with various mouse contexts; unsuccessful clicks should get one of the two fail sounds (1 or 2 depending on the context; 1 is more severe so reserve it for cases where you have no money to place a module/connector, and use 2 for failed clicks that come with a bit of friendly advice) and then for successful actions we'll need to find custom sounds for each one:
 
-24. Add an alternate airlock sound (or several!) for when a module is placed.
+26. Add an alternate airlock sound (or several!) for when a module is placed.
 
-25. Add a metallic tapping/scraping sound for when a connector is placed.
+27. Add a metallic tapping/scraping sound for when a connector is placed.
 
-26. Add a jackhammer sound when a mining zone is created.
+28. Add a jackhammer sound when a mining zone is created.
 
-27. Add a shovel scraping sound when a mining zone is removed.
+29. Add a shovel scraping sound when a mining zone is removed.
 
-28. Add a smashing sound when demolishing a module or a connector.
+30. Add three different smashing sounds when demolishing a module or a connector.
 
-### 28. Add a low, rumbling machine sound when a block is excavated.
+31. Add a rumbling machine sound when a block is excavated.
 
 ### 29. Add Inspect Display sounds depending on the type of thing being clicked:
+
+33. For modules/connectors, just re-use their building sounds (quick airlock / connector)
+
+34. For disabled modules (due to either lack of power or oxygen) get and use a powered-down sound.
+
+### 34. For Blocks, get several quick samples of rocks being walked on, and make an Audio class randomized effect.
+
+### 35. Now for a bit of fun: for the colonists, make little male/female Kerbal-like noises (every 2nd colonist is female... or is it time to add a colonist 'gender' field to avoid confusion?), and have three different tiers of sound to play depending on the colonist's morale.
+
+36. Lower the volume and shorten the soundbite for the jackhammer 'resource' click response, and use a different part of the excavator sequence for the 'excavate' action - and also use a lower volume for that effect. Do the same for the 3 'demolish' effects - those guys are WAY too darn loud!
 
 ### 22. Play ting 3 whenever a modal is closed.
 
 ### 23. Add a short, generic noise to play whenever a random event occurs.
-
-### 24. Add an alternate airlock sound for when a module is placed.
 
 ### 25. Add a metallic tapping/scraping sound for when a connector is placed.
 

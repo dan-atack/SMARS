@@ -407,6 +407,17 @@ export default class AudioController {
         this.quickPlay(demo);
     }
 
+    playQuickExcavateSound = () => {
+        const rando = Math.floor(Math.random() * 2)     // Only 2 options for excavate (dig) sound
+        const demo: string = rando > 0 ? "excavate01" : "excavate02";
+        this.quickPlay(demo);
+    }
+
+    playQuickRocksSound = () => {
+        const rando = Math.floor(Math.random() * 3)
+        const demo: string = rando > 1 ? "rocks01" : rando > 0 ? "rocks02" : "rocks03";
+        this.quickPlay(demo);
+    }
     
 
     

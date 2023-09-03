@@ -586,14 +586,22 @@ export default class Engine extends View {
         // Clear previous inspect target (if any) before determining new display data
         this.clearInspectSelection();
         if (this._population.getColonistDataFromCoords(coords)) {                   // First check for Colonists
+            // TODO: Play colonist sound based on gender and morale level
             this.inspecting = this._population.getColonistDataFromCoords(coords);
         } else if (this._infrastructure.getConnectorFromCoords(coords)) {           // Next, check for Connectors
+            this._audio.quickPlay("connector");
             this.inspecting = this._infrastructure.getConnectorFromCoords(coords);
             this._infrastructure.highlightStructure(this.inspecting?._id || 0, false);  // Use ID if available, otherwise reset
         } else if (this._infrastructure.getModuleFromCoords(coords)) {              // Then, check for Modules
             this.inspecting = this._infrastructure.getModuleFromCoords(coords);
+            if (this.inspecting && this.inspecting._isMaintained) {
+                this._audio.playQuickAirlockSound();
+            } else {
+                this._audio.quickPlay("powerDown")
+            }
             this._infrastructure.highlightStructure(this.inspecting?._id || 0, true);
         } else if (this._map.getBlockForCoords(coords)) {                           // Finally, check for terrain Blocks
+            this._audio.playQuickRocksSound();
             this.inspecting = this._map.getBlockForCoords(coords);
             this._map.setHighlightedBlock(this.inspecting);
         } else {
@@ -658,7 +666,7 @@ export default class Engine extends View {
             const noUndermine = this._infrastructure._data._baseVolume[coords.x].length === 0;  // Check for buildings
             const allClear = this._population.areColonistsNear(coords, 2);      // Check for nearby colonists
             if (affordable && noUndermine && allClear) {                        // If all conditions are met, remove the block, and pay the man
-                this._audio.quickPlay("excavate");
+                this._audio.playQuickExcavateSound();
                 this._economy._data.subtractMoney(cost);                        // Subtract money
                 this._map.removeBlock(removal)                                  // Remove block from map
                 this._sidebar._detailsArea._minimap.setup(this._map._mapData)   // Update Minimap
