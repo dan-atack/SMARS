@@ -3805,23 +3805,21 @@ Exit Criteria for chapter:
 
 31. Add a rumbling machine sound when a block is excavated.
 
-### 29. Add Inspect Display sounds depending on the type of thing being clicked:
+32. Add Inspect Display sounds depending on the type of thing being clicked:
 
 33. For modules/connectors, just re-use their building sounds (quick airlock / connector)
 
 34. For disabled modules (due to either lack of power or oxygen) get and use a powered-down sound.
 
-### 34. For Blocks, get several quick samples of rocks being walked on, and make an Audio class randomized effect.
+35. For Blocks, get several quick samples of rocks being walked on, and make an Audio class randomized effect.
 
-### 35. Now for a bit of fun: for the colonists, make little male/female Kerbal-like noises (every 2nd colonist is female... or is it time to add a colonist 'gender' field to avoid confusion?), and have three different tiers of sound to play depending on the colonist's morale.
+36. Now for a bit of fun: for the colonists, make little male/female Kerbal-like noises. Until we can recruit Lauren's participation, just make all the colonists play the male sound by default - and just like that, the patriarchy extends to a new planet!
 
-36. Lower the volume and shorten the soundbite for the jackhammer 'resource' click response, and use a different part of the excavator sequence for the 'excavate' action - and also use a lower volume for that effect. Do the same for the 3 'demolish' effects - those guys are WAY too darn loud!
+37. Lower the volume and shorten the soundbite for the jackhammer 'resource' click response, and use a different part of the excavator sequence for the 'excavate' action - and also use a lower volume for that effect. Do the same for the 3 'demolish' effects - those guys are WAY too darn loud!
 
-### 22. Play ting 3 whenever a modal is closed.
+38. Play ting 3 whenever a modal is closed.
 
 ### 23. Add a short, generic noise to play whenever a random event occurs.
-
-### 25. Add a metallic tapping/scraping sound for when a connector is placed.
 
 ### 26. Add a synth noise of some kind for landing zone selection modal when it pops up.
 

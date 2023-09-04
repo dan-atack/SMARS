@@ -219,9 +219,11 @@ export default class AudioController {
                 }
                 //@ts-ignore
                 console.log(sound.volume);
+            } else {
+                console.log(`ERROR: Sound file ${id} not found.`);
             }
         } catch {
-            console.log(`ERROR: Sound file not found for ${id}.`);
+            console.log(`ERROR: Sound file ${id} was not found or was unplayable.`);
         }
     }
 
@@ -377,8 +379,8 @@ export default class AudioController {
 
     // Packages come with built-in but adjustable fade-in/fade-out times; played in the 'effects' channel (by default)
     playAirlockSound = (fadeoutStart: number, fadeoutduration: number, channel?: string) => {
-        this.playSound(channel || "effects", "airlock");
-        this.setFadeoutTimes(channel || "effects", fadeoutStart || 3, fadeoutduration || 5);
+        this.playSound(channel || "effects", "airlock01");
+        this.setFadeoutTimes(channel || "effects", fadeoutStart || 4, fadeoutduration || 5);
     }
 
     // Note that effects which start at full volume don't require a fadein duration to be set
@@ -393,7 +395,7 @@ export default class AudioController {
         this.setFadeoutTimes(channel || "effects", fadeoutStart || 20, fadeoutduration || 20);
     }
 
-    // SECTION 4.B: QUICK SOUND RANDOMIZED SAMPLES
+    // SECTION 5: QUICK SOUND RANDOMIZED SAMPLES (For playing quick sounds that have a few different, interchangeable samples)
 
     playQuickAirlockSound = () => {
         const rando = Math.floor(Math.random() * 3)
@@ -409,17 +411,34 @@ export default class AudioController {
 
     playQuickExcavateSound = () => {
         const rando = Math.floor(Math.random() * 2)     // Only 2 options for excavate (dig) sound
-        const demo: string = rando > 0 ? "excavate01" : "excavate02";
-        this.quickPlay(demo);
+        const exc: string = rando > 0 ? "excavate01" : "excavate02";
+        this.quickPlay(exc);
     }
 
     playQuickRocksSound = () => {
         const rando = Math.floor(Math.random() * 3)
-        const demo: string = rando > 1 ? "rocks01" : rando > 0 ? "rocks02" : "rocks03";
-        this.quickPlay(demo);
+        const rocks: string = rando > 1 ? "rocks01" : rando > 0 ? "rocks02" : "rocks03";
+        this.quickPlay(rocks);
+    }
+
+    // SECION 5-B: COLONIST SOUNDS (SORTED BY MORALE)
+
+    playHappyMale = () => {
+        const rando = Math.floor(Math.random() * 3)
+        const happy: string = rando > 1 ? "colonistMaleHappy01" : rando > 0 ? "colonistMaleHappy02" : "colonistMaleHappy03";
+        this.quickPlay(happy);
+    }
+
+    playNeutralMale = () => {
+        const rando = Math.floor(Math.random() * 3)
+        const neutral: string = rando > 1 ? "colonistMaleNeutral01" : rando > 0 ? "colonistMaleNeutral02" : "colonistMaleNeutral03";
+        this.quickPlay(neutral);
     }
     
-
-    
+    playSadMale = () => {
+        const rando = Math.floor(Math.random() * 3)
+        const sad: string = rando > 1 ? "colonistMaleSad01" : rando > 0 ? "colonistMaleSad02" : "colonistMaleSad03";
+        this.quickPlay(sad);
+    }
 
 }

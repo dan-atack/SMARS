@@ -586,8 +586,13 @@ export default class Engine extends View {
         // Clear previous inspect target (if any) before determining new display data
         this.clearInspectSelection();
         if (this._population.getColonistDataFromCoords(coords)) {                   // First check for Colonists
-            // TODO: Play colonist sound based on gender and morale level
             this.inspecting = this._population.getColonistDataFromCoords(coords);
+            // Play different audio depending on colonist's gender, morale
+            if (this.inspecting) {
+                this.inspecting._data._morale > 70 ? this._audio.playHappyMale() : this.inspecting._data._morale > 30 ? this._audio.playNeutralMale() : this._audio.playSadMale();
+            } else {
+                console.log("ERROR: Encountered a problem while trying to play audio file for colonist inspect.");
+            }
         } else if (this._infrastructure.getConnectorFromCoords(coords)) {           // Next, check for Connectors
             this._audio.quickPlay("connector");
             this.inspecting = this._infrastructure.getConnectorFromCoords(coords);
@@ -1224,6 +1229,7 @@ export default class Engine extends View {
     // Resolution parameter tells the Engine, by index position, which resolution to enact
     closeModal = (resolution: number) => {
         if (this._modal) {
+            this._audio.quickPlay("ting03");
             // Carry out each outcome instruction for the modal's resolution. TODO: Allow user to choose among 3 or more options
             this._modal._resolutions[resolution].outcomes.forEach((outcome) => {
                 switch (outcome[0]) {
