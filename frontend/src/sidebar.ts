@@ -184,6 +184,7 @@ export default class Sidebar {
 
     handleMenuButton = () => {
         this._audio.quickPlay("ting01");
+        this._audio.pauseSound("effects");
         this.setMenuOpen(true);
         this.switchScreen("inGameMenu");
         this.setMouseContext("inspect");     // Reset mouse context if menu is opened

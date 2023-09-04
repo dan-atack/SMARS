@@ -217,8 +217,6 @@ export default class AudioController {
                     //@ts-ignore
                     sound.volume = this._effectsVolume;
                 }
-                //@ts-ignore
-                console.log(sound.volume);
             } else {
                 console.log(`ERROR: Sound file ${id} not found.`);
             }
@@ -242,9 +240,15 @@ export default class AudioController {
         }
     }
     
-    // Stops a sound file but keeps its playback at the current location so it can be resumed the next time it's played
-    pauseSound = (channel: string, id: string) => {
+    // Stops the sound file from the given channel, but keeps its playback at the current location so it can be resumed the next time it's played
+    pauseSound = (channel: string) => {
         try {
+            let id: string = "";
+            if (channel === "music") {
+                id = this._music;
+            } else if (channel === "effects") {
+                id = this._effects;
+            }
             const sound = document.getElementById(id);
             if (sound) {
                 //@ts-ignore
@@ -257,7 +261,26 @@ export default class AudioController {
                 }
             }
         } catch {
-            console.log(`ERROR: Was unable to pause sound ${id}`);
+            console.log(`ERROR: Was unable to pause sound for ${channel} channel.`);
+        }
+    }
+
+    // Unlike the regular PlaySound method, this resumes whatever sound was playing in a given channel without resetting fade times
+    resumeSound = (channel: string) => {
+        let id: string = "";
+        if (channel === "music") {
+            id = this._music;
+        } else if (channel === "effects") {
+            id = this._effects;
+        }
+        try {
+            const sound = document.getElementById(id);
+            if (sound) {
+                //@ts-ignore
+                sound.play();
+            }
+        } catch {
+            console.log(`ERROR: Unable to resume playing sound ${id} for ${channel} channel.`);
         }
     }
     

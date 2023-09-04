@@ -92,6 +92,9 @@ export default class InGameMenu extends Screen {
 
     handleReturnToGame = () => {
         this._audio.quickPlay("ting01");
+        if (this._audio._effects) {
+            this._audio.resumeSound("effects");     // Resume sound effects if they were cut off
+        }
         this.handleClose();
         this.switchScreen("game");
     }

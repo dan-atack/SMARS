@@ -806,6 +806,7 @@ export default class Engine extends View {
         const flat = this._map.determineFlatness(gridX - 4, gridX + 4);
         // Prompt the player to confirm landing site before initiating landing sequence
         if (flat) {
+            this._audio.quickPlay("bloop01");
             this.createModal(modalData.find((modal) => modal.id ==="landing-confirm"));
             this._landingSiteCoords[0] = gridX - 4; // Set landing site location to the left edge of the landing area
             this._landingSiteCoords[1] = (constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH) - this._map._columns[gridX].length;
@@ -1072,6 +1073,9 @@ export default class Engine extends View {
         this.updateDayNightCycle();
         this.checkForGeneralWarnings();
         this._notifications.handleHourlyUpdates(this._gameTime);
+        // Randomly play wind sound effects from time to time (4% chance)
+        const rando = Math.floor(Math.random() * 100);
+        if (rando > 96) this._audio.playWindSound(0, 0, 0);
         // Re-activate the 2 lines below to periodically gauge how much, if any, the game's time keeping is slipping as it grows
         // const time = new Date();
         // console.log(time);
@@ -1210,6 +1214,7 @@ export default class Engine extends View {
     setRandomEvent = (ev: {karma: string, magnitude: number, data: EventData}) => {
         this._randomEvent = ev;
         if (ev !== undefined) {
+            this._audio.quickPlay("bloop01");
             this.createModal(ev.data);       // Event occurs if given probability is higher than random value
         } else {
             console.log("ERROR: Random event data not returned from the server.")

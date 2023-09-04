@@ -3819,13 +3819,13 @@ Exit Criteria for chapter:
 
 38. Play ting 3 whenever a modal is closed.
 
-### 23. Add a short, generic noise to play whenever a random event occurs.
+39. Add a short, generic bloop noise to play whenever a random event occurs.
 
-### 26. Add a synth noise of some kind for landing zone selection modal when it pops up.
+40. Re-use this sound for when the landing zone selection modal when it pops up.
 
-### 97. Pause the wind sound if the game's menu is opened; resume it after the game is resumed.
+41. Pause the wind sound if the game's menu is opened; resume it after the game is resumed (resume command will be called by the in-game menu, and will require the addition of a new resumeSound method for the Audio Controller class, since the basic playSound method resets fade controls).
 
-### 98. Randomly play wind sounds from time to time; add an Engine method for making passive background sounds that runs every hour with a small chance of generating a wind sound (say 4% chance per hour to start with).
+42. Randomly play wind sounds from time to time; add an Engine method for making passive background sounds that runs every hour with a small chance of generating a wind sound (say 4% chance per hour to start with).
 
 ### 95. Play the game for several minutes, clicking everything you can to see if there are any missing sound effects, or console logs that have to be eliminated.
 
