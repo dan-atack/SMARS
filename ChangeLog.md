@@ -3827,11 +3827,9 @@ Exit Criteria for chapter:
 
 42. Randomly play wind sounds from time to time; add an Engine method for making passive background sounds that runs every hour with a small chance of generating a wind sound (say 4% chance per hour to start with).
 
+43. Update the game's README file to cite every sound effects contributor (usernames and/or URLs), plus the sound editing sites used for trimming, volume adjustments, etc. Put comments on some of your favourite sound contributors at FreeSound.org, to thank them and acknowledge their work.
+
 ### 95. Play the game for several minutes, clicking everything you can to see if there are any missing sound effects, or console logs that have to be eliminated.
-
-### 96. Update the game's README file to cite every sound effects contributor (usernames and/or URLs), plus the sound editing sites used for trimming, volume adjustments, etc. Put comments on some of your favourite sound contributors at FreeSound.org, to thank them and acknowledge their work.
-
-### 97. If you're feeling very plucky, implement the Channel type concept, to allow management of any number of sounds simultaneously. Or convert this into an Application issue.
 
 ### 98. Clean up all console logs for this chapter's development (or if you really like them, add a flag to them to keep appearing in dev mode only).
 
