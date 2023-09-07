@@ -265,7 +265,7 @@ export default class NewGameSetup extends Screen {
 
     setStartingResources = (difficulty: string) => {
         const easy: Resource[] = [
-            ["money", 2500000],
+            ["money", 1000000000],
          ];
         const med: Resource[] = [
             ["money", 2000000]

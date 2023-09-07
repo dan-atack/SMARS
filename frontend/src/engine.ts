@@ -1077,8 +1077,8 @@ export default class Engine extends View {
         const rando = Math.floor(Math.random() * 100);
         if (rando > 96) this._audio.playWindSound(0, 0, 0);
         // Re-activate the 2 lines below to periodically gauge how much, if any, the game's time keeping is slipping as it grows
-        // const time = new Date();
-        // console.log(time);
+        const time = new Date();
+        console.log(time);
     }
 
     // Updates the day/night cycle and in-game weather
