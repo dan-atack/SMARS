@@ -264,8 +264,13 @@ export default class NewGameSetup extends Screen {
     }
 
     setStartingResources = (difficulty: string) => {
+        // Start with a zillion dollars in Dev Mode - otherwise get the regular amount (25,000.00)
+        let easyMoney = 2500000;
+        if (process.env.ENVIRONMENT === "dev") {
+            easyMoney = 1000000000;
+        }
         const easy: Resource[] = [
-            ["money", 1000000000],
+            ["money", easyMoney],
          ];
         const med: Resource[] = [
             ["money", 2000000]
