@@ -1,5 +1,6 @@
 // The Pre-game settings page
 import P5 from "p5";
+import AudioController from "./audioController";
 import Screen from "./screen";
 import Button from "./button";
 import Minimap from "./minimap";
@@ -38,8 +39,8 @@ export default class NewGameSetup extends Screen {
     minimap: Minimap;
     gameData: GameData;
 
-    constructor(p5: P5, switchScreen: (switchTo: string) => void) {
-        super(p5);
+    constructor(p5: P5, audio: AudioController, switchScreen: (switchTo: string) => void) {
+        super(p5, audio);
         this.switchScreen = switchScreen;
         this._buttons = [];
         this._difficulty = "medium" // Default settings are already in place
@@ -59,7 +60,7 @@ export default class NewGameSetup extends Screen {
         this._randomWidth = 192;
         this._randomHeight = 64;
         this._mapTerrain = [];       // Fills in with return from a fetch in the setup method
-        this.minimap = new Minimap(800, 420, "Map Preview");
+        this.minimap = new Minimap(800, 420, "Map Preview", () => {});
         this.gameData = {   // To export to the Game once data has been selected
             difficulty: "",
             mapType: "",
@@ -195,6 +196,7 @@ export default class NewGameSetup extends Screen {
 
     // Difficulty Settings handlers
     handleEasy = () => {
+        this._audio.quickPlay("ting02");
         this._difficulty = "easy";
         // Set selection status for all difficulty buttons:
         this._buttons[0].setSelected(true);
@@ -203,6 +205,7 @@ export default class NewGameSetup extends Screen {
     }
 
     handleMedium = () => {
+        this._audio.quickPlay("ting02");
         this._difficulty = "medium";
         this._buttons[0].setSelected(false);
         this._buttons[1].setSelected(true);
@@ -210,6 +213,7 @@ export default class NewGameSetup extends Screen {
     }
 
     handleHard = () => {
+        this._audio.quickPlay("ting02");
         this._difficulty = "hard";
         this._buttons[0].setSelected(false);
         this._buttons[1].setSelected(false);
@@ -218,6 +222,7 @@ export default class NewGameSetup extends Screen {
 
     // Map Type Selection handlers
     handlePolar = () => {
+        this._audio.quickPlay("ting02");
         this._mapType = "polar";
         this._buttons[3].setSelected(true);
         this._buttons[4].setSelected(false);
@@ -226,6 +231,7 @@ export default class NewGameSetup extends Screen {
     }
 
     handleHighlands = () => {
+        this._audio.quickPlay("ting02");
         this._mapType = "highlands";
         this._buttons[3].setSelected(false);
         this._buttons[4].setSelected(true);
@@ -234,6 +240,7 @@ export default class NewGameSetup extends Screen {
     }
 
     handleRiverbed = () => {
+        this._audio.quickPlay("ting02");
         this._mapType = "riverbed";
         this._buttons[3].setSelected(false);
         this._buttons[4].setSelected(false);
@@ -243,20 +250,27 @@ export default class NewGameSetup extends Screen {
 
     // Random Event handlers
     handleYesRandom = () => {
+        this._audio.quickPlay("ting02");
         this._randomEvents = true;
         this._buttons[6].setSelected(true);
         this._buttons[7].setSelected(false);
     }
 
     handleNoRandom = () => {
+        this._audio.quickPlay("ting02");
         this._randomEvents = false;
         this._buttons[6].setSelected(false);
         this._buttons[7].setSelected(true);
     }
 
     setStartingResources = (difficulty: string) => {
+        // Start with a zillion dollars in Dev Mode - otherwise get the regular amount (25,000.00)
+        let easyMoney = 2500000;
+        if (process.env.ENVIRONMENT === "dev") {
+            easyMoney = 1000000000;
+        }
         const easy: Resource[] = [
-            ["money", 2500000],
+            ["money", easyMoney],
          ];
         const med: Resource[] = [
             ["money", 2000000]
@@ -277,6 +291,7 @@ export default class NewGameSetup extends Screen {
     }
 
     handleStartGame = () => {
+        this._audio.quickPlay("ting01");
         this.gameData = {   // Prepare to dispatch the following info to the new game's set
             difficulty: this._difficulty,
             mapType: this._mapType,
@@ -289,6 +304,7 @@ export default class NewGameSetup extends Screen {
     }
 
     handleReturnToMenu = () => {
+        this._audio.quickPlay("ting01");
         this.cleanup();
         this.switchScreen("menu");
     }
@@ -348,6 +364,7 @@ export default class NewGameSetup extends Screen {
     }
 
     render = () => {
+        this._audio.handleUpdates();
         const p5 = this._p5;
         p5.background(constants.APP_BACKGROUND);
         // Text description backdrops:

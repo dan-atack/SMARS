@@ -1,3 +1,4 @@
+import AudioController from "../src/audioController";
 import PopulationView from "../src/populationView";
 
 describe("Population View Tests", () => {
@@ -7,7 +8,9 @@ describe("Population View Tests", () => {
         // This is a dummy function
     }
 
-    const population = new PopulationView(changeView);
+    const audio = new AudioController;
+
+    const population = new PopulationView(audio, changeView);
 
     test("Defines setPopulation", () => {
         expect(typeof population.setPopulation).toBe("function");

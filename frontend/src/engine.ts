@@ -1,6 +1,7 @@
 // Top-level component for the game environment (as opposed to game interface, which is in game.ts)
 import P5 from "p5";
 // Components
+import AudioController from "./audioController";
 import View from "./view";
 import Sidebar from "./sidebar";
 import Map from "./map";
@@ -97,15 +98,15 @@ export default class Engine extends View {
     getConnectorInfo: (setter: (selectedConnector: ConnectorInfo, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => void, category: string, type: string, name: string, locations: {start: Coords, stop: Coords}[][], ids?: number[]) => void;
     getRandomEvent: (event_request: [string, number], setter: (ev: {karma: string, magnitude: number, data: EventData}) => void) => void;
 
-    constructor(p5: P5, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, updateEarthData: () => void) {
-        super(changeView);
+    constructor(p5: P5, audio: AudioController, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, updateEarthData: () => void) {
+        super(audio, changeView);
         this._p5 = p5;
         this.switchScreen = switchScreen;
         this.updateEarthData = updateEarthData;
         this.getModuleInfo = getOneModule;
         this.getConnectorInfo = getOneConnector;
         this.getRandomEvent = getRandomEvent;
-        this._sidebar = new Sidebar(this.switchScreen, this.changeView, this.setMouseContext, this.setGameSpeed, this.setHorizontalOffset);
+        this._sidebar = new Sidebar(this._audio, this.switchScreen, this.changeView, this.setMouseContext, this.setGameSpeed, this.setHorizontalOffset);
         this._sidebarExtended = true;   // Side bar can be partially hidden to expand map view - should this be here or in the SB itself??
         this._gameData = null;
         this._saveInfo = null;  // Saved game info is loaded from the Game module when it calls the setupSavedGame method
@@ -176,6 +177,7 @@ export default class Engine extends View {
     }
 
     setupNewGame = (gameData: GameData) => {
+        // this._audio.playWindSound(0, 0, 0);     // TODO: Uncomment this once multi-channel sound feature is fully developed
         this._gameData = gameData;  // gameData object only needs to be set for new games
         this._difficulty = gameData.difficulty;
         this._randomEventsEnabled = gameData.randomEvents;
@@ -190,6 +192,9 @@ export default class Engine extends View {
     }
 
     setupSavedGame = (saveInfo: SaveInfo) => {
+        this._audio.playSound("effects", "loadGame");
+        this._audio.startFadeout("music", 8);   // If a loaded file is opened, start fading the music out immediately, over a period of 8 seconds
+        this._audio.playWindSound(0, 0, 0);     // Play pre-packaged wind sound, using default values
         this._saveInfo = saveInfo;
         // Load game time
         this.setClock(saveInfo.game_time);
@@ -389,6 +394,7 @@ export default class Engine extends View {
                         break;
                     case "wait":
                         // Send message to Notifications system indicating that the player can't click during 'wait' mode
+                        this._audio.quickPlay("ting03");
                         const message = this.createMessage("command-must-wait", 0, "Please Wait:\nAnimation in progress");
                         this._notifications.createMessageFromClick({ x: mouseX, y: mouseY }, message);
                         break;
@@ -515,19 +521,23 @@ export default class Engine extends View {
             if (b._blockData.resource === "water") {
                 const added = this._industry.toggleMiningLocation(coords, "water"); // Push the coordinates for the mining location
                 if (added) {
+                    this._audio.quickPlay("jackhammer");
                     const message = this.createMessage("command-resource-success", 0, "New mining zone\nestablished");
                 this._notifications.createMessageFromClick(crds, message, 16);
                 } else {
+                    this._audio.quickPlay("shovel");
                     const message = this.createMessage("command-resource-success", 0, "Mining zone\ncancelled");
                     this._notifications.createMessageFromClick(crds, message, 16);
                 }
             } else {
                 // Notify the player if an invalid resource type has been selected
+                this._audio.quickPlay("fail02");
                 const message = this.createMessage("command-resource-invalid", 0, "Can only mine tiles\ncontaining water");
                 this._notifications.createMessageFromClick(crds, message, 16);
             }
         } else {
             // Notify the player in-game that they must select a tile on the surface
+            this._audio.quickPlay("fail02");
             const message = this.createMessage("command-resource-no-surface", 0, `${b?._blockData.yield === 0 ? "Cannot mine here:\nSite has no resource yield" : "Click on surface tile\nto add/remove mining zone"}`);
             this._notifications.createMessageFromClick(crds, message, 16);
         }
@@ -577,13 +587,26 @@ export default class Engine extends View {
         this.clearInspectSelection();
         if (this._population.getColonistDataFromCoords(coords)) {                   // First check for Colonists
             this.inspecting = this._population.getColonistDataFromCoords(coords);
+            // Play different audio depending on colonist's gender, morale
+            if (this.inspecting) {
+                this.inspecting._data._morale > 70 ? this._audio.playHappyMale() : this.inspecting._data._morale > 30 ? this._audio.playNeutralMale() : this._audio.playSadMale();
+            } else {
+                console.log("ERROR: Encountered a problem while trying to play audio file for colonist inspect.");
+            }
         } else if (this._infrastructure.getConnectorFromCoords(coords)) {           // Next, check for Connectors
+            this._audio.quickPlay("connector");
             this.inspecting = this._infrastructure.getConnectorFromCoords(coords);
             this._infrastructure.highlightStructure(this.inspecting?._id || 0, false);  // Use ID if available, otherwise reset
         } else if (this._infrastructure.getModuleFromCoords(coords)) {              // Then, check for Modules
             this.inspecting = this._infrastructure.getModuleFromCoords(coords);
+            if (this.inspecting && this.inspecting._isMaintained) {
+                this._audio.playQuickAirlockSound();
+            } else {
+                this._audio.quickPlay("powerDown")
+            }
             this._infrastructure.highlightStructure(this.inspecting?._id || 0, true);
         } else if (this._map.getBlockForCoords(coords)) {                           // Finally, check for terrain Blocks
+            this._audio.playQuickRocksSound();
             this.inspecting = this._map.getBlockForCoords(coords);
             this._map.setHighlightedBlock(this.inspecting);
         } else {
@@ -609,9 +632,11 @@ export default class Engine extends View {
         if (con) {          // First, check for Connectors
             const outcome = this._infrastructure.removeConnector(con, this._population);
             if (outcome.success) {
+                this._audio.playQuickDemolishSound();   // Use prepackaged randomized sound package
                 const message = this.createMessage("command-demolish-success", con._id, outcome.message);
                 this._notifications.createMessageFromClick(crds, message, 18);
             } else {
+                this._audio.quickPlay("fail02");
                 const message = this.createMessage("command-demolish-failure", con._id, outcome.message);
                 this._notifications.createMessageFromClick(crds, message);
             }
@@ -619,9 +644,11 @@ export default class Engine extends View {
             // Depending on the outcome of the removal request, send a success/failure message for the player to see in-game
             const outcome: { success: boolean, message: string } = this._infrastructure.removeModule(mod, this._population, this._map);
             if (outcome.success) {
+                this._audio.playQuickDemolishSound();   // Use prepackaged randomized sound package
                 const message = this.createMessage("command-demolish-success", mod._id, outcome.message);
                 this._notifications.createMessageFromClick(crds, message);
             } else {
+                this._audio.quickPlay("fail02");
                 const message = this.createMessage("command-demolish-failure", mod._id, outcome.message);
                 this._notifications.createMessageFromClick(crds, message);
             }
@@ -634,6 +661,7 @@ export default class Engine extends View {
         const crds = { x: coords.x * constants.BLOCK_WIDTH - this._horizontalOffset, y: coords.y * constants.BLOCK_WIDTH};
         const removal: Block | string = this._map.isBlockRemovable(coords);     // Can be either a Block, or a string with a failure message
         if (typeof removal === "string") {
+            this._audio.quickPlay("fail02");
             const msg = this.createMessage("command-excavate-fail", 0, removal);
             this._notifications.createMessageFromClick(crds, msg);
         } else if (removal) {  // If the map check was successful we will use the block's info to eliminate it
@@ -643,6 +671,7 @@ export default class Engine extends View {
             const noUndermine = this._infrastructure._data._baseVolume[coords.x].length === 0;  // Check for buildings
             const allClear = this._population.areColonistsNear(coords, 2);      // Check for nearby colonists
             if (affordable && noUndermine && allClear) {                        // If all conditions are met, remove the block, and pay the man
+                this._audio.playQuickExcavateSound();
                 this._economy._data.subtractMoney(cost);                        // Subtract money
                 this._map.removeBlock(removal)                                  // Remove block from map
                 this._sidebar._detailsArea._minimap.setup(this._map._mapData)   // Update Minimap
@@ -652,6 +681,7 @@ export default class Engine extends View {
                 const msg = this.createMessage("command-excavate-success", 0, `${removal._blockData.name} removed.\n-$${moneyString}`);
                 this._notifications.createMessageFromClick(crds, msg);
             } else {
+                this._audio.quickPlay("fail02");
                 const msg = this.createMessage("command-excavate-fail", 0, `Cannot carry out excavation here:\n${affordable ? noUndermine ? "Too close to population" : "Undermines base structures" : "Insufficient funds available"}`);
                 this._notifications.createMessageFromClick(crds, msg);
             }
@@ -708,10 +738,12 @@ export default class Engine extends View {
                     this._infrastructure.addModule(x, y, this.selectedBuilding,  this._map._topography, this._map._zones,);
                     this._economy._data.subtractMoney(this.selectedBuilding.buildCosts[0][1]);
                     const moneyString = (this.selectedBuilding.buildCosts[0][1] / 100).toFixed(2);
+                    this._audio.playQuickAirlockSound();
                     const message = this.createMessage("command-module-success", 0, `${this.selectedBuilding.name} installed.\n-$${moneyString}`);
                     this._notifications.createMessageFromClick(crds, message);
                 } else {
                     // Notify the player in-game that their placement is no good (or that they cannot afford the new module)
+                    this._audio.quickPlay("fail01");
                     const message = this.createMessage("command-module-fail", 0, `Unable to place new module:\n${clear ? "Insufficient funds" : "Location invalid"}`);
                     this._notifications.createMessageFromClick(crds, message);
                 }
@@ -723,9 +755,11 @@ export default class Engine extends View {
     handleConnectorStartPlacement = (x: number, y: number) => {
         // Ensure start location is valid
         if (this._infrastructure._data.checkConnectorEndpointPlacement(x, y, this._map._mapData)) {
+            this._audio.quickPlay("connector");
             this._mouseShadow?.setLocked(true, {x: x, y: y});   // Lock the shadow's position when start location is chosen
             this.setMouseContext("connectorStop");
         } else {    // If the start location is invalid show a popup
+            this._audio.quickPlay("fail02");
             const crds = { x: x * constants.BLOCK_WIDTH - this._horizontalOffset, y: y * constants.BLOCK_WIDTH};
             const message = this.createMessage("command-connector-fail", 0, "Cannot start connector\nat this location");
             this._notifications.createMessageFromClick(crds, message);
@@ -745,12 +779,14 @@ export default class Engine extends View {
             const stop = this._mouseShadow._connectorStopCoords;
             const clear = this._infrastructure._data.checkConnectorEndpointPlacement(stop.x, stop.y, this._map._mapData);
             if (affordable && clear) {
+                this._audio.quickPlay("connector");
                 this._infrastructure.addConnector(start, stop, this.selectedBuilding, this._map);
                 this._economy._data.subtractMoney(cost);
                 const moneyString = (cost / 100).toFixed(2);
                 const message = this.createMessage("command-connector-success", 0, `${this.selectedBuilding.name} installed\n-$${moneyString}`);
                 this._notifications.createMessageFromClick(crds, message);  // Notify the player of the successful placement
             } else {
+                this._audio.quickPlay("fail01");
                 const message = this.createMessage("command-connector-fail", 0, `Cannot place connector:\n${clear ? "Insufficient funds" : "Invalid location"}`);       // Notify the player of placement failure via in-game message
                 this._notifications.createMessageFromClick(crds, message);
             }
@@ -770,6 +806,7 @@ export default class Engine extends View {
         const flat = this._map.determineFlatness(gridX - 4, gridX + 4);
         // Prompt the player to confirm landing site before initiating landing sequence
         if (flat) {
+            this._audio.quickPlay("bloop01");
             this.createModal(modalData.find((modal) => modal.id ==="landing-confirm"));
             this._landingSiteCoords[0] = gridX - 4; // Set landing site location to the left edge of the landing area
             this._landingSiteCoords[1] = (constants.SCREEN_HEIGHT / constants.BLOCK_WIDTH) - this._map._columns[gridX].length;
@@ -778,6 +815,7 @@ export default class Engine extends View {
 
     // If the player selects the 'proceed with landing' option, we start a wait period and play the landing animation
     startLandingSequence = () => {
+        this._audio.playRocketSound(0, 0);
         this.setMouseContext("wait");
         const wait = 480;
         const x = (this._landingSiteCoords[0] + 4) * constants.BLOCK_WIDTH;
@@ -792,7 +830,9 @@ export default class Engine extends View {
 
     // This method sets up the UI after the landing animation has finished
     completeLandingSequence = () => {
-        this._animation = null;         // Delete the animation when it's finished
+        this._audio.playAirlockSound(0, 0);
+        this._audio.startFadeout("music", 20);  // Fade out music once the landing is finished
+        this._animation = null;                 // Delete the animation when it's finished
         this._map.setExpanded(false);
         this._hasLanded = true;
         this._sidebar._detailsArea._minimap.setLandingSite({ x: this._landingSiteCoords[0] + 4, y: this._landingSiteCoords[1] - 12 });   // Take coords for the middle of the structure
@@ -1033,9 +1073,14 @@ export default class Engine extends View {
         this.updateDayNightCycle();
         this.checkForGeneralWarnings();
         this._notifications.handleHourlyUpdates(this._gameTime);
+        // Randomly play wind sound effects from time to time (4% chance)
+        const rando = Math.floor(Math.random() * 100);
+        if (rando > 96) this._audio.playWindSound(0, 0, 0);
         // Re-activate the 2 lines below to periodically gauge how much, if any, the game's time keeping is slipping as it grows
-        // const time = new Date();
-        // console.log(time);
+        if (process.env.ENVIRONMENT === "dev" || process.env.ENVIRONMENT === "local_dev") {
+            const time = new Date();
+            console.log(time);
+        }
     }
 
     // Updates the day/night cycle and in-game weather
@@ -1171,6 +1216,7 @@ export default class Engine extends View {
     setRandomEvent = (ev: {karma: string, magnitude: number, data: EventData}) => {
         this._randomEvent = ev;
         if (ev !== undefined) {
+            this._audio.quickPlay("bloop01");
             this.createModal(ev.data);       // Event occurs if given probability is higher than random value
         } else {
             console.log("ERROR: Random event data not returned from the server.")
@@ -1190,6 +1236,7 @@ export default class Engine extends View {
     // Resolution parameter tells the Engine, by index position, which resolution to enact
     closeModal = (resolution: number) => {
         if (this._modal) {
+            this._audio.quickPlay("ting03");
             // Carry out each outcome instruction for the modal's resolution. TODO: Allow user to choose among 3 or more options
             this._modal._resolutions[resolution].outcomes.forEach((outcome) => {
                 switch (outcome[0]) {

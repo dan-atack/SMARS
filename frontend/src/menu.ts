@@ -1,12 +1,13 @@
 import P5 from "p5";
 import Screen from "./screen";
 import Button from "./button";
+import AudioController from "./audioController";
 import { constants } from "./constants";
 
 // Main Menu (Pre-game)
 export default class Menu extends Screen {
     // Define types new to Menu class:
-    _buttons: Array<Button>;
+    _buttons: Button[];
     _color: string;
     _username: string;
     _buttonWidth: number;
@@ -16,8 +17,8 @@ export default class Menu extends Screen {
     _buttonBG: string;
     switchScreen: (switchTo: string) => void;
 
-    constructor(p5: P5, color: string, switchScreen: (switchTo: string) => void) {
-        super(p5);
+    constructor(p5: P5, audio: AudioController, color: string, switchScreen: (switchTo: string) => void) {
+        super(p5, audio);
         this._buttons = [];
         this._color = color;
         this._username = "";    // This will be set after the initial construction of this class, once login is completed.
@@ -82,28 +83,33 @@ export default class Menu extends Screen {
     }
 
     handleNewGame = () => {
+        this._audio.quickPlay("ting01");
         this.handleCloseMenu();
         this.switchScreen("newGameSetup");
     }
 
     handleLoadGame = () => {
+        this._audio.quickPlay("ting01");
         this.handleCloseMenu();
         this.switchScreen("loadGame");
     }
 
     handlePreferences = () => {
-        console.log("The Button you have pressed is not in service. Please make a note of it.");
+        this._audio.quickPlay("fail02");        // Fail 2 is more of a "dud" sound than an "error" sound
+        console.log("The Button you have pressed: \"Preferences\" is not in service. Please make a note of it.");
         // this.handleCloseMenu();
         // this.switchScreen("preferences");
     }
 
     handleLogout = () => {
+        this._audio.quickPlay("ting01");
         this._username = "";
         this.handleCloseMenu();
         this.switchScreen("login");
     }
 
     render = () => {
+        this._audio.handleUpdates();
         const p5 = this._p5;
         p5.background(this._color);
         p5.textSize(48);

@@ -1,5 +1,6 @@
 // The Load game screen is available from the pre-game menu, and allows the player to resume a previous play session
 import P5 from "p5";
+import AudioController from "./audioController";
 import Screen from "./screen";
 import Button from "./button";
 import LoadOption from "./loadOption";
@@ -49,8 +50,8 @@ export default class LoadGame extends Screen {
     _loadOptions: LoadOption[];
     _loadWasSuccessful: boolean;  // If a successful save has occurred, set this to true to disable the button to prevent spamming
 
-    constructor(p5: P5, switchScreen: (switchTo: string) => void) {
-        super(p5);
+    constructor(p5: P5, audio: AudioController, switchScreen: (switchTo: string) => void) {
+        super(p5, audio);
         this.switchScreen = switchScreen;
         this.getSavedGames = getSavedGames;
         this.loadGameData = loadGameData;
@@ -162,14 +163,17 @@ export default class LoadGame extends Screen {
 
     handleLoad = () => {
         if (this._selectedGame != null) {
+            this._audio.quickPlay("ting01");
             this.setMessage("Loading game. Please wait.", constants.GREEN_TERMINAL);
             this.loadGameData(this._selectedGame.id, this.setSaveInfo);
         } else {
+            this._audio.quickPlay("fail01");
             this.setMessage("Please select a game to load", constants.RED_ERROR);
         }
     }
 
     handleReturnToMenu = () => {
+        this._audio.quickPlay("ting01");
         this.handleClose();
         this.switchScreen("menu");
     }
@@ -186,8 +190,10 @@ export default class LoadGame extends Screen {
     // Pagination button handlers
     handleNext = () => {
         if (this._savedGames.length > this._optionsShowing + this._optionsPerPage) {
+            this._audio.quickPlay("ting02");
             this._optionsShowing += this._optionsPerPage;
         } else {
+            this._audio.quickPlay("fail02");
             this.setMessage("You are at the end of the list.", constants.RED_ERROR);
         }
         this.populateLoadOptions();
@@ -195,9 +201,11 @@ export default class LoadGame extends Screen {
 
     handlePrev = () => {
         if (this._optionsShowing > 0) {
+            this._audio.quickPlay("ting02");
             this._optionsShowing -= this._optionsPerPage;
             if (this._optionsShowing < 0) this._optionsShowing = 0; // Don't go past zero
         } else {
+            this._audio.quickPlay("fail02");
             this.setMessage("You are at the start of the list", constants.RED_ERROR);
         }
         this.populateLoadOptions();
@@ -208,7 +216,7 @@ export default class LoadGame extends Screen {
         this._savedGames.forEach((save, idx) => {
             // Restrict options to the range specified by the pagination limits:
             if (idx >= this._optionsShowing && idx < this._optionsShowing + this._optionsPerPage) {
-                let o = new LoadOption(this._p5, save, this._loadOptionX, this._loadOptionY + (idx - this._optionsShowing) * (this._loadOptionHeight + 8), this._loadOptionWidth, this._loadOptionHeight, this.setSaveSelection);
+                let o = new LoadOption(this._p5, this._audio, save, this._loadOptionX, this._loadOptionY + (idx - this._optionsShowing) * (this._loadOptionHeight + 8), this._loadOptionWidth, this._loadOptionHeight, this.setSaveSelection);
             this._loadOptions.push(o);
             }
  
@@ -223,6 +231,7 @@ export default class LoadGame extends Screen {
     }
 
     render = () => {
+        this._audio.handleUpdates();
         const p5 = this._p5;
         p5.background(this._color);
         p5.textSize(48);

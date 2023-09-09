@@ -3687,6 +3687,156 @@ Exit Criteria:
 
 20. Update the constants file's version and/or year for the new release.
 
+## Chapter Ninety-Nine: Sound
+
+### Difficulty Estimate: 5 (after a short but ugly debacle trying to use P5's sound library, a simpler home-made approach will be used instead)
+
+### Date: August 27, 2023
+
+Few things add more to the user experience of a game than sound. Although SMARS is definitely much more towards the disembodied, high-level strategic end of the gaming experience spectrum (as opposed to first-person or even third-person situations in which the player is put right into the game's action, or controlling a character who is in the thick of it) it will still benefit greatly from the addition of a few well-chosen audio effects. Since the P5 sound library is unfortunately not cooperating at this time, it will be necessary to develop a simpler, home-grown system for adding and managing sound effects and/or music for the game.
+
+Since we'll be committing the sin of bundling content with code for this effort (the frontend will now contain a 'sounds' directory) it will be advisable to create a simple prototype for the game's sound system, load that up with just 6-8 basic sounds, including at least 1-2 longer tracks (e.g. greater than 10 seconds) and deploy it to a cloud development environment to gauge how well the game will perform in a real-life environment.
+
+The sound system itself should be organized around a high-level component just below the App, so that all of the game's screens - not just the Engine - have the ability to play sound effects. This top-level sound control class will control all audio in the game, and a reference to it will be passed to all Application subclasses (Game, Menu, etc.) so that they can have full access to its API and not have to load specific sound control methods from it individually. Audio will mostly just be bleeps and bloops for the non-game screens, but the player will encounter those first so it's important to set the right tone from the outset, and let the player know what they're in for - a full multimedia experience!!
+
+Exit Criteria for Prototype stage:
+
+-[DONE] Game runs and can play sound in the local dev environment
+
+- Game runs and can play sounds in a cloud environment
+- Sounds start promptly when the application/game event that triggers them occurs
+- Sounds can be paused or stopped
+- [STRETCH] Sound volume can be adjusted before or during playback
+
+Exit Criteria for chapter:
+
+- Button clicks for the following events outside of the game have sound effects:
+- - [DONE] Login success - Generic success sound effect (most buttons will have this sound by default)
+- - Login failure - Generic failure sound effect
+- - Any greyed-out/non functional button: Alternate "disappointed" failure noise
+- - New account creation success - Generic success noise
+- - New account creation failure - Generic failure noise
+- - New Game Screen is loaded - Generic select noise
+- - Load Game Screen is loaded - Generic select noise
+- - New Game options buttons all play generic select noise
+- - New Game difficulty options each have a unique noise
+- - On the Save Game screen, if a save is created successfully - Generic success noise
+- - On the Save Game screen, if a save is not created successfully - Generic failure noise
+- Events inside the game have sound effects:
+- - [DONE] Landing start - rocket engine sound
+- - [DONE] Landing touchdown - "airlock" hissing/compression sound
+- - [DONE] Saved game file loaded - wind sound effect
+- - When any in-game view is selected, secondary generic select noise
+- - When any mouse-context is selected, generic select noise
+- Some mouse contexts have specific sound effect when clicked:
+- - Module placement plays an airlock sound
+- - Connector placement plays a metallic tapping sound
+- - Resource zone selection plays a faint jackhammer sound
+- - Demolish mode plays a powering-down/dismantling sound
+- - Excavate mode plays an earth-moving sound
+- - Inspect mode plays a different sound depending on what is clicked:
+- - - Colonist makes little "Aha!" sound - [STRETCH] with different pitches for different morale levels!
+- - - Modules make a faint humming sound
+- - - Connectors make a 'crawling through air vent' sound
+- - - Blocks make a crunching sound, like a foot on dirt
+- Sound effects are paused when the player enters the main menu, or one of the in-game view screens (e.g. Earth, population, etc)
+- [DONE] [STRETCH] A low-bitrate version of Holst's Mars is used tastefully as main menu/new game soundtrack
+- Make sure to give credit/attribution to any and all audio sources in the game's README, and throw in a big shout-out to P5 too!
+
+1. After giving up on the P5 approach, it will be necessary to create our own system, based in part on how it was done in Blockland (adding sound files to the index.html file directly and calling them, via their DOM element IDs, from a global function). Develop this system and load in some simple sound files, including a ting noise wav file (which is relatively short, but quite heavy), a simple ping noise mp3 file (very small) and a long but highly compact midi file for the game's tentative soundtrack. Load them all to play, via global functions, at various stages of the game, and then do a test deployment to the cloud dev server to validate performance in a realistic (non-local) environment. Don't forget to change the branch name in the local VM's version of the game files so that the EC2 instance it creates points to this development branch. Clean this deployment up once you're satisfied that the sounds should work properly in a cloud-hosted environment. ADDENDUM: Midi files are OUT, and Ogg files are IN, as they are apparently the most highly-condensed sound format that works on all major browsers.
+
+2. Create a new App subclass component for the frontend, called AudioControl, and recreate all of the global sound-handling functions to be methods of this class. In addition to these methods, the AudioControl class will need a few fields, to keep track of the current sound effect, current music, and so on. Do some white-paper design work before implementing this so the architecture is clear before the code is written!
+
+3. Start integrating the Audio Controller: Create an instance of it in the App file, and add it to the constructor for the Menu class. Then, through the Menu's reference to the Audio controller, have the game's intro music play when the menu is setup (you can do this by having the app call the menu class's method, the way it currently calls the global function).
+
+4. Next, do some measurements: Can we monitor the status of the current sound file? What properties does it actually have? Find out, by storing the reference to the soundtrack's DOM element, as well as its ID, in a field in the Audio Controller's class, and then logging that sucker to the console and analysing it. We already know it contains a 'currentTime' value which appears to be a number, so let's see what scale that uses, and also whether a similar value can be found for the volume. ADDENDUM: It's the number of seconds elapsed. And the volume value is totally visible, just so long as you don't tell the Typescript checker about it!
+
+5. Assuming the required fields are available, attempt to make the soundtrack get quieter by 25% when a Menu button is clicked, by adding a new setVolume method to the Audio Controller class, as well as an adjustVolume method, which takes a delta value to apply to the current volume. These methods should each accept two arguments; one for the new volume level/volume adjustment fraction, and a second one for the category of sound being adjusted ("music", "menu", "effect", or "master").
+
+6. Add a 'channel' argument to the play, pause and stop methods so they can be used to start/stop/pause different elements of the game's soundscape. Remember to always include a 'master' option, which will set all three channels (music, menu and effect) at once.
+
+7. Next consider fade-outs: Does the Audio Controller need a check/update method that can be placed in a P5 render block, to update it on a continuous basis? Assuming it does, add an update method to the Audio Controller class that assumes it will be placed in a P5 block (and therefore to be updating roughly 40 - 50 times per second), and another method called updateFadeout, which will assume it's operating on the current music channel file, and which will reduce the music channel's volume by a given amount... Add a new field called fadeoutDuration, and have it be a number representing the amount of seconds after the fadeout start time at which point the channel's volume should be zero. Have the updater method check if the music channel has gone past its fadeout start time, and begin calling the fadeout updater if it has - and if it's not already stopped playing.
+
+8. Add a fade-in effect as well, which can just be the inverse of the fade-out. Decide how to apply it - maybe have the fade-in duration be used automatically as the time after which a music track should be at 100% volume? ADDENDUM: Test by making our glorious theme track fade in, and then out, in the main menu.
+
+9. Once fade-ins and fade-outs have been figured out, decide when the game's intro music should cut out (maybe it can be at different times for different scenarios?) and implement that. Then, pass the AudioController down to the Engine via the Game class, and start adding some custom sound effects!
+
+10. Pass the Audio Controller to the game's other top-level classes - the Load Game, Save Game and New Game screens. In fact, make the Audio controller element a necessary part of the Screen class, to avoid having to add it separately to everyone's constructor. Let's keep it dry, people!
+
+11. Add a quickPlay method to the Audio class, which plays a sound but doesn't store any reference to it in either channel. Have the Engine use this method to call basic sounds that do not require any fade effects, and/or are too short to bother needing to pause/stop.
+
+12. Start adding button response sounds to the game, one screen at a time. Might as well start with all of the various error noises that are possible for the Login page. ADDENDUM: It turns out that, rather than having audio click responses at the level of the individual button, it is best to include a Button's click response sound call to the button parent class's click handler method (which it passes to the button). Field test all of the sound-creating event possibilities for the Login page before proceeding to the Main Menu class.
+
+13. Now do the Menu. One sound for each button handler - it really doesn't get much simpler than that! Make sure the Preferences button plays the 'fail' sound until such time as it is upgraded to actually do something.
+
+14. Now do the sounds for the New Game Setup page. Should be a few opportunities there to have a bit of fun - map types should definitely each have their own sound for instance. Difficulty levels too, ideally. Random events and start/back buttons can play the standard success sound. ADDENDUM: Buttons should stick to bleeps and bloops only; more customized sounds belong in the game itself. Added a second button success noise, "ting 02" to denote a button press that is successful but that doesn't change to another screen (see note below for more info about the thought process here).
+
+15. Although it's not necessary to document here how every single button should sound, it is worth keeping a chart of our sound effects library as it grows, so that buttons with similar features use the same sounds... For instance, "Ting01" is a happy sounding note which is associated with a successful change to another screen, whereas "Ting02", which is a more neutral-sounding blip noise, can be used for more of a same-page, different option success sound. Similarly, "Fail01" is a somewhat cross sounding set of tones, whereas "Fail02" is more of a buzzer for something that's out of order. The implication, if any, is that if the player hears "Fail01" it's likely something that's the player's fault, whereas "Fail02" indicates that it is something on the game's end that is at fault (hence its current use for greyed-out/disabled button handlers).
+
+16. Add the sound effects for the In-Game Menu screen (we'll save the Game/subclasses for last since they're the most interesting). Get a new "sad" tone for when the player quits to the main menu... or do something altogether cooler with the HAL-like narrator at the top of the menu.
+
+17. Quickly add and test a 'confirm' display/button for the In-Game Menu's 'Quit to Main Menu' button, to make it harder for the player to accidentally quit their game.
+
+18. Add sound effects to the Save Game screen, and don't forget the fail sound for if the player enters a file name that is too short. Reuse the quit sound for when the save file is created (it's suitably ambiguous in its tone and has a cool echo, so why not get some more mileage out of it?)
+
+19. Do the Load Game screen: basic tings for the Load/Return to Menu buttons, ting 2 for pagination options, fail 2 (aka the buzzer??) for unsuccessful pagination requests, fail 1 if the player presses 'Load' before selecting a save file.
+
+20. Now for the Game class: Start by adding basic ting sounds (ting 1, to be precise) for any 'Switch View' actions (Population, Science, Earth or Industry page access), and the 'Return to Game' buttons for each of these views. This will require passing the Audio Controller component to the Sidebar for now (ultimately it will probably have to go even deeper, to the Details Area and/or Building Chip components as well).
+
+21. Add the Audio Controller to the Details Area component and pass it to all of the building sub-options buttons, as well as the Building Chip class, and have all of them play the 'pip' sound when clicked - except the 'Cancel' buttons: those should play ting03 instead, which will also be used for closing Modal popups. Apparently ting 3 is fast becoming the game's universal 'close' sound.
+
+22. Get new sounds for each of the speed buttons: Pause, slow, fast and blazing.
+
+23. For the Population page (the only view with interactive options), add ting 2 for colonist job adjustments and pagination options, and buzzer for unsuccessful pagination requests.
+
+24. Next fill out the other Sidebar buttons: Ting 2 for mouse-context selectors including 'Build'; Fail 2 for the disabled 'Add Ground' button.
+
+25. Next, add the click responders for when the player clicks with various mouse contexts; unsuccessful clicks should get one of the two fail sounds (1 or 2 depending on the context; 1 is more severe so reserve it for cases where you have no money to place a module/connector, and use 2 for failed clicks that come with a bit of friendly advice) and then for successful actions we'll need to find custom sounds for each one:
+
+26. Add an alternate airlock sound (or several!) for when a module is placed.
+
+27. Add a metallic tapping/scraping sound for when a connector is placed.
+
+28. Add a jackhammer sound when a mining zone is created.
+
+29. Add a shovel scraping sound when a mining zone is removed.
+
+30. Add three different smashing sounds when demolishing a module or a connector.
+
+31. Add a rumbling machine sound when a block is excavated.
+
+32. Add Inspect Display sounds depending on the type of thing being clicked:
+
+33. For modules/connectors, just re-use their building sounds (quick airlock / connector)
+
+34. For disabled modules (due to either lack of power or oxygen) get and use a powered-down sound.
+
+35. For Blocks, get several quick samples of rocks being walked on, and make an Audio class randomized effect.
+
+36. Now for a bit of fun: for the colonists, make little male/female Kerbal-like noises. Until we can recruit Lauren's participation, just make all the colonists play the male sound by default - and just like that, the patriarchy extends to a new planet!
+
+37. Lower the volume and shorten the soundbite for the jackhammer 'resource' click response, and use a different part of the excavator sequence for the 'excavate' action - and also use a lower volume for that effect. Do the same for the 3 'demolish' effects - those guys are WAY too darn loud!
+
+38. Play ting 3 whenever a modal is closed.
+
+39. Add a short, generic bloop noise to play whenever a random event occurs.
+
+40. Re-use this sound for when the landing zone selection modal when it pops up.
+
+41. Pause the wind sound if the game's menu is opened; resume it after the game is resumed (resume command will be called by the in-game menu, and will require the addition of a new resumeSound method for the Audio Controller class, since the basic playSound method resets fade controls).
+
+42. Randomly play wind sounds from time to time; add an Engine method for making passive background sounds that runs every hour with a small chance of generating a wind sound (say 4% chance per hour to start with).
+
+43. Update the game's README file to cite every sound effects contributor (usernames and/or URLs), plus the sound editing sites used for trimming, volume adjustments, etc. Put comments on some of your favourite sound contributors at FreeSound.org, to thank them and acknowledge their work.
+
+44. Play the game for several minutes, clicking everything you can to see if there are any missing sound effects, or console logs that have to be eliminated.
+
+45. Clean up all console logs for this chapter's development (or if you really like them, add a flag to them to keep appearing in dev mode only).
+
+46. Update the constants file's version and/or year for the new release.
+
+### 100. Do a torture test in your staging environment! Tweak the game's code on the local VM to start 'easy' games with $1,000,000 and spend that cash on as many structures as you can cram in! Also set the Earth immigration to add new people every week (game hour), and see how much of a population / how large of a base you can build before the game starts to get all claggy. It will be a weird exercise but the results will surely be fascinating! Next, do the same test in the local dev environment, and see if the results differ at all! Yay, science!
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
@@ -3710,6 +3860,8 @@ Exit Criteria:
 - ...
 
 ### 1. Step One...
+
+### 97. Are there any in-game notifications that should accompany a new feature?
 
 ### 98. Clean up all console logs for this chapter's development (or if you really like them, add a flag to them to keep appearing in dev mode only).
 

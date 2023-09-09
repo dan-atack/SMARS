@@ -1,5 +1,6 @@
 // In-game view for displaying the tech tree
 import P5 from "p5";
+import AudioController from "./audioController";
 import View from "./view";
 import { constants } from "./constants";
 
@@ -20,8 +21,8 @@ export default class Earth extends View {
     _earthCenterX: number;
     _earthCenterY: number;
 
-    constructor(changeView: (newView: string) => void) {
-        super(changeView);
+    constructor(audio: AudioController, changeView: (newView: string) => void) {
+        super(audio, changeView);
         this._earthDate = new Date("January 1, 2030");       // Game starts on new year's day, 2030
         this._dateRemainder = 0;                             // Keep track of the remainder when adding days
         // Set next launch date to t-preflight interval time, and next landing to t-hohmann transfer duration

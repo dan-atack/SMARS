@@ -1,5 +1,6 @@
 // The in-game sidebar (control panel) is a sub-component of the Engine view
 import P5 from "p5";
+import AudioController from "./audioController";
 import Button from "./button";
 import DetailsArea from "./detailsArea";
 import { constants } from "./constants";
@@ -32,10 +33,11 @@ export default class Sidebar {
     changeView: (newView: string) => void;      // Game-level VIEW switcher (passed down from the game module)
     setMouseContext: (value: string) => void    // Changes the mouse click handler response in the Engine
     setGameSpeed: (value: string) => void;      // Changes the game speed (ticks per game minute) in Engine (string goes in switch block)
+    _audio: AudioController;
     menuButton: Button;                         // The Main Menu button stands apart from the regular buttons list to ensure it's always rendered
     _detailsArea: DetailsArea;
 
-    constructor(switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, setMouseContext: (value: string) => void, setGameSpeed: (value: string) => void, setHorizontalOffset: (x: number) => void) {
+    constructor(audio: AudioController, switchScreen: (switchTo: string) => void, changeView: (newView: string) => void, setMouseContext: (value: string) => void, setGameSpeed: (value: string) => void, setHorizontalOffset: (x: number) => void) {
         this._width = constants.SIDEBAR_WIDTH // Just over one quarter of the screen is given to the sidebar
         this._height = constants.SCREEN_HEIGHT
         this._position = constants.SCREEN_WIDTH - this._width;
@@ -62,8 +64,9 @@ export default class Sidebar {
         this.changeView = changeView;
         this.setMouseContext = setMouseContext;
         this.setGameSpeed = setGameSpeed;
+        this._audio = audio;
         this.menuButton = new Button("Menu", constants.SCREEN_WIDTH - 88, 16, this.handleMenuButton, 76, 64, constants.GREEN_TERMINAL, constants.ALMOST_BLACK, 24);
-        this._detailsArea = new DetailsArea(this.setBuildOptionsOpen, setMouseContext, setHorizontalOffset);  // OR ThIS.SetMouseContex?
+        this._detailsArea = new DetailsArea(this._audio, this.setBuildOptionsOpen, setMouseContext, setHorizontalOffset);  // OR ThIS.SetMouseContex?
     }
 
     setup = () => {
@@ -120,46 +123,56 @@ export default class Sidebar {
 
     // Handlers for changing views:
     handleEarth = () => {
+        this._audio.quickPlay("ting01");
         this.changeView("earth");
     }
 
     handleIndustry = () => {
+        this._audio.quickPlay("ting01");
         this.changeView("industry");
     }
 
     handleTech = () => {
+        this._audio.quickPlay("ting01");
         this.changeView("tech");
     }
 
     handlePopulation = () => {
+        this._audio.quickPlay("ting01");
         this.changeView("population");
     }
 
     // Handlers for in-game options
     handleBuild = () => {
+        this._audio.quickPlay("pip01");
         // Opening the build options re-arranges the sidebar layout
         this.setBuildOptionsOpen(true);
         this._detailsArea.setExtended(true);
     }
     
     handleResource = () => {
+        this._audio.quickPlay("pip01");
         this.updateMouseContextButton(5, "resource");
     }
 
     handleInspect = () => {
+        this._audio.quickPlay("pip01");
         this.updateMouseContextButton(6, "inspect");
     }
 
     handleDemolish = () => {
+        this._audio.quickPlay("pip01");
         this.updateMouseContextButton(7, "demolish");
     }
 
     handleExcavate = () => {
+        this._audio.quickPlay("pip01");
         this.updateMouseContextButton(8, "excavate");
     }
 
     handleFillGround = () => {
-        console.log("Cannot fill in terrain at this time.");
+        this._audio.quickPlay("fail02");
+        console.log("The button you have requested, 'Fill Ground', is not available. Please make a note of it.");
         // this.updateMouseContextButton(9, "fillGround");
     }
 
@@ -170,6 +183,8 @@ export default class Sidebar {
     }
 
     handleMenuButton = () => {
+        this._audio.quickPlay("ting01");
+        this._audio.pauseSound("effects");
         this.setMenuOpen(true);
         this.switchScreen("inGameMenu");
         this.setMouseContext("inspect");     // Reset mouse context if menu is opened
@@ -177,24 +192,28 @@ export default class Sidebar {
 
     // Handlers for game-speed adjustments
     handlePause = () => {
+        this._audio.quickPlay("pause");
         this.resetGameSpeedButtons();
         this._gameSpeedButtons[0].setSelected(true);
         this.setGameSpeed("pause");
     }
 
     handleSlow = () => {
+        this._audio.quickPlay("slow");
         this.resetGameSpeedButtons();
         this._gameSpeedButtons[1].setSelected(true);
         this.setGameSpeed("slow");
     }
     
     handleFast = () => {
+        this._audio.quickPlay("fast");
         this.resetGameSpeedButtons();
         this._gameSpeedButtons[2].setSelected(true);
         this.setGameSpeed("fast");
     }
 
     handleBlazing = () => {
+        this._audio.quickPlay("blazing");
         this.resetGameSpeedButtons();
         this._gameSpeedButtons[3].setSelected(true);
         this.setGameSpeed("blazing");

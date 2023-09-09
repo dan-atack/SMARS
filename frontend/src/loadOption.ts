@@ -1,17 +1,20 @@
 // The Load Option component is a specialized button that displays additional information about a saved game file
 import P5 from "p5";
 import Button from "./button";
+import AudioController from "./audioController";
 import { constants } from "./constants";
 import { SaveSummary } from "./loadGame";
 
 export default class LoadOption extends Button {
     // Save Summary Types:
     _saveInfo: SaveSummary;
+    _audio: AudioController;
     setSaveSelection: (saveSummary: SaveSummary) => void;
     // TODO: Add a setter to interact with the Load Game screen's field for the current save data thing
 
-    constructor(p5: P5, saveInfo: SaveSummary, x: number, y: number, w: number, h: number, setSaveSelection: (saveSummary: SaveSummary) => void) {
+    constructor(p5: P5, audio: AudioController, saveInfo: SaveSummary, x: number, y: number, w: number, h: number, setSaveSelection: (saveSummary: SaveSummary) => void) {
         super(saveInfo.game_name, x, y, () => console.log("Exception: load option click handler is not working."), w, h, constants.EGGSHELL, constants.ALMOST_BLACK, 20);
+        this._audio = audio;
         this.setSaveSelection = setSaveSelection;
         this._saveInfo = saveInfo;
         this._width = w;
@@ -22,6 +25,7 @@ export default class LoadOption extends Button {
         const xMatch = mouseX >= this._x && mouseX < this._x + this._width;
         const yMatch = mouseY >= this._y && mouseY < this._y + this._height;
         if (xMatch && yMatch) {
+            this._audio.quickPlay("ting02");
             this.setSelected(true);
             this.setSaveSelection(this._saveInfo);
         }

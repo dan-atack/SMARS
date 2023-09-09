@@ -1,3 +1,4 @@
+import AudioController from "../src/audioController";
 import Science from "../src/science";
 
 describe("Tech View Tests", () => {
@@ -7,7 +8,9 @@ describe("Tech View Tests", () => {
         // This is a dummy function
     }
 
-    const tech = new Science(changeView);
+    const audio = new AudioController;
+
+    const tech = new Science(audio, changeView);
 
     test("Defines setup", () => {
         expect(typeof tech.setup).toBe("function");

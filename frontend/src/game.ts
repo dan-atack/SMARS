@@ -2,6 +2,7 @@
 import P5 from "p5";
 import Screen from "./screen";
 import View from "./view";
+import AudioController from "./audioController";
 // In-game views:
 import Engine from "./engine";
 import PopulationView from "./populationView";
@@ -33,15 +34,15 @@ export default class Game extends Screen {
 
     switchScreen: (switchTo: string) => void;
 
-    constructor(p5: P5, switchScreen: (switchTo: string) => void) {
-        super(p5);
-        this.switchScreen = switchScreen;
+    constructor(p5: P5, audio: AudioController, switchScreen: (switchTo: string) => void) {
+        super(p5, audio);
         // Pass view and screen changer functions to the engine (For the sidebar to use)
-        this._engine = new Engine(p5, this.switchScreen, this.changeView, this.updateEarthData);
-        this._population = new PopulationView(this.changeView);
-        this._techTree = new TechTree(this.changeView);
-        this._earth = new Earth(this.changeView) // There IS no planet B!!!
-        this._industry = new IndustryView(this.changeView);
+        this.switchScreen = switchScreen;
+        this._engine = new Engine(p5, audio, this.switchScreen, this.changeView, this.updateEarthData);
+        this._population = new PopulationView(audio, this.changeView);
+        this._techTree = new TechTree(audio, this.changeView);
+        this._earth = new Earth(audio, this.changeView) // There IS no planet B!!!
+        this._industry = new IndustryView(audio, this.changeView);
         // this._logbook = new Logbook(p5, this.changeView);        // On hold pending investigation into why we need it.
         this._views = [this._engine, this._population, this._techTree, this._earth, this._industry];
         this._gameData = {          // Default values will be overridden
@@ -223,11 +224,11 @@ export default class Game extends Screen {
     // Resets all game parameters; copied from the constructor function
     reset = () => {
         // Pass view and screen changer functions to the engine (For the sidebar to use)
-        this._engine = new Engine(this._p5, this.switchScreen, this.changeView, this.updateEarthData);
-        this._population = new PopulationView(this.changeView);
-        this._techTree = new TechTree(this.changeView);
-        this._earth = new Earth(this.changeView) // There IS no planet B!!!
-        this._industry = new IndustryView(this.changeView);
+        this._engine = new Engine(this._p5, this._audio, this.switchScreen, this.changeView, this.updateEarthData);
+        this._population = new PopulationView(this._audio, this.changeView);
+        this._techTree = new TechTree(this._audio, this.changeView);
+        this._earth = new Earth(this._audio, this.changeView) // There IS no planet B!!!
+        this._industry = new IndustryView(this._audio, this.changeView);
         // this._logbook = new Logbook(p5, this.changeView);        // On hold pending investigation into why we need it.
         this._views = [this._engine, this._population, this._techTree, this._earth, this._industry];
         this._gameData = {          // Default values will be overridden
@@ -247,6 +248,7 @@ export default class Game extends Screen {
 
     // Same as the app; check which view is the 'current' one and call its render method:
     render = () => {
+        this._audio.handleUpdates();
         if (this._engine._sidebar._menuOpen) {  // Check if main menu is open, and close down this screen if so
             this.currentScreen = false;
             this._engine._sidebar.setMenuOpen(false);       // And reset the flag!?

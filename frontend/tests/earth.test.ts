@@ -1,5 +1,6 @@
 import { constants } from "../src/constants";
 import Earth from "../src/earth";
+import AudioController from "../src/audioController";
 
 describe("Earth View Tests", () => {
 
@@ -7,14 +8,16 @@ describe("Earth View Tests", () => {
     const changeView = (newView: string) => {
         // This is a dummy function
     }
+    // Mock audio component
+    const audio = new AudioController;
 
     test("Defines setEarthDate", () => {
-        const earth = new Earth(changeView);
+        const earth = new Earth(audio, changeView);
         expect(typeof earth.updateEarthDate).toBe("function");
     })
 
     test("Can load a date from a save file", () => {
-        const earth = new Earth(changeView);
+        const earth = new Earth(audio, changeView);
         const saveDate = new Date("December 4, 2022");
         const saveData = { date: saveDate, remainder: 0, nextLaunch: saveDate, nextLanding: saveDate };
         earth.loadSavedDate();      // Expect the date to remain the default (Jan. 1, 2030) if no save data is provided
@@ -24,14 +27,14 @@ describe("Earth View Tests", () => {
     })
 
     test("Constructor function correctly sets default dates for next launch and landing", () => {
-        const earth = new Earth(changeView);
+        const earth = new Earth(audio, changeView);
         expect(earth._earthDate.toISOString().slice(0, 10)).toBe("2030-01-01");
         expect(earth._nextLaunchDate.toISOString().slice(0, 10)).toBe("2031-06-02");
         expect(earth._nextLandingDate.toISOString().slice(0, 10)).toBe("2032-03-02");
     })
 
     test("CheckEventDatesForUpdate detects when the inital launch / landing dates are passed", () => {
-        const earth = new Earth(changeView);
+        const earth = new Earth(audio, changeView);
         const saveDate = new Date("May 21, 2031");      // Set the date to slighly before the initial landing date
         earth._earthDate = saveDate;                    // Just set the Earth date, to keep the other defaults
         expect(earth._earthDate.toISOString().slice(0, 10)).toBe("2031-05-21");     // Validate test conditions
@@ -45,7 +48,7 @@ describe("Earth View Tests", () => {
 
     test("Weekly updater updates next launch / landing date when either event occurs, via the setNextEventDate method", () => {
         // PART 1: VERIFYING LAUNCH DATE UPDATE
-        const earth = new Earth(changeView);
+        const earth = new Earth(audio, changeView);
         const preLaunch = new Date("June 1, 2031");
         earth._earthDate = preLaunch;
         expect(earth._earthDate.toISOString().slice(0, 10)).toBe("2031-06-01");     // Set date to right before the first launch
@@ -62,7 +65,7 @@ describe("Earth View Tests", () => {
     })
 
     test("Weekly updater returns the number of colonists making a landing on the update when a landing occurs", () => {
-        const earth = new Earth(changeView);
+        const earth = new Earth(audio, changeView);
         // Start with a date that is one week too early
         const preLanding = new Date("February 22, 2032");
         earth._earthDate = preLanding;
