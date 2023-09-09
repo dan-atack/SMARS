@@ -3829,11 +3829,11 @@ Exit Criteria for chapter:
 
 43. Update the game's README file to cite every sound effects contributor (usernames and/or URLs), plus the sound editing sites used for trimming, volume adjustments, etc. Put comments on some of your favourite sound contributors at FreeSound.org, to thank them and acknowledge their work.
 
-### 95. Play the game for several minutes, clicking everything you can to see if there are any missing sound effects, or console logs that have to be eliminated.
+44. Play the game for several minutes, clicking everything you can to see if there are any missing sound effects, or console logs that have to be eliminated.
 
-### 98. Clean up all console logs for this chapter's development (or if you really like them, add a flag to them to keep appearing in dev mode only).
+45. Clean up all console logs for this chapter's development (or if you really like them, add a flag to them to keep appearing in dev mode only).
 
-### 99. Update the constants file's version and/or year for the new release.
+46. Update the constants file's version and/or year for the new release.
 
 ### 100. Do a torture test in your staging environment! Tweak the game's code on the local VM to start 'easy' games with $1,000,000 and spend that cash on as many structures as you can cram in! Also set the Earth immigration to add new people every week (game hour), and see how much of a population / how large of a base you can build before the game starts to get all claggy. It will be a weird exercise but the results will surely be fascinating! Next, do the same test in the local dev environment, and see if the results differ at all! Yay, science!
 
