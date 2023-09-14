@@ -3687,7 +3687,7 @@ Exit Criteria:
 
 20. Update the constants file's version and/or year for the new release.
 
-## Chapter Ninety-Nine: Sound
+## Chapter Nine: Sound
 
 ### Difficulty Estimate: 5 (after a short but ugly debacle trying to use P5's sound library, a simpler home-made approach will be used instead)
 
@@ -3835,7 +3835,33 @@ Exit Criteria for chapter:
 
 46. Update the constants file's version and/or year for the new release.
 
-### 100. Do a torture test in your staging environment! Tweak the game's code on the local VM to start 'easy' games with $1,000,000 and spend that cash on as many structures as you can cram in! Also set the Earth immigration to add new people every week (game hour), and see how much of a population / how large of a base you can build before the game starts to get all claggy. It will be a weird exercise but the results will surely be fascinating! Next, do the same test in the local dev environment, and see if the results differ at all! Yay, science!
+47. Do a torture test in your staging environment! Tweak the game's code on the local VM to start 'easy' games with $1,000,000 and spend that cash on as many structures as you can cram in! Also set the Earth immigration to add new people every week (game hour), and see how much of a population / how large of a base you can build before the game starts to get all claggy. It will be a weird exercise but the results will surely be fascinating! Next, do the same test in the local dev environment, and see if the results differ at all! ADDENDUM: Houston we have a problem... Long story short, when the screen has more than about 40 structures present (didn't even both measuring with larger amounts of colonists) the game begins to lag, and the more structures you add on after that point, the more it lags, with each additional building adding roughly 0.75 seconds per game hour on 'fast' speed (which normally clocks in at 20 seconds per hour). With a full screen (roughly 110 modules, with no connectors/colonists either) the game took 45 seconds to pass one game hour on fast mode. Two mitigating factors in this sad scenario: 1, it's hard to get that many buildings, at least for now, so this should not be very noticeable in the near future, and 2, it's the number of modules ON SCREEN that causes the issue, not the TOTAL NUMBER of modules, which implies that the game's mechanics themselves are alright, it's simply P5's rendering capabilities that are being pushed to the limit. Hopefully, anyway.
+
+## Chapter Ten: Game Difficulty Rebalance And New Modules
+
+### Difficulty Estimate: 3 (For painstaking new module artwork creation, and adjustment to many in-game values which may affect unit tests)
+
+### Date: September 13, 2023
+
+The game is ready to receive more content, to make for a more engaging long-term experience. Specifically, new production and power modules will be added, to give the player more options to choose from when placing new buildings. This chapter will also be the occasion to update many of the existing values in the game, to make the player's initial resource supplies much less generous, and to alter the rates of resource consumption in the colony (from eating/drinking and production activities). Finally, the player will be given a small stipend of money and resources, received at the end of every year, as a resupply mission from Earth arrives. Initially the value of these missions will remain fixed over time, but in future iterations we can adjust the quantities sent according to a number of factors (difficulty level, colony morale, karma/luck, you name it).
+
+Exit Criteria:
+
+- All existing modules' resource storage quantities, maintenance costs, and (when applicable) production input/output values are updated
+- Colonists now eat and drink 0.1 food/water per hour, instead of 0.01 (10 in game units as opposed to 1)
+- Modules' oxygen leakage is determined by maintenance costs, not by 'pressurized' status
+- New production module, Hydroponics tent, is large and leaks a lot of air, but is cheap to build and can hold two colonists
+- New production module, Hydroponics lab, is also quite large, leaks less air, and produces a more cost-efficient, but smaller food output
+- New power module, Single Solar Panel, is tiny (1 x 1), relatively cheap, and produces very little power
+- New power module, Medium Solar Array, is larger (5 x 2), costs more than 2x as much as the Small Array, and produces twice as much power
+
+### 1. Step One...
+
+### 97. Are there any in-game notifications that should accompany a new feature?
+
+### 98. Clean up all console logs for this chapter's development (or if you really like them, add a flag to them to keep appearing in dev mode only).
+
+### 99. Update the constants file's version and/or year for the new release.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

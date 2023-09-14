@@ -14,7 +14,8 @@ const storageModuleInfo: ModuleInfo = {
         ["money", 100000]
     ],
     maintenanceCosts: [
-        ["power", 1]
+        ["power", 1],
+        ["oxygen", 12]
     ],
     storageCapacity: [
         ["oxygen", 1000],
@@ -38,7 +39,8 @@ const noStoreModuleInfo: ModuleInfo = {
         ["money", 100000]
     ],
     maintenanceCosts: [
-        ["power", 1]
+        ["power", 1],
+        ["oxygen", 12]
     ],
     storageCapacity: [],        // No storage at all
     crewCapacity: 1,
@@ -57,7 +59,8 @@ const crewQuartersModInfo: ModuleInfo = {
         ["money", 100000],  // money
     ],
     maintenanceCosts: [
-        ["power", 5]
+        ["power", 5],
+        ["oxygen", 12]
     ],
     storageCapacity: [
         ["oxygen", 1000],    // oxygen, water, food
@@ -79,7 +82,8 @@ const productionModuleInfo: ModuleInfo = {
         ["money", 100000],
     ],
     maintenanceCosts: [
-        ["power", 10]
+        ["power", 10],
+        ["oxygen", 12]
     ],
     productionInputs: [     // Plant life needs: water, CO2 and light (in this case electric light)
         ["water", 5],
@@ -88,10 +92,10 @@ const productionModuleInfo: ModuleInfo = {
     ],
     productionOutputs: [
         ["food", 10],
-        ["air", 10],
+        ["oxygen", 10],
     ],
     storageCapacity: [
-        ["air", 9000],
+        ["oxygen", 9000],
         ["water", 2500],
         ["carbon", 2500],
         ["food", 1000],
@@ -324,6 +328,13 @@ describe("ModuleData", () => {
                    500,
                  ],
                },
+               {
+                "modId": 9003,
+                "resource": [
+                  "oxygen",
+                  4500,
+                ],
+              }
              ])
         // Policy = 1 and module is empty - Expect large requests
         resetResource(lsModule);
@@ -409,7 +420,7 @@ describe("ModuleData", () => {
         // Module 1: Has enough resources = inputs reduced; outputs increased
         prodModule.produce();
         expect(prodModule._resources).toStrictEqual([
-            ["air", 10],
+            ["oxygen", 10],
             ["water", 0],
             ["carbon", 0],
             ["food", 10],
@@ -418,7 +429,7 @@ describe("ModuleData", () => {
         // Module 2: Does not have enough resoures = inputs are wasted!
         prodModule2.produce();
         expect(prodModule2._resources).toStrictEqual([
-            ["air", 0],
+            ["oxygen", 0],
             ["water", 0],
             ["carbon", 0],
             ["food", 0],

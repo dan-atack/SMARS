@@ -127,7 +127,6 @@ export default class Module {
         this._moduleInfo.maintenanceCosts.forEach((res) => {
             needs.push(res[0]);
         });
-        if (this._moduleInfo.pressurized) needs.push("oxygen");
         return needs;
     }
 
@@ -235,6 +234,8 @@ export default class Module {
 
     // SECTION 3: MAINTENANCE METHODS
 
+    // Note: To use different language for oxygen vs other resources, there are two checks: a general-purpose one, and an oxygen-specific one
+
     // Top-level maintenance method: determines maintenance status by calling the oxygen and general maintenance methods every hour
     handleMaintenance = () => {
         const hasResources = this.handleResourceUse();
@@ -247,22 +248,24 @@ export default class Module {
         }
     }
 
-    // Handles general resource-consumption due to module maintenance costs
+    // Handles general resource-consumption due to module maintenance costs - for all resources EXCEPT oxygen
     handleResourceUse = () => {
         let maintained = true;      // Any failures below will set this to false - and modules with no needs will always be true
         this._moduleInfo.maintenanceCosts.forEach((resource) => {
-            const needed = resource[1];
-            const used = this.deductResource(resource);     // Get the amount that was used
-            if (needed > used) maintained = false;          // If need exceeds amount used, there is a shortage
+            if (resource[0] !== "oxygen") {                     // Let the oxygen leakage method handle oxygen leakages
+                const needed = resource[1];
+                const used = this.deductResource(resource);     // Get the amount that was used
+                if (needed > used) maintained = false;          // If need exceeds amount used, there is a shortage
+            }
         })
         return maintained;
     }
 
     // Handles oxygen leakage (for pressurized modules only)
     handleOxygenLeakage = () => {
-        const leakage = this._width * this._height;         // The bigger the volume, the greater the leakage!
-        if (this._moduleInfo.pressurized) {
-            this.deductResource(["oxygen", leakage]);
+        const leakage = this._moduleInfo.maintenanceCosts.find((cost) => cost[0] === "oxygen")
+        if (this._moduleInfo.pressurized && leakage) {
+            this.deductResource(["oxygen", leakage[1]]);
             if (this.getResourceQuantity("oxygen") <= 0) {
                 return false;   // If there is no oxygen left, the module is depressurized
             } else {
