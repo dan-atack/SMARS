@@ -32,6 +32,7 @@ export default class ColonistData {
     _morale: number;                // Morale is determined by how readily the colonist's needs are met
     _maxMorale: number;             // Adjustable maximum morale limit
     _tolerance: number;             // The amount by which a colonist's need can surpass its threshold without affecting morale
+    _needMultiplier: number;        // Amount of food/water the colonist must consume, per hour
     _currentGoal: string;           // String name of the Colonist's current goal (e.g. "get food", "get rest", "explore", etc.)
     _actionStack: ColonistAction[]; // Actions, from last to first, that the colonist will perform to achieve their current goal
     _currentAction: ColonistAction | null; // The individual action that is currently being undertaken (if any)
@@ -74,6 +75,7 @@ export default class ColonistData {
         this._morale = saveData?.morale ? saveData.morale : 50;     // Load saved morale, or default to 50 (normal morale)
         this._maxMorale = 100;                                      // Set morale limit
         this._tolerance = 2;        // Set morale resiliency level (higher = less likely to lose morale from unfulfilled needs)
+        this._needMultiplier = 10;  // Colonist must consume 10 units of food/water per hour
         this._currentGoal = saveData ? saveData.goal : "explore"    // Load saved goal, or go exploring (for new colonists).
         this._actionStack = saveData?.actionStack ? saveData.actionStack : [];   // Load saved action stack or default to empty
         this._currentAction = saveData?.currentAction ? saveData.currentAction : null;  // Load current action or default to null
@@ -615,10 +617,11 @@ export default class ColonistData {
                     const entered = mod.punchIn(this._id);
                     if (entered) {
                         // Resource is immediately removed from the module; colonist 'gets' it when they complete the action
-                        const consumed = mod.deductResource([resourceName, this._currentAction.duration]);  // Duration = qty taken
-                        if (consumed < this._currentAction.duration) {
+                        const amount = this._currentAction.duration * this._needMultiplier; // Duration = intensity of the need
+                        const consumed = mod.deductResource([resourceName, amount]);
+                        if (consumed < amount) {
                             // Since the module's deductResources method returns a number representing the amount of resource dispensed, we can see if it contained less than the required amount and reduce the action duration (and eventual amount of need relieved) if so
-                            this._currentAction.duration = consumed;
+                            this._currentAction.duration = Math.min(consumed / this._needMultiplier);
                         }
                     } else {
                         this.setMessage("colonist-entry-blocked", `${this._name} was unable to enter module ${mod._id}!`);
