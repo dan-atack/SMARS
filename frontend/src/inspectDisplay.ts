@@ -269,29 +269,26 @@ export default class InspectDisplay {
                     break;
             }
             // Show maintenance costs for all modules, starting at header index 7
-            const nonOxygenCosts = mod._moduleInfo.maintenanceCosts.length;
+            // const nonOxygenCosts = mod._moduleInfo.maintenanceCosts.length;
             p5.textSize(16);
             p5.fill(constants.YELLOW_TEXT)
             // This complex arrangement enables the use of the word 'consumes' for all non-oxygen resources in the maintenance costs display area
-            if (nonOxygenCosts > 0) {
-                p5.textAlign(p5.LEFT);
-                mod._moduleInfo.maintenanceCosts.forEach((res, idx) => {
-                    if (res[0] !== "oxygen") {
-                        p5.text(`Consumes ${(res[1] / 100).toFixed(2)} ${res[0]} per hour`, this._textAlignleft, this._headers[7 + idx] - idx * 4 - 4);
-                    }
-                })
-            } else if (!mod._moduleInfo.pressurized) {
+            p5.textAlign(p5.LEFT);
+            mod._moduleInfo.maintenanceCosts.forEach((res, idx) => {
+                p5.text(`${res[0] === "oxygen" ? "Leaks " : "Consumes "} ${(res[1] / 100).toFixed(2)} ${res[0]} per hour`, this._textAlignleft, this._headers[7 + idx] - idx * 4 - 4);
+            })
+            if (!mod._moduleInfo.pressurized) {
                 p5.textAlign(p5.CENTER);
                 p5.textSize(18);
                 p5.text("None", this._center, this._headers[7]);
             }
-            if (mod._moduleInfo.pressurized) {
-                const leakage = (mod._moduleInfo.maintenanceCosts.find((cost) => cost[0] === "oxygen"));
-                if (leakage) {
-                    p5.textAlign(p5.LEFT);
-                    p5.text(`Leaks ${(leakage[1] / 100).toFixed(2)} air (oxygen) per hour`, this._textAlignleft, this._headers[7 + nonOxygenCosts] - nonOxygenCosts * 4 - 8);
-                }
-            }
+            // if (mod._moduleInfo.pressurized) {
+            //     const leakage = (mod._moduleInfo.maintenanceCosts.find((cost) => cost[0] === "oxygen"));
+            //     if (leakage) {
+            //         p5.textAlign(p5.LEFT);
+            //         p5.text(`Leaks ${(leakage[1] / 100).toFixed(2)} air (oxygen) per hour`, this._textAlignleft, this._headers[7 + nonOxygenCosts] - nonOxygenCosts * 4 - 8);
+            //     }
+            // }
             // Reset button text before showing it; button will return to regular module info display
             this._moreInfoButton._label = "SHOW\nBASIC INFO"
             this._moreInfoButton.render(p5);

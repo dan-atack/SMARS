@@ -97,12 +97,9 @@ export default class BuildingChip extends Button {
             p5.text("Hourly Maintenance:", this._maintenanceAlign - 16, this._maintenanceHeight - 16);
             this.buildingData.maintenanceCosts.forEach((res, idx) => {
                 p5.fill(constants.YELLOW_TEXT);
+                if (res[0] === "oxygen") p5.fill(constants.BLUE_ICE);
                 p5.text(`- ${(res[1] / 100).toFixed(2)} ${res[0]}`, this._maintenanceAlign, this._maintenanceHeight + idx * 16);
             });
-            if (pressurized && this.isModule(this.buildingData)) {
-                p5.fill(constants.BLUE_ICE);
-                p5.text(`- ${((this.buildingData.width * this.buildingData.height) / 100).toFixed(2)} air`, this._maintenanceAlign, this._maintenanceHeight + nonOxygenCosts * 16);
-            }
         } else {
             p5.text("No Maintenance", this._maintenanceAlign, this._maintenanceHeight - 16);
             p5.text("Costs", this._maintenanceAlign + 32, this._maintenanceHeight);
