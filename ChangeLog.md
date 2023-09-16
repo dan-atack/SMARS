@@ -3864,11 +3864,17 @@ Exit Criteria:
 
 4. Add three new non-random event data objects to the game's constants file, to give the player a resupply event which will fire every new Sol (once per 24 hours). Test in-game for all three difficulty levels.
 
-### 97. Are there any in-game notifications that should accompany a new feature?
+### 5. Design, and then add to the database seed, the Agriculture Tent module.
 
-### 98. Clean up all console logs for this chapter's development (or if you really like them, add a flag to them to keep appearing in dev mode only).
+### 6. Design, and then add to the database seed, the Hydroponics Lab module.
 
-### 99. Update the constants file's version and/or year for the new release.
+7. Design, and then add to the database seed, the Solar Panel module.
+
+8. Design, and then add to the database seed, the Medium Solar Array module.
+
+### 9. Once all of the new modules are tested out, rearrange the seed data to ensure that the costlier structures are shown at the bottom of their respective lists.
+
+### 10. Update the constants file's version, and since this is a 'breaking' change, bump the minor version (so the game will now be 1.1.0).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

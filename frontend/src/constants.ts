@@ -38,7 +38,7 @@ export const constants = {
     GRAY_DARKEST: "#262626",
     GRAY_METEOR: "#353837",
     GRAY_IRON_ORE: "#2E1409",
-    GRAY_WHITE: "E5E6E1",
+    GRAY_WHITE: "#E5E6E1",
     EGGSHELL: "#F6F7E9",
     RED_ERROR: "#D10000",
     RED_CONTRAST: "#FF4230",
