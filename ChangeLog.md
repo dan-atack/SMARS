@@ -3687,7 +3687,7 @@ Exit Criteria:
 
 20. Update the constants file's version and/or year for the new release.
 
-## Chapter Ninety-Nine: Sound
+## Chapter Nine: Sound
 
 ### Difficulty Estimate: 5 (after a short but ugly debacle trying to use P5's sound library, a simpler home-made approach will be used instead)
 
@@ -3835,7 +3835,44 @@ Exit Criteria for chapter:
 
 46. Update the constants file's version and/or year for the new release.
 
-### 100. Do a torture test in your staging environment! Tweak the game's code on the local VM to start 'easy' games with $1,000,000 and spend that cash on as many structures as you can cram in! Also set the Earth immigration to add new people every week (game hour), and see how much of a population / how large of a base you can build before the game starts to get all claggy. It will be a weird exercise but the results will surely be fascinating! Next, do the same test in the local dev environment, and see if the results differ at all! Yay, science!
+47. Do a torture test in your staging environment! Tweak the game's code on the local VM to start 'easy' games with $1,000,000 and spend that cash on as many structures as you can cram in! Also set the Earth immigration to add new people every week (game hour), and see how much of a population / how large of a base you can build before the game starts to get all claggy. It will be a weird exercise but the results will surely be fascinating! Next, do the same test in the local dev environment, and see if the results differ at all! ADDENDUM: Houston we have a problem... Long story short, when the screen has more than about 40 structures present (didn't even both measuring with larger amounts of colonists) the game begins to lag, and the more structures you add on after that point, the more it lags, with each additional building adding roughly 0.75 seconds per game hour on 'fast' speed (which normally clocks in at 20 seconds per hour). With a full screen (roughly 110 modules, with no connectors/colonists either) the game took 45 seconds to pass one game hour on fast mode. Two mitigating factors in this sad scenario: 1, it's hard to get that many buildings, at least for now, so this should not be very noticeable in the near future, and 2, it's the number of modules ON SCREEN that causes the issue, not the TOTAL NUMBER of modules, which implies that the game's mechanics themselves are alright, it's simply P5's rendering capabilities that are being pushed to the limit. Hopefully, anyway.
+
+## Chapter Ten: Game Difficulty Rebalance And New Modules
+
+### Difficulty Estimate: 3 (For painstaking new module artwork creation, and adjustment to many in-game values which may affect unit tests)
+
+### Date: September 13, 2023
+
+The game is ready to receive more content, to make for a more engaging long-term experience. Specifically, new production and power modules will be added, to give the player more options to choose from when placing new buildings. This chapter will also be the occasion to update many of the existing values in the game, to make the player's initial resource supplies much less generous, and to alter the rates of resource consumption in the colony (from eating/drinking and production activities) so that resources are depleted more quickly. Finally, the player will be given a small stipend of money and resources, received at the end of every year, as a resupply mission from Earth arrives. Initially the value of these missions will remain fixed over time, but in future iterations we can adjust the quantities sent according to a number of factors (difficulty level, colony morale, karma/luck, you name it).
+
+Exit Criteria:
+
+- [DONE] All existing modules' resource storage quantities, maintenance costs, and (when applicable) production input/output values are updated
+- [DONE] Colonists now eat and drink 0.1 food/water per hour, instead of 0.01 (10 in game units as opposed to 1)
+- [DONE] Modules' oxygen leakage is determined by maintenance costs, not by 'pressurized' status
+- Every new Sol, the player receives a scheduled event message, informing them that more money and provisions have arrived (amount depends on difficulty level)
+- New production module, Hydroponics tent, is large and leaks a lot of air, but is cheap to build and can hold two colonists
+- New production module, Hydroponics lab, is also quite large, leaks less air, and produces a more cost-efficient, but smaller food output
+- New power module, Single Solar Panel, is tiny (1 x 1), relatively cheap, and produces very little power
+- New power module, Medium Solar Array, is larger (5 x 2), costs more than 2x as much as the Small Array, and produces twice as much power
+
+1. Refactor the module maintenance cycle to include oxygen as a regular maintenance cost instead of determining leakage via the module's area. Ensure that this refactorization does not break any unit tests, and update the Inspect Display and Building Chip components to ensure they display modules' maintenance costs the same way as before (including referring to oxygen losses as 'leaks' rather than 'consumes').
+
+2. Update the Database seed file with updated storage, maintenance, and input/output values for each module. Drop, and reload the local dev database to validate the updates work properly.
+
+3. Increase the colonists' resource consumption rate by a factor of ten, by adding a new colonist data property called needMultiplier and applying this to their resource consumption method's resource deduction calculation.
+
+4. Add three new non-random event data objects to the game's constants file, to give the player a resupply event which will fire every new Sol (once per 24 hours). Test in-game for all three difficulty levels.
+
+5. Design, and then add to the database seed, the Agriculture Tent module.
+
+6. Design, and then add to the database seed, the Solar Panel module.
+
+7. Design, and then add to the database seed, the Medium Solar Array module.
+
+8. Once all of the new modules are tested out, rearrange the seed data to ensure that the costlier structures are shown at the bottom of their respective lists.
+
+9. Update the constants file's version, and since this is a 'breaking' change, bump the minor version (so the game will now be 1.1.0).
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

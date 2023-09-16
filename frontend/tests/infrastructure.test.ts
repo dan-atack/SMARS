@@ -82,7 +82,8 @@ const cantinaModuleInfo: ModuleInfo = {
         ["money", 100000]
     ],
     maintenanceCosts: [
-        ["power", 1]
+        ["power", 1],
+        ["oxygen", 12]
     ],
     storageCapacity: [
         ["food", 5000],
@@ -153,7 +154,8 @@ const hydroponicsModuleData: ModuleInfo = {
         ["money", 100000],
     ],
     maintenanceCosts: [
-        ["power", 10]
+        ["power", 10],
+        ["oxygen", 9]
     ],
     productionInputs: [     // Plant life needs: water, CO2 and light (in this case electric light)
         ["water", 5]
@@ -348,6 +350,7 @@ describe("Infrastructure base class", () => {
         infra.addResourcesToModule(1002, ["equipment", 100000]);
         // Also, deprovision other storage module, since it will attempt to fulfill the requests itself otherwise
         infra.subtractResourceFromModule(1001, ["water", 10000]);
+        infra.subtractResourceFromModule(1001, ["oxygen", 10000]);
         expect(infra._modules[3]._resources).toStrictEqual([
             ["food", 500],
             ["water", 500],
@@ -360,7 +363,7 @@ describe("Infrastructure base class", () => {
             ["power", 0]                                        // ... Except for the power
         ]);
         expect(infra._modules[2]._resources).toStrictEqual([    // ... With supplies taken from the storage room
-            ["oxygen", 988],
+            ["oxygen", 1000],
             ["food", 5500],
             ["water", 5500],
             ["equipment", 20000]
@@ -396,7 +399,7 @@ describe("Infrastructure base class", () => {
         infra.resolveModuleProduction(1005, 9999);  // Should punch out the colonist, and remove inputs and add outputs
         expect(infra._modules[5]._crewPresent).toStrictEqual([]);
         expect(infra._modules[5]._resources).toStrictEqual([
-            ["oxygen", 501],    // From 0 to 501 (+510 - 9)
+            ["oxygen", 501],    // From 0 to 510 (+510 - 9)
             ["water", 1245],    // From 1250 to 1245 (-5)
             ["food", 10]        // From 0 to 10 (+10)
         ])

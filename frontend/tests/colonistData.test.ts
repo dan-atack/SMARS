@@ -138,8 +138,8 @@ describe("ColonistData", () => {
     mockInfra._data.setup(mockMap._mapData.length);
     mockInfra.addModule(10, 30, cantinaModuleInfo, mockMap._topography, mockMap._zones, 1001);
     // Provision test module with resources
-    mockInfra.addResourcesToModule(1001, [ "water", 100 ]);
-    mockInfra.addResourcesToModule(1001, [ "food", 100 ]);
+    mockInfra.addResourcesToModule(1001, [ "water", 1000 ]);
+    mockInfra.addResourcesToModule(1001, [ "food", 1000 ]);
     // Heights per column: 3, 4, 6 (max three columns shown)
     const unevenTerrain = [[1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1, 1, 1]];
 
@@ -382,7 +382,7 @@ describe("ColonistData", () => {
         colonistData.resolveAction();
         colonistData._needs.food = 10;
         mockInfra._modules[0].deductResource(["food", 10000]);    // Ensure module is empty
-        mockInfra._modules[0].addResource(["food", 5]);           // Provision with slightly fewer resources than are needed
+        mockInfra._modules[0].addResource(["food", 50]);           // Provision with slightly fewer resources than are needed
         colonistData.addAction("eat", { x: 10, y: 32 }, 10, 1001);
         colonistData.startAction(mockInfra, indy);
         expect(mockInfra._modules[0].getResourceQuantity("food")).toBe(0);    // Colonist takes everything there is to take
@@ -466,7 +466,6 @@ describe("ColonistData", () => {
             buildingId: 1001
         }]);
         // Checking again will start the next action immediately (overwriting the current one)
-        console.log(colonistData._actionStack);
         colonistData.checkForNextAction(mockInfra, indy);
         expect(colonistData._currentAction).toStrictEqual({
             type: "drink",
