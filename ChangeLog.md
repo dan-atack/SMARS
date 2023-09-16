@@ -3843,19 +3843,26 @@ Exit Criteria for chapter:
 
 ### Date: September 13, 2023
 
-The game is ready to receive more content, to make for a more engaging long-term experience. Specifically, new production and power modules will be added, to give the player more options to choose from when placing new buildings. This chapter will also be the occasion to update many of the existing values in the game, to make the player's initial resource supplies much less generous, and to alter the rates of resource consumption in the colony (from eating/drinking and production activities). Finally, the player will be given a small stipend of money and resources, received at the end of every year, as a resupply mission from Earth arrives. Initially the value of these missions will remain fixed over time, but in future iterations we can adjust the quantities sent according to a number of factors (difficulty level, colony morale, karma/luck, you name it).
+The game is ready to receive more content, to make for a more engaging long-term experience. Specifically, new production and power modules will be added, to give the player more options to choose from when placing new buildings. This chapter will also be the occasion to update many of the existing values in the game, to make the player's initial resource supplies much less generous, and to alter the rates of resource consumption in the colony (from eating/drinking and production activities) so that resources are depleted more quickly. Finally, the player will be given a small stipend of money and resources, received at the end of every year, as a resupply mission from Earth arrives. Initially the value of these missions will remain fixed over time, but in future iterations we can adjust the quantities sent according to a number of factors (difficulty level, colony morale, karma/luck, you name it).
 
 Exit Criteria:
 
-- All existing modules' resource storage quantities, maintenance costs, and (when applicable) production input/output values are updated
-- Colonists now eat and drink 0.1 food/water per hour, instead of 0.01 (10 in game units as opposed to 1)
-- Modules' oxygen leakage is determined by maintenance costs, not by 'pressurized' status
+- [DONE] All existing modules' resource storage quantities, maintenance costs, and (when applicable) production input/output values are updated
+- [DONE] Colonists now eat and drink 0.1 food/water per hour, instead of 0.01 (10 in game units as opposed to 1)
+- [DONE] Modules' oxygen leakage is determined by maintenance costs, not by 'pressurized' status
+- Every new Sol, the player receives a scheduled event message, informing them that more money and provisions have arrived (amount depends on difficulty level)
 - New production module, Hydroponics tent, is large and leaks a lot of air, but is cheap to build and can hold two colonists
 - New production module, Hydroponics lab, is also quite large, leaks less air, and produces a more cost-efficient, but smaller food output
 - New power module, Single Solar Panel, is tiny (1 x 1), relatively cheap, and produces very little power
 - New power module, Medium Solar Array, is larger (5 x 2), costs more than 2x as much as the Small Array, and produces twice as much power
 
-### 1. Step One...
+1. Refactor the module maintenance cycle to include oxygen as a regular maintenance cost instead of determining leakage via the module's area. Ensure that this refactorization does not break any unit tests, and update the Inspect Display and Building Chip components to ensure they display modules' maintenance costs the same way as before (including referring to oxygen losses as 'leaks' rather than 'consumes').
+
+2. Update the Database seed file with updated storage, maintenance, and input/output values for each module. Drop, and reload the local dev database to validate the updates work properly.
+
+3. Increase the colonists' resource consumption rate by a factor of ten, by adding a new colonist data property called needMultiplier and applying this to their resource consumption method's resource deduction calculation.
+
+4. Add three new non-random event data objects to the game's constants file, to give the player a resupply event which will fire every new Sol (once per 24 hours). Test in-game for all three difficulty levels.
 
 ### 97. Are there any in-game notifications that should accompany a new feature?
 

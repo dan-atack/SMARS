@@ -1141,6 +1141,7 @@ export default class Engine extends View {
                                 this._gameTime.cycle = "AM";
                                 this._sky.setSkyColour(constants.GREEN_DARKEST, false); // Reset sky secondary colour at midnight
                                 // Advance date (anything on a daily schedule should go here)
+                                this.generateEvent();   // Use non-random event generator to get the resupply mission event for the player's difficulty level
                                 if (this._gameTime.sol < this._solsPerYear) {
                                     this._gameTime.sol ++;
                                 } else {
@@ -1205,11 +1206,10 @@ export default class Engine extends View {
                 this.getRandomEvent([karma, magnitude], this.setRandomEvent);
                 
             }
-        } else {
-            // NOTE: Until non-random (storyline) events are a complete feature, simply do nothing if an event without a probability is requested (or if random events are not enabled)
-            // If a non-random event is requested it happens here ("midnight" is a placeholder event in the meantime)
-            // const ev: EventData | undefined = modalData.find((modal) => modal.id === "midnight")
-            // this.createModal(ev);
+        } else if (!probability) {
+            // If no probability is given, fire the daily resupply event for the player's difficulty level
+            const ev: EventData | undefined = modalData.find((modal) => modal.id === `${this._difficulty}-resupply`);
+            this.createModal(ev);
         }
     }
 

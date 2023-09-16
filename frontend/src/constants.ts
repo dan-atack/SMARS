@@ -124,16 +124,38 @@ export const modalData: EventData[] = [
       ]
    },
    {
-      id: "midnight",
-      title: "MIDNIGHT ON SMARS",
-      text: "Another day over on the Red Planet, and you can't help but notice\nhow small Phobos and Deimos are compared to the Earth's moon.",
+      id: "easy-resupply",
+      title: "RESUPPLY MISSION ARRIVES",
+      text: "A new supply pod has arrived from Earth.\n\nAlthough they didn't remember to send any of that shampoo that\nyou like, there's still a pretty good haul of food, air and water.\n\nAnd also some money, which is still surprisingly useful out here.",
       resolutions: [
          {
-            text: "Whoo wee!",
-            outcomes: [["set-mouse-context", "inspect"]]
+            text: "I really wanted that shampoo!",
+            outcomes: [["set-mouse-context", "inspect"], [ "add-resource", 1000, "food" ], [ "add-resource", 1000, "water" ], [ "add-resource", 1000, "oxygen" ], ["add-money", 500000] ]
          }
       ]
    },
+   {
+      id: "medium-resupply",
+      title: "RESUPPLY MISSION ARRIVES",
+      text: "A new resupply pod has arrived from Earth.\n\nIt doesn't contain quite as much food or water as you had\nrequested, but the Provisioning Department reminds you that it's\nbeen a difficult quarter, and to be grateful for what you get.",
+      resolutions: [
+         {
+            text: "I am grateful!",
+            outcomes: [["set-mouse-context", "inspect"], [ "add-resource", 500, "food" ], [ "add-resource", 500, "water" ], [ "add-resource", 1000, "oxygen" ], ["add-money", 300000] ]
+         }
+      ]
+   },
+   {
+      id: "hard-resupply",
+      title: "RESUPPLY MISSION ARRIVES",
+      text: "A new supply pod has arrived from Earth.\n\nThe launch was almost scrapped due to budgetary concerns,\nand the Logistics Department wasn't able to send very much stuff.\n\nTry and be more self-sufficient, yeah?",
+      resolutions: [
+         {
+            text: "Ooh, we're trying!",
+            outcomes: [["set-mouse-context", "inspect"], [ "add-resource", 400, "food" ], [ "add-resource", 400, "water" ], [ "add-resource", 1000, "oxygen" ], ["add-money", 200000] ]
+         }
+      ]
+   }
 ];
 
 // BLOCKTIONARY!!!!

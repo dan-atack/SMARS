@@ -277,7 +277,7 @@ export default class InspectDisplay {
             mod._moduleInfo.maintenanceCosts.forEach((res, idx) => {
                 p5.text(`${res[0] === "oxygen" ? "Leaks " : "Consumes "} ${(res[1] / 100).toFixed(2)} ${res[0]} per hour`, this._textAlignleft, this._headers[7 + idx] - idx * 4 - 4);
             })
-            if (!mod._moduleInfo.pressurized) {
+            if (mod._moduleInfo.maintenanceCosts.length === 0) {
                 p5.textAlign(p5.CENTER);
                 p5.textSize(18);
                 p5.text("None", this._center, this._headers[7]);
