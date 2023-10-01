@@ -1,5 +1,5 @@
 # Build frontend package
-FROM ubuntu:kinetic AS frontend
+FROM ubuntu:jammy AS frontend
 ARG SMARS_ENVIRONMENT
 ARG DOMAIN_NAME
 RUN apt-get update
@@ -16,7 +16,7 @@ ENV HTTPS_PORT=443
 RUN npm run build
 
 # Backend
-FROM ubuntu:kinetic
+FROM ubuntu:jammy
 ARG SMARS_ENVIRONMENT
 ARG DOMAIN_NAME
 RUN apt-get update
