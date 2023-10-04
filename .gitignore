@@ -11,6 +11,7 @@ backend/coverage
 # Temporary Local Files, including build files and cache:
 frontend/.cache
 frontend/dist
+backend/dist
 # Ignore the contents of the backend's public directory
 backend/public/*
 # Concept art, blueprints:
