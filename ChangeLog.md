@@ -3904,7 +3904,7 @@ Exit Criteria:
 
 6. Move the database seed folder into the backend's 'src' directory to ensure that it gets included with the built files that are copied into the production stage.
 
-### 5. Fix the error message on the login page if the player tries to create a new profile for an already taken username (currently it shows the same message as when you try to log in with a non-registered player name).
+7. Fix the error message on the login page if the player tries to create a new profile for an already taken username (currently it shows the same message as when you try to log in with a non-registered player name).
 
 ### 99. Update the constants file's version and/or year for the new release.
 
