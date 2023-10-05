@@ -135,7 +135,6 @@ export default class Login extends Screen {
             this.httpResponseCode = 0;
             this.setErrorMessage("Please choose a username with at least 4 characters", 280);
             this._audio.quickPlay("fail01");
-
         }
     }
 
@@ -193,7 +192,7 @@ export default class Login extends Screen {
                 break;
             // Sign-up errors:
             case 409:
-                const duplicate = "Username not found. Please check spelling or sign up as a new user."
+                const duplicate = "Sorry, that username is already taken. Please try something else."
                 if (this.loginErrorMessage!== duplicate) {
                     this.setErrorMessage(duplicate, 280);
                 }

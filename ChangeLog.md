@@ -3892,13 +3892,17 @@ Exit Criteria:
 - Game's updated Dockerfile runs on local VM
 - Game's updated Dockerfile runs on the cloud
 
-### 1. Add a new 'build' script to the backend's package.json file, which will run the Typescript transpiler and store the artifact in a new folder called 'dist.' It will also be necessary to update the backend's tsconfig.json file to tell it to output the Javascript files to the 'dist' folder, and you'll also need to add 'dist' to the game's gitignore file so that transpiled files aren't committed to version control.
+1. Add a new 'build' script to the backend's package.json file, which will run the Typescript transpiler and store the artifact in a new folder called 'dist.' It will also be necessary to update the backend's tsconfig.json file to tell it to output the Javascript files to the 'dist' folder, and you'll also need to add 'dist' to the game's gitignore file so that transpiled files aren't committed to version control.
 
-### 2. Once the dist folder artifact is produced, try running the resulting application with the command 'node index.js' or something similar.
+2. Once the dist folder artifact is produced, try running the resulting application with the command 'node index.js' or something similar. Once this works, add a 'start' script to the backend's package.json that will be used by the Dockerfile to run the built application.
 
-### 3. Test the full stack on the local development VM by running both the frontend and backend applications independently (i.e. not as Docker containers).
+3. Test the full stack on the local development VM by running both the frontend and backend applications independently (i.e. not as Docker containers).
 
-### 4. Now, create a new third stage in the project's Dockerfile which takes the build artifacts from the previous two stages and runs them FROM a Node Docker image. This will require altering the second stage to run the 'build' command for the backend, and then adding the frontend artifact to the new third stage instead of adding it to the second stage. This will probably involve some trial-and-error on the local VM, so don't be afraid to use your nails, boys!
+4. Now, create a new third stage in the project's Dockerfile which takes the build artifacts from the previous two stages and runs them FROM a Node-Alpine Docker image (the default Node image itself is still very large and would effectively negate any slimness achieved in this chapter). This will require altering the second stage to run the 'build' command for the backend, and then adding the frontend artifact to the new third stage instead of adding it to the second stage. This will probably involve some trial-and-error on the local VM, so don't be afraid to use your nails, boys!
+
+5. Adjust the file path to the public folder in the backend's index file, as the new directory structure in the final stage is somewhat flatter than before (the index file is no longer contained in a 'src' directory so it's at the same level as the public folder).
+
+6. Move the database seed folder into the backend's 'src' directory to ensure that it gets included with the built files that are copied into the production stage.
 
 ### 5. Fix the error message on the login page if the player tries to create a new profile for an already taken username (currently it shows the same message as when you try to log in with a non-registered player name).
 
