@@ -34,7 +34,7 @@ app.use(cors());
 // Stands in for the body-parser used in BlockLand; parses incoming requests into JSON format and enables you to access the request BODY:
 app.use(express.json());
 // Define the path to the public directory and set it as the server's static folder
-const publicPath = path.join(__dirname, '../public');
+const publicPath = path.join(__dirname, './public');
 app.use(express.static(publicPath));
 
 // Server Endpoints
