@@ -29,7 +29,6 @@ mkdir ~/smars
 mkdir ~/backups
 cd ~/smars
 sudo git clone https://github.com/dan-atack/SMARS.git .
-sudo git checkout 62-production-docker-backend-image-optimization
 # Add local environment variable files to assist docker image build
 echo "SMARS_ENVIRONMENT=${SMARS_ENVIRONMENT}" | cat > .env
 echo "DOMAIN_NAME=${DOMAIN_NAME}" | cat >> .env
