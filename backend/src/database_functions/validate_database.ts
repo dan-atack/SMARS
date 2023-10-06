@@ -1,5 +1,5 @@
 import { Db, MongoClient } from "mongodb";
-import data from "../../databaseSeed.json";
+import data from "../databaseSeed.json";
 import assert from "assert";
 import { constants } from "../constants";
 

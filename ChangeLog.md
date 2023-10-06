@@ -3850,11 +3850,10 @@ Exit Criteria:
 - [DONE] All existing modules' resource storage quantities, maintenance costs, and (when applicable) production input/output values are updated
 - [DONE] Colonists now eat and drink 0.1 food/water per hour, instead of 0.01 (10 in game units as opposed to 1)
 - [DONE] Modules' oxygen leakage is determined by maintenance costs, not by 'pressurized' status
-- Every new Sol, the player receives a scheduled event message, informing them that more money and provisions have arrived (amount depends on difficulty level)
-- New production module, Hydroponics tent, is large and leaks a lot of air, but is cheap to build and can hold two colonists
-- New production module, Hydroponics lab, is also quite large, leaks less air, and produces a more cost-efficient, but smaller food output
-- New power module, Single Solar Panel, is tiny (1 x 1), relatively cheap, and produces very little power
-- New power module, Medium Solar Array, is larger (5 x 2), costs more than 2x as much as the Small Array, and produces twice as much power
+- [DONE] Every new Sol, the player receives a scheduled event message, informing them that more money and provisions have arrived (amount depends on difficulty level)
+- [DONE] New production module, Hydroponics tent, is large and leaks a lot of air, but is cheap to build and can hold two colonists
+- [DONE] New power module, Single Solar Panel, is tiny (1 x 1), relatively cheap, and produces very little power
+- [DONE] New power module, Medium Solar Array, is larger (5 x 2), costs more than 2x as much as the Small Array, and produces twice as much power
 
 1. Refactor the module maintenance cycle to include oxygen as a regular maintenance cost instead of determining leakage via the module's area. Ensure that this refactorization does not break any unit tests, and update the Inspect Display and Building Chip components to ensure they display modules' maintenance costs the same way as before (including referring to oxygen losses as 'leaks' rather than 'consumes').
 
@@ -3873,6 +3872,41 @@ Exit Criteria:
 8. Once all of the new modules are tested out, rearrange the seed data to ensure that the costlier structures are shown at the bottom of their respective lists.
 
 9. Update the constants file's version, and since this is a 'breaking' change, bump the minor version (so the game will now be 1.1.0).
+
+10. Update the game's Dockerfile to use Ubuntu Jammy instead of Ubuntu Kinetic, since that was not a long-term supported release and led to deployment problems since it reached its end-of-life some weeks ago. Jammy should be good for at least another 5 years, by contrast.
+
+## Chapter Eleven: Dockerfile Refactor for Backend Image Optimization
+
+### Difficulty Estimate: 5 (for alterations to package.json and Dockerfile, and testing new build strategies)
+
+### Date: October 3, 2023
+
+A long-awaited improvement to the game's Production epic is the optimization of the game's Docker image. By extending the use of the multistage Docker build, it should now be possible to reduce the size of the game's (now only) image by adding a third stage that collects the output of the backend build phase and then runs it on a minimal Node image rather than a full Ubuntu image. This will necessitate the addition of a new 'build' script to the backend's package.json file, which will run the typescript transpiler and output the resulting javascript code into a dist folder, similiarly to how it's already done in the frontend (minus the Parcel builder, of course). Once this artifact is produced and validated on the local VM it must be incorporated into the game's Dockerfile, which will take it as the output of the "backend" stage, and pass it to a new, third stage, which runs it on a minimal Node image (rather than the full Ubuntu image used now). The resulting image shall then be tested both locally and on the cloud development server, and then deployed to production.
+
+Exit Criteria:
+
+- [DONE] Game's backend can be built with an npm script 'npm run build'
+- [DONE] Backend build artifact can be run with another npm script, 'npm run start'
+- [DONE] Dockerfile uses the 'build' script in its second stage (build backend) and the 'start' script in its third stage (production)
+- [DONE] Game's updated Dockerfile is smaller than 1 GB
+- [DONE] Game's updated Dockerfile runs on local VM
+- [DONE] Game's updated Dockerfile runs on the cloud
+
+1. Add a new 'build' script to the backend's package.json file, which will run the Typescript transpiler and store the artifact in a new folder called 'dist.' It will also be necessary to update the backend's tsconfig.json file to tell it to output the Javascript files to the 'dist' folder, and you'll also need to add 'dist' to the game's gitignore file so that transpiled files aren't committed to version control.
+
+2. Once the dist folder artifact is produced, try running the resulting application with the command 'node index.js' or something similar. Once this works, add a 'start' script to the backend's package.json that will be used by the Dockerfile to run the built application.
+
+3. Test the full stack on the local development VM by running both the frontend and backend applications independently (i.e. not as Docker containers).
+
+4. Now, create a new third stage in the project's Dockerfile which takes the build artifacts from the previous two stages and runs them FROM a Node-Alpine Docker image (the default Node image itself is still very large and would effectively negate any slimness achieved in this chapter). This will require altering the second stage to run the 'build' command for the backend, and then adding the frontend artifact to the new third stage instead of adding it to the second stage. This will probably involve some trial-and-error on the local VM, so don't be afraid to use your nails, boys!
+
+5. Adjust the file path to the public folder in the backend's index file, as the new directory structure in the final stage is somewhat flatter than before (the index file is no longer contained in a 'src' directory so it's at the same level as the public folder).
+
+6. Move the database seed folder into the backend's 'src' directory to ensure that it gets included with the built files that are copied into the production stage.
+
+7. Fix the error message on the login page if the player tries to create a new profile for an already taken username (currently it shows the same message as when you try to log in with a non-registered player name).
+
+8. Update the constants file's version and/or year for the new release.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
