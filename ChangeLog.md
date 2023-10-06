@@ -3885,12 +3885,12 @@ A long-awaited improvement to the game's Production epic is the optimization of 
 
 Exit Criteria:
 
-- Game's backend can be built with an npm script 'npm run build'
-- Backend build artifact can be run with another npm script, 'npm run start'
-- Dockerfile uses the 'build' script in its second stage (build backend) and the 'start' script in its third stage (production)
-- Game's updated Dockerfile is smaller than 1 GB
-- Game's updated Dockerfile runs on local VM
-- Game's updated Dockerfile runs on the cloud
+- [DONE] Game's backend can be built with an npm script 'npm run build'
+- [DONE] Backend build artifact can be run with another npm script, 'npm run start'
+- [DONE] Dockerfile uses the 'build' script in its second stage (build backend) and the 'start' script in its third stage (production)
+- [DONE] Game's updated Dockerfile is smaller than 1 GB
+- [DONE] Game's updated Dockerfile runs on local VM
+- [DONE] Game's updated Dockerfile runs on the cloud
 
 1. Add a new 'build' script to the backend's package.json file, which will run the Typescript transpiler and store the artifact in a new folder called 'dist.' It will also be necessary to update the backend's tsconfig.json file to tell it to output the Javascript files to the 'dist' folder, and you'll also need to add 'dist' to the game's gitignore file so that transpiled files aren't committed to version control.
 
@@ -3906,7 +3906,7 @@ Exit Criteria:
 
 7. Fix the error message on the login page if the player tries to create a new profile for an already taken username (currently it shows the same message as when you try to log in with a non-registered player name).
 
-### 99. Update the constants file's version and/or year for the new release.
+8. Update the constants file's version and/or year for the new release.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
