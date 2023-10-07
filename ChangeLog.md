@@ -3888,7 +3888,7 @@ Exit Criteria:
 - [DONE] Game's backend can be built with an npm script 'npm run build'
 - [DONE] Backend build artifact can be run with another npm script, 'npm run start'
 - [DONE] Dockerfile uses the 'build' script in its second stage (build backend) and the 'start' script in its third stage (production)
-- [DONE] Game's updated Dockerfile is smaller than 1 GB
+- [DONE] Game's updated Dockerfile is smaller than 1 GB --> ADDENDUM: Final size is 353 MB (a reduction of over 70% from the previous version)
 - [DONE] Game's updated Dockerfile runs on local VM
 - [DONE] Game's updated Dockerfile runs on the cloud
 
