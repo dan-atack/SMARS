@@ -3906,7 +3906,41 @@ Exit Criteria:
 
 7. Fix the error message on the login page if the player tries to create a new profile for an already taken username (currently it shows the same message as when you try to log in with a non-registered player name).
 
-8. Update the constants file's version and/or year for the new release.
+8. Update the constants file's version for the new release.
+
+## Chapter Twelve: Automated Docker Image Production and Storage
+
+### Difficulty Estimate: 5 (Docker Hub / GitHub Actions integration and updating image deployment workflow)
+
+### Date: October 10, 2023
+
+Now that the game's Docker image has been properly streamlined, the next step towards a properly modernized CI/CD pipeline is to automate image production, set up a repository, and then update the game's deployment strategy to pull images from that repository instead of building them on the actual server computer. This chapter will begin the effort by doing a manual run of the whole process: building an image, pushing to Docker Hub, then pulling onto a fresh Dev machine on the cloud. Once this is established, the process can be automated using GitHub Actions for the build/push phases, and finally revising the game's Terraform files to pull the new image and use it to update the currently-deployed production stack. Ultimately this should reduce the 'down time' between version updates to only a few seconds and bring the reliability for this process back to 100%.
+
+Not explicitly addressed in this chapter, but worth considering all the same is the issue of tagging images with version data so as to keep track of images as the game's development progresses. It may be worth adding some sort of a top-level metadata file and pulling the version info from that to the frontend's constants file once such a process is established.
+
+Exit Criteria:
+
+- Docker Hub repo is set up to store the game's Docker image files
+- Image can be pulled from Docker Hub to any of the game's AWS environments (dev, staging or production)
+- Game can be deployed/updated on the cloud using an image pulled from Docker Hub
+- GitHub Actions workflow is updated to generate a new Docker image whenever a PR is merged
+- A new script is developed for the cloud environment, which pulls the latest Docker image from the Docker Hub repo and uses it to update the currently-running Docker compose stack with as little disruption time as possible
+
+1. From the local dev environment, build a Docker image from the master branch and try pushing it to the Docker Hub account. Write down all steps involved once the process is completed. Ensure that the local dev environment's .env file contains values for DOMAIN_NAME and SMARS_ENVIRONMENT since those will be 'baked in' to the resulting image. Tag the build as 'dev-1.1.2' and then push it to the Docker Hub repo.
+
+`docker build -t danatack/smars:1.1.2-dev .`
+
+`docker push danatack/smars:1.1.2-dev`
+
+### 2. Next, reconfigure the Terraform machine configuration script to omit the git clone of the smars repo as well as all subsequent steps, including `docker compose up` when the server instance is set up. Then run this script to set up a new dev server in the cloud, and log into it once it's up and running (which should be fairly quick given that it doesn't have to build a Docker image this time).
+
+### 3. Attempt to pull the Docker image that you made in step 1 onto the cloud server and run `docker compose up` to boot up the stack. Record the commands needed to complete this operation in full (also, find out if we still need local environment variables on the EC2 at this point - I feel like we won't... but also that we maybe should?!).
+
+### 4. Once the game can be demonstrated to run on an externally-built docker image, the next step will be to produce that image via GitHub Actions. Start by creating a new yaml file in the github/workflows directory called Build_Docker_Image, and copying the code from the Basic_CI file to imitate its structure.
+
+### 5. Update the docker image build script to be triggered by a push to the smars repo, so we can start testing it right away, then have it build a docker image BASED ON THE MASTER BRANCH and push it to the Docker Hub SMARS repo. Make sure to add environment variables to the build environment produced by the GitHub Actions workflow, and initially set them up to produce a dev environment/image.
+
+### 99. Update the constants file's version for the new release.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
