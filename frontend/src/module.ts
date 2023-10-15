@@ -404,6 +404,7 @@ export default class Module {
         // If the module falls into 'unmaintained' status, render a shadow over it
         if (!this._isMaintained) {
             p5.fill(0, 0, 200, 100);
+            p5.strokeWeight(0);
             p5.rect(x, y, w, h);
         }
     }

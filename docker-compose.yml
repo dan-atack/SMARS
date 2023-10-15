@@ -8,7 +8,10 @@ services:
       args:
         - SMARS_ENVIRONMENT=${SMARS_ENVIRONMENT}
         - DOMAIN_NAME=${DOMAIN_NAME}
-    image: smars-backend:latest
+    image: danatack/smars:latest
+    environment:
+      - ENVIRONMENT=${SMARS_ENVIRONMENT}
+      - DOMAIN_NAME=${DOMAIN_NAME}
     ports:
       - "80:80"
       - "443:443"

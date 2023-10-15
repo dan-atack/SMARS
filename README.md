@@ -58,7 +58,23 @@ Database:
 
 Once the stack has started, you should be able to play the game by going to http://localhost:1234 in your internet browser
 
-## Staging Environment setup:
+## Building the game's Docker images from the local VM environment:
+
+- Clone git repo into local VM directory
+- Set environment variables in local .env file:
+
+  SMARS_ENVIRONMENT=<environment (e.g. 'dev' 'staging' or 'prod' )>
+  DOMAIN_NAME=<domain name (e.g. test.freesmars.com)>
+
+- Run the build script:
+  `bash startBuild.sh`
+
+- Deploy cloud machine for the environment matching the build (dev, staging or production)
+- SSH into cloud machine via PuTTY
+- cd into smars directory
+- Run Docker compose to pull and deploy the latest image: `docker compose up`
+
+## Cloud Environment setup:
 
 - Pull git repo
 - cd into terraform directory
@@ -70,7 +86,7 @@ Once the stack has started, you should be able to play the game by going to http
   export TF_VAR_SSH_ALLOW_ORIGIN=<ip address for ssh access origin (e.g. your PC's IP Address)>
 
 - Run `bash startPlan` and verify the resulting Terraform plan
-- Run `bash startDeply` and enter 'yes' to confirm Terraform apply
+- Run `bash startDeploy` and enter 'yes' to confirm Terraform apply
 
 ## Credits and Acknowledgements
 
