@@ -3932,9 +3932,11 @@ Exit Criteria:
 
 `docker push danatack/smars:1.1.2-dev`
 
-### 2. Next, reconfigure the Terraform machine configuration script to omit the git clone of the smars repo as well as all subsequent steps, including `docker compose up` when the server instance is set up. Then run this script to set up a new dev server in the cloud, and log into it once it's up and running (which should be fairly quick given that it doesn't have to build a Docker image this time).
+2. Next, reconfigure the Terraform machine configuration script to omit the final line, `docker compose up` when the server instance is set up. We can keep all of the other stuff for now, including the SMARS git clone, since we need that to gain access to the project's scripts files. Then do a standard deployment with the 'startDeploy' script to set up a new dev server in the cloud, and log into it once it's up and running (which should be fairly quick given that it doesn't have to build a Docker image this time).
 
-### 3. Attempt to pull the Docker image that you made in step 1 onto the cloud server and run `docker compose up` to boot up the stack. Record the commands needed to complete this operation in full (also, find out if we still need local environment variables on the EC2 at this point - I feel like we won't... but also that we maybe should?!).
+3. Pull the Docker image that you made in step 1 onto the cloud server and run `docker compose up` to boot up the stack. NOTE: If we always use the 'latest' tag in the docker-compose.yml file then there is no need to manually pull the new image before running docker compose. However, in order to ensure a smooth transition (i.e. minimal downtime) it might be advantageous for the update workflow to pull the new image by hand, and then do a very fast `docker compose down` / `docker compose up` since the new image will already be available and can thus be deployed right away. We can then delete the older image from the host machine, to free up disk space.
+
+4. Update the docker-compose file to add the ENVIRONMENT and DOMAIN_NAME environment variables under the 'environment' heading for the backend service, since the backend will need them (not actually sure about the DOMAIN_NAME variable but let's include it too). This means that we also need to keep the creation of the .env file as part of the Terraform configure_instance template file.
 
 ### 4. Once the game can be demonstrated to run on an externally-built docker image, the next step will be to produce that image via GitHub Actions. Start by creating a new yaml file in the github/workflows directory called Build_Docker_Image, and copying the code from the Basic_CI file to imitate its structure.
 
