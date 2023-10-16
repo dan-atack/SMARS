@@ -3924,7 +3924,8 @@ Exit Criteria:
 - [DONE] Image can be build, tagged and pushed from any of the local VM environments
 - [DONE] Image can be pulled from Docker Hub to any of the game's AWS environments (dev, staging or production)
 - [DONE] Game can be deployed/updated on the cloud using an image pulled from Docker Hub
-- GitHub Actions workflow is created to generate a new Docker production image whenever a PR is merged
+- [DONE] GitHub Actions workflow is created to generate a new Docker production image whenever a commit is made to the master branch
+- [DONE] Live update process documentation is fully updated with the new workflow
 
 1. From the local dev environment, build a Docker image from the master branch and try pushing it to the Docker Hub account. Write down all steps involved once the process is completed. Ensure that the local dev environment's .env file contains values for DOMAIN_NAME and SMARS_ENVIRONMENT since those will be 'baked in' to the resulting image. Tag the build as 'dev-1.1.2' and then push it to the Docker Hub repo.
 
@@ -3938,13 +3939,17 @@ Exit Criteria:
 
 4. Update the docker-compose file to add the ENVIRONMENT and DOMAIN_NAME environment variables under the 'environment' heading for the backend service, since the backend will need them (not actually sure about the DOMAIN_NAME variable but let's include it too). This means that we also need to keep the creation of the .env file as part of the Terraform configure_instance template file.
 
-5. Before proceeding any further, merge the changes already made in this chapter to the master branch, and then use the local build script to build a new image for the production environment. Then, log into the production EC2 instance, do a git pull to update its docker compose file, pull the latest production image, and then run `docker compose down` and `docker compose up -d` to reboot the production stack with the latest image. If successful, delete the older image and also run the builder prune command to free up space on this machine's volume.
+5. Create a new shell script called startBuild, which reads the local environment variabls for the SMARS_ENVIRONMENT, DOMAIN_NAME and DOCKER_REPO name, and uses them to build a new docker image and push it to Docker Hub. Also, make this script read the 'RELEASE_VERSION' line of the frontend's constants.ts file, so that it can tag new images with a version number (as well as the 'latest' tag) before pushing.
 
-### 4. Once the game can be demonstrated to run on an externally-built docker image, the next step will be to produce that image via GitHub Actions. Start by creating a new yaml file in the github/workflows directory called Build_Docker_Image, and copying the code from the Basic_CI file to imitate its structure.
+6. Before proceeding any further, merge the changes already made in this chapter to the master branch, and then use the local build script to build a new image for the production environment. Then, log into the production EC2 instance, do a git pull to update its docker compose file, pull the latest production image, and then run `docker compose down` and `docker compose up -d` to reboot the production stack with the latest image. If successful, delete the older image and also run the builder prune command to free up space on this machine's volume.
 
-### 5. Update the docker image build script to be triggered by a push to the smars repo, so we can start testing it right away, then have it build a docker image BASED ON THE MASTER BRANCH and push it to the Docker Hub SMARS repo. Make sure to add environment variables to the build environment produced by the GitHub Actions workflow, and initially set them up to produce a dev environment/image.
+7. Once the game can be demonstrated to run on an externally-built docker image, the next step will be to produce that image via GitHub Actions. Start by creating a new yaml file in the github/workflows directory called Build_Docker_Image, and copying the code from the Basic_CI file to imitate its structure. This workflow might as well make use of that nice startBuild shell script
 
-### 99. Update the constants file's version for the new release.
+8. Update the docker image build script to be triggered by a push to the smars repo, so we can start testing it right away, then have it build a docker image BASED ON THE MASTER BRANCH and push it to the Docker Hub SMARS repo. Make sure to add environment variables to the build environment produced by the GitHub Actions workflow, and initially set them up to produce a dev environment/image.
+
+9. Create a read/write access token from Dockerhub and add it to the SMARS git repo's secrets section, and then invoke that token during a 'docker login' step in the CI/CD workflow file, to allow Github Actions to push to your Docker Hub repo without having to manually give it permission/enter a password.
+
+10. Bump the game's version information one more time, and then do a final trial of the live update workflow (and ensure the documentation is up-to-date) and then we can close this issue and move on to setting up some notifications!
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 

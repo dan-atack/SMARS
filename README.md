@@ -60,6 +60,8 @@ Once the stack has started, you should be able to play the game by going to http
 
 ## Building the game's Docker images from the local VM environment:
 
+NOTE that this workflow is no longer necessary for production environment upgrades, since the game's CI/CD now produces a new image for the production environment whenever a change is pushed to the master branch (either by a direct push or via a branch being merged).
+
 - Clone git repo into local VM directory
 - Set environment variables in local .env file:
 
