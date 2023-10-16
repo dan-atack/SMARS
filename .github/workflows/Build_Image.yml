@@ -1,0 +1,22 @@
+name: Build Docker Image
+
+# Only trigger a build when a merge/commit is made to the master branch
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      SMARS_ENVIRONMENT: 'production'
+      DOMAIN_NAME: 'freesmars.com'
+      DOCKER_REPO: 'danatack/smars'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/docker/build-push-action@v2
+        with:
+          node-version: '14'
+      - run: echo "starting build"
+      - run: bash startBuild.sh
