@@ -14,9 +14,14 @@ jobs:
       DOMAIN_NAME: 'freesmars.com'
       DOCKER_REPO: 'danatack/smars'
     steps:
-      - uses: actions/checkout@v2
-      - uses: docker/build-push-action@v2
-        with:
-          node-version: '14'
-      - run: echo "starting build"
-      - run: bash startBuild.sh
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Log in to Docker Hub
+        run: docker login -u danatack -p ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        run: bash startBuild.sh
+
+      - name: Log out from Docker Hub
+        run: docker logout
