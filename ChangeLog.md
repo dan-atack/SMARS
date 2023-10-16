@@ -3923,8 +3923,8 @@ Exit Criteria:
 - [DONE] Docker Hub repo is set up to store the game's Docker image files
 - [DONE] Image can be build, tagged and pushed from any of the local VM environments
 - [DONE] Image can be pulled from Docker Hub to any of the game's AWS environments (dev, staging or production)
-- Game can be deployed/updated on the cloud using an image pulled from Docker Hub
-- GitHub Actions workflow is updated to generate a new Docker image whenever a PR is merged
+- [DONE] Game can be deployed/updated on the cloud using an image pulled from Docker Hub
+- GitHub Actions workflow is created to generate a new Docker production image whenever a PR is merged
 
 1. From the local dev environment, build a Docker image from the master branch and try pushing it to the Docker Hub account. Write down all steps involved once the process is completed. Ensure that the local dev environment's .env file contains values for DOMAIN_NAME and SMARS_ENVIRONMENT since those will be 'baked in' to the resulting image. Tag the build as 'dev-1.1.2' and then push it to the Docker Hub repo.
 
@@ -3938,7 +3938,7 @@ Exit Criteria:
 
 4. Update the docker-compose file to add the ENVIRONMENT and DOMAIN_NAME environment variables under the 'environment' heading for the backend service, since the backend will need them (not actually sure about the DOMAIN_NAME variable but let's include it too). This means that we also need to keep the creation of the .env file as part of the Terraform configure_instance template file.
 
-### 5. Before proceeding any further, merge the changes already made in this chapter to the master branch, and then use the local build script to build a new image for the production environment. Then, log into the production EC2 instance, do a git pull to update its docker compose file, pull the latest production image, and then run `docker compose down` and `docker compose up -d` to reboot the production stack with the latest image. If successful, delete the older image and also run the builder prune command to free up space on this machine's volume.
+5. Before proceeding any further, merge the changes already made in this chapter to the master branch, and then use the local build script to build a new image for the production environment. Then, log into the production EC2 instance, do a git pull to update its docker compose file, pull the latest production image, and then run `docker compose down` and `docker compose up -d` to reboot the production stack with the latest image. If successful, delete the older image and also run the builder prune command to free up space on this machine's volume.
 
 ### 4. Once the game can be demonstrated to run on an externally-built docker image, the next step will be to produce that image via GitHub Actions. Start by creating a new yaml file in the github/workflows directory called Build_Docker_Image, and copying the code from the Basic_CI file to imitate its structure.
 

@@ -65,6 +65,7 @@ Once the stack has started, you should be able to play the game by going to http
 
   SMARS_ENVIRONMENT=<environment (e.g. 'dev' 'staging' or 'prod' )>
   DOMAIN_NAME=<domain name (e.g. test.freesmars.com)>
+  DOCKER_REPO=<repo name (e.g. danatack/smars )>
 
 - Run the build script:
   `bash startBuild.sh`
