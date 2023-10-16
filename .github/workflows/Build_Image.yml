@@ -15,7 +15,7 @@ jobs:
       DOCKER_REPO: 'danatack/smars'
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/docker/build-push-action@v2
+      - uses: docker/build-push-action@v2
         with:
           node-version: '14'
       - run: echo "starting build"
