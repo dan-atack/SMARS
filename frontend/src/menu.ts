@@ -33,7 +33,6 @@ export default class Menu extends Screen {
     }
 
     setup = () => {
-        const p5 = this._p5;
         this.currentScreen = true;
         const newGame = new Button(
             "New Game",
