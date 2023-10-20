@@ -447,7 +447,5 @@ export default class DetailsArea {
             }
         }
         p5.fill(constants.GREEN_TERMINAL);
-        p5.text(this._buildCategorySelection, 300, 400);
-        p5.text(this._buildTypeSelection, 300, 450);
     }
 }
