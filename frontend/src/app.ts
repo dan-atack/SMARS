@@ -109,6 +109,11 @@ const sketch = (p5:P5) => {
         if (game.currentScreen) game.handleMouseDowns(p5.mouseX, p5.mouseY);
     }
 
+    // Handle key press events (currently only of interest to the Game's Engine component)
+    p5.keyPressed = () => {
+        if (game.currentScreen) game.handleKeyPress(p5.keyCode);
+    }
+
     p5.draw = () => {
         // Check for login if username hasn't been set yet:
         if (username.length === 0) checkForLogin();

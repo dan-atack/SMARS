@@ -3951,6 +3951,38 @@ Exit Criteria:
 
 10. Bump the game's version information one more time, and then do a final trial of the live update workflow (and ensure the documentation is up-to-date) and then we can close this issue and move on to setting up some notifications!
 
+## Chapter Thirteen: Pagination Land
+
+### Difficulty Estimate: 3
+
+### Date: October 16, 2023
+
+This chapter will deal with adding pagination to the Sidebar's building options menu, and as a bonus, will also introduce the game's first keyboard hotkey - using the ESC key to rapidly exit the building options menu/return to the top-level sidebar display. The pagination effort should be reasonably straightforward once the visual display has been mapped out, and although the game is new to key-press handling, that should also be quite straightforward, so this should be a relatively simple chapter. We can add a new structure category, called 'Science' to the local dev database to validate the feature's implementation. We'll also add a new storage facility to demonstrate the pagination feature at the individual structures level (this is where it might get tricky, as the sidebar/detailsArea components need to be able to handle pagination options for both the structure categories and the individual options as well - but they both will operate on the same basic principles).
+
+Exit Criteria:
+
+- When the player clicks on the 'Modules' button in the sidebar structures menu, they will see a paginated list and can click 'up' or 'down' arrows to see different options
+- When the player clicks on one of the structure category options they will be presented with a similarly paginated list for the individual building options
+- When the player presses the 'ESC' key at any level of the building options menu they will immediately be brought back to the top-level sidebar display, and the current building selection will be cancelled
+
+1. Do a white paper that explores the visual changes to the sidebar that will be implemented for this chapter. Consider both the building categories level as well as the individual building options level in your designs.
+
+2. Add new pagination fields to the DetailsArea component, to keep track of which page is selected for each level of the building options selection process. See the PopulationView class for inspiration on what's needed here.
+
+3. Add new pagination control handler functions to the DetailsArea component, including success/error sounds for when the player requests a non-available page (i.e. going to far forward or backward in a particular options list).
+
+4. Add new pagination control buttons to the DetailsArea component.
+
+5. Add a new storage structure to test the individual buildings' pagination system.
+
+6. Add a new structure with the category 'garage' to test the building categories' pagination system.
+
+7. Add an Engine-level (?) key-press handler that detects when the user presses the Any key. I mean the ESC key. Have it close the building options menu, deselect the current structure (if any) and return the mouse context to 'inspect.' This will have the added benefit of allowing the user to cancel any other mouse context by pressing the ESC key, since it will act even outside of the context of the DetailsArea component's build options menu.
+
+8. Also add a key-press handler for the back arrow button, which calls the 'back' button handler on the DetailsArea component if it is in an expanded state.
+
+9. Update the constants file's version for the new release.
+
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
 Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.

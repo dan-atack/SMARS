@@ -221,6 +221,11 @@ export default class Game extends Screen {
         }
     }
 
+    // Handles key press events, whose key codes are sent down by the application layer
+    handleKeyPress = (keyCode: number) => {
+        if (this._engine.currentView) this._engine.handleKeyPress(keyCode);
+    }
+
     // Resets all game parameters; copied from the constructor function
     reset = () => {
         // Pass view and screen changer functions to the engine (For the sidebar to use)

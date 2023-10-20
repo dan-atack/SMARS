@@ -66,7 +66,7 @@ export default class Sidebar {
         this.setGameSpeed = setGameSpeed;
         this._audio = audio;
         this.menuButton = new Button("Menu", constants.SCREEN_WIDTH - 88, 16, this.handleMenuButton, 76, 64, constants.GREEN_TERMINAL, constants.ALMOST_BLACK, 24);
-        this._detailsArea = new DetailsArea(this._audio, this.setBuildOptionsOpen, setMouseContext, setHorizontalOffset);  // OR ThIS.SetMouseContex?
+        this._detailsArea = new DetailsArea(this._audio, this.setBuildOptionsOpen, setMouseContext, setHorizontalOffset);
     }
 
     setup = () => {
