@@ -3969,13 +3969,13 @@ Exit Criteria:
 
 2. Add new pagination fields to the DetailsArea component, to keep track of which page is selected for each level of the building options selection process. See the PopulationView class for inspiration on what's needed here.
 
-### 3. Add new pagination control handler functions to the DetailsArea component, including error messages for when the player requests a non-available page (i.e. going to far forward or backward in a particular options list).
+3. Add new pagination control handler functions to the DetailsArea component, including success/error sounds for when the player requests a non-available page (i.e. going to far forward or backward in a particular options list).
 
 4. Add new pagination control buttons to the DetailsArea component.
 
-### 5. Add a new storage structure to test the individual buildings' pagination system.
+5. Add a new storage structure to test the individual buildings' pagination system.
 
-### 6. Add a new structure with the category 'science' to test the building categories' pagination system.
+6. Add a new structure with the category 'garage' to test the building categories' pagination system.
 
 ### 7. Add an Engine-level (?) key-press handler that detects when the user presses the Any key. I mean the ESC key.
 

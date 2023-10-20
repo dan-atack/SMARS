@@ -320,7 +320,7 @@ export default class DetailsArea {
         p5.text(`Select ${this._buildTypeSelection} ${this._buildCategorySelection.slice(0, -1)}`, this._x + (this._width / 2), this._buildSelectionTextY);
         p5.textSize(18);
         // Show pagination below the type options
-        p5.text(`(Showing ${this._buildingOptionsShowing + 1} - ${Math.min(this._buildingOptionsShowing + this._optionsPerPage, this._buildingOptions.length)}`, this._x + (this._width / 2),  this._buildSelectionTextY + 24);
+        p5.text(`(Showing ${this._buildingOptionsShowing + 1} - ${Math.min(this._buildingOptionsShowing + this._optionsPerPage, this._buildingOptions.length)} of ${this._buildingOptions.length} modules)`, this._x + (this._width / 2),  this._buildSelectionTextY + 24);
         this._backButton.render(p5);  // Render back button to return to building categories menu
         // Render individual building options (respecting the current pagination):
         this._optionButtons.forEach((button, idx) => {
