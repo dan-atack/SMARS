@@ -221,6 +221,10 @@ export default class Game extends Screen {
         }
     }
 
+    handleKeyPress = (keyCode: number) => {
+        console.log(keyCode);
+    }
+
     // Resets all game parameters; copied from the constructor function
     reset = () => {
         // Pass view and screen changer functions to the engine (For the sidebar to use)
