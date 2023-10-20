@@ -353,6 +353,24 @@ export default class Engine extends View {
         }
     }
 
+    //// KEY-PRESS HANDLER METHODS ////
+
+    // Key codes are numbers sent by the application layer, each of which corresponds to a specific key
+    handleKeyPress = (keyCode: number) => {
+        switch (keyCode) {
+            case 27:    // ESC: Close the details area, cancel current structure selection and display top-level sidebar buttons
+                this._audio.quickPlay("ting03");
+                this._sidebar._detailsArea.setExtended(false);
+                this._sidebar.setBuildOptionsOpen(false);
+                this.selectedBuilding = null;
+                this.setMouseContext("inspect");    // Revert to inspect context, too
+                break;
+            case 37:
+                if (this._sidebar._detailsArea._buildCategorySelection) this._sidebar._detailsArea.handleBack();
+                break;
+        }
+    }
+
     //// MOUSE AND CLICK HANDLER METHODS ////
 
     handleClicks = (mouseX: number, mouseY: number) => {

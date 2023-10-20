@@ -86,9 +86,9 @@ export default class DetailsArea {
         this._optionsPerPage = 4;
         const mods = new Button("Modules", this._x, this._buttonY, this.handleModules, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
         const cons = new Button("Connectors", this._x, this._buttonY + this._buttonMargin, this.handleConnectors, this._width, this._buttonHeight, constants.YELLOW_TEXT, constants.YELLOW_BG, 22);
-        const close = new Button("CANCEL", this._x, this._buttonY + 4 * this._buttonMargin + this._buttonMargin / 2, this.handleClose, this._width, this._buttonHeight / 2, constants.YELLOW_TEXT, constants.YELLOW_BG, 26);
+        const close = new Button("CANCEL [ESC]", this._x, this._buttonY + 4 * this._buttonMargin + this._buttonMargin / 2, this.handleClose, this._width, this._buttonHeight / 2, constants.YELLOW_TEXT, constants.YELLOW_BG, 26);
         // Back button - to revert from options, to types, to categories
-        this._backButton = new Button("BACK", this._x, this._cancelButtonY, this.handleBack, this._width, this._buttonHeight / 2, constants.YELLOW_TEXT, constants.YELLOW_BG, 26);
+        this._backButton = new Button("BACK [←]", this._x, this._cancelButtonY, this.handleBack, this._width, this._buttonHeight / 2, constants.YELLOW_TEXT, constants.YELLOW_BG, 26);
         // Pagination control buttons
         this._prevButton = new Button("Prev options", this._x + this._width / 4, this._buildSelectionTextY + 48, this.handlePrevious, this._width / 2, this._paginationButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);
         this._nextButton = new Button("More options", this._x + this._width / 4, this._cancelButtonY - 44, this.handleNext, this._width / 2, this._paginationButtonHeight, constants.GREEN_TERMINAL, constants.GREEN_DARK, 18);

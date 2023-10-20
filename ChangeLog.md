@@ -3977,9 +3977,11 @@ Exit Criteria:
 
 6. Add a new structure with the category 'garage' to test the building categories' pagination system.
 
-### 7. Add an Engine-level (?) key-press handler that detects when the user presses the Any key. I mean the ESC key.
+7. Add an Engine-level (?) key-press handler that detects when the user presses the Any key. I mean the ESC key. Have it close the building options menu, deselect the current structure (if any) and return the mouse context to 'inspect.' This will have the added benefit of allowing the user to cancel any other mouse context by pressing the ESC key, since it will act even outside of the context of the DetailsArea component's build options menu.
 
-### 99. Update the constants file's version for the new release.
+8. Also add a key-press handler for the back arrow button, which calls the 'back' button handler on the DetailsArea component if it is in an expanded state.
+
+9. Update the constants file's version for the new release.
 
 ## Chapter Y: Tools (Difficulty Estimate: ???)
 
