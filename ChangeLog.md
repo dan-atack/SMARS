@@ -3983,13 +3983,55 @@ Exit Criteria:
 
 9. Update the constants file's version for the new release.
 
-## Chapter Y: Tools (Difficulty Estimate: ???)
+## Chapter Fourteen: The World Builder Suite Part I: Module Painter
 
-Creating assets with P5 is very difficult right now; create an interface that will allow the creation of visual assets for new Modules and Connectors.
+### Difficulty Estimate: 6 (for quite a lot of work creating a separate application; new application will require considerable design work)
 
-## Chapter Z: Environments/Debug Version (Difficulty Estimate: ???)
+### Date: October 21, 2023
 
-As the game matures, it will be more and more desirable to separate features that are used in development - console logs, test structures, in-game information displays, etc - from the production version of the game. We've already got an environment variable that the game's code can detect, so it would be possible to enable certain features only in a development environment, and then in a separate 'staging' environment it would be possible to preview the actual game experience.
+Now that the sidebar's building options list can accommodate a larger array of options, the time has finally come to create the first of what will become a suite of external tools geared towards content creation. This will involve the creation of a new sister repository called smars-world-builder, which will exist in its own directory, and contain all of the source code for an independent application (based in large part on the architecture of the basic SMARS app itself). We'll have a Typescript/P5.JS frontend connected to an Express server in the backend, and since it will be used to create content for the main SMARS app, it will share a common database (although we might want to set up a new test collection for works in progress, at least at first).
+
+The basic structure of the app will be a frontend consisting of a web page with a main menu (no need to bother with a login screen) which leads to a number of different sub-applications, each of which is geared towards creating a specific type of content. Initially, of course, there will be just one such screen; the module editor. This will be an experimental shape-creation tool that will use P5 to create a pseudo-grid upon which the user can draw the basic shapes that comprise a structure's image, and on the side there will be a number of input fields in which the user can set values for the structure they are drawing (name, type, resource storage quantities, etc).
+
+The backend will be a classic Node/Express server, with endpoints to POST new modules, and perhaps just a simple GET endpoint to query the main SMARS modules database to get the names and types of modules that are presently available.
+
+As with all new applications, development should focus on getting the basic framework up and running first, and then gradually move towards more and more advanced milestones (posting a simple JSON file with the appropriate fields to the test database, adding simple shapes in the editor, and finally loading and editing existing structures).
+
+Exit Criteria:
+
+- [DONE] SMARS world builder suite has its own git repo
+- [DONE] World builder tool runs in local development environment
+- [DONE] World builder tool has a main menu from which its different sub-applications can be accessed
+- [DONE] World builder tool's initial sub-application is the module editor screen
+- [DONE] Module editor screen allows the user to create a module on a canvas element and determine its w/h dimensions with input fields
+- [DONE] Module editor screen allows the user to select shapes and then create them by clicking on the canvas element to set their location and dimensions
+- [DONE] Module editor keeps track of the 'stacking' order of shapes and allows the user to delete shapes using a 'layers list' display
+- [DONE] Module editor has input fields for text/number data for adjusting other module fields (name, type, resource quantities, etc)
+- [DONE] Module editor has a colour palette borrowed from the main game's constants file
+- [DONE] User can review a new module's full data in the console; it is updated whenever the module is updated on the screen
+- [DONE] By clicking a 'save' button, the user can upload a new module to the local environment's modules collection
+- [STRETCH] [NOT-DOING] World builder application plays basic sounds borrowed from the main game (quick sounds only)
+- [STRETCH] [NOT-DOING] Module editor can load an existing module to enable editing
+
+1. Create a new repo in Github to store the code for the new project.
+
+2. Create a new local directory for the project. Keep writing in this file for the changelog, but open a second instance of VS code for the work done in the other repo.
+
+3. Next, divide the new repo into a frontend and a backend, and do an NPM init for both folders. For the backend, copy the dev dependencies from the SMARS backend directory. Do the same for the frontend, and copy both tsconfig files as well, for good measure.
+
+4. Next, copy the backend's index file and attempt to run the server to listen on port 7001, so that it can run at the same time as the game in the local dev environment.
+
+5. For the frontend, add a PORT environment variable to make it run on port 1235, so that it can also be visited in-browser alongside the game. Test that this works by running a simple app.ts file with a blank canvas for the World Builder suite's frontend.
+
+6. Add an initial GET endpoint to the World Builder's backend that queries the SMARS database and returns a list of the names of all the existing modules in the modules collection.
+
+7. Add an initial server function to the World Builder's frontend and use that to print the modules list to the console. Then we can begin development in earnest.
+
+8. Complete the rest of the module editor's interface, and then test it with some sample modules before putting it to work.
+
+9. Determine why new modules with maintenance requirements don't get the resources they need, and fix that bug before closing the chapter and creating some permanent assets. ADDENDUM: It was because the editor was using Uppercase strings for the resource names, but the game only recognizes those names as lowercase strings (oxygen, water, food and power).
+
+10. Update the game's seed data with the new modules created by the editor that you wish to add to the official game content.
 
 ## Chapter Ninety-Nine: Chapter Summary Template
 
