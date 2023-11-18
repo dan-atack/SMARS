@@ -4029,6 +4029,10 @@ Exit Criteria:
 
 8. Complete the rest of the module editor's interface, and then test it with some sample modules before putting it to work.
 
+9. Determine why new modules with maintenance requirements don't get the resources they need, and fix that bug before closing the chapter and creating some permanent assets. ADDENDUM: It was because the editor was using Uppercase strings for the resource names, but the game only recognizes those names as lowercase strings (oxygen, water, food and power).
+
+### 10. Update the game's seed data with the new modules created by the editor that you wish to add to the official game content.
+
 ## Chapter Ninety-Nine: Chapter Summary Template
 
 ### Difficulty Estimate: TBD

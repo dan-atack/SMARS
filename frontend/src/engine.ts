@@ -363,7 +363,9 @@ export default class Engine extends View {
                 this._sidebar._detailsArea.setExtended(false);
                 this._sidebar.setBuildOptionsOpen(false);
                 this.selectedBuilding = null;
-                this.setMouseContext("inspect");    // Revert to inspect context, too
+                if (this.mouseContext !== "modal" && this.mouseContext !== "wait") {
+                    this.setMouseContext("inspect");    // Revert to inspect context, but only if no modal is open/wait mode is not enabled
+                }
                 break;
             case 37:
                 if (this._sidebar._detailsArea._buildCategorySelection) this._sidebar._detailsArea.handleBack();
