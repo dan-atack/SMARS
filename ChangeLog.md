@@ -4059,8 +4059,17 @@ Exit Criteria:
 - New random event resolution is added which changes the Earth's GDP
 - At least 4 new random events are added that specifically involve changing the player's favourability with one or more factions
 - The player's favourability with each faction naturally decays every year
+- All Earth GDP, faction influence, and player favourability data is included in save files
+- If a save file is loaded that does not have this new Earth data, default values are supplied
+- [STRETCH] Start sprinkling in some more aesthetic touches and add two new sounds (workers doing jobs have an X% chance of making a sound??)
 
-### 1. Step One...
+### 1. First off, fix the bug (first in dev, and then in the production environment) with the cantina being an uncrewed structure, by updating the game's database seed file, and then rebooting the production stack, and dropping the modules collection from the production database. Reorder the list while you're at it, so that the hydroponics lab (the most expensive production building, currently) is at the bottom of the list of options.
+
+### 2. Continue by mapping out the exact layout for the Earth diplomacy view section, including the variables that will be used and expressed on the screen, and behind the scenes.
+
+### 3. Reformat the existing date information on the Earth view (Earth date, next mission launch) to a more human-readable format (months spelled out).
+
+### 4. Next, reformat the Earth page, making the Earth Date its own field, and creating four equal-sized boxes for the other display panels.
 
 ### 97. Are there any in-game notifications that should accompany a new feature?
 
