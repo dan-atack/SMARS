@@ -10,8 +10,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      SMARS_ENVIRONMENT: 'production'
-      DOMAIN_NAME: 'freesmars.com'
+      SMARS_ENVIRONMENT: 'staging'
+      DOMAIN_NAME: 'staging.freesmars.com'
       DOCKER_REPO: 'danatack/smars'
     steps:
       - name: Checkout Repository
