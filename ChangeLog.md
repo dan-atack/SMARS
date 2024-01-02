@@ -4033,6 +4033,50 @@ Exit Criteria:
 
 10. Update the game's seed data with the new modules created by the editor that you wish to add to the official game content.
 
+## Chapter Fifteen: Earth Diplomacy Screen (Earth View update part I)
+
+### Difficulty Estimate: 3
+
+### Date: December 8, 2023
+
+Following the completion of the module editor tool, it is now time to return focus to the game's supply system, and the colony's relation with Earth. Initially, the player will be almost wholly reliant on supplies sent from Earth, and over time will gradually become (one hopes) more self-sufficient. To increase the tension, the game will now have a more detailed Earth diplomacy component, which will oblige the player to maintain relations with the various powerful factions on the Earth in order to secure funding from them. As time passes, relations with Earth will tend to degrade, and as such, support will gradually fall off.
+
+The first phase of the more advanced Earth view (of which two more phases, controlling commodity import orders, will follow) will focus on establishing the three factions (governments, corporations, and rogue billionaires), their control over the Earth's total GDP, and the player's favourability rating with each group. Every (Earth) quarter, the player will recieve a modal popup announcing that more funding from Earth has arrived, and now instead of that amount being a fixed value, it will be indexed to the Earth GDP / faction favourability calculation, which will be spelled out in detail on the Earth view.
+
+Also to be done in this chapter, since we are moving and revamping it anyway, will be the amelioration of the Earth screen's immigration and launch schedule data, to make it more human-readable and also to tidy it up, to make room for all the extra information that will be added to that view in the near future!
+
+Exit Criteria:
+
+- Player gets notified via modal once per Earth quarter that they have recieved more funding
+- SMARS-daily resupply announcements will continue until Earth resource importation is available (but the money component will be removed)
+- On the Earth view, immigration/flight data is reformatted to be smaller, and more readable (the dates)
+- On the Earth view, the Earth's GDP is shown
+- On the Earth view, the Earth's three factions' dominance levels are shown
+- On the Earth view, the player's favourability with each faction is shown
+- On the Earth view, the player's projected income is shown, along with a breakdown of the factors which comprise it
+- Every Earth year, the data for the Earth's GDP, as well as the control shares for each faction, is randomly updated
+- New random event resolution is added which allows changes to the relations status with an Earth faction
+- New random event resolution is added which changes the Earth's GDP
+- At least 4 new random events are added that specifically involve changing the player's favourability with one or more factions
+- The player's favourability with each faction naturally decays every year
+- All Earth GDP, faction influence, and player favourability data is included in save files
+- If a save file is loaded that does not have this new Earth data, default values are supplied
+- [STRETCH] Start sprinkling in some more aesthetic touches and add two new sounds (workers doing jobs have an X% chance of making a sound??)
+
+### 1. First off, fix the bug (first in dev, and then in the production environment) with the cantina being an uncrewed structure, by updating the game's database seed file, and then rebooting the production stack, and dropping the modules collection from the production database. Reorder the list while you're at it, so that the hydroponics lab (the most expensive production building, currently) is at the bottom of the list of options.
+
+### 2. Continue by mapping out the exact layout for the Earth diplomacy view section, including the variables that will be used and expressed on the screen, and behind the scenes.
+
+### 3. Reformat the existing date information on the Earth view (Earth date, next mission launch) to a more human-readable format (months spelled out).
+
+### 4. Next, reformat the Earth page, making the Earth Date its own field, and creating four equal-sized boxes for the other display panels.
+
+### 97. Are there any in-game notifications that should accompany a new feature?
+
+### 98. Clean up all console logs for this chapter's development (or if you really like them, add a flag to them to keep appearing in dev mode only).
+
+### 99. Update the constants file's version and/or year for the new release.
+
 ## Chapter Ninety-Nine: Chapter Summary Template
 
 ### Difficulty Estimate: TBD
