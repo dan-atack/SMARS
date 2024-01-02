@@ -4063,7 +4063,13 @@ Exit Criteria:
 - If a save file is loaded that does not have this new Earth data, default values are supplied
 - [STRETCH] Start sprinkling in some more aesthetic touches and add two new sounds (workers doing jobs have an X% chance of making a sound??)
 
-### 1. First off, fix the bug (first in dev, and then in the production environment) with the cantina being an uncrewed structure, by updating the game's database seed file, and then rebooting the production stack, and dropping the modules collection from the production database. Reorder the list while you're at it, so that the hydroponics lab (the most expensive production building, currently) is at the bottom of the list of options.
+Production maintenance:
+
+- Fix the bug with the inaccessible cantinas starving eveyone to death (or at least, despair)
+- Check the production server's logs and S3 bucket size
+- Consider reducing the detail of the backend's server log messages (e.g. database transactions' every status update)
+
+1. First off, fix the bug (first in dev, and then in the production environment) with the cantina being an uncrewed structure, by updating the game's database seed file, and then rebooting the production stack, and dropping the modules collection from the production database. Reorder the list while you're at it, so that the hydroponics lab (the most expensive production building, currently) is at the bottom of the list of options.
 
 ### 2. Continue by mapping out the exact layout for the Earth diplomacy view section, including the variables that will be used and expressed on the screen, and behind the scenes.
 
